@@ -1,0 +1,6 @@
+{
+  "name": "Ziarah Nusantara",
+  "description": "Platform interaktif pemetaan dan basis data lokasi ziarah di Indonesia.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
