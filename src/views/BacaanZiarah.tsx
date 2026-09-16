@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { RotateCcw, Copy, Volume2, Headphones } from 'lucide-react';
+import { RotateCcw, Copy } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export const BacaanZiarah: React.FC = () => {
@@ -30,7 +31,8 @@ export const BacaanZiarah: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 relative z-10 pb-20">
+      
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 relative z-10 pb-20">
       
       {/* Header */}
       <div className="bg-white rounded-3xl p-6 md:p-8 mb-6 flex flex-col md:flex-row md:items-center justify-between border border-stone-200 shadow-sm">
@@ -85,30 +87,6 @@ export const BacaanZiarah: React.FC = () => {
               <RotateCcw className="w-6 h-6" />
             </button>
           </div>
-        </div>
-
-        {/* Audio Guide Premium */}
-        <div className="bg-gradient-to-br from-gold-50 to-gold-100 rounded-3xl p-6 border border-gold-200 shadow-sm flex flex-col justify-between relative overflow-hidden group cursor-pointer hover:shadow-md transition-all">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-gold-200/50 rounded-full blur-xl group-hover:scale-150 transition-transform"></div>
-          <div className="flex items-center justify-between mb-4 relative z-10">
-            <span className="font-bold text-sm text-gold-800 tracking-wide uppercase">Audio Guide</span>
-            <span className="bg-gold-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Premium</span>
-          </div>
-          <div className="relative z-10 flex-1 flex flex-col justify-center">
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gold-600 shadow-sm">
-                <Headphones className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-gold-900">Murottal Ziarah</div>
-                <div className="text-xs text-gold-700">Oleh Qari Timur Tengah</div>
-              </div>
-            </div>
-          </div>
-          <button className="w-full mt-4 py-2.5 bg-gold-600 hover:bg-gold-700 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center relative z-10 shadow-sm">
-            <Volume2 className="w-4 h-4 mr-2" />
-            Buka Pemutar Audio
-          </button>
         </div>
 
         {/* Urutan Controls */}
@@ -205,9 +183,9 @@ export const BacaanZiarah: React.FC = () => {
                     "Kesejahteraan dari Allah wahai para pemimpin, dari Tuhan Yang Maha Pengasih semoga menyelimuti kalian. Wahai hamba-hamba Allah, kami datang kepada kalian. Kami bermaksud kepada kalian, kami meminta kepada kalian. Bantulah kami, tolonglah kami, dengan tekad dan kemurahan kalian. Maka cintailah kami dan berikanlah kepada kami, pemberian kalian, hadiah kalian. Maka janganlah kalian mengecewakan prasangkaku, pantang bagi kalian, pantang bagi kalian. Kami bahagia ketika kami mendatangi kalian, dan kami beruntung ketika kami menziarahi kalian. Maka bangkitlah dan berikanlah syafaat bagi kami, kepada Tuhan Yang Maha Pengasih, Tuhan kalian."
                   </p>
                 </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
 
           {activeStep === 'TAWASSUL' && (
             <>
@@ -235,9 +213,9 @@ export const BacaanZiarah: React.FC = () => {
                     "Kehadirat Nabi Pilihan Muhammad SAW, keluarga, dan para sahabatnya, segala sesuatu adalah milik Allah, bagi mereka (bacaan) Al-Fatihah... Kemudian kepada para saudaranya dari kalangan nabi, rasul, wali, syuhada, dan orang-orang saleh... Al-Fatihah... Kemudian kepada ruh Wali (sebutkan nama wali)... Al-Fatihah."
                   </p>
                 </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
 
           {activeStep === 'YASIN' && (
             <>
@@ -256,9 +234,9 @@ export const BacaanZiarah: React.FC = () => {
                     Yaa siin. Wal qur'aanil hakiim. Innaka laminal mursaliin. 'Alaa shiraathim mustaqiim. Tanziilal 'aziizir rahiim. Litundzira qauman maa undzira aabaa-uhum fahum ghaafiluun..."
                   </p>
                 </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
 
           {activeStep === 'TAHLIL' && (
             <>
@@ -280,9 +258,9 @@ export const BacaanZiarah: React.FC = () => {
                     Subhaanallaahi wa bihamdih, subhaanallaahil 'azhiim (33x)"
                   </p>
                 </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
 
           {activeStep === 'DOA' && (
             <>
@@ -310,9 +288,9 @@ export const BacaanZiarah: React.FC = () => {
                     "Dengan nama Allah Yang Maha Pengasih lagi Maha Penyayang. Segala puji bagi Allah Tuhan semesta alam... Ya Allah, jadikanlah dan sampaikanlah pahala dari apa yang kami baca dari surah Yasin, tahlil, dan tasbih kami sebagai hadiah yang tersampaikan, rahmat yang turun... kepada ruh wali yang dimakamkan di sini... Ya Tuhan kami, berikanlah kami kebaikan di dunia dan kebaikan di akhirat, dan lindungilah kami dari siksa api neraka."
                   </p>
                 </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
         </div>
       </motion.div>
 
@@ -326,5 +304,7 @@ function BookOpenIcon() {
       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
     </svg>
+    
+  
   );
 }

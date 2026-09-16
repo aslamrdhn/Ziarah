@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { KontribusiModal } from './components/KontribusiModal';
-import { PetaLokasi } from './views/PetaLokasi';
-import { DaftarMakam } from './views/DaftarMakam';
-import { BacaanZiarah } from './views/BacaanZiarah';
-import { KebijakanKurasi } from './views/KebijakanKurasi';
-import { AdminKurator } from './views/AdminKurator';
-import { KumpulanDoa } from './views/KumpulanDoa';
+const PetaLokasi = lazy(() => import('./views/PetaLokasi').then(m => ({ default: m.PetaLokasi })));
+const DaftarMakam = lazy(() => import('./views/DaftarMakam').then(m => ({ default: m.DaftarMakam })));
+const BacaanZiarah = lazy(() => import('./views/BacaanZiarah').then(m => ({ default: m.BacaanZiarah })));
+const KebijakanKurasi = lazy(() => import('./views/KebijakanKurasi').then(m => ({ default: m.KebijakanKurasi })));
+const AdminKurator = lazy(() => import('./views/AdminKurator').then(m => ({ default: m.AdminKurator })));
+const KumpulanDoa = lazy(() => import('./views/KumpulanDoa').then(m => ({ default: m.KumpulanDoa })));
 import { ZiarahSite } from './data/sites';
 import { motion, AnimatePresence } from 'motion/react';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<string>('daftar');
+  const location = useLocation();
+  const navigate = useNavigate();
   const [selectedSite, setSelectedSite] = useState<ZiarahSite | null>(null);
   const [isKontribusiOpen, setIsKontribusiOpen] = useState(false);
   
@@ -61,45 +63,12 @@ export default function App() {
     );
   }, []);
 
-  const handleNavigate = React.useCallback((view: string) => {
-    setCurrentView(view);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
   const handleSelectSite = React.useCallback((site: ZiarahSite) => {
     setSelectedSite(site);
-    setCurrentView('peta'); // Auto-navigate to map when a site is selected from the list
-  }, []);
+    navigate(`/makam/${site.id}`); // Auto-navigate to map when a site is selected from the list
+  }, [navigate]);
 
-  const renderView = () => {
-    switch (currentView) {
-      case 'peta':
-        return (
-          <PetaLokasi 
-            selectedSite={selectedSite}
-            setSelectedSite={setSelectedSite}
-            savedSiteIds={savedSiteIds}
-            handleToggleSave={handleToggleSave}
-            savedDoas={savedDoas}
-            onToggleSaveDoa={handleToggleSaveDoa}
-            onOpenKontribusi={() => setIsKontribusiOpen(true)}
-          />
-        );
-      case 'daftar':
-        return <DaftarMakam onSelectSite={handleSelectSite} />;
-      case 'bacaan':
-        return <BacaanZiarah />;
-      case 'doa-karomah':
-        return <KumpulanDoa savedDoas={savedDoas} onToggleSaveDoa={handleToggleSaveDoa} />;
-      case 'kurasi':
-        return <KebijakanKurasi />;
-      case 'admin':
-        return <AdminKurator />;
-      default:
-        return <DaftarMakam onSelectSite={handleSelectSite} />;
-    }
-  };
-
+  
   return (
     <div className="flex flex-col min-h-screen w-full bg-[#f4f7f4] font-sans text-stone-900 selection:bg-gold-200 relative">
       {/* Subtle background pattern overlay */}
@@ -114,8 +83,6 @@ export default function App() {
       <div className="fixed top-0 left-0 right-0 z-[2000] bg-white/90 backdrop-blur-md border-b border-stone-200 shadow-sm flex justify-center">
         <div className="w-full max-w-5xl">
           <Navbar 
-            currentView={currentView} 
-            onNavigate={handleNavigate} 
             onOpenKontribusi={() => setIsKontribusiOpen(true)} 
           />
         </div>
@@ -125,14 +92,44 @@ export default function App() {
       <main className="flex-1 flex flex-col relative z-10 pt-20 pb-12 w-full overflow-x-hidden">
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentView}
+            key={location.pathname}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="flex-1 flex flex-col w-full h-full"
           >
-            {renderView()}
+            <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8"><div className="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div></div>}>
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<DaftarMakam onSelectSite={handleSelectSite} />} />
+              <Route path="/peta" element={
+                <PetaLokasi 
+                  selectedSite={selectedSite}
+                  setSelectedSite={setSelectedSite}
+                  savedSiteIds={savedSiteIds}
+                  handleToggleSave={handleToggleSave}
+                  savedDoas={savedDoas}
+                  onToggleSaveDoa={handleToggleSaveDoa}
+                  onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                />
+              } />
+              <Route path="/makam/:id" element={
+                <PetaLokasi 
+                  selectedSite={selectedSite}
+                  setSelectedSite={setSelectedSite}
+                  savedSiteIds={savedSiteIds}
+                  handleToggleSave={handleToggleSave}
+                  savedDoas={savedDoas}
+                  onToggleSaveDoa={handleToggleSaveDoa}
+                  onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                />
+              } />
+              <Route path="/panduan" element={<BacaanZiarah />} />
+              <Route path="/doa" element={<KumpulanDoa savedDoas={savedDoas} onToggleSaveDoa={handleToggleSaveDoa} />} />
+              <Route path="/kurasi" element={<KebijakanKurasi />} />
+              <Route path="/admin" element={<AdminKurator />} />
+            </Routes>
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </main>

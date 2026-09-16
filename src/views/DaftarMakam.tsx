@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { ZiarahSite, ziarahSites } from '../data/sites';
@@ -26,7 +27,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
   }, [searchQuery, selectedCategory, selectedProvince]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
+      
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
       
       {/* Hero Section */}
       <div className="py-12 md:py-20 text-center md:text-left">
