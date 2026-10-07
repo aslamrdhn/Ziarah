@@ -36,20 +36,17 @@ function UserLocationControl() {
       setPosition(e.latlng);
       map.flyTo(e.latlng, map.getZoom() > 13 ? map.getZoom() : 13);
     });
-    
-    // Initial locate is removed to prevent iframe permission issues
-    // Users can click the locate button manually
   }, [map]);
 
   const userIcon = L.divIcon({
     html: renderToStaticMarkup(
-      <div className="flex items-center justify-center w-6 h-6 bg-blue-500 rounded-full border-2 border-white shadow-md">
-        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+      <div className="flex items-center justify-center w-7 h-7 bg-emerald-600 rounded-full border-2 border-white shadow-lg">
+        <div className="w-2.5 h-2.5 bg-white rounded-full animate-ping" />
       </div>
     ),
     className: 'custom-user-icon',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
+    iconSize: [28, 28],
+    iconAnchor: [14, 14]
   });
 
   return (
@@ -63,10 +60,10 @@ function UserLocationControl() {
          <div className="leaflet-control">
            <button 
              onClick={() => map.locate({setView: true, maxZoom: 14})}
-             className="bg-white p-2.5 rounded-xl shadow-md border border-stone-200 text-stone-600 hover:text-brand-600 hover:bg-stone-50 transition-colors"
+             className="bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-lg border border-slate-200/90 text-slate-700 hover:text-emerald-700 hover:bg-slate-50 transition-all active:scale-95 cursor-pointer"
              title="Temukan Lokasi Saya"
            >
-             <Compass className="w-5 h-5" />
+             <Compass className="w-5 h-5 text-emerald-700" />
            </button>
          </div>
       </div>
@@ -74,18 +71,18 @@ function UserLocationControl() {
   );
 }
 
-// Custom DivIcon for natural look
+// Custom DivIcon for modern clean look
 const createCustomIcon = (category: string, isSelected: boolean) => {
-  let colorClass = 'text-brand-800 bg-brand-50 border-brand-200';
-  if (category === 'Habaib') colorClass = 'text-gold-700 bg-gold-50 border-gold-200';
-  if (category === 'Ulama Nusantara') colorClass = 'text-sky-700 bg-sky-50 border-sky-200';
+  let colorClass = 'text-emerald-800 bg-emerald-50 border-emerald-300';
+  if (category === 'Habaib') colorClass = 'text-amber-800 bg-amber-50 border-amber-300';
+  if (category === 'Ulama Nusantara') colorClass = 'text-sky-800 bg-sky-50 border-sky-300';
   
   if (isSelected) {
-    colorClass = 'text-gold-300 bg-brand-900 border-gold-400 shadow-lg scale-110';
+    colorClass = 'text-gold-300 bg-emerald-950 border-gold-400 shadow-xl scale-125 ring-4 ring-emerald-500/20';
   }
   const iconMarkup = renderToStaticMarkup(
-    <div className={`flex items-center justify-center w-8 h-8 rounded-full shadow-sm border-2 transition-all ${colorClass}`}>
-      <MapPin className="w-5 h-5" />
+    <div className={`flex items-center justify-center w-8 h-8 rounded-2xl shadow-md border-2 transition-all ${colorClass}`}>
+      <MapPin className="w-4 h-4" />
     </div>
   );
   return L.divIcon({
@@ -99,11 +96,11 @@ const createCustomIcon = (category: string, isSelected: boolean) => {
 
 export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedSite, onSelectSite }) => {
   return (
-    <div className="flex-1 w-full relative z-0 rounded-2xl overflow-hidden shadow-sm border border-stone-200 min-h-[500px] md:min-h-[600px] h-full flex flex-col">
+    <div className="flex-1 w-full relative z-0 rounded-3xl overflow-hidden shadow-xs border border-slate-200/90 min-h-[500px] md:min-h-[600px] h-full flex flex-col">
       <MapContainer 
         center={[-2.5, 118.0]} // Center of Indonesia
         zoom={5} 
-        style={{ width: '100%', height: '100%', flex: 1, minHeight: '500px', background: '#e5e3df' }}
+        style={{ width: '100%', height: '100%', flex: 1, minHeight: '500px', background: '#e2e8f0' }}
         zoomControl={false}
       >
         <TileLayer
@@ -125,27 +122,27 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
             }}
           >
             <Popup className="custom-popup">
-              <div className="p-4 w-64 bg-white text-stone-900 rounded-xl">
+              <div className="p-4 w-64 bg-white text-slate-900 rounded-2xl">
                 <img 
                   src={site.imageUrl} 
                   alt={site.title} 
                   referrerPolicy="no-referrer"
-                  className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
+                  className="w-full h-32 object-cover rounded-xl mb-3 shadow-2xs"
                 />
-                <div className="text-[10px] font-bold uppercase tracking-wider text-gold-700 mb-1 bg-gold-50 inline-block px-1.5 py-0.5 rounded border border-gold-100">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 mb-1 bg-emerald-50 inline-block px-2 py-0.5 rounded-lg border border-emerald-200/60">
                   {site.category}
                 </div>
-                <h3 className="font-serif font-bold text-xl text-brand-900 leading-tight mb-1">{site.title}</h3>
-                <p className="text-sm text-stone-500 mb-3">{site.name}</p>
-                <div className="flex items-start text-sm text-stone-500 mb-4">
-                  <Navigation className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
-                  <span>{site.location.city}, {site.location.province}</span>
+                <h3 className="font-serif font-black text-base text-slate-900 leading-snug mb-1">{site.title}</h3>
+                <p className="text-xs text-slate-500 mb-2 line-clamp-1">{site.name}</p>
+                <div className="flex items-start text-xs text-slate-500 mb-3">
+                  <Navigation className="w-3.5 h-3.5 mr-1.5 mt-0.5 shrink-0 text-emerald-600" />
+                  <span className="truncate">{site.location.city}, {site.location.province}</span>
                 </div>
                 <button 
-                  className="w-full py-2 bg-brand-800 hover:bg-brand-900 text-white rounded-lg text-sm font-bold transition-colors"
+                  className="w-full py-2 bg-gradient-to-r from-emerald-800 to-brand-900 hover:from-emerald-900 hover:to-brand-950 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
                   onClick={() => onSelectSite(site)}
                 >
-                  Lihat Detail
+                  Lihat Detail & Panduan
                 </button>
               </div>
             </Popup>

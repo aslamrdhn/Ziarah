@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user preferences like saved sites and doas.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user."
+        },
+        "savedSiteIds": {
+          "type": "array",
+          "description": "List of saved site IDs",
+          "items": { "type": "string" }
+        },
+        "savedDoas": {
+          "type": "array",
+          "description": "List of saved doa IDs",
+          "items": { "type": "string" }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of last update."
+        }
+      },
+      "required": ["userId"]
+    },
+    "ZiarahSite": {
+      "title": "Ziarah Site",
+      "description": "Information about a Ziarah site.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" },
+            "city": { "type": "string" },
+            "province": { "type": "string" }
+          }
+        },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "history": { "type": "string" },
+        "facilities": { "type": "array", "items": { "type": "string" } },
+        "openingHours": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User profiles and preferences."
+    },
+    "sites/{siteId}": {
+      "schema": { "$ref": "#/entities/ZiarahSite" },
+      "description": "Public Ziarah sites directory."
+    }
+  }
+}

@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { InteractiveMap } from '../components/InteractiveMap';
 import { SiteDetails } from '../components/SiteDetails';
-import { ziarahSites, ZiarahSite } from '../data/sites';
+import { ZiarahSite } from '../data/sites';
+import { useSites } from '../context/SiteContext';
 
 interface PetaLokasiProps {
   selectedSite: ZiarahSite | null;
@@ -20,7 +21,8 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
 }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  const { sites: ziarahSites, isLoading } = useSites();
+  
   useEffect(() => {
     if (id) {
       const found = ziarahSites.find(s => s.id === id);
@@ -44,6 +46,7 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
     }
   };
 
+  if (isLoading) return <div className="p-8 text-center text-stone-500 flex-1 flex items-center justify-center">Memuat Peta Interaktif...</div>;
   return (
     <div className="flex-1 w-full relative z-20 flex flex-col">
       <InteractiveMap 

@@ -10,6 +10,7 @@ export const BacaanZiarah: React.FC = () => {
   const [showLatin, setShowLatin] = useState(true);
   const [showTerjemahan, setShowTerjemahan] = useState(true);
   const [activeStep, setActiveStep] = useState<string>('SALAM');
+  const [copied, setCopied] = useState(false);
 
   const steps = [
     { id: 'SEMUA', label: 'Semua' },
@@ -31,31 +32,38 @@ export const BacaanZiarah: React.FC = () => {
   };
 
   return (
-      
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 relative z-10 pb-20">
-      
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 relative z-10 pt-4 pb-20">
+
+      {/* Modern Notice / Disclaimer */}
+      <div className="bg-emerald-50/80 rounded-2xl p-3.5 sm:p-4 mb-6 border border-emerald-200/70 text-xs sm:text-sm text-emerald-950 shadow-xs">
+        <p className="leading-relaxed text-center">
+          <strong>Adab & Panduan Ziarah:</strong> Bersumber dari tradisi amalan ahlussunnah wal jama'ah. Harap tetap mengutamakan ketertiban dan adab di area maqbarah.
+        </p>
+      </div>
+
       {/* Header */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 mb-6 flex flex-col md:flex-row md:items-center justify-between border border-stone-200 shadow-sm">
-        <div className="flex items-start space-x-4 mb-6 md:mb-0">
-          <div className="p-3.5 bg-brand-50 text-brand-700 rounded-2xl border border-brand-100">
+      <div className="bg-white rounded-3xl p-5 sm:p-7 mb-6 flex flex-col sm:flex-row sm:items-center justify-between border border-slate-200/90 shadow-xs gap-4">
+        <div className="flex items-start space-x-3.5">
+          <div className="p-3 bg-gradient-to-tr from-emerald-800 to-teal-700 text-gold-300 rounded-2xl shadow-sm">
             <BookOpenIcon />
           </div>
           <div>
-            <h1 className="text-2xl font-serif font-bold text-brand-900 tracking-tight">Panduan Ziarah</h1>
-            <p className="text-sm mt-1 text-stone-500">Adab, Tawassul, Yasin, dan Tahlil</p>
+            <h1 className="text-xl sm:text-2xl font-serif font-black text-slate-900 tracking-tight">Panduan Ziarah</h1>
+            <p className="text-xs sm:text-sm mt-0.5 text-slate-500">Adab, Tawassul, Yasin, dan Tahlil</p>
           </div>
         </div>
         
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center bg-stone-50 rounded-xl p-1 border border-stone-200">
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Ukuran:</span>
+          <div className="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200/80">
             {['A', 'A+', 'A++'].map((size) => (
               <button
                 key={size}
                 onClick={() => setFontSize(size as any)}
-                className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors ${
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
                   fontSize === size 
-                    ? 'bg-white text-stone-900 shadow-sm border border-stone-200' 
-                    : 'text-stone-500 hover:text-stone-900'
+                    ? 'bg-white text-emerald-800 shadow-xs font-black' 
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 {size}
@@ -65,59 +73,98 @@ export const BacaanZiarah: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-        {/* Tasbih Widget */}
-        <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
-          <div className="flex items-center justify-between mb-8 relative z-10">
-            <span className="font-bold text-sm text-stone-800 tracking-wide uppercase">Tasbih Digital</span>
-            <div className="flex items-center space-x-1 bg-stone-50 p-1 rounded-xl border border-stone-200">
-              <button onClick={() => { setTasbihMax(33); setTasbihCount(0); }} className={`px-3 py-1.5 text-xs rounded-lg font-bold transition-colors ${tasbihMax === 33 ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-900'}`}>33</button>
-              <button onClick={() => { setTasbihMax(100); setTasbihCount(0); }} className={`px-3 py-1.5 text-xs rounded-lg font-bold transition-colors ${tasbihMax === 100 ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-900'}`}>100</button>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 sm:gap-6 mb-6">
+        {/* Modern Tasbih Widget */}
+        <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs flex flex-col justify-between relative overflow-hidden group">
+          <div className="flex items-center justify-between mb-4 relative z-10">
+            <div>
+              <span className="font-bold text-xs text-slate-900 tracking-wider uppercase block">Tasbih Digital</span>
+              <span className="text-[11px] text-slate-400">Ketuk untuk berdzikir</span>
+            </div>
+            <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+              <button onClick={() => { setTasbihMax(33); setTasbihCount(0); }} className={`px-2.5 py-1 text-xs rounded-lg font-bold transition-colors ${tasbihMax === 33 ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}>33</button>
+              <button onClick={() => { setTasbihMax(100); setTasbihCount(0); }} className={`px-2.5 py-1 text-xs rounded-lg font-bold transition-colors ${tasbihMax === 100 ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}>100</button>
             </div>
           </div>
           
-          <div className="flex items-center justify-between relative z-10">
-            <button 
+          {/* Progress bar */}
+          <div className="w-full bg-slate-100 rounded-full h-2 mb-4 overflow-hidden p-0.5">
+            <motion.div 
+              className="bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 h-full rounded-full"
+              initial={false}
+              animate={{ width: `${Math.min(100, Math.round((tasbihCount / tasbihMax) * 100))}%` }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            />
+          </div>
+
+          <div className="flex items-center justify-between relative z-10 gap-2.5">
+            <motion.button 
+              whileTap={{ scale: 0.92, rotate: [-1, 1, 0] }}
+              transition={{ type: "spring", stiffness: 450, damping: 20 }}
               onClick={handleTasbihClick}
-              className="flex-1 bg-stone-50 hover:bg-stone-100 rounded-2xl py-8 px-4 border border-stone-200 text-center mr-4 active:scale-95 transition-all group"
+              className="flex-1 bg-gradient-to-b from-slate-50 to-emerald-50/70 hover:to-emerald-100/70 rounded-2xl py-6 px-3 border border-slate-200/90 text-center cursor-pointer shadow-inner select-none relative overflow-hidden group"
             >
-              <span className="text-4xl font-extrabold text-brand-700 transition-colors">{tasbihCount} <span className="text-xl text-stone-400 font-medium">/ {tasbihMax}</span></span>
-            </button>
-            <button onClick={() => setTasbihCount(0)} className="p-4 bg-white rounded-2xl hover:bg-stone-50 border border-stone-200 transition-colors shadow-sm text-stone-600">
-              <RotateCcw className="w-6 h-6" />
-            </button>
+              <span className="text-3xl sm:text-4xl font-extrabold text-emerald-800 transition-colors block">
+                <motion.span 
+                  key={tasbihCount}
+                  initial={{ scale: 1.3, y: -3 }}
+                  animate={{ scale: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                  className="inline-block"
+                >
+                  {tasbihCount}
+                </motion.span>
+                <span className="text-sm text-slate-400 font-semibold ml-1">/ {tasbihMax}</span>
+              </span>
+              <span className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wider block mt-1">
+                {tasbihCount === tasbihMax ? '✨ Selesai 1 Putaran' : `${Math.round((tasbihCount / tasbihMax) * 100)}%`}
+              </span>
+            </motion.button>
+            <motion.button 
+              whileTap={{ scale: 0.85, rotate: -45 }}
+              onClick={() => setTasbihCount(0)} 
+              title="Reset" 
+              className="p-3.5 bg-white rounded-2xl hover:bg-slate-50 border border-slate-200 transition-colors shadow-xs text-slate-500 hover:text-slate-800 cursor-pointer"
+            >
+              <RotateCcw className="w-5 h-5" />
+            </motion.button>
           </div>
         </div>
 
         {/* Urutan Controls */}
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-stone-200 shadow-sm flex flex-col justify-center">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
-            <span className="font-bold text-sm text-stone-800 tracking-wide uppercase mb-4 sm:mb-0">Tahapan Ziarah</span>
-            <div className="flex items-center space-x-4 bg-stone-50 p-1.5 rounded-xl border border-stone-200">
-              <label className="flex items-center cursor-pointer text-xs font-bold text-stone-600 px-3 py-1.5 rounded-lg hover:bg-white hover:shadow-sm transition-all">
-                <input type="checkbox" checked={showLatin} onChange={() => setShowLatin(!showLatin)} className="mr-2 accent-brand-600 rounded" />
+        <div className="lg:col-span-3 bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs flex flex-col justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+            <div>
+              <span className="font-bold text-xs text-slate-900 tracking-wider uppercase block">Tahapan Ziarah</span>
+              <span className="text-[11px] text-slate-400">Pilih urutan bacaan yang ingin dilafalkan</span>
+            </div>
+            <div className="flex items-center space-x-3 bg-slate-50 p-1 rounded-xl border border-slate-200/80">
+              <label className="flex items-center cursor-pointer text-xs font-semibold text-slate-700 px-2.5 py-1 rounded-lg hover:bg-white transition-all select-none">
+                <input type="checkbox" checked={showLatin} onChange={() => setShowLatin(!showLatin)} className="mr-1.5 accent-emerald-600 rounded cursor-pointer" />
                 Latin
               </label>
-              <label className="flex items-center cursor-pointer text-xs font-bold text-stone-600 px-3 py-1.5 rounded-lg hover:bg-white hover:shadow-sm transition-all">
-                <input type="checkbox" checked={showTerjemahan} onChange={() => setShowTerjemahan(!showTerjemahan)} className="mr-2 accent-brand-600 rounded" />
+              <label className="flex items-center cursor-pointer text-xs font-semibold text-slate-700 px-2.5 py-1 rounded-lg hover:bg-white transition-all select-none">
+                <input type="checkbox" checked={showTerjemahan} onChange={() => setShowTerjemahan(!showTerjemahan)} className="mr-1.5 accent-emerald-600 rounded cursor-pointer" />
                 Terjemahan
               </label>
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {steps.slice(1).map((step) => (
-              <button
+              <motion.button
                 key={step.id}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveStep(step.id)}
-                className={`py-3 px-3 text-xs md:text-sm font-bold rounded-xl transition-all flex-1 text-center min-w-[90px] border ${
+                className={`py-2.5 px-3 text-xs font-bold rounded-xl transition-all text-center border cursor-pointer ${
                   activeStep === step.id 
-                    ? 'bg-brand-600 text-white border-brand-600 shadow-sm' 
-                    : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                    ? 'bg-emerald-800 text-white border-emerald-800 shadow-xs shadow-emerald-950/10' 
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-emerald-50/50 hover:text-emerald-800'
                 }`}
               >
                 {step.stepLabel}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -126,16 +173,17 @@ export const BacaanZiarah: React.FC = () => {
       {/* Content Area */}
       <motion.div 
         key={activeStep}
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-3xl shadow-sm p-6 md:p-12 border border-stone-200"
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="bg-white rounded-3xl shadow-sm p-6 sm:p-10 border border-slate-200/90"
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-stone-100 pb-8 mb-10">
-          <div className="flex items-center space-x-4 mb-4 md:mb-0">
-            <span className="px-3 py-1.5 text-[10px] font-bold rounded-lg uppercase tracking-widest bg-brand-50 text-brand-700 border border-brand-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-5 mb-8 gap-3">
+          <div className="flex items-center space-x-3">
+            <span className="px-3 py-1 text-[11px] font-bold rounded-xl uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200/70">
               {steps.find(s => s.id === activeStep)?.label}
             </span>
-            <h2 className="text-xl md:text-2xl font-serif font-bold tracking-tight text-brand-900">
+            <h2 className="text-lg sm:text-xl font-serif font-black tracking-tight text-slate-900">
               {activeStep === 'SALAM' && 'Salam Masuk Area Makam Waliyullah'}
               {activeStep === 'TAWASSUL' && 'Bacaan Tawassul Khusus Ziarah'}
               {activeStep === 'YASIN' && 'Surah Yasin (Singkat)'}
@@ -143,9 +191,25 @@ export const BacaanZiarah: React.FC = () => {
               {activeStep === 'DOA' && 'Doa Penutup Ziarah Kubur'}
             </h2>
           </div>
-          <button className="p-3 rounded-xl transition-colors bg-stone-50 text-stone-500 hover:text-stone-900 hover:bg-stone-100 border border-stone-200">
-            <Copy className="w-5 h-5" />
-          </button>
+          <motion.button 
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.94 }}
+            onClick={() => {
+              navigator.clipboard.writeText(`Bacaan ${activeStep} - Ziarah Nusantara`);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            className="flex items-center text-xs font-bold px-3.5 py-2 rounded-xl transition-all bg-slate-50 text-slate-600 hover:text-emerald-800 hover:bg-emerald-50 border border-slate-200/80 shadow-2xs self-start sm:self-auto cursor-pointer"
+          >
+            {copied ? (
+              <span className="text-emerald-700 font-bold">✓ Tersalin!</span>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
+                <span>Salin Teks</span>
+              </>
+            )}
+          </motion.button>
         </div>
 
         <div className="space-y-12">
