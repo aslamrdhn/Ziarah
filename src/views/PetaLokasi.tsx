@@ -30,7 +30,7 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
     } else {
       setSelectedSite(null);
     }
-  }, [id, setSelectedSite]);
+  }, [id, ziarahSites, setSelectedSite]);
 
   const handleClose = () => {
     setSelectedSite(null);
@@ -46,34 +46,43 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
     }
   };
 
-  if (isLoading) return <div className="p-8 text-center text-stone-500 flex-1 flex items-center justify-center">Memuat Peta Interaktif...</div>;
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center text-stone-500 flex-1 flex items-center justify-center font-serif italic">
+        Memuat Peta Interaktif Nusantara...
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 w-full relative z-20 flex flex-col">
-      <InteractiveMap 
-        sites={ziarahSites}
-        selectedSite={selectedSite}
-        onSelectSite={handleMapSelect}
-      />
-      {selectedSite && (
-        <>
-          {/* Mobile Overlay */}
-          <div 
-            className="md:hidden absolute inset-0 z-[999] bg-black/20 backdrop-blur-sm pointer-events-auto"
-            onClick={handleClose}
-          />
-          <div className="absolute top-0 right-0 bottom-0 md:top-4 md:right-4 md:bottom-4 z-[1000] w-full md:max-w-sm pointer-events-none">
-            <SiteDetails 
-              site={selectedSite} 
-              onClose={handleClose} 
-              isSaved={savedSiteIds.includes(selectedSite.id)}
-              onToggleSave={() => handleToggleSave(selectedSite.id)}
-              savedDoas={savedDoas}
-              onToggleSaveDoa={onToggleSaveDoa}
-              onContribute={onOpenKontribusi}
+    <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-2 pb-2 flex-1 flex flex-col">
+      <div className="relative w-full h-[calc(100dvh-9.5rem)] md:h-[calc(100dvh-7rem)] min-h-[460px] flex flex-col">
+        <InteractiveMap 
+          sites={ziarahSites}
+          selectedSite={selectedSite}
+          onSelectSite={handleMapSelect}
+        />
+        {selectedSite && (
+          <>
+            {/* Mobile & Tablet Backdrop Overlay */}
+            <div 
+              className="md:hidden absolute inset-0 z-[999] bg-stone-950/35 backdrop-blur-xs pointer-events-auto rounded-2xl"
+              onClick={handleClose}
             />
-          </div>
-        </>
-      )}
+            <div className="absolute inset-0 md:top-3 md:right-3 md:bottom-3 md:left-auto z-[1000] w-full md:w-[390px] lg:w-[420px] pointer-events-none">
+              <SiteDetails 
+                site={selectedSite} 
+                onClose={handleClose} 
+                isSaved={savedSiteIds.includes(selectedSite.id)}
+                onToggleSave={() => handleToggleSave(selectedSite.id)}
+                savedDoas={savedDoas}
+                onToggleSaveDoa={onToggleSaveDoa}
+                onContribute={onOpenKontribusi}
+              />
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

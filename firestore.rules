@@ -5,6 +5,18 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
     function isSignedIn() {
       return request.auth != null;
     }
@@ -14,19 +26,74 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && request.auth.token.email == 'aslamramadhan08@gmail.com';
+      return isSignedIn() && (
+        (request.auth.token.email == 'aslamramadhan08@gmail.com' && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidContribution(data) {
+      return data.type in ['baru', 'karomah', 'doa'] &&
+        data.contributorName is string && data.contributorName.size() >= 1 && data.contributorName.size() <= 100 &&
+        data.targetName is string && data.targetName.size() >= 1 && data.targetName.size() <= 150 &&
+        data.content is string && data.content.size() >= 3 && data.content.size() <= 3000 &&
+        data.status in ['pending', 'approved', 'rejected'];
+    }
+
+    function isValidStory(data) {
+      return data.siteId is string && data.siteId.size() >= 1 && data.siteId.size() <= 128 &&
+        data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 100 &&
+        data.text is string && data.text.size() >= 3 && data.text.size() <= 1000;
+    }
+
+    function isValidDonation(data) {
+      return data.programId is string && data.programId.size() >= 1 && data.programId.size() <= 100 &&
+        data.amount is number && data.amount >= 5000 && data.amount <= 1000000000 &&
+        data.donorName is string && data.donorName.size() >= 1 && data.donorName.size() <= 100 &&
+        data.status in ['confirmed', 'verified'];
+    }
+
+    match /admins/{adminUid} {
+      allow get: if isSignedIn() && request.auth.uid == adminUid;
+      allow write: if isAdmin();
     }
 
     match /users/{userId} {
-      allow read: if isOwner(userId);
-      // Simplify write rules to prevent race conditions during React hydration, 
-      // while still strictly enforcing ownership and UID matching.
-      allow write: if isOwner(userId) && request.resource.data.userId == userId;
+      allow get: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidId(userId) && incoming().userId == userId;
+      allow delete: if isOwner(userId) && isValidId(userId);
     }
 
     match /sites/{siteId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin() && isValidId(siteId);
+    }
+
+    match /contributions/{contributionId} {
+      allow get: if isValidId(contributionId) && (isAdmin() || existing().status == 'approved' || (isSignedIn() && existing().authorUid == request.auth.uid));
+      allow list: if isAdmin() || existing().status == 'approved' || (isSignedIn() && existing().authorUid == request.auth.uid);
+      allow create: if isValidId(contributionId) && isValidContribution(incoming()) && incoming().status == 'pending';
+      allow update: if isAdmin() && isValidId(contributionId) && isValidContribution(incoming());
+      allow delete: if isAdmin() && isValidId(contributionId);
+    }
+
+    match /stories/{storyId} {
+      allow read: if true;
+      allow create: if isValidId(storyId) && isValidStory(incoming());
+      allow update: if isAdmin() && isValidId(storyId) && isValidStory(incoming());
+      allow delete: if isValidId(storyId) && (isAdmin() || (isSignedIn() && existing().authorUid == request.auth.uid));
+    }
+
+    match /donations/{donationId} {
+      allow read: if true;
+      allow create: if isValidId(donationId) && isValidDonation(incoming());
+      allow update: if isAdmin() && isValidId(donationId) && isValidDonation(incoming());
+      allow delete: if isAdmin() && isValidId(donationId);
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin() && isValidId(settingId);
     }
   }
 }

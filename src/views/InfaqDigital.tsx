@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   HeartHandshake, 
@@ -8,11 +8,42 @@ import {
   Users, 
   BookOpen, 
   CheckCircle2, 
-  Copy
+  Copy,
+  Loader2,
+  Sparkles,
+  MessageSquareHeart
 } from 'lucide-react';
-import { ziarahSites } from '../data/sites';
+import { useSites } from '../context/SiteContext';
+import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { collection, doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+
+interface DonationRecord {
+  id: string;
+  donorName: string;
+  amount: number;
+  programTitle: string;
+  siteName: string;
+  doaHajat: string;
+  dateLabel: string;
+  createdAtMs: number;
+}
+
+interface InfaqSettings {
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  qrisImageUrl: string;
+}
+
+const DEFAULT_INFAQ_SETTINGS: InfaqSettings = {
+  bankName: 'Bank Syariah Indonesia (BSI)',
+  accountNumber: '7123-4567-8901',
+  accountHolder: 'Yayasan Makam Aulia Nusantara',
+  qrisImageUrl: '',
+};
 
 export const InfaqDigital: React.FC = () => {
+  const { sites } = useSites();
   const [selectedProgram, setSelectedProgram] = useState<string>('pemeliharaan');
   const [selectedSiteId, setSelectedSiteId] = useState<string>('all');
   const [nominal, setNominal] = useState<number>(50000);
@@ -20,8 +51,71 @@ export const InfaqDigital: React.FC = () => {
   const [donorName, setDonorName] = useState<string>('');
   const [isAnonim, setIsAnonim] = useState<boolean>(false);
   const [doaHajat, setDoaHajat] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSuccessModal, setIsSuccessModal] = useState<boolean>(false);
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
+
+  const [infaqSettings, setInfaqSettings] = useState<InfaqSettings>(DEFAULT_INFAQ_SETTINGS);
+  const [recentDonations, setRecentDonations] = useState<DonationRecord[]>([]);
+
+  // Pre-fill donor name if logged in
+  useEffect(() => {
+    if (auth.currentUser?.displayName && !donorName) {
+      setDonorName(auth.currentUser.displayName);
+    }
+  }, []);
+
+  // Load configurable Bank & QRIS settings from Firestore (/settings/infaq)
+  useEffect(() => {
+    const unsubSettings = onSnapshot(
+      doc(db, 'settings', 'infaq'),
+      (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setInfaqSettings({
+            bankName: data.bankName || DEFAULT_INFAQ_SETTINGS.bankName,
+            accountNumber: data.accountNumber || DEFAULT_INFAQ_SETTINGS.accountNumber,
+            accountHolder: data.accountHolder || DEFAULT_INFAQ_SETTINGS.accountHolder,
+            qrisImageUrl: data.qrisImageUrl || '',
+          });
+        }
+      },
+      () => {}
+    );
+
+    const unsubDonations = onSnapshot(
+      collection(db, 'donations'),
+      (snapshot) => {
+        const list: DonationRecord[] = snapshot.docs.map(docSnap => {
+          const d = docSnap.data();
+          const ts = d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now();
+          const dateLabel = d.createdAt?.toDate
+            ? d.createdAt.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+            : 'Baru saja';
+          return {
+            id: docSnap.id,
+            donorName: d.donorName || 'Hamba Allah',
+            amount: Number(d.amount) || 0,
+            programTitle: d.programTitle || 'Infaq Pemeliharaan',
+            siteName: d.siteName || 'Kompleks Makam Nusantara',
+            doaHajat: d.doaHajat || '',
+            dateLabel,
+            createdAtMs: ts,
+          };
+        });
+        list.sort((a, b) => b.createdAtMs - a.createdAtMs);
+        setRecentDonations(list);
+      },
+      (err) => {
+        handleFirestoreError(err, OperationType.GET, 'donations');
+      }
+    );
+
+    return () => {
+      unsubSettings();
+      unsubDonations();
+    };
+  }, []);
 
   const programs = [
     {
@@ -61,7 +155,7 @@ export const InfaqDigital: React.FC = () => {
   const quickNominals = [10000, 25000, 50000, 100000, 250000, 500000];
 
   const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text.replace(/[^0-9]/g, '') || text);
     setCopiedAccount(id);
     setTimeout(() => setCopiedAccount(null), 2500);
   };
@@ -69,13 +163,47 @@ export const InfaqDigital: React.FC = () => {
   const currentAmount = customNominal ? parseInt(customNominal, 10) || 0 : nominal;
   const targetSiteName = selectedSiteId === 'all' 
     ? 'Kompleks Makam Seluruh Nusantara' 
-    : ziarahSites.find(s => s.id === selectedSiteId)?.name || 'Makam Aulia';
+    : sites.find(s => s.id === selectedSiteId)?.name || 'Makam Aulia';
+  const activeProgramTitle = programs.find(p => p.id === selectedProgram)?.title || 'Pemeliharaan Makam';
 
-  const handleBayar = (e: React.FormEvent) => {
+  const handleBayar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentAmount < 5000) return;
-    setIsSuccessModal(true);
+    if (currentAmount < 5000 || isSubmitting) return;
+    setIsSubmitting(true);
+
+    const finalDonorName = (isAnonim ? 'Hamba Allah' : (donorName.trim() || 'Hamba Allah')).slice(0, 100);
+    const donationRef = doc(collection(db, 'donations'));
+
+    try {
+      await setDoc(donationRef, {
+        id: donationRef.id,
+        programId: selectedProgram,
+        programTitle: activeProgramTitle,
+        siteId: selectedSiteId,
+        siteName: targetSiteName,
+        amount: currentAmount,
+        donorName: finalDonorName,
+        doaHajat: doaHajat.trim().slice(0, 1000),
+        authorUid: auth.currentUser?.uid || 'guest',
+        status: 'confirmed',
+        createdAt: serverTimestamp(),
+      });
+      setIsSuccessModal(true);
+      setDoaHajat('');
+    } catch (error) {
+      console.error('Error recording infaq in Firestore:', error);
+      try {
+        handleFirestoreError(error, OperationType.CREATE, `donations/${donationRef.id}`);
+      } catch {
+        // Structured log emitted
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const totalTerkumpul = recentDonations.reduce((acc, item) => acc + item.amount, 0);
+  const qrImageSrc = infaqSettings.qrisImageUrl || `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=INFAQ-ZIARAH-${selectedProgram}-${currentAmount}`;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24">
@@ -86,17 +214,26 @@ export const InfaqDigital: React.FC = () => {
         className="bg-gradient-to-r from-emerald-950 via-brand-900 to-teal-950 rounded-3xl p-6 sm:p-10 text-white shadow-lg mb-8 relative overflow-hidden border border-emerald-900/40"
       >
         <div className="absolute right-0 top-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-gold-300 text-xs font-semibold mb-4">
-            <HeartHandshake className="w-4 h-4" />
-            <span>Sedekah Jariyah & Amal Kebaikan</span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-gold-300 text-xs font-semibold mb-4">
+              <HeartHandshake className="w-4 h-4" />
+              <span>Sedekah Jariyah & Amal Kebaikan</span>
+            </div>
+            <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
+              Infaq Digital Makam Aulia Nusantara
+            </h1>
+            <p className="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed">
+              Salurkan sedekah dan infaq secara langsung, transparan, dan tercatat untuk pemeliharaan makam, fasilitas jamaah, dan santunan sosial di berbagai situs ziarah Nusantara.
+            </p>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
-            Infaq Digital Makam Aulia Nusantara
-          </h1>
-          <p className="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed">
-            Salurkan sedekah dan infaq secara langsung, transparan, dan terpercaya untuk pemeliharaan makam, fasilitas jamaah, dan santunan sosial di berbagai situs ziarah Nusantara.
-          </p>
+          {recentDonations.length > 0 && (
+            <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 shrink-0 min-w-[200px]">
+              <p className="text-[11px] uppercase tracking-wider text-emerald-300 font-bold mb-1">Total Infaq Tercatat</p>
+              <p className="text-xl sm:text-2xl font-serif font-black text-white">Rp {totalTerkumpul.toLocaleString('id-ID')}</p>
+              <p className="text-[11px] text-slate-300 mt-0.5">Dari {recentDonations.length} konfirmasi pewakif</p>
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -157,7 +294,7 @@ export const InfaqDigital: React.FC = () => {
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 cursor-pointer shadow-inner"
             >
               <option value="all">🌐 Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)</option>
-              {ziarahSites.map((site) => (
+              {sites.map((site) => (
                 <option key={site.id} value={site.id}>
                   📍 {site.name} ({site.location.city}, {site.location.province})
                 </option>
@@ -223,6 +360,7 @@ export const InfaqDigital: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">Nama Pewakif / Peziarah</label>
               <input
                 type="text"
+                maxLength={100}
                 disabled={isAnonim}
                 placeholder={isAnonim ? "Hamba Allah" : "Masukkan nama lengkap atau keluarga"}
                 value={donorName}
@@ -241,9 +379,10 @@ export const InfaqDigital: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Doa atau Hajat Khusus</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Doa atau Hajat Khusus (Akan tampil di daftar doa jamaah)</label>
               <textarea
                 rows={2}
+                maxLength={1000}
                 placeholder="Tuliskan doa/hajat untuk Anda, keluarga, atau almarhum/almarhumah..."
                 value={doaHajat}
                 onChange={(e) => setDoaHajat(e.target.value)}
@@ -266,7 +405,7 @@ export const InfaqDigital: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-slate-500">Program</span>
                 <span className="font-semibold text-slate-900 text-right">
-                  {programs.find(p => p.id === selectedProgram)?.title}
+                  {activeProgramTitle}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -300,9 +439,9 @@ export const InfaqDigital: React.FC = () => {
               {/* QR Code Container with Animated Scanner Beam */}
               <div className="bg-white p-3.5 rounded-2xl border border-slate-200 inline-block shadow-2xs mb-2 relative overflow-hidden group">
                 <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=INFAQ-ZIARAH-${selectedProgram}-${currentAmount}`} 
+                  src={qrImageSrc} 
                   alt="QRIS Infaq Ziarah"
-                  className="w-36 h-36 mx-auto rounded-lg"
+                  className="w-36 h-36 mx-auto rounded-lg object-contain"
                 />
                 {/* Laser scan line animation */}
                 <motion.div 
@@ -322,11 +461,20 @@ export const InfaqDigital: React.FC = () => {
               whileTap={{ scale: 0.96 }}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
               onClick={handleBayar}
-              disabled={currentAmount < 5000}
+              disabled={currentAmount < 5000 || isSubmitting}
               className="w-full py-3.5 bg-gradient-to-r from-emerald-700 via-emerald-800 to-brand-900 hover:from-emerald-800 hover:to-brand-950 text-white font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-md shadow-emerald-950/10 border border-emerald-600/30 flex items-center justify-center disabled:opacity-50 cursor-pointer"
             >
-              <CheckCircle2 className="w-4 h-4 mr-2" />
-              Konfirmasi & Selesaikan Infaq
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Menyimpan ke Database...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  Konfirmasi & Selesaikan Infaq
+                </>
+              )}
             </motion.button>
 
             {/* Rekening Alternatif */}
@@ -334,12 +482,12 @@ export const InfaqDigital: React.FC = () => {
               <p className="font-semibold text-slate-700 mb-2">Transfer Manual Bank Syariah:</p>
               <div className="p-3 bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-200">
                 <div>
-                  <p className="font-bold text-slate-900">Bank Syariah Indonesia (BSI)</p>
-                  <p className="text-slate-500 text-[11px]">7123-4567-8901 (a.n. Yayasan Makam Aulia)</p>
+                  <p className="font-bold text-slate-900">{infaqSettings.bankName}</p>
+                  <p className="text-slate-500 text-[11px]">{infaqSettings.accountNumber} (a.n. {infaqSettings.accountHolder})</p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleCopy('712345678901', 'bsi')}
+                  onClick={() => handleCopy(infaqSettings.accountNumber, 'bsi')}
                   className="p-1.5 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 text-slate-600 transition-colors cursor-pointer"
                   title="Salin Rekening"
                 >
@@ -353,6 +501,72 @@ export const InfaqDigital: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Live Doa & Riwayat Infaq Pewakif (Real-time Firestore) */}
+      <div className="mt-12">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200">
+              <MessageSquareHeart className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-serif font-black text-slate-900">Doa & Riwayat Pewakif Terbaru</h2>
+              <p className="text-xs text-slate-500">Tersimpan secara real-time di database. Mari aminkan doa saudara kita.</p>
+            </div>
+          </div>
+          <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            {recentDonations.length} Infaq Tercatat
+          </span>
+        </div>
+
+        {recentDonations.length === 0 ? (
+          <div className="bg-white rounded-3xl p-8 text-center border border-slate-200/90 shadow-xs">
+            <Sparkles className="w-8 h-8 text-emerald-600 mx-auto mb-2 opacity-60" />
+            <p className="text-xs sm:text-sm font-semibold text-slate-700">Belum ada catatan infaq hari ini</p>
+            <p className="text-xs text-slate-500 mt-1">Jadilah pewakif pertama yang mencatatkan doa dan amal jariyah.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentDonations.slice(0, 9).map((item) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-7 h-7 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs flex items-center justify-center">
+                        {item.donorName.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-900">{item.donorName}</p>
+                        <p className="text-[10px] text-slate-400">{item.dateLabel}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60">
+                      Rp {item.amount.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                  <p className="text-[11px] font-semibold text-emerald-700 mb-1.5 truncate">
+                    📍 {item.siteName}
+                  </p>
+                  {item.doaHajat && (
+                    <p className="text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100 leading-relaxed">
+                      "{item.doaHajat}"
+                    </p>
+                  )}
+                </div>
+                <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                  <span className="truncate max-w-[180px]">{item.programTitle}</span>
+                  <span className="text-emerald-700 font-bold">آمين يا رب العالمين</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Modal Konfirmasi Sukses */}
@@ -370,7 +584,7 @@ export const InfaqDigital: React.FC = () => {
               </div>
 
               <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 inline-block mb-2">
-                Infaq Berhasil Dicatat
+                Tersimpan di Database
               </span>
               <h3 className="text-xl font-serif font-black text-slate-900 mb-2">
                 Alhamdulillah, Jazakumullahu Khairan
@@ -383,7 +597,7 @@ export const InfaqDigital: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Program</span>
-                  <span className="font-semibold text-slate-900">{programs.find(p => p.id === selectedProgram)?.title}</span>
+                  <span className="font-semibold text-slate-900">{activeProgramTitle}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Pewakif</span>
@@ -406,7 +620,7 @@ export const InfaqDigital: React.FC = () => {
 
               <button
                 onClick={() => setIsSuccessModal(false)}
-                className="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs sm:text-sm transition-colors shadow-sm"
+                className="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs sm:text-sm transition-colors shadow-sm cursor-pointer"
               >
                 Tutup & Kembali
               </button>

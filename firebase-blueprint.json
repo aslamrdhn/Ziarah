@@ -2,7 +2,7 @@
   "entities": {
     "UserProfile": {
       "title": "User Profile",
-      "description": "Stores user preferences like saved sites and doas.",
+      "description": "Stores user preferences like saved sites, doas, rubrik articles, and unlocked stories.",
       "type": "object",
       "properties": {
         "userId": {
@@ -11,13 +11,19 @@
         },
         "savedSiteIds": {
           "type": "array",
-          "description": "List of saved site IDs",
-          "items": { "type": "string" }
+          "description": "List of saved site IDs"
         },
         "savedDoas": {
           "type": "array",
-          "description": "List of saved doa IDs",
-          "items": { "type": "string" }
+          "description": "List of saved doa IDs"
+        },
+        "savedRubrik": {
+          "type": "array",
+          "description": "List of saved rubrik article IDs"
+        },
+        "unlockedUntold": {
+          "type": "array",
+          "description": "List of unlocked untold story site IDs"
         },
         "createdAt": {
           "type": "string",
@@ -39,32 +45,107 @@
         "name": { "type": "string" },
         "title": { "type": "string" },
         "description": { "type": "string" },
-        "location": {
-          "type": "object",
-          "properties": {
-            "lat": { "type": "number" },
-            "lng": { "type": "number" },
-            "address": { "type": "string" },
-            "city": { "type": "string" },
-            "province": { "type": "string" }
-          }
-        },
+        "location": { "type": "object" },
         "category": { "type": "string" },
         "imageUrl": { "type": "string" },
         "history": { "type": "string" },
-        "facilities": { "type": "array", "items": { "type": "string" } },
-        "openingHours": { "type": "string" }
+        "facilities": { "type": "array" },
+        "openingHours": { "type": "string" },
+        "karomah": { "type": "array" },
+        "doaKhusus": { "type": "array" },
+        "untoldStory": { "type": "string" }
+      },
+      "required": ["id", "name", "title", "category"]
+    },
+    "Contribution": {
+      "title": "Community Contribution",
+      "description": "User-submitted makam, rubrik/karomah, or doa khusus awaiting curator verification.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["baru", "karomah", "doa"] },
+        "contributorName": { "type": "string", "maxLength": 100 },
+        "contributorContact": { "type": "string", "maxLength": 120 },
+        "targetName": { "type": "string", "maxLength": 150 },
+        "category": { "type": "string", "maxLength": 80 },
+        "city": { "type": "string", "maxLength": 100 },
+        "province": { "type": "string", "maxLength": 100 },
+        "mapsUrl": { "type": "string", "maxLength": 500 },
+        "content": { "type": "string", "maxLength": 3000 },
+        "translation": { "type": "string", "maxLength": 1500 },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "authorUid": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["type", "contributorName", "targetName", "content", "status"]
+    },
+    "VisitorStory": {
+      "title": "Visitor Story",
+      "description": "Pilgrim testimonial and spiritual experience at a specific Ziarah site.",
+      "type": "object",
+      "properties": {
+        "siteId": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "authorUid": { "type": "string", "maxLength": 128 },
+        "text": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["siteId", "authorName", "text"]
+    },
+    "InfaqDonation": {
+      "title": "Infaq Donation",
+      "description": "Recorded infaq pledge and prayer (doa hajat) from pilgrims.",
+      "type": "object",
+      "properties": {
+        "programId": { "type": "string", "maxLength": 100 },
+        "programTitle": { "type": "string", "maxLength": 150 },
+        "siteId": { "type": "string", "maxLength": 128 },
+        "siteName": { "type": "string", "maxLength": 150 },
+        "amount": { "type": "number" },
+        "donorName": { "type": "string", "maxLength": 100 },
+        "doaHajat": { "type": "string", "maxLength": 1000 },
+        "authorUid": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["confirmed", "verified"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["programId", "amount", "donorName", "status"]
+    },
+    "AppSettings": {
+      "title": "Application Settings",
+      "description": "Configurable settings for self-hosting such as bank account details and official QRIS image.",
+      "type": "object",
+      "properties": {
+        "bankName": { "type": "string", "maxLength": 100 },
+        "accountNumber": { "type": "string", "maxLength": 60 },
+        "accountHolder": { "type": "string", "maxLength": 120 },
+        "qrisImageUrl": { "type": "string", "maxLength": 1000 },
+        "updatedAt": { "type": "string" }
       }
     }
   },
   "firestore": {
     "users/{userId}": {
       "schema": { "$ref": "#/entities/UserProfile" },
-      "description": "User profiles and preferences."
+      "description": "User profiles and synced preferences."
     },
     "sites/{siteId}": {
       "schema": { "$ref": "#/entities/ZiarahSite" },
       "description": "Public Ziarah sites directory."
+    },
+    "contributions/{contributionId}": {
+      "schema": { "$ref": "#/entities/Contribution" },
+      "description": "Community contributions queue for curator review."
+    },
+    "stories/{storyId}": {
+      "schema": { "$ref": "#/entities/VisitorStory" },
+      "description": "Public visitor stories and testimonials per site."
+    },
+    "donations/{donationId}": {
+      "schema": { "$ref": "#/entities/InfaqDonation" },
+      "description": "Public infaq logs and donor prayers."
+    },
+    "settings/{settingId}": {
+      "schema": { "$ref": "#/entities/AppSettings" },
+      "description": "Global configuration settings managed by Admin."
     }
   }
 }

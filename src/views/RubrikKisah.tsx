@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ScrollText, 
@@ -9,10 +9,13 @@ import {
   ExternalLink,
   ChevronRight,
   Clock,
-  Compass
+  Compass,
+  PlusCircle
 } from 'lucide-react';
-import { ziarahSites } from '../data/sites';
+import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
+import { db } from '../lib/firebase';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 interface RubrikItem {
   id: string;
@@ -26,31 +29,81 @@ interface RubrikItem {
   readTime: string;
 }
 
-export const RubrikKisah: React.FC = () => {
+interface RubrikKisahProps {
+  savedArticles?: string[];
+  onToggleSaveArticle?: (id: string) => void;
+  onOpenKontribusi?: () => void;
+}
+
+export const RubrikKisah: React.FC<RubrikKisahProps> = ({
+  savedArticles: propSavedArticles,
+  onToggleSaveArticle,
+  onOpenKontribusi
+}) => {
+  const { sites } = useSites();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
-  const [savedArticles, setSavedArticles] = useState<string[]>(() => {
+  const [localSaved, setLocalSaved] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('savedRubrik') || '[]');
     } catch {
       return [];
     }
   });
+  const [approvedCommunityRubrik, setApprovedCommunityRubrik] = useState<RubrikItem[]>([]);
   const [activeStoryModal, setActiveStoryModal] = useState<RubrikItem | null>(null);
 
+  const savedArticles = propSavedArticles ?? localSaved;
+
   const toggleSaveArticle = (id: string) => {
-    setSavedArticles(prev => {
-      const next = prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id];
-      localStorage.setItem('savedRubrik', JSON.stringify(next));
-      return next;
-    });
+    if (onToggleSaveArticle) {
+      onToggleSaveArticle(id);
+    } else {
+      setLocalSaved(prev => {
+        const next = prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id];
+        localStorage.setItem('savedRubrik', JSON.stringify(next));
+        return next;
+      });
+    }
   };
 
-  // Compile articles from sites data and untold stories
-  const articles: RubrikItem[] = useMemo(() => {
-    const list: RubrikItem[] = [];
+  // Load approved community rubrik/karomah contributions from Firestore
+  useEffect(() => {
+    const q = query(collection(db, 'contributions'), where('status', '==', 'approved'));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const items: RubrikItem[] = [];
+        snapshot.docs.forEach(docSnap => {
+          const d = docSnap.data();
+          if (d.type === 'karomah') {
+            items.push({
+              id: `rubrik-contrib-${docSnap.id}`,
+              siteId: d.siteId || 'sunan-kalijaga',
+              siteName: d.targetName || 'Tokoh Aulia Nusantara',
+              location: d.city && d.province ? `${d.city}, ${d.province}` : 'Nusantara',
+              category: 'Hikmah & Karomah',
+              title: `Catatan Kontributor: ${d.targetName}`,
+              content: d.content,
+              source: `Kontribusi Peziarah (${d.contributorName || 'Hamba Allah'}) — Terverifikasi Kurator`,
+              readTime: '3 mnt'
+            });
+          }
+        });
+        setApprovedCommunityRubrik(items);
+      },
+      () => {
+        // Ignore if offline or empty
+      }
+    );
+    return () => unsubscribe();
+  }, []);
 
-    ziarahSites.forEach(site => {
+  // Compile articles from live sites data (Firestore/local) and approved community contributions
+  const articles: RubrikItem[] = useMemo(() => {
+    const list: RubrikItem[] = [...approvedCommunityRubrik];
+
+    sites.forEach(site => {
       if (site.untoldStory) {
         list.push({
           id: `rubrik-${site.id}-untold`,
@@ -108,7 +161,7 @@ export const RubrikKisah: React.FC = () => {
     });
 
     return list;
-  }, []);
+  }, [sites, approvedCommunityRubrik]);
 
   const filteredArticles = useMemo(() => {
     return articles.filter(item => {
@@ -137,17 +190,30 @@ export const RubrikKisah: React.FC = () => {
         className="bg-gradient-to-r from-emerald-950 via-brand-900 to-teal-950 rounded-3xl p-6 sm:p-10 text-white shadow-lg mb-8 relative overflow-hidden border border-emerald-900/40"
       >
         <div className="absolute right-0 top-0 -mr-10 -mt-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-gold-300 text-xs font-semibold mb-4">
-            <ScrollText className="w-4 h-4" />
-            <span>Rubrik Khazanah Sejarah & Manuskrip</span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-gold-300 text-xs font-semibold mb-4">
+              <ScrollText className="w-4 h-4" />
+              <span>Rubrik Khazanah Sejarah & Manuskrip</span>
+            </div>
+            <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
+              Rubrik Ziarah Nusantara
+            </h1>
+            <p className="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed">
+              Menghadirkan naskah manuskrip, kisah tersembunyi (*untold stories*), hikmah karomah, dan khazanah sejarah keilmuan para Aulia dan Ulama Nusantara.
+            </p>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
-            Rubrik Ziarah Nusantara
-          </h1>
-          <p className="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed">
-            Menghadirkan naskah manuskrip, kisah tersembunyi (*untold stories*), hikmah karomah, dan khazanah sejarah keilmuan para Aulia dan Ulama Nusantara.
-          </p>
+          {onOpenKontribusi && (
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={onOpenKontribusi}
+              className="self-start md:self-auto shrink-0 inline-flex items-center px-4 py-2.5 bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/20 text-white text-xs font-bold rounded-2xl transition-all cursor-pointer shadow-xs"
+            >
+              <PlusCircle className="w-4 h-4 mr-2 text-emerald-300" />
+              Kirim Naskah / Karomah
+            </motion.button>
+          )}
         </div>
       </motion.div>
 
@@ -226,7 +292,7 @@ export const RubrikKisah: React.FC = () => {
                             ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-2xs' 
                             : 'hover:bg-slate-100 text-slate-400 border-transparent'
                         }`}
-                        title={isSaved ? "Hapus dari simpanan" : "Simpan rubrik"}
+                        title={isSaved ? "Hapus dari simpanan" : "Simpan rubrik (Sinkron Akun)"}
                       >
                         {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
                       </motion.button>
@@ -295,7 +361,7 @@ export const RubrikKisah: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setActiveStoryModal(null)}
-                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-full transition-colors shrink-0"
+                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-full transition-colors shrink-0 cursor-pointer"
                 >
                   ✕
                 </button>
@@ -329,7 +395,7 @@ export const RubrikKisah: React.FC = () => {
                 </Link>
                 <button
                   onClick={() => setActiveStoryModal(null)}
-                  className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors"
+                  className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
                 >
                   Tutup
                 </button>

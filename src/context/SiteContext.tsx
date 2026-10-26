@@ -6,35 +6,45 @@ import { collection, onSnapshot } from 'firebase/firestore';
 interface SiteContextType {
   sites: ZiarahSite[];
   isLoading: boolean;
+  isSeededInCloud: boolean;
+  cloudSiteCount: number;
 }
 
-const SiteContext = createContext<SiteContextType>({ sites: [], isLoading: true });
+const SiteContext = createContext<SiteContextType>({
+  sites: localSites,
+  isLoading: false,
+  isSeededInCloud: false,
+  cloudSiteCount: 0,
+});
 
 export const useSites = () => useContext(SiteContext);
 
 export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [sites, setSites] = useState<ZiarahSite[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [sites, setSites] = useState<ZiarahSite[]>(localSites);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSeededInCloud, setIsSeededInCloud] = useState(false);
+  const [cloudSiteCount, setCloudSiteCount] = useState(0);
 
   useEffect(() => {
-    // Listen to firestore for real-time updates or just fetch once.
-    // Given the dataset, we can fetch once or use onSnapshot for real-time.
     const unsubscribe = onSnapshot(
       collection(db, 'sites'),
       (snapshot) => {
         if (!snapshot.empty) {
           const fetchedSites = snapshot.docs.map(doc => doc.data() as ZiarahSite);
           setSites(fetchedSites);
+          setIsSeededInCloud(true);
+          setCloudSiteCount(fetchedSites.length);
         } else {
-          // Fallback to local if empty, or just stay empty so user can seed it
-          setSites([]); 
+          setSites(localSites);
+          setIsSeededInCloud(false);
+          setCloudSiteCount(0);
         }
         setIsLoading(false);
       },
-      (error) => {
-        console.error("Error fetching sites from Firestore:", error);
-        // Fallback to local if error
+      () => {
+        // Gracefully use local fallback when offline or unreachable
         setSites(localSites);
+        setIsSeededInCloud(false);
         setIsLoading(false);
       }
     );
@@ -43,7 +53,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <SiteContext.Provider value={{ sites, isLoading }}>
+    <SiteContext.Provider value={{ sites, isLoading, isSeededInCloud, cloudSiteCount }}>
       {children}
     </SiteContext.Provider>
   );

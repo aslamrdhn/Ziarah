@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ZiarahSite } from '../data/sites';
-import { X, MapPin, Navigation, Info, Clock, CheckCircle2, Heart, Sparkles, BookOpen, Bookmark, BookmarkCheck, QrCode, MessageSquare, Send, Unlock, ScrollText } from 'lucide-react';
+import { X, MapPin, Navigation, Info, Clock, CheckCircle2, Heart, Sparkles, BookOpen, Bookmark, BookmarkCheck, QrCode, MessageSquare, Send, Unlock, ScrollText, Trash2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransactionModal } from './TransactionModal';
+import { auth, db, handleFirestoreError, OperationType, isUserAdmin } from '../lib/firebase';
+import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 
 interface SiteDetailsProps {
   site: ZiarahSite | null;
@@ -14,31 +16,126 @@ interface SiteDetailsProps {
   onContribute?: () => void;
 }
 
+interface StoryItem {
+  id: string;
+  name: string;
+  text: string;
+  date: string;
+  authorUid?: string;
+  createdAtMs?: number;
+  isDefault?: boolean;
+}
+
+const DEFAULT_STORIES: StoryItem[] = [
+  { id: 'default-1', name: 'Hamba Allah', text: `Tempatnya sangat sejuk dan nyaman untuk beri'tikaf dan berdzikir. Fasilitas juga sangat memadai. Masya Allah.`, date: 'Riwayat Peziarah', isDefault: true },
+  { id: 'default-2', name: 'Ahmad S.', text: `Alhamdulillah dimudahkan sampai ke makam beliau. Terasa ketenangan batin yang luar biasa saat bertawasul di sini.`, date: 'Riwayat Peziarah', isDefault: true }
+];
+
 export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClose, isSaved, onToggleSave, savedDoas = [], onToggleSaveDoa, onContribute }) => {
   const [activeTab, setActiveTab] = useState<'info' | 'karomah' | 'kisah' | 'untold' | 'doa'>('info');
+  const [authorName, setAuthorName] = useState('');
   const [newStory, setNewStory] = useState('');
-  const [stories, setStories] = useState<{id: number; name: string; text: string; date: string}[]>([]);
+  const [isSendingStory, setIsSendingStory] = useState(false);
+  const [cloudStories, setCloudStories] = useState<StoryItem[]>([]);
   const [transactionType, setTransactionType] = useState<'infaq' | 'untold' | null>(null);
-  const [unlockedUntold, setUnlockedUntold] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem('unlockedUntold') || '[]'); } catch { return []; } });
-  useEffect(() => { localStorage.setItem('unlockedUntold', JSON.stringify(unlockedUntold)); }, [unlockedUntold]);
+  const [unlockedUntold, setUnlockedUntold] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('unlockedUntold') || '[]');
+    } catch {
+      return [];
+    }
+  });
 
-  // Reset tab when site changes
+  useEffect(() => {
+    localStorage.setItem('unlockedUntold', JSON.stringify(unlockedUntold));
+  }, [unlockedUntold]);
+
+  // Pre-fill author name if logged in
+  useEffect(() => {
+    if (auth.currentUser?.displayName && !authorName) {
+      setAuthorName(auth.currentUser.displayName);
+    }
+  }, [site?.id]);
+
+  // Reset tab & subscribe to real-time stories from Firestore when site changes
   useEffect(() => {
     setActiveTab('info');
     setNewStory('');
-    setStories([
-      { id: 1, name: 'Hamba Allah', text: `Tempatnya sangat sejuk dan nyaman untuk beri'tikaf dan berdzikir. Fasilitas juga sangat memadai. Masya Allah.`, date: '2 hari yang lalu' },
-      { id: 2, name: 'Ahmad S.', text: `Alhamdulillah dimudahkan sampai ke makam beliau. Terasa ketenangan batin yang luar biasa saat bertawasul di sini.`, date: '1 minggu yang lalu' }
-    ]);
+    if (!site?.id) {
+      setCloudStories([]);
+      return;
+    }
+
+    const q = query(collection(db, 'stories'), where('siteId', '==', site.id));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const fetched: StoryItem[] = snapshot.docs.map(docSnap => {
+          const d = docSnap.data();
+          const ts = d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now();
+          const formattedDate = d.createdAt?.toDate
+            ? d.createdAt.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+            : 'Baru saja';
+          return {
+            id: docSnap.id,
+            name: d.authorName || 'Hamba Allah',
+            text: d.text || '',
+            date: formattedDate,
+            authorUid: d.authorUid,
+            createdAtMs: ts,
+          };
+        });
+        fetched.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+        setCloudStories(fetched);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.GET, 'stories');
+      }
+    );
+
+    return () => unsubscribe();
   }, [site?.id]);
 
-  const handleAddStory = () => {
-    if (newStory.trim()) {
-      setStories(prev => [
-        { id: Date.now(), name: 'Anda', text: newStory, date: 'Baru saja' },
-        ...prev
-      ]);
+  const allStories = [...cloudStories, ...DEFAULT_STORIES];
+
+  const handleAddStory = async () => {
+    if (!site || !newStory.trim() || newStory.trim().length < 3 || isSendingStory) return;
+    setIsSendingStory(true);
+    const storyRef = doc(collection(db, 'stories'));
+    const cleanName = (authorName.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
+    const cleanText = newStory.trim().slice(0, 1000);
+
+    try {
+      await setDoc(storyRef, {
+        siteId: site.id,
+        authorName: cleanName,
+        authorUid: auth.currentUser?.uid || 'guest',
+        text: cleanText,
+        createdAt: serverTimestamp(),
+      });
       setNewStory('');
+    } catch (error) {
+      console.error('Error saving visitor story:', error);
+      try {
+        handleFirestoreError(error, OperationType.CREATE, `stories/${storyRef.id}`);
+      } catch {
+        // Logged structured error
+      }
+    } finally {
+      setIsSendingStory(false);
+    }
+  };
+
+  const handleDeleteStory = async (storyId: string) => {
+    try {
+      await deleteDoc(doc(db, 'stories', storyId));
+    } catch (error) {
+      console.error('Error deleting story:', error);
+      try {
+        handleFirestoreError(error, OperationType.DELETE, `stories/${storyId}`);
+      } catch {
+        // Logged structured error
+      }
     }
   };
 
@@ -47,6 +144,8 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
   const hasKaromah = site.karomah && site.karomah.length > 0;
   const hasDoa = site.doaKhusus && site.doaKhusus.length > 0;
   const hasUntold = !!site.untoldStory;
+  const currentUser = auth.currentUser;
+  const isCurrentUserAdmin = isUserAdmin(currentUser);
 
   return (
     <>
@@ -121,7 +220,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
               onClick={() => setActiveTab('kisah')}
               className={`flex items-center px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${activeTab === 'kisah' ? 'bg-white text-sky-800 shadow-xs border border-slate-200/80' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'}`}
             >
-              <MessageSquare className="w-3.5 h-3.5 mr-1.5 text-sky-500" /> Cerita
+              <MessageSquare className="w-3.5 h-3.5 mr-1.5 text-sky-500" /> Cerita ({allStories.length})
             </motion.button>
             {hasUntold && (
               <motion.button 
@@ -326,56 +425,84 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                     </div>
                     <h3 className="font-serif font-black text-slate-900 text-lg">Kisah Pengunjung</h3>
                   </div>
-                  <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200">{stories.length} Cerita</span>
+                  <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200">{allStories.length} Cerita</span>
                 </div>
 
                 {/* Input Form */}
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col gap-3">
                   <div className="flex items-center justify-between">
-                     <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Tulis Pengalaman Anda</span>
+                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Tulis Pengalaman Anda</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Tersimpan Permanen</span>
                   </div>
+                  <input
+                    type="text"
+                    maxLength={100}
+                    placeholder="Nama Anda (Kosongkan untuk Hamba Allah)"
+                    value={authorName}
+                    onChange={(e) => setAuthorName(e.target.value)}
+                    className="w-full text-xs sm:text-sm px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 placeholder:text-slate-400"
+                  />
                   <textarea
-                    placeholder="Bagikan pengalaman spiritual atau cerita menarik Anda saat berziarah ke sini..."
+                    placeholder="Bagikan pengalaman spiritual, kondisi rute, atau cerita menarik Anda saat berziarah ke sini..."
                     className="w-full text-xs sm:text-sm p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 resize-none transition-all placeholder:text-slate-400"
                     rows={3}
+                    maxLength={1000}
                     value={newStory}
                     onChange={(e) => setNewStory(e.target.value)}
                   />
                   <div className="flex justify-end">
                     <button
                       onClick={handleAddStory}
-                      disabled={!newStory.trim()}
+                      disabled={!newStory.trim() || newStory.trim().length < 3 || isSendingStory}
                       className="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-xs cursor-pointer"
                     >
-                      <Send className="w-3.5 h-3.5 mr-2" />
-                      Kirim Kisah
+                      {isSendingStory ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                          Menyimpan...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5 mr-2" />
+                          Kirim Kisah
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
 
                 {/* Stories List */}
                 <div className="space-y-3 mt-4">
-                  {stories.map(story => (
-                    <div key={story.id} className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs relative">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center">
-                          <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800 font-bold text-xs mr-2.5">
-                            {story.name.charAt(0)}
+                  {allStories.map(story => {
+                    const canDelete = !story.isDefault && (isCurrentUserAdmin || (currentUser && story.authorUid === currentUser.uid));
+                    return (
+                      <div key={story.id} className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs relative">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center">
+                            <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800 font-bold text-xs mr-2.5">
+                              {story.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="font-bold text-slate-900 text-xs sm:text-sm">{story.name}</div>
                           </div>
-                          <div className="font-bold text-slate-900 text-xs sm:text-sm">{story.name}</div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="text-[10px] text-slate-400 font-medium bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">{story.date}</div>
+                            {canDelete && (
+                              <button
+                                onClick={() => handleDeleteStory(story.id)}
+                                title="Hapus cerita"
+                                className="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-[10px] text-slate-400 font-medium bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">{story.date}</div>
+                        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pl-9">
+                          "{story.text}"
+                        </p>
                       </div>
-                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pl-9">
-                        "{story.text}"
-                      </p>
-                    </div>
-                  ))}
-                  {stories.length === 0 && (
-                    <div className="text-center py-8 text-slate-400 text-xs italic">
-                      Belum ada cerita pengunjung. Jadilah yang pertama membagikan pengalaman Anda!
-                    </div>
-                  )}
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
@@ -413,7 +540,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                         onClick={() => setTransactionType('untold')}
                         className="bg-purple-700 hover:bg-purple-800 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center cursor-pointer"
                       >
-                        <Unlock className="w-4 h-4 mr-2" /> Buka Akses Rubrik (Rp 15.000)
+                        <Unlock className="w-4 h-4 mr-2" /> Buka Akses Rubrik (Infaq Rp 15.000)
                       </button>
                     </div>
                     {/* Blurred preview text */}

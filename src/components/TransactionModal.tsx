@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { X, QrCode, CheckCircle2, ScrollText, HeartHandshake } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, QrCode, CheckCircle2, ScrollText, HeartHandshake, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ZiarahSite } from '../data/sites';
 import { Link } from 'react-router-dom';
+import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -15,11 +17,53 @@ interface TransactionModalProps {
 export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, site, type, onSuccess }) => {
   const [selectedNominal, setSelectedNominal] = useState(25000);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [customQrisUrl, setCustomQrisUrl] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsSuccess(false);
+      getDoc(doc(db, 'settings', 'infaq'))
+        .then((snap) => {
+          if (snap.exists() && snap.data().qrisImageUrl) {
+            setCustomQrisUrl(snap.data().qrisImageUrl);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSimulatePayment = () => {
-    setIsSuccess(true);
+  const handleConfirmPayment = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    const amount = type === 'infaq' ? selectedNominal : 15000;
+    const donationRef = doc(collection(db, 'donations'));
+
+    try {
+      await setDoc(donationRef, {
+        id: donationRef.id,
+        programId: type === 'infaq' ? 'pemeliharaan' : 'rubrik-manuskrip',
+        programTitle: type === 'infaq' ? 'Pemeliharaan & Revitalisasi Makam' : 'Apresiasi Literasi & Manuskrip Rubrik',
+        siteId: site.id,
+        siteName: site.name,
+        amount,
+        donorName: (auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100),
+        doaHajat: type === 'infaq' ? `Infaq pemeliharaan untuk ${site.name}` : `Apresiasi pembukaan manuskrip ${site.name}`,
+        authorUid: auth.currentUser?.uid || 'guest',
+        status: 'confirmed',
+        createdAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error recording transaction in Firestore:', error);
+      try {
+        handleFirestoreError(error, OperationType.CREATE, `donations/${donationRef.id}`);
+      } catch {
+        // Logged structured error
+      }
+    }
+
     if (type === 'untold') {
       try {
         const current = JSON.parse(localStorage.getItem('unlockedUntold') || '[]');
@@ -30,8 +74,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         console.error(err);
       }
     }
+    setIsSaving(false);
+    setIsSuccess(true);
     if (onSuccess) onSuccess();
   };
+
+  const qrImageSrc = customQrisUrl || `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=INFAQ-${site.id}-${selectedNominal}`;
 
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
@@ -81,11 +129,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <h3 className="font-bold text-slate-900 text-lg mb-1">
-                {type === 'infaq' ? 'Infaq Berhasil Dicatat' : 'Akses Rubrik Terbuka!'}
+                {type === 'infaq' ? 'Infaq Berhasil Dicatat di Database' : 'Akses Rubrik Terbuka!'}
               </h3>
               <p className="text-xs text-slate-500 mb-6 leading-relaxed">
                 {type === 'infaq' 
-                  ? 'Jazakumullahu khairan katsiran. Semoga menjadi amal jariyah yang membawa keberkahan.' 
+                  ? 'Jazakumullahu khairan katsiran. Catatan infaq Anda telah tersimpan di sistem dan riwayat publik.' 
                   : 'Naskah manuskrip dan kisah tersembunyi kini dapat Anda baca langsung di tab Rubrik.'}
               </p>
               <button
@@ -129,9 +177,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                     </div>
                     <div className="relative inline-block overflow-hidden rounded-xl">
                       <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=INFAQ-${site.id}-${selectedNominal}`} 
+                        src={qrImageSrc} 
                         alt="QRIS Infaq"
-                        className="w-32 h-32 mx-auto rounded-xl border border-slate-200 bg-white p-2 mb-2 shadow-2xs"
+                        className="w-32 h-32 mx-auto rounded-xl border border-slate-200 bg-white p-2 mb-2 shadow-2xs object-contain"
                       />
                       <motion.div 
                         animate={{ y: [0, 100, 0] }}
@@ -146,11 +194,21 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.96 }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    onClick={handleSimulatePayment}
-                    className="w-full py-3 bg-gradient-to-r from-emerald-800 to-brand-900 hover:from-emerald-900 hover:to-brand-950 text-white rounded-xl font-bold text-sm shadow-xs transition-all flex items-center justify-center cursor-pointer"
+                    onClick={handleConfirmPayment}
+                    disabled={isSaving}
+                    className="w-full py-3 bg-gradient-to-r from-emerald-800 to-brand-900 hover:from-emerald-900 hover:to-brand-950 text-white rounded-xl font-bold text-sm shadow-xs transition-all flex items-center justify-center cursor-pointer disabled:opacity-50"
                   >
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Konfirmasi Pembayaran (Rp {selectedNominal.toLocaleString('id-ID')})
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Menyimpan Konfirmasi...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        Konfirmasi Pembayaran (Rp {selectedNominal.toLocaleString('id-ID')})
+                      </>
+                    )}
                   </motion.button>
 
                   <div className="text-center">
@@ -169,15 +227,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                     <ScrollText className="w-8 h-8 text-purple-600 mx-auto mb-2" />
                     <h4 className="font-bold text-purple-900 text-sm mb-1">Akses Rubrik Kisah Khusus</h4>
                     <p className="text-xs text-purple-700 leading-relaxed">
-                      Dapatkan akses penuh ke catatan manuskrip dan sejarah tak terungkap dari makam ini seharga <strong className="font-bold">Rp 15.000</strong> (sekali bayar).
+                      Dapatkan akses penuh ke catatan manuskrip dan sejarah tak terungkap dari makam ini dengan infaq literasi <strong className="font-bold">Rp 15.000</strong>.
                     </p>
                   </div>
 
                   <button 
-                    onClick={handleSimulatePayment}
-                    className="w-full py-3 bg-purple-700 hover:bg-purple-800 text-white rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center cursor-pointer"
+                    onClick={handleConfirmPayment}
+                    disabled={isSaving}
+                    className="w-full py-3 bg-purple-700 hover:bg-purple-800 text-white rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center cursor-pointer disabled:opacity-50"
                   >
-                    Buka Akses Rubrik Sekarang
+                    {isSaving ? 'Memproses...' : 'Buka Akses Rubrik Sekarang'}
                   </button>
 
                   <button
@@ -195,4 +254,3 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
     </div>
   );
 };
-

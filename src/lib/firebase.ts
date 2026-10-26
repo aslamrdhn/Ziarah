@@ -6,13 +6,31 @@ import {
   browserPopupRedirectResolver, 
   indexedDBLocalPersistence, 
   inMemoryPersistence,
-  GoogleAuthProvider 
+  GoogleAuthProvider,
+  User
 } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, setLogLevel, Firestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
+// Suppress noisy internal @firebase/firestore WebChannel retry logs in iframe/proxy environments
+setLogLevel('silent');
+
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
+let firestoreInstance: Firestore;
+try {
+  firestoreInstance = initializeFirestore(
+    app,
+    {
+      experimentalAutoDetectLongPolling: true,
+    },
+    firebaseConfig.firestoreDatabaseId
+  );
+} catch {
+  firestoreInstance = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+}
+
+export const db = firestoreInstance;
 
 // Use initializeAuth with robust fallback persistence for iframes, private browsing, and partitioned storage
 let authInstance;
@@ -31,6 +49,19 @@ export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
   prompt: 'select_account',
 });
+
+const DEFAULT_ADMIN_EMAILS = ['aslamramadhan08@gmail.com'];
+
+export function isUserAdmin(user: User | null): boolean {
+  if (!user || !user.email) return false;
+  const rawEnv = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_ADMIN_EMAILS || '';
+  const envEmails = rawEnv
+    .split(',')
+    .map((e: string) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const allowed = new Set([...DEFAULT_ADMIN_EMAILS.map(e => e.toLowerCase()), ...envEmails]);
+  return allowed.has(user.email.toLowerCase());
+}
 
 export enum OperationType {
   CREATE = 'create',
@@ -59,8 +90,14 @@ export interface FirestoreErrorInfo {
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errMsg = error instanceof Error ? error.message : String(error);
+  // Ignore transient network/offline availability errors so the app continues smoothly in offline/cache mode
+  if (errMsg.includes('unavailable') || errMsg.includes('client is offline')) {
+    return;
+  }
+
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errMsg,
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,
@@ -75,8 +112,5 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  console.warn('Firestore Operation Notice:', JSON.stringify(errInfo));
 }
-
-

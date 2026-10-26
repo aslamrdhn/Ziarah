@@ -1,9 +1,11 @@
-
 import React, { useState, useMemo } from 'react';
-import { Search, MapPin, Sparkles, X, ScrollText, BookOpen, Compass, ChevronRight, Filter } from 'lucide-react';
+import { Search, MapPin, X, Compass, ChevronRight, Filter, ArrowDown, BookOpen, Map as MapIcon, ScrollText, Film } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ZiarahSite } from '../data/sites';
 import { useSites } from '../context/SiteContext';
+import { InteractiveHeritageCanvas } from '../components/InteractiveHeritageCanvas';
+import { HeroCinemaShowcase } from '../components/HeroCinemaShowcase';
+import { Link } from 'react-router-dom';
 
 interface DaftarMakamProps {
   onSelectSite: (site: ZiarahSite) => void;
@@ -15,6 +17,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [selectedProvince, setSelectedProvince] = useState('Semua Provinsi');
+  const [activeReportTab, setActiveReportTab] = useState<'walisongo' | 'ulama' | 'habaib' | 'auliya'>('walisongo');
+  const [heroMediaMode, setHeroMediaMode] = useState<'video' | 'constellation'>('video');
 
   const categories = useMemo(() => ['Semua', 'Walisongo', 'Ulama Nusantara', 'Habaib', 'Auliya Nusantara'], []);
   const provinces = useMemo(() => ['Semua Provinsi', ...Array.from(new Set(ziarahSites.map((s: ZiarahSite) => s.location.province)))].sort(), [ziarahSites]);
@@ -32,272 +36,579 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
     });
   }, [searchQuery, selectedCategory, selectedProvince, ziarahSites]);
 
+  const reportHighlights = useMemo(() => ({
+    walisongo: {
+      index: '01 / JALUR PANTURA & TANAH JAWA',
+      title: 'Dewan Walisongo: Akulturasi Budaya & Poros Maritim',
+      era: 'Abad ke-15 hingga ke-16 Masehi',
+      categoryFilter: 'Walisongo',
+      count: ziarahSites.filter(s => s.category === 'Walisongo').length,
+      summary: 'Sembilan tokoh utama dakwah Islam di Pulau Jawa yang menyelaraskan nilai tauhid dengan kesenian, arsitektur, tata kota, dan perdagangan pesisir dari Surabaya, Gresik, Tuban, Lamongan, Kudus, Demak, hingga Cirebon.',
+      keyFigures: ['Sunan Ampel', 'Sunan Giri', 'Sunan Bonang', 'Sunan Kalijaga', 'Sunan Gunung Jati']
+    },
+    ulama: {
+      index: '02 / JARINGAN PESANTREN & KEILMUAN',
+      title: 'Ulama Nusantara: Sanad Keilmuan Haramain & Pesantren',
+      era: 'Abad ke-17 hingga ke-20 Masehi',
+      categoryFilter: 'Ulama Nusantara',
+      count: ziarahSites.filter(s => s.category === 'Ulama Nusantara').length,
+      summary: 'Para mahaguru dan pendiri pesantren yang menyambungkan sanad keilmuan Nusantara dengan Makkah dan Madinah, melahirkan karya kitab kuning, jaringan pendidikan umat, serta perjuangan kemerdekaan.',
+      keyFigures: ['Syaikhona Kholil Bangkalan', 'KH. Hasyim Asy\'ari', 'Abah Guru Sekumpul', 'Syekh Kuala Aceh']
+    },
+    habaib: {
+      index: '03 / DZURRIYAH & DAKWAH KOTA PESISIR',
+      title: 'Para Habaib: Majelis Dzikir, Ratib, & Pelabuhan Nusantara',
+      era: 'Abad ke-18 hingga ke-20 Masehi',
+      categoryFilter: 'Habaib',
+      count: ziarahSites.filter(s => s.category === 'Habaib').length,
+      summary: 'Jejak keturunan Rasulullah SAW yang berdakwah dengan akhlak mulia, menghidupkan majelis maulid, menyusun wirid seperti Ratib Al-Haddad dan Al-Attas, serta mengayomi masyarakat di pelabuhan besar Nusantara.',
+      keyFigures: ['Habib Husein Luar Batang', 'Habib Ahmad bin Abdullah Al-Attas', 'Habib Abu Bakar Gresik', 'Habib Kuncung']
+    },
+    auliya: {
+      index: '04 / KESULTANAN & PENJAGA TRADISI',
+      title: 'Auliya Nusantara: Raja Sufi, Leluhur, & Penjaga Wilayah',
+      era: 'Abad ke-14 hingga ke-19 Masehi',
+      categoryFilter: 'Auliya Nusantara',
+      count: ziarahSites.filter(s => s.category === 'Auliya Nusantara').length,
+      summary: 'Para tokoh pelopor, sultan sufi, dan waliyullah di berbagai kepulauan yang membuka pemukiman, menanamkan adab ketuhanan, serta menjadi rujukan spiritual lintas generasi.',
+      keyFigures: ['Sultan Maulana Hasanuddin', 'Sunan Bayat Klaten', 'Mbah Priok', 'Wali Pitu Bali']
+    }
+  }), [ziarahSites]);
+
+  const activeHighlight = reportHighlights[activeReportTab];
+
+  const scrollToDirectory = () => {
+    const el = document.getElementById('katalog-direktori');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-12 text-slate-400">
-        <div className="w-10 h-10 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mb-4"></div>
-        <p className="text-sm font-medium">Memuat direktori makam...</p>
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-stone-500">
+        <div className="w-9 h-9 border-2 border-stone-300 border-t-stone-800 rounded-full animate-spin mb-4"></div>
+        <p className="text-sm font-serif italic">Memuat katalog arsip makam Nusantara...</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 relative z-10 pt-4 pb-12">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-8 relative z-10 pb-20">
       
-      {/* Modern Hero Section */}
-      <div className="py-8 sm:py-12 md:py-14">
-        <div className="max-w-3xl">
-          <motion.div 
-            animate={{ y: [0, -3, 0] }}
-            transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
-            className="inline-flex items-center space-x-2 bg-emerald-50 border border-emerald-200/80 px-3.5 py-1.5 rounded-full text-emerald-800 text-xs font-semibold mb-4 shadow-xs"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
-            <span>Platform Ziarah Generasi Muda Nusantara</span>
-          </motion.div>
-          
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-black tracking-tight mb-4 text-slate-900 leading-[1.15]">
-            Jelajahi Jejak Spiritual <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-800 via-emerald-600 to-teal-700 italic">
-              Para Waliyullah.
-            </span>
-          </h1>
-          
-          <p className="text-slate-600 text-base sm:text-lg max-w-2xl leading-relaxed">
-            Basis data komprehensif makam wali, ulama pejuang, dan habaib di Indonesia dengan navigasi presisi, panduan adab, doa khusus, serta rubrik kisah bersejarah.
-          </p>
+      {/* =====================================================================
+          SECTION 1: INTERACTIVE ANNUAL REPORT STYLE HERO COVER
+          ===================================================================== */}
+      <section className="pt-6 sm:pt-10 pb-12 sm:pb-16 border-b border-stone-300/80">
+        {/* Top Archival Volume Strip (Unboxed Editorial Metadata) */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-8 sm:mb-10 border-b border-stone-200/90 text-xs uppercase tracking-widest text-stone-500 font-medium">
+          <div className="flex items-center gap-2">
+            <span>EDISI KHAZANAH NUSANTARA</span>
+            <span aria-hidden="true">·</span>
+            <span>ARSIP DIGITAL TERKURASI</span>
+          </div>
+          <div className="flex items-center gap-2 font-mono tabular-nums text-[11px]">
+            <span>{ziarahSites.length} SITUS TERVERIFIKASI</span>
+            <span aria-hidden="true">·</span>
+            <span>{provinces.length - 1} PROVINSI</span>
+          </div>
         </div>
 
-        {/* Quick Highlights / Bento Metric Badges with Spring Motion */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-8">
-          {[
-            { title: "9 Wali Songo", subtitle: "Jawa & Jalur Pantura" },
-            { title: `${ziarahSites.length} Titik Lokasi`, subtitle: "Koordinat & Rute Akurat" },
-            { title: "Doa & Rubrik", subtitle: "Wirid & Manuskrip Lisan" },
-            { title: "Infaq Digital", subtitle: "100% Sedekah Langsung" },
-          ].map((item, idx) => (
-            <motion.div 
-              key={idx}
-              whileHover={{ y: -5, scale: 1.025 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              className="bg-white/80 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs hover:border-emerald-300 hover:shadow-md transition-shadow cursor-default"
-            >
-              <div className="text-emerald-700 font-bold text-xl sm:text-2xl font-serif">{item.title}</div>
-              <div className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">{item.subtitle}</div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+        {/* 2-Column Editorial Cover Split */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
+          {/* Left Column: Monumental Serif Typography & Narrative Lead */}
+          <div className="lg:col-span-6 flex flex-col justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-emerald-900 font-semibold mb-4">
+                Atlas Sejarah, Sanad & Panduan Ziarah
+              </p>
 
-      {/* Main Filter & Search Hub */}
-      <div className="bg-white rounded-3xl p-5 sm:p-7 shadow-xl shadow-slate-900/5 border border-slate-200/90 mb-8">
-        
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 mb-6">
-          {/* Search Box */}
-          <div className="relative flex-1">
-            <div className="absolute inset-y-0 left-0 pl-3.5 sm:pl-4 flex items-center pointer-events-none">
-              <Search className="h-4 sm:h-5 w-4 sm:w-5 text-slate-400" />
+              <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-serif font-normal tracking-tight text-stone-900 leading-[1.08] mb-6" style={{ textWrap: 'balance' }}>
+                Jejak Spiritual <br />
+                <span className="italic font-normal text-[#8C6D2E]">
+                  Para Waliyullah Nusantara.
+                </span>
+              </h1>
+
+              <div className="w-16 h-px bg-stone-400 my-6" />
+
+              <p className="text-stone-600 text-base sm:text-lg leading-relaxed max-w-xl font-normal">
+                Dokumentasi interaktif makam Walisongo, ulama pesantren, dan habaib di kepulauan Indonesia—dilengkapi pemetaan rute presisi, naskah riwayat karomah, serta tuntunan adab dan wirid ziarah.
+              </p>
             </div>
-            <input
-              type="text"
-              className="block w-full pl-10 sm:pl-11 pr-10 py-3 sm:py-3.5 bg-slate-50/90 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-slate-900 text-sm sm:text-base placeholder-slate-400 transition-all shadow-inner"
-              placeholder="Cari makam, ulama, atau kota (cth: Sunan Kalijaga, Kudus, Ampel)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+
+            {/* Primary Actions & Chapter Jumpers */}
+            <div className="pt-8 mt-8 border-t border-stone-200/90 flex flex-wrap items-center gap-3">
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={scrollToDirectory}
+                className="px-5 py-3 bg-stone-900 hover:bg-emerald-950 text-[#F9F8F4] text-xs sm:text-sm font-semibold rounded-lg inline-flex items-center gap-2.5 transition-colors cursor-pointer whitespace-nowrap shrink-0"
               >
-                <X className="w-4 h-4" />
-              </button>
+                <span>Jelajahi Direktori Makam</span>
+                <ArrowDown className="w-4 h-4" />
+              </motion.button>
+
+              <Link
+                to="/peta"
+                className="px-4 py-3 bg-[#F2EFE9] hover:bg-stone-200/80 text-stone-800 border border-stone-300/90 text-xs sm:text-sm font-semibold rounded-lg inline-flex items-center gap-2 transition-colors whitespace-nowrap shrink-0"
+              >
+                <MapIcon className="w-4 h-4 text-emerald-800" />
+                <span>Buka Peta Rute</span>
+              </Link>
+
+              <Link
+                to="/panduan"
+                className="px-4 py-3 text-stone-600 hover:text-stone-950 text-xs sm:text-sm font-medium inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0"
+              >
+                <BookOpen className="w-4 h-4 text-stone-500" />
+                <span>Tuntunan Tahlil & Adab</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Right Column: Moving Documentary Video Reel & Interactive Constellation Switcher */}
+          <div className="lg:col-span-6 flex flex-col justify-center">
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-[11px] uppercase tracking-widest text-stone-500 font-medium">
+                VISUALISASI UTAMA
+              </span>
+              <div className="flex items-center gap-1 p-1 bg-[#EAE6DC] rounded-lg border border-stone-300/80">
+                <button
+                  type="button"
+                  onClick={() => setHeroMediaMode('video')}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                    heroMediaMode === 'video'
+                      ? 'bg-stone-900 text-[#F9F8F4] shadow-2xs'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  <Film className="w-3.5 h-3.5" />
+                  <span>Video Dokumenter</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHeroMediaMode('constellation')}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                    heroMediaMode === 'constellation'
+                      ? 'bg-stone-900 text-[#F9F8F4] shadow-2xs'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  <Compass className="w-3.5 h-3.5" />
+                  <span>Peta Konstelasi</span>
+                </button>
+              </div>
+            </div>
+
+            {heroMediaMode === 'video' ? (
+              <>
+                <HeroCinemaShowcase
+                  onSelectCategory={(cat) => {
+                    setSelectedCategory(cat);
+                    scrollToDirectory();
+                  }}
+                />
+                <p className="text-xs font-serif italic text-stone-500 mt-2.5">
+                  Fig. 1 — Tayangan bergerak 4 babak khazanah Walisongo, Ulama Pesantren, Habaib, dan Auliya Nusantara. Klik babak atau tombol kontrol untuk menjelajah.
+                </p>
+              </>
+            ) : (
+              <>
+                <InteractiveHeritageCanvas
+                  activeCategory={selectedCategory}
+                  onSelectCategory={(cat) => {
+                    setSelectedCategory(cat);
+                    scrollToDirectory();
+                  }}
+                />
+                <p className="text-xs font-serif italic text-stone-500 mt-2.5">
+                  Fig. 2 — Visualisasi interaktif simpul jaringan dakwah dari Aceh, Banten, Pantura Jawa, Kalimantan, hingga Sulawesi.
+                </p>
+              </>
             )}
           </div>
+        </div>
 
-          {/* Province Selector */}
-          <div className="flex items-center space-x-2 shrink-0">
-            <div className="relative w-full md:w-auto">
-              <select 
-                className="w-full md:w-auto appearance-none bg-slate-50/90 border border-slate-200 text-slate-700 py-3 sm:py-3.5 pl-4 pr-10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-sm font-semibold cursor-pointer shadow-inner"
-                value={selectedProvince}
-                onChange={(e) => setSelectedProvince(e.target.value)}
+        {/* Full-Width 4-Column Archival Metric Strip Below Hero Split */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-10 mt-10 border-t border-stone-300/80">
+          {[
+            {
+              index: '01',
+              metric: '9 Tokoh',
+              label: 'Dewan Walisongo',
+              detail: 'Jalur Pesisir Jawa Timur, Jawa Tengah & Cirebon'
+            },
+            {
+              index: '02',
+              metric: `${ziarahSites.length} Situs`,
+              label: 'Koordinat Terverifikasi',
+              detail: 'Terhubung dengan navigasi jalan raya OSRM'
+            },
+            {
+              index: '03',
+              metric: 'Sanad & Doa',
+              label: 'Tuntunan Bacaan Ziarah',
+              detail: 'Yasin, Tahlil, Tawasul & Wirid Khusus Makam'
+            },
+            {
+              index: '04',
+              metric: 'Manuskrip',
+              label: 'Rubrik Sejarah Lisan',
+              detail: 'Catatan keteladanan, adab & riwayat karomah'
+            }
+          ].map((stat) => (
+            <div key={stat.index} className="flex flex-col justify-between">
+              <div className="text-[11px] font-mono text-stone-400 tabular-nums mb-1">
+                {stat.index} / ARSIP
+              </div>
+              <div className="text-2xl sm:text-3xl font-serif font-medium text-stone-900 tabular-nums tracking-tight">
+                {stat.metric}
+              </div>
+              <div className="text-xs font-semibold text-stone-800 mt-1">
+                {stat.label}
+              </div>
+              <div className="text-xs text-stone-500 mt-0.5 leading-relaxed">
+                {stat.detail}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* =====================================================================
+          SECTION 2: EDITORIAL CHAPTER & INTERACTIVE JALUR DAKWAH EXPLORER
+          ===================================================================== */}
+      <section className="py-12 sm:py-16 border-b border-stone-300/80">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+          {/* Left Column: Editorial Essay with Drop Cap */}
+          <div className="lg:col-span-5 space-y-5">
+            <div className="text-xs uppercase tracking-widest text-stone-500 font-medium">
+              01 / PENGANTAR KURATORIAL
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-serif font-normal text-stone-900 leading-snug" style={{ textWrap: 'balance' }}>
+              Merawat Ingatan Kolektif dan Sanad Keilmuan Nusantara
+            </h2>
+            <div className="w-12 h-px bg-stone-400" />
+            <p className="text-stone-700 text-sm sm:text-base leading-relaxed first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-stone-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none">
+              Tradisi ziarah makam para waliyullah di kepulauan Nusantara bukan sekadar perjalanan geografis, melainkan ruang perjumpaan batin dengan jejak keteladanan, keikhlasan dakwah, dan mata rantai keilmuan yang membentuk peradaban Islam yang teduh dan berbudaya.
+            </p>
+            <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
+              Melalui arsip digital ini, setiap titik makam dipetakan beserta konteks sejarahnya, fasilitas jamaah di lapangan, serta khazanah doa yang diwariskan secara turun-temurun oleh para masyayikh.
+            </p>
+            <div className="pt-2">
+              <Link
+                to="/rubrik"
+                className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-emerald-900 hover:text-stone-900 transition-colors"
               >
-                {provinces.map(prov => (
-                  <option key={prov} value={prov}>{prov}</option>
-                ))}
-              </select>
-              <Filter className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ScrollText className="w-4 h-4" />
+                <span>Baca Rubrik Khazanah & Manuskrip Lengkap</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
             </div>
           </div>
-        </div>
 
-        {/* Interactive Category Segmented Tabs */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-1">
-          {categories.map((category) => {
-            const isSelected = selectedCategory === category;
-            const count = category === 'Semua' 
-              ? ziarahSites.length 
-              : ziarahSites.filter(s => s.category === category).length;
-            
-            return (
-              <motion.button
-                key={category}
-                layout
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.94 }}
-                transition={{ type: "spring", stiffness: 450, damping: 25 }}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 flex items-center space-x-1.5 border cursor-pointer ${
-                  isSelected
-                    ? 'bg-emerald-800 text-white border-emerald-800 shadow-sm shadow-emerald-950/10'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-emerald-50/60 hover:text-emerald-900 hover:border-emerald-200'
-                }`}
+          {/* Right Column: Interactive Report Breakdown Card */}
+          <div className="lg:col-span-7 bg-[#F3F0E8] rounded-2xl border border-stone-300/80 p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 mb-6 border-b border-stone-300/80">
+              <div>
+                <p className="text-[11px] uppercase tracking-widest text-stone-500 font-medium">
+                  KLASIFIKASI PERIODE & JARINGAN
+                </p>
+                <h3 className="text-lg font-serif font-medium text-stone-900 mt-0.5">
+                  Empat Pilar Khazanah Makam Nusantara
+                </h3>
+              </div>
+
+              {/* Interactive Segmented Selector */}
+              <div className="flex items-center gap-1 p-1 bg-[#E6E2D8] rounded-lg overflow-x-auto scrollbar-hide">
+                {[
+                  { id: 'walisongo', label: 'Walisongo' },
+                  { id: 'ulama', label: 'Ulama' },
+                  { id: 'habaib', label: 'Habaib' },
+                  { id: 'auliya', label: 'Auliya' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveReportTab(tab.id as any)}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                      activeReportTab === tab.id
+                        ? 'bg-[#FBF9F5] text-stone-900 shadow-2xs'
+                        : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeReportTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.18 }}
+                className="space-y-5"
               >
-                <span>{category}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-600'
-                }`}>
-                  {count}
-                </span>
-              </motion.button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Results Header */}
-      <div className="flex items-center justify-between mb-5 px-1">
-        <p className="text-xs sm:text-sm text-slate-500 font-medium">
-          Menampilkan <span className="font-bold text-slate-900">{filteredSites.length}</span> lokasi ziarah
-          {selectedCategory !== 'Semua' && <span> di kategori <strong className="text-emerald-800">{selectedCategory}</strong></span>}
-          {selectedProvince !== 'Semua Provinsi' && <span> di <strong className="text-emerald-800">{selectedProvince}</strong></span>}
-        </p>
-
-        {(searchQuery || selectedCategory !== 'Semua' || selectedProvince !== 'Semua Provinsi') && (
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedCategory('Semua');
-              setSelectedProvince('Semua Provinsi');
-            }}
-            className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer"
-          >
-            Reset Filter
-          </motion.button>
-        )}
-      </div>
-
-      {/* Grid of Modern Site Cards with Rich Motion */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-        <AnimatePresence mode="popLayout">
-          {filteredSites.map((site) => (
-            <motion.div 
-              key={site.id} 
-              layout
-              initial={{ opacity: 0, scale: 0.94, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: -10 }}
-              whileHover={{ y: -7, scale: 1.01 }}
-              whileTap={{ scale: 0.985 }}
-              transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="group cursor-pointer bg-white rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:border-emerald-300 flex flex-col h-full overflow-hidden"
-              onClick={() => onSelectSite(site)}
-            >
-              {/* Card Image Header */}
-              <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100">
-                <img 
-                  src={site.imageUrl} 
-                  alt={site.title}
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
-                
-                {/* Category Micro Badge */}
-                <div className="absolute top-3 left-3">
-                  <span className="text-[11px] font-bold text-slate-800 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-xl shadow-xs border border-white/40">
-                    {site.category}
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="text-xs font-mono uppercase tracking-wider text-emerald-900">
+                    {activeHighlight.index}
+                  </span>
+                  <span className="text-xs text-stone-500 font-serif italic">
+                    Rentang Utama: {activeHighlight.era}
                   </span>
                 </div>
 
-                {/* Title & Town overlay */}
-                <div className="absolute bottom-3 left-3 right-3 text-white">
-                  <p className="text-[11px] text-emerald-300 font-medium flex items-center mb-0.5">
-                    <MapPin className="w-3 h-3 mr-1 shrink-0" />
-                    {site.location.city}, {site.location.province}
-                  </p>
-                  <h3 className="text-lg font-serif font-bold text-white leading-snug line-clamp-1 drop-shadow-xs">
-                    {site.title}
-                  </h3>
-                </div>
-              </div>
-
-              {/* Card Body */}
-              <div className="p-5 flex flex-col flex-1">
-                <h4 className="text-sm font-semibold text-slate-800 mb-2 line-clamp-1 group-hover:text-emerald-700 transition-colors">
-                  {site.name}
+                <h4 className="text-xl sm:text-2xl font-serif font-medium text-stone-900">
+                  {activeHighlight.title}
                 </h4>
 
-                <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-4 flex-1">
-                  {site.description}
+                <p className="text-sm text-stone-600 leading-relaxed">
+                  {activeHighlight.summary}
                 </p>
 
-                {/* Feature Tags (Rubrik, Doa, Karomah) */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100 mb-4">
-                  {site.untoldStory && (
-                    <span className="inline-flex items-center text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200/60">
-                      <ScrollText className="w-2.5 h-2.5 mr-1" /> Rubrik
-                    </span>
-                  )}
-                  {site.doaKhusus && site.doaKhusus.length > 0 && (
-                    <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200/60">
-                      <BookOpen className="w-2.5 h-2.5 mr-1" /> Doa Khusus
-                    </span>
-                  )}
-                  {site.karomah && site.karomah.length > 0 && (
-                    <span className="inline-flex items-center text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200/60">
-                      <Sparkles className="w-2.5 h-2.5 mr-1" /> Karomah
-                    </span>
-                  )}
-                </div>
+                <div className="pt-4 border-t border-stone-300/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-widest text-stone-500 mb-1">
+                      Tokoh Rujukan Utama
+                    </div>
+                    <div className="text-xs text-stone-800 font-medium">
+                      {activeHighlight.keyFigures.join(' · ')}
+                    </div>
+                  </div>
 
-                {/* Card Action Link */}
-                <div className="flex items-center justify-between text-xs font-bold text-emerald-700 group-hover:text-emerald-800 transition-colors">
-                  <span>Buka Detail & Rute Peta</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory(activeHighlight.categoryFilter);
+                      scrollToDirectory();
+                    }}
+                    className="px-4 py-2 bg-stone-900 hover:bg-emerald-900 text-[#F9F8F4] text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shrink-0 self-start sm:self-auto"
+                  >
+                    <span>Tampilkan {activeHighlight.count} Situs</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </section>
 
-        {filteredSites.length === 0 && (
-          <div className="col-span-full bg-white rounded-3xl p-12 text-center border border-slate-200/90 shadow-sm my-4">
-            <div className="inline-flex p-4 bg-emerald-50 text-emerald-700 rounded-2xl mb-3">
-              <Compass className="w-8 h-8" />
+      {/* =====================================================================
+          SECTION 3: MUSEUM-GRADE ARCHIVAL DIRECTORY & FILTER HUB
+          ===================================================================== */}
+      <section id="katalog-direktori" className="pt-12 sm:pt-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div>
+            <div className="text-xs uppercase tracking-widest text-stone-500 font-medium mb-2">
+              02 / KATALOG INDEKS LOKASI
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-1">Makam Tidak Ditemukan</h3>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto mb-5">
-              Coba gunakan kata kunci lain, atau sesuaikan filter kategori dan provinsi yang dipilih.
-            </p>
-            <button
+            <h2 className="text-2xl sm:text-4xl font-serif font-normal text-stone-900 tracking-tight">
+              Direktori Makam & Situs Ziarah
+            </h2>
+          </div>
+          <p className="text-xs sm:text-sm text-stone-500 font-serif italic">
+            Klik pada kartu arsip untuk membuka peta navigasi, biografi, karomah, dan doa khusus.
+          </p>
+        </div>
+
+        {/* Search & Filter Controls Bar */}
+        <div className="bg-[#FBF9F5] rounded-2xl p-5 sm:p-6 border border-stone-300/90 mb-8">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 mb-5">
+            {/* Search Box */}
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-stone-400" />
+              </div>
+              <input
+                type="text"
+                className="block w-full pl-10 pr-10 py-3 bg-[#F3F0E8] border border-stone-300/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-800/20 focus:border-emerald-800 text-stone-900 text-sm placeholder-stone-400 transition-all"
+                placeholder="Cari nama wali, makam, atau kota (cth: Sunan Kalijaga, Kudus, Ampel, Martapura)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-stone-700 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Province Selector */}
+            <div className="flex items-center shrink-0">
+              <div className="relative w-full md:w-auto">
+                <select 
+                  className="w-full md:w-auto appearance-none bg-[#F3F0E8] border border-stone-300/80 text-stone-800 py-3 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-800/20 focus:border-emerald-800 text-sm font-medium cursor-pointer"
+                  value={selectedProvince}
+                  onChange={(e) => setSelectedProvince(e.target.value)}
+                >
+                  {provinces.map(prov => (
+                    <option key={prov} value={prov}>{prov}</option>
+                  ))}
+                </select>
+                <Filter className="w-4 h-4 text-stone-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Category Segmented Buttons */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pt-1">
+            {categories.map((category) => {
+              const isSelected = selectedCategory === category;
+              const count = category === 'Semua' 
+                ? ziarahSites.length 
+                : ziarahSites.filter(s => s.category === category).length;
+              
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                    isSelected
+                      ? 'bg-stone-900 text-[#F9F8F4]'
+                      : 'bg-[#F3F0E8] text-stone-600 hover:bg-stone-200/80 hover:text-stone-900'
+                  }`}
+                >
+                  <span>{category}</span>
+                  <span className={`font-mono tabular-nums text-[11px] ${
+                    isSelected ? 'text-stone-300' : 'text-stone-400'
+                  }`}>
+                    ({count})
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Results Counter */}
+        <div className="flex items-center justify-between mb-6 px-1 text-xs text-stone-500">
+          <p>
+            Menampilkan <strong className="font-mono tabular-nums text-stone-900">{filteredSites.length}</strong> situs ziarah
+            {selectedCategory !== 'Semua' && <span> · Kategori <strong className="text-stone-900">{selectedCategory}</strong></span>}
+            {selectedProvince !== 'Semua Provinsi' && <span> · Provinsi <strong className="text-stone-900">{selectedProvince}</strong></span>}
+          </p>
+
+          {(searchQuery || selectedCategory !== 'Semua' || selectedProvince !== 'Semua Provinsi') && (
+            <button 
               onClick={() => {
                 setSearchQuery('');
                 setSelectedCategory('Semua');
                 setSelectedProvince('Semua Provinsi');
               }}
-              className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors"
+              className="text-xs font-semibold text-emerald-900 hover:underline cursor-pointer whitespace-nowrap shrink-0"
             >
-              Tampilkan Semua Makam
+              Reset Filter
             </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+
+        {/* Grid of Archival Catalog Cards (Mobile 1-col, Tablet 2-col, Desktop 3-col) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          {filteredSites.map((site, index) => {
+            const catalogNumber = String(index + 1).padStart(2, '0');
+            const metadataParts = [
+              site.category,
+              site.untoldStory ? 'Manuskrip Rubrik' : null,
+              site.doaKhusus && site.doaKhusus.length > 0 ? 'Doa Khusus' : null,
+            ].filter(Boolean);
+
+            return (
+              <article 
+                key={site.id} 
+                className="group cursor-pointer bg-[#FBF9F5] rounded-2xl border border-stone-300/90 hover:border-stone-500 hover:-translate-y-1 flex flex-col h-full overflow-hidden transition-all duration-200"
+                onClick={() => onSelectSite(site)}
+              >
+                {/* Card Image Frame */}
+                <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-stone-200">
+                  <img 
+                    src={site.imageUrl} 
+                    alt={site.title}
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+                  {/* Bottom Image Caption */}
+                  <div className="absolute bottom-3.5 left-4 right-4 text-white">
+                    <div className="flex items-center gap-1.5 text-[11px] text-stone-200 font-medium mb-1">
+                      <MapPin className="w-3 h-3 text-[#dcc298] shrink-0" />
+                      <span className="truncate">{site.location.city}, {site.location.province}</span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-serif font-medium text-white leading-snug line-clamp-1">
+                      {site.title}
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Card Archival Body */}
+                <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between">
+                  <div>
+                    {/* Clean Unboxed Metadata Line (Zero-Pill Discipline) */}
+                    <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-stone-500 font-mono tabular-nums mb-2">
+                      <span>NO. {catalogNumber}</span>
+                      <span aria-hidden="true">·</span>
+                      <span className="font-sans font-semibold text-emerald-900 truncate">
+                        {metadataParts.join(' · ')}
+                      </span>
+                    </div>
+
+                    <h4 className="text-base font-serif font-semibold text-stone-900 mb-2 line-clamp-1 group-hover:text-emerald-900 transition-colors">
+                      {site.name}
+                    </h4>
+
+                    <p className="text-xs sm:text-sm text-stone-600 leading-relaxed line-clamp-2 mb-4">
+                      {site.description}
+                    </p>
+                  </div>
+
+                  {/* Footer Action Row */}
+                  <div className="pt-3.5 border-t border-stone-200/90 flex items-center justify-between text-xs">
+                    <span className="text-stone-500 truncate max-w-[140px] sm:max-w-[160px]">
+                      {site.openingHours}
+                    </span>
+                    <span className="font-semibold text-stone-900 group-hover:text-emerald-900 inline-flex items-center gap-1 transition-colors whitespace-nowrap shrink-0">
+                      <span>Buka Arsip & Rute</span>
+                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+
+          {filteredSites.length === 0 && (
+            <div className="col-span-full bg-[#FBF9F5] rounded-2xl p-8 sm:p-12 text-center border border-stone-300/90 my-4">
+              <div className="inline-flex p-3.5 bg-stone-200/70 text-stone-700 rounded-xl mb-3">
+                <Compass className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-serif font-medium text-stone-900 mb-1">Arsip Makam Tidak Ditemukan</h3>
+              <p className="text-xs sm:text-sm text-stone-500 max-w-sm mx-auto mb-5">
+                Silakan gunakan kata kunci lain, atau sesuaikan filter kategori dan provinsi di atas.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('Semua');
+                  setSelectedProvince('Semua Provinsi');
+                }}
+                className="px-5 py-2.5 bg-stone-900 hover:bg-emerald-900 text-[#F9F8F4] rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Tampilkan Seluruh Arsip
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 });
