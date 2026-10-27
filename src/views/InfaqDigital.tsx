@@ -11,7 +11,8 @@ import {
   Copy,
   Loader2,
   Sparkles,
-  MessageSquareHeart
+  MessageSquareHeart,
+  Database
 } from 'lucide-react';
 import { useSites } from '../context/SiteContext';
 import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
@@ -28,11 +29,64 @@ interface DonationRecord {
   createdAtMs: number;
 }
 
+export interface InfaqProgramItem {
+  id: string;
+  title: string;
+  desc: string;
+  tag: string;
+  iconName: 'Database' | 'Building2' | 'Droplets' | 'Users' | 'BookOpen' | 'HeartHandshake';
+  color: string;
+}
+
+export const DEFAULT_INFAQ_PROGRAMS: InfaqProgramItem[] = [
+  {
+    id: 'riset-web',
+    title: 'Riset Sejarah, Perluasan Database & Operasional Web (Domain/VPS)',
+    desc: 'Prioritas utama untuk riset lapangan & verifikasi sanad, memperbanyak database makam ulama Nusantara di situs ini, serta biaya langganan domain, server VPS, dan pemeliharaan web.',
+    iconName: 'Database',
+    color: 'from-emerald-600 to-brand-900',
+    tag: 'Prioritas Utama'
+  },
+  {
+    id: 'pemeliharaan',
+    title: 'Pemeliharaan & Revitalisasi Makam',
+    desc: 'Perbaikan sarana, atap kubah, penerangan makam, dan pelestarian arsitektur bersejarah.',
+    iconName: 'Building2',
+    color: 'from-emerald-500 to-teal-700',
+    tag: 'Prioritas'
+  },
+  {
+    id: 'kebersihan',
+    title: 'Fasilitas Wudhu & Kebersihan',
+    desc: 'Penyediaan air bersih, pemeliharaan tempat wudhu, karpet sholat, dan sanitasi jamaah.',
+    iconName: 'Droplets',
+    color: 'from-blue-500 to-cyan-700',
+    tag: 'Operasional'
+  },
+  {
+    id: 'dhuafa',
+    title: 'Santunan Musafir & Dhuafa',
+    desc: 'Bantuan makanan berbuka/sahur, santunan yatim dan peziarah dhuafa di sekitar makam.',
+    iconName: 'Users',
+    color: 'from-amber-500 to-orange-700',
+    tag: 'Sosial'
+  },
+  {
+    id: 'kitab',
+    title: 'Wakaf Al-Qur\'an & Kitab Doa',
+    desc: 'Pengadaan mushaf Al-Qur\'an, buku panduan ziarah, dan kitab tahlil untuk para peziarah.',
+    iconName: 'BookOpen',
+    color: 'from-purple-500 to-indigo-700',
+    tag: 'Jariyah'
+  }
+];
+
 interface InfaqSettings {
   bankName: string;
   accountNumber: string;
   accountHolder: string;
   qrisImageUrl: string;
+  programs: InfaqProgramItem[];
 }
 
 const DEFAULT_INFAQ_SETTINGS: InfaqSettings = {
@@ -40,12 +94,22 @@ const DEFAULT_INFAQ_SETTINGS: InfaqSettings = {
   accountNumber: '5470-0856-08',
   accountHolder: 'ARIF NURACHMAN HAKIM',
   qrisImageUrl: '',
+  programs: DEFAULT_INFAQ_PROGRAMS,
+};
+
+const ICON_MAP = {
+  Database,
+  Building2,
+  Droplets,
+  Users,
+  BookOpen,
+  HeartHandshake,
 };
 
 export const InfaqDigital: React.FC = () => {
   const { sites } = useSites();
-  const [selectedProgram, setSelectedProgram] = useState<string>('pemeliharaan');
-  const [selectedSiteId, setSelectedSiteId] = useState<string>('all');
+  const [selectedProgram, setSelectedProgram] = useState<string>('riset-web');
+  const [selectedSiteId, setSelectedSiteId] = useState<string>('web-riset');
   const [nominal, setNominal] = useState<number>(50000);
   const [customNominal, setCustomNominal] = useState<string>('');
   const [donorName, setDonorName] = useState<string>('');
@@ -65,19 +129,28 @@ export const InfaqDigital: React.FC = () => {
     }
   }, []);
 
-  // Load configurable Bank & QRIS settings from Firestore (/settings/infaq)
+  // Load configurable Bank, QRIS & Programs settings from Firestore (/settings/infaq)
   useEffect(() => {
     const unsubSettings = onSnapshot(
       doc(db, 'settings', 'infaq'),
       (snap) => {
         if (snap.exists()) {
           const data = snap.data();
+          const loadedPrograms = Array.isArray(data.programs) && data.programs.length > 0
+            ? data.programs
+            : DEFAULT_INFAQ_PROGRAMS;
           setInfaqSettings({
             bankName: data.bankName || DEFAULT_INFAQ_SETTINGS.bankName,
             accountNumber: data.accountNumber || DEFAULT_INFAQ_SETTINGS.accountNumber,
             accountHolder: data.accountHolder || DEFAULT_INFAQ_SETTINGS.accountHolder,
             qrisImageUrl: data.qrisImageUrl || '',
+            programs: loadedPrograms,
           });
+          setSelectedProgram((prev) =>
+            loadedPrograms.some((p: InfaqProgramItem) => p.id === prev)
+              ? prev
+              : loadedPrograms[0].id
+          );
         }
       },
       () => {}
@@ -117,40 +190,7 @@ export const InfaqDigital: React.FC = () => {
     };
   }, []);
 
-  const programs = [
-    {
-      id: 'pemeliharaan',
-      title: 'Pemeliharaan & Revitalisasi Makam',
-      desc: 'Perbaikan sarana, atap kubah, penerangan makam, dan pelestarian arsitektur bersejarah.',
-      icon: Building2,
-      color: 'from-emerald-500 to-teal-700',
-      tag: 'Prioritas'
-    },
-    {
-      id: 'kebersihan',
-      title: 'Fasilitas Wudhu & Kebersihan',
-      desc: 'Penyediaan air bersih, pemeliharaan tempat wudhu, karpet sholat, dan sanitasi jamaah.',
-      icon: Droplets,
-      color: 'from-blue-500 to-cyan-700',
-      tag: 'Operasional'
-    },
-    {
-      id: 'dhuafa',
-      title: 'Santunan Musafir & Dhuafa',
-      desc: 'Bantuan makanan berbuka/sahur, santunan yatim dan peziarah dhuafa di sekitar makam.',
-      icon: Users,
-      color: 'from-amber-500 to-orange-700',
-      tag: 'Sosial'
-    },
-    {
-      id: 'kitab',
-      title: 'Wakaf Al-Qur\'an & Kitab Doa',
-      desc: 'Pengadaan mushaf Al-Qur\'an, buku panduan ziarah, dan kitab tahlil untuk para peziarah.',
-      icon: BookOpen,
-      color: 'from-purple-500 to-indigo-700',
-      tag: 'Jariyah'
-    }
-  ];
+  const programs = infaqSettings.programs;
 
   const quickNominals = [10000, 25000, 50000, 100000, 250000, 500000];
 
@@ -161,10 +201,12 @@ export const InfaqDigital: React.FC = () => {
   };
 
   const currentAmount = customNominal ? parseInt(customNominal, 10) || 0 : nominal;
-  const targetSiteName = selectedSiteId === 'all' 
-    ? 'Kompleks Makam Seluruh Nusantara' 
-    : sites.find(s => s.id === selectedSiteId)?.name || 'Makam Aulia';
-  const activeProgramTitle = programs.find(p => p.id === selectedProgram)?.title || 'Pemeliharaan Makam';
+  const targetSiteName = selectedSiteId === 'web-riset'
+    ? 'Riset Database & Operasional Web (Domain & VPS)'
+    : selectedSiteId === 'all' 
+      ? 'Kompleks Makam Seluruh Nusantara' 
+      : sites.find(s => s.id === selectedSiteId)?.name || 'Makam Aulia';
+  const activeProgramTitle = programs.find(p => p.id === selectedProgram)?.title || programs[0]?.title || 'Riset & Operasional Web';
 
   const handleBayar = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,6 +230,9 @@ export const InfaqDigital: React.FC = () => {
         status: 'confirmed',
         createdAt: serverTimestamp(),
       });
+      try {
+        localStorage.setItem('hasDonatedRubrik', 'true');
+      } catch {}
       setIsSuccessModal(true);
       setDoaHajat('');
     } catch (error) {
@@ -203,7 +248,18 @@ export const InfaqDigital: React.FC = () => {
   };
 
   const totalTerkumpul = recentDonations.reduce((acc, item) => acc + item.amount, 0);
-  const qrImageSrc = infaqSettings.qrisImageUrl || `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=INFAQ-ZIARAH-${selectedProgram}-${currentAmount}`;
+  const hasCustomQr = Boolean(infaqSettings.qrisImageUrl && infaqSettings.qrisImageUrl.trim() !== '');
+
+  const finalDonorDisplay = isAnonim ? 'Hamba Allah' : (donorName.trim() || 'Hamba Allah');
+  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya ingin konfirmasi Infaq secara manual:\n\n` +
+    `• *Nama Pewakif:* ${finalDonorDisplay}\n` +
+    `• *Program:* ${activeProgramTitle}\n` +
+    `• *Tujuan Alokasi:* ${targetSiteName}\n` +
+    `• *Nominal Infaq:* Rp ${currentAmount.toLocaleString('id-ID')}\n` +
+    `• *Tujuan Transfer:* ${infaqSettings.bankName} (${infaqSettings.accountNumber} a.n. ${infaqSettings.accountHolder})` +
+    (doaHajat.trim() ? `\n• *Doa / Hajat:* "${doaHajat.trim()}"` : '') +
+    `\n\nBerikut saya lampirkan bukti transfernya. Terima kasih.`;
+  const waConfirmUrl = `https://wa.me/6285717378885?text=${encodeURIComponent(waMessage)}`;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24">
@@ -247,34 +303,52 @@ export const InfaqDigital: React.FC = () => {
               Pilih Program Kebaikan
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {programs.map((p) => {
-                const Icon = p.icon;
+              {programs.map((p, idx) => {
+                const Icon = ICON_MAP[p.iconName as keyof typeof ICON_MAP] || HeartHandshake;
                 const isSelected = selectedProgram === p.id;
+                const isPrimaryTop = idx === 0;
                 return (
                   <motion.button
                     key={p.id}
                     type="button"
-                    whileHover={{ y: -4, scale: 1.015 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileHover={{ y: -3, scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    onClick={() => setSelectedProgram(p.id)}
-                    className={`text-left p-4 rounded-2xl border transition-colors relative flex flex-col justify-between cursor-pointer ${
+                    onClick={() => {
+                      setSelectedProgram(p.id);
+                      if (p.id === 'riset-web') {
+                        setSelectedSiteId('web-riset');
+                      } else if (selectedSiteId === 'web-riset') {
+                        setSelectedSiteId('all');
+                      }
+                    }}
+                    className={`text-left p-4 sm:p-5 rounded-2xl border transition-colors relative flex flex-col justify-between cursor-pointer ${
+                      isPrimaryTop ? 'sm:col-span-2' : ''
+                    } ${
                       isSelected 
-                        ? 'border-emerald-600 bg-emerald-50/60 ring-2 ring-emerald-500/20 shadow-xs' 
+                        ? 'border-emerald-600 bg-emerald-50/70 ring-2 ring-emerald-500/20 shadow-xs' 
                         : 'border-slate-200 bg-white hover:border-emerald-200 hover:bg-slate-50'
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2.5">
-                        <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${p.color} text-white flex items-center justify-center shadow-xs`}>
+                        <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${p.color || 'from-emerald-600 to-teal-800'} text-white flex items-center justify-center shadow-xs`}>
                           <Icon className="w-4 h-4" />
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg ${
+                          isPrimaryTop
+                            ? 'bg-emerald-800 text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-600'
+                        }`}>
                           {p.tag}
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 text-sm mb-1">{p.title}</h3>
-                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{p.desc}</p>
+                      <h3 className={`font-bold text-slate-900 mb-1 ${isPrimaryTop ? 'text-sm sm:text-base' : 'text-sm'}`}>
+                        {p.title}
+                      </h3>
+                      <p className={`text-xs text-slate-600 leading-relaxed ${isPrimaryTop ? '' : 'line-clamp-2'}`}>
+                        {p.desc}
+                      </p>
                     </div>
                   </motion.button>
                 );
@@ -293,6 +367,7 @@ export const InfaqDigital: React.FC = () => {
               onChange={(e) => setSelectedSiteId(e.target.value)}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 cursor-pointer shadow-inner"
             >
+              <option value="web-riset">💻 Riset Sejarah, Perluasan Database Makam & Operasional Web (Domain & VPS)</option>
               <option value="all">🌐 Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)</option>
               {sites.map((site) => (
                 <option key={site.id} value={site.id}>
@@ -301,7 +376,7 @@ export const InfaqDigital: React.FC = () => {
               ))}
             </select>
             <p className="text-[11px] text-slate-400 mt-2">
-              Infaq akan disalurkan melalui yayasan / pengurus resmi kompleks makam terkait.
+              Infaq akan disalurkan sesuai akad pilihan program (tim riset database & server web atau pengurus kompleks makam terkait).
             </p>
           </div>
 
@@ -417,7 +492,7 @@ export const InfaqDigital: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-slate-500">Nama Pewakif</span>
                 <span className="font-semibold text-slate-900">
-                  {isAnonim ? 'Hamba Allah' : (donorName || 'Hamba Allah')}
+                  {finalDonorDisplay}
                 </span>
               </div>
             </div>
@@ -429,36 +504,73 @@ export const InfaqDigital: React.FC = () => {
               </span>
             </div>
 
-            {/* Metode QRIS */}
+            {/* Metode QRIS (Dikosongkan jika belum ada QRIS resmi) */}
             <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-5 text-center">
               <div className="flex items-center justify-center space-x-2 text-xs font-bold text-slate-700 mb-3">
                 <QrCode className="w-4 h-4 text-emerald-600" />
                 <span>QRIS Nasional (Bebas Biaya Admin)</span>
               </div>
               
-              {/* QR Code Container with Animated Scanner Beam */}
-              <div className="bg-white p-3.5 rounded-2xl border border-slate-200 inline-block shadow-2xs mb-2 relative overflow-hidden group">
-                <img 
-                  src={qrImageSrc} 
-                  alt="QRIS Infaq Ziarah"
-                  className="w-36 h-36 mx-auto rounded-lg object-contain"
-                />
-                {/* Laser scan line animation */}
-                <motion.div 
-                  animate={{ y: [0, 134, 0] }}
-                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute left-3 right-3 h-0.5 bg-gradient-to-r from-transparent via-emerald-500 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.9)] pointer-events-none"
-                />
-              </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Pindai menggunakan aplikasi Mobile Banking apa saja (BCA, Mandiri, BRI, BSI) atau e-Wallet (GoPay, OVO, ShopeePay, DANA).
-              </p>
+              {hasCustomQr ? (
+                <>
+                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 inline-block shadow-2xs mb-2 relative overflow-hidden group">
+                    <img 
+                      src={infaqSettings.qrisImageUrl} 
+                      alt="QRIS Infaq Ziarah"
+                      className="w-36 h-36 mx-auto rounded-lg object-contain"
+                    />
+                    <motion.div 
+                      animate={{ y: [0, 134, 0] }}
+                      transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute left-3 right-3 h-0.5 bg-gradient-to-r from-transparent via-emerald-500 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.9)] pointer-events-none"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Pindai menggunakan aplikasi Mobile Banking apa saja (BCA, Mandiri, BRI, BSI) atau e-Wallet (GoPay, OVO, ShopeePay, DANA).
+                  </p>
+                </>
+              ) : (
+                <div className="bg-white p-5 rounded-2xl border border-dashed border-slate-300 inline-flex flex-col items-center justify-center w-full max-w-[230px] min-h-[150px] mb-2">
+                  <QrCode className="w-9 h-9 text-slate-300 mb-2" />
+                  <p className="text-xs font-bold text-slate-600">Kode QR Belum Tersedia</p>
+                  <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                    Silakan salurkan infaq melalui Transfer Rekening Bank di bawah ini.
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Tombol Konfirmasi Bayar */}
+            {/* Transfer Manual Rekening Bank */}
+            <div className="mb-5 text-xs">
+              <p className="font-semibold text-slate-700 mb-2">Transfer Manual Rekening Bank:</p>
+              <div className="p-3.5 bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-200">
+                <div>
+                  <p className="font-bold text-slate-900 text-sm">{infaqSettings.bankName}</p>
+                  <p className="text-slate-600 text-xs font-mono font-semibold mt-0.5">{infaqSettings.accountNumber}</p>
+                  <p className="text-slate-500 text-[11px]">a.n. {infaqSettings.accountHolder}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(infaqSettings.accountNumber, 'bank')}
+                  className="px-3 py-2 bg-white hover:bg-emerald-50 rounded-xl border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 transition-colors cursor-pointer flex items-center gap-1.5 font-bold text-[11px]"
+                  title="Salin Nomor Rekening"
+                >
+                  {copiedAccount === 'bank' ? (
+                    <span className="text-emerald-600 font-bold">Tersalin!</span>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Salin</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Tombol Catat Doa & Infaq di Website */}
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.97 }}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
               onClick={handleBayar}
               disabled={currentAmount < 5000 || isSubmitting}
@@ -472,32 +584,25 @@ export const InfaqDigital: React.FC = () => {
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Konfirmasi & Selesaikan Infaq
+                  Catat Doa & Konfirmasi Infaq
                 </>
               )}
             </motion.button>
 
-            {/* Rekening Alternatif */}
-            <div className="mt-5 pt-4 border-t border-slate-100 text-xs">
-              <p className="font-semibold text-slate-700 mb-2">Transfer Manual Bank Syariah:</p>
-              <div className="p-3 bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-200">
-                <div>
-                  <p className="font-bold text-slate-900">{infaqSettings.bankName}</p>
-                  <p className="text-slate-500 text-[11px]">{infaqSettings.accountNumber} (a.n. {infaqSettings.accountHolder})</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleCopy(infaqSettings.accountNumber, 'bsi')}
-                  className="p-1.5 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 text-slate-600 transition-colors cursor-pointer"
-                  title="Salin Rekening"
-                >
-                  {copiedAccount === 'bsi' ? (
-                    <span className="text-emerald-600 text-[10px] font-bold">Tersalin!</span>
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                </button>
-              </div>
+            {/* Tombol Konfirmasi Manual via WhatsApp */}
+            <div className="mt-3">
+              <a
+                href={waConfirmUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-emerald-900 border border-[#25D366]/40 font-bold rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <MessageSquareHeart className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span>Konfirmasi Manual via WhatsApp (+62 857-1737-8885)</span>
+              </a>
+              <p className="text-[11px] text-slate-400 text-center mt-1.5">
+                Kirim bukti transfer langsung ke WhatsApp pengurus setelah melakukan infaq.
+              </p>
             </div>
           </div>
         </div>
@@ -601,7 +706,7 @@ export const InfaqDigital: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Pewakif</span>
-                  <span className="font-semibold text-slate-900">{isAnonim ? 'Hamba Allah' : (donorName || 'Hamba Allah')}</span>
+                  <span className="font-semibold text-slate-900">{finalDonorDisplay}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Tujuan</span>
@@ -609,7 +714,7 @@ export const InfaqDigital: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-100 mb-6 text-left">
+              <div className="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-100 mb-5 text-left">
                 <p className="text-xs text-emerald-950 font-serif italic text-center">
                   "مَا نَقَصَتْ صَدَقَةٌ مِنْ مَالٍ"
                 </p>
@@ -618,12 +723,23 @@ export const InfaqDigital: React.FC = () => {
                 </p>
               </div>
 
-              <button
-                onClick={() => setIsSuccessModal(false)}
-                className="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs sm:text-sm transition-colors shadow-sm cursor-pointer"
-              >
-                Tutup & Kembali
-              </button>
+              <div className="space-y-2.5">
+                <a
+                  href={waConfirmUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-2xl text-xs sm:text-sm transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <MessageSquareHeart className="w-4 h-4" />
+                  <span>Kirim Bukti Transfer ke WhatsApp</span>
+                </a>
+                <button
+                  onClick={() => setIsSuccessModal(false)}
+                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs sm:text-sm transition-colors cursor-pointer"
+                >
+                  Tutup & Kembali
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

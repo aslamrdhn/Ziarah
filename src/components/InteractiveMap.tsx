@@ -15,8 +15,12 @@ interface MapProps {
 function MapUpdater({ selectedSite }: { selectedSite: ZiarahSite | null }) {
   const map = useMap();
   useEffect(() => {
-    if (selectedSite) {
-      map.flyTo([selectedSite.location.lat, selectedSite.location.lng], 13, {
+    if (
+      selectedSite &&
+      Number.isFinite(Number(selectedSite.location?.lat)) &&
+      Number.isFinite(Number(selectedSite.location?.lng))
+    ) {
+      map.flyTo([Number(selectedSite.location.lat), Number(selectedSite.location.lng)], 13, {
         animate: true,
         duration: 1.2
       });
@@ -108,6 +112,12 @@ const getCustomIcon = (category: string, isSelected: boolean): L.DivIcon => {
 };
 
 export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedSite, onSelectSite }) => {
+  const validSites = sites.filter(
+    site =>
+      Number.isFinite(Number(site.location?.lat)) &&
+      Number.isFinite(Number(site.location?.lng))
+  );
+
   return (
     <div className="flex-1 w-full relative z-0 rounded-2xl overflow-hidden border border-stone-300/90 h-full flex flex-col">
       <MapContainer 
@@ -126,10 +136,10 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
         <MapUpdater selectedSite={selectedSite} />
         <UserLocationControl />
         
-        {sites.map(site => (
+        {validSites.map(site => (
           <Marker 
             key={site.id} 
-            position={[site.location.lat, site.location.lng]}
+            position={[Number(site.location.lat), Number(site.location.lng)]}
             icon={getCustomIcon(site.category, selectedSite?.id === site.id)}
             eventHandlers={{
               click: () => onSelectSite(site)

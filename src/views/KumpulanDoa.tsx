@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSites } from '../context/SiteContext';
-import { BookOpen, Sparkles, MapPin, Bookmark, BookmarkCheck, Search, Copy, Check } from 'lucide-react';
-import { db } from '../lib/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { BookOpen, Sparkles, MapPin, Bookmark, BookmarkCheck, Search, Copy, Check, Lock, Unlock } from 'lucide-react';
+import { auth, db, isUserAdmin } from '../lib/firebase';
+import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
+import { Link } from 'react-router-dom';
 
 interface KumpulanDoaProps {
   savedDoas: string[];
@@ -26,6 +27,48 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [approvedCommunityDoas, setApprovedCommunityDoas] = useState<DoaKaromahItem[]>([]);
+  const [lockEnabled, setLockEnabled] = useState<boolean>(true);
+  const [freeSampleCount, setFreeSampleCount] = useState<number>(2);
+  const [hasDonated, setHasDonated] = useState<boolean>(() => {
+    try {
+      const flag = localStorage.getItem('hasDonatedRubrik') === 'true';
+      const unlockedList = JSON.parse(localStorage.getItem('unlockedUntold') || '[]');
+      return flag || (Array.isArray(unlockedList) && unlockedList.length > 0);
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    const unsubSettings = onSnapshot(
+      doc(db, 'settings', 'infaq'),
+      (snap) => {
+        if (snap.exists()) {
+          const d = snap.data();
+          if (d.rubrikGate) {
+            setLockEnabled(d.rubrikGate.lockEnabled !== undefined ? Boolean(d.rubrikGate.lockEnabled) : true);
+            if (typeof d.rubrikGate.freeSampleCount === 'number') {
+              setFreeSampleCount(d.rubrikGate.freeSampleCount);
+            }
+          }
+        }
+      },
+      () => {}
+    );
+    return () => unsubSettings();
+  }, []);
+
+  useEffect(() => {
+    const checkStorage = () => {
+      try {
+        const flag = localStorage.getItem('hasDonatedRubrik') === 'true';
+        const unlockedList = JSON.parse(localStorage.getItem('unlockedUntold') || '[]');
+        setHasDonated(flag || (Array.isArray(unlockedList) && unlockedList.length > 0));
+      } catch {}
+    };
+    window.addEventListener('storage', checkStorage);
+    return () => window.removeEventListener('storage', checkStorage);
+  }, []);
 
   useEffect(() => {
     const q = query(collection(db, 'contributions'), where('status', '==', 'approved'));
@@ -95,6 +138,18 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
 
     return list;
   }, [ziarahSites, approvedCommunityDoas]);
+
+  const unlockedKaromahIds = useMemo(() => {
+    const karomahItems = allDoaKaromah.filter(i => i.type === 'karomah');
+    return new Set(karomahItems.slice(0, Math.max(0, freeSampleCount)).map(i => i.id));
+  }, [allDoaKaromah, freeSampleCount]);
+
+  const isKaromahItemUnlocked = (item: DoaKaromahItem): boolean => {
+    if (item.type === 'doa') return true;
+    if (!lockEnabled) return true;
+    if (hasDonated || isUserAdmin(auth.currentUser)) return true;
+    return unlockedKaromahIds.has(item.id);
+  };
 
   const filteredList = useMemo(() => {
     let result = allDoaKaromah;
@@ -186,7 +241,10 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:gap-6">
-            {filteredList.map((item) => (
+            {filteredList.map((item) => {
+              const unlocked = isKaromahItemUnlocked(item);
+              const isSampleKaromah = item.type === 'karomah' && unlocked && lockEnabled && !hasDonated;
+              return (
               <div 
                 key={item.id}
                 className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:border-emerald-300 hover:shadow-md transition-all"
@@ -197,7 +255,19 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                       {item.type === 'doa' ? <BookOpen className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
                     </div>
                     <div>
-                      <h4 className="font-serif font-black text-slate-900 text-base sm:text-lg leading-tight">{item.title}</h4>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="font-serif font-black text-slate-900 text-base sm:text-lg leading-tight">{item.title}</h4>
+                        {isSampleKaromah && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            Contoh Gratis
+                          </span>
+                        )}
+                        {!unlocked && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-200 inline-flex items-center gap-1">
+                            <Lock className="w-2.5 h-2.5" /> Khusus Donatur
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center text-[11px] font-semibold text-emerald-800 mt-0.5">
                         <MapPin className="w-3 h-3 mr-1 shrink-0" />
                         {item.siteName}
@@ -205,29 +275,31 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-1.5">
-                    <button 
-                      type="button"
-                      onClick={() => handleCopy(item.id, `${item.title}\n\n${item.text}${item.translation ? `\n\nArtinya:\n${item.translation}` : ''}`)}
-                      className="p-2 bg-white rounded-xl shadow-2xs border border-slate-200 text-slate-400 hover:text-emerald-700 active:scale-95 transition-all cursor-pointer"
-                      title="Salin doa"
-                    >
-                      {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                    
-                    <button 
-                      type="button"
-                      onClick={() => onToggleSaveDoa(item.id)}
-                      className="p-2 bg-white rounded-xl shadow-2xs border border-slate-200 text-slate-400 hover:text-emerald-700 active:scale-95 transition-all cursor-pointer"
-                      title={savedDoas.includes(item.id) ? "Hapus dari simpanan" : "Simpan doa"}
-                    >
-                      {savedDoas.includes(item.id) ? (
-                        <BookmarkCheck className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <Bookmark className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                  {unlocked && (
+                    <div className="flex items-center space-x-1.5">
+                      <button 
+                        type="button"
+                        onClick={() => handleCopy(item.id, `${item.title}\n\n${item.text}${item.translation ? `\n\nArtinya:\n${item.translation}` : ''}`)}
+                        className="p-2 bg-white rounded-xl shadow-2xs border border-slate-200 text-slate-400 hover:text-emerald-700 active:scale-95 transition-all cursor-pointer"
+                        title="Salin doa"
+                      >
+                        {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                      
+                      <button 
+                        type="button"
+                        onClick={() => onToggleSaveDoa(item.id)}
+                        className="p-2 bg-white rounded-xl shadow-2xs border border-slate-200 text-slate-400 hover:text-emerald-700 active:scale-95 transition-all cursor-pointer"
+                        title={savedDoas.includes(item.id) ? "Hapus dari simpanan" : "Simpan doa"}
+                      >
+                        {savedDoas.includes(item.id) ? (
+                          <BookmarkCheck className="w-4 h-4 text-emerald-600" />
+                        ) : (
+                          <Bookmark className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="p-5 sm:p-7">
@@ -243,14 +315,34 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                         </div>
                       )}
                     </>
-                  ) : (
+                  ) : unlocked ? (
                     <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
                       {item.text}
                     </p>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        <span>{item.text.slice(0, 50)}... </span>
+                        <span className="blur-[4px] select-none opacity-65">
+                          {item.text.slice(50) || 'Kisah karomah lanjutan dibuka khusus bagi pengunjung yang telah melakukan donasi infaq riset database.'}
+                        </span>
+                      </p>
+                      <div className="pt-1 flex items-center justify-between border-t border-slate-100">
+                        <span className="text-[11px] text-slate-400 italic">Terkunci untuk mendukung riset database</span>
+                        <Link
+                          to="/rubrik"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition-colors"
+                        >
+                          <Unlock className="w-3.5 h-3.5 text-amber-700" />
+                          <span>Buka via Infaq di Rubrik</span>
+                        </Link>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

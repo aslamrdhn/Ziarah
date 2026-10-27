@@ -45,6 +45,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
       return [];
     }
   });
+  const [hasDonatedGlobal, setHasDonatedGlobal] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('hasDonatedRubrik') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     localStorage.setItem('unlockedUntold', JSON.stringify(unlockedUntold));
@@ -146,6 +153,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
   const hasUntold = !!site.untoldStory;
   const currentUser = auth.currentUser;
   const isCurrentUserAdmin = isUserAdmin(currentUser);
+  const isSiteUnlocked = isCurrentUserAdmin || hasDonatedGlobal || unlockedUntold.includes(site.id);
 
   return (
     <>
@@ -323,23 +331,50 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
 
             {activeTab === 'karomah' && hasKaromah && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                <div className="flex items-center mb-3">
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mr-2.5 border border-amber-200/80">
-                    <Sparkles className="w-4 h-4" />
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mr-2.5 border border-amber-200/80">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <h3 className="font-serif font-black text-slate-900 text-lg">Kisah Karomah</h3>
                   </div>
-                  <h3 className="font-serif font-black text-slate-900 text-lg">Kisah Karomah</h3>
+                  {!isSiteUnlocked && (
+                    <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                      1 Contoh Terbuka
+                    </span>
+                  )}
                 </div>
                 <div className="space-y-3">
                   {site.karomah!.map((item, idx) => {
                     const kId = `${site.id}-karomah-${idx}`;
                     const isSavedKaromah = savedDoas.includes(kId);
+                    const isItemUnlocked = isSiteUnlocked || idx === 0;
                     return (
                       <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex items-start group relative pr-10 hover:border-emerald-300 transition-all">
                         <div className="w-6 h-6 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0 mr-3 mt-0.5 border border-amber-200">
                           {idx + 1}
                         </div>
-                        <p className="text-xs sm:text-sm text-slate-700 leading-relaxed pr-2">{item}</p>
-                        {onToggleSaveDoa && (
+                        {isItemUnlocked ? (
+                          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed pr-2">{item}</p>
+                        ) : (
+                          <div className="flex-1">
+                            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pr-2">
+                              <span>{item.slice(0, 45)}... </span>
+                              <span className="blur-[4px] select-none opacity-60">
+                                {item.slice(45) || 'Kisah karomah lanjutan dibuka khusus bagi peziarah yang telah mendukung program Infaq Riset.'}
+                              </span>
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => setTransactionType('untold')}
+                              className="mt-2 inline-flex items-center text-[11px] font-bold text-amber-800 hover:text-amber-950 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 cursor-pointer"
+                            >
+                              <Unlock className="w-3 h-3 mr-1" />
+                              Donasi untuk Baca Penuh
+                            </button>
+                          </div>
+                        )}
+                        {onToggleSaveDoa && isItemUnlocked && (
                           <button 
                             onClick={() => onToggleSaveDoa(kId)}
                             title="Simpan ke Koleksi"
@@ -352,6 +387,15 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                     );
                   })}
                 </div>
+                {!isSiteUnlocked && site.karomah!.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setTransactionType('untold')}
+                    className="w-full py-2.5 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-xs"
+                  >
+                    <Unlock className="w-3.5 h-3.5 mr-2" /> Buka Seluruh Karomah & Kisah Rahasia
+                  </button>
+                )}
                 <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
                   <p className="text-[11px] text-slate-500 italic text-center mb-3 leading-relaxed">
                     Kisah karomah di atas dirangkum dari tradisi lisan dan manuskrip sejarah lokal. Nilai utamanya adalah untuk menambah kecintaan dan meneladani ketakwaan beliau kepada Allah SWT.
@@ -516,12 +560,12 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                     </div>
                     Rubrik Sejarah & Manuskrip
                   </h3>
-                  {unlockedUntold.includes(site.id) && (
+                  {isSiteUnlocked && (
                     <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">Terbuka</span>
                   )}
                 </div>
                 
-                {unlockedUntold.includes(site.id) ? (
+                {isSiteUnlocked ? (
                   <div className="bg-white p-5 rounded-2xl border border-purple-200 shadow-xs relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
                     <p className="text-slate-700 leading-relaxed relative z-10 text-xs sm:text-sm italic border-l-4 border-purple-400 pl-4">
@@ -534,18 +578,18 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                       <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-700 mb-3 shadow-xs border border-purple-200">
                         <ScrollText className="w-6 h-6" />
                       </div>
-                      <h4 className="font-bold text-slate-900 mb-1 text-sm sm:text-base">Rubrik Khusus</h4>
-                      <p className="text-xs text-slate-500 mb-4 max-w-[260px] leading-relaxed">Kisah dan manuskrip ini dikumpulkan dari sumber lisan dan arsip tertutup. Buka akses untuk membacanya.</p>
+                      <h4 className="font-bold text-slate-900 mb-1 text-sm sm:text-base">Kisah Rahasia & Manuskrip</h4>
+                      <p className="text-xs text-slate-500 mb-4 max-w-[260px] leading-relaxed">Kisah rahasia ini dibuka khusus bagi pengunjung yang telah melakukan Infaq Riset & Database.</p>
                       <button 
                         onClick={() => setTransactionType('untold')}
                         className="bg-purple-700 hover:bg-purple-800 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center cursor-pointer"
                       >
-                        <Unlock className="w-4 h-4 mr-2" /> Buka Akses Rubrik (Infaq Rp 15.000)
+                        <Unlock className="w-4 h-4 mr-2" /> Buka Akses via Infaq Riset
                       </button>
                     </div>
                     {/* Blurred preview text */}
                     <p className="text-slate-400 leading-relaxed text-xs italic blur-[3px] select-none">
-                      Dalam sebuah manuskrip kuno yang tersimpan rapat, disebutkan bahwa tokoh ini memiliki kemampuan luar biasa yang jarang diketahui publik. Kisah ini dijaga lisan secara turun temurun oleh para penjaga rahasia...
+                      {site.untoldStory}
                     </p>
                   </div>
                 )}
@@ -575,8 +619,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
       site={site}
       type={transactionType || 'infaq'}
       onSuccess={() => {
-        if (transactionType === 'untold' && site) {
-          setUnlockedUntold(prev => [...prev, site.id]);
+        setHasDonatedGlobal(true);
+        if (site) {
+          setUnlockedUntold(prev => prev.includes(site.id) ? prev : [...prev, site.id]);
         }
         setTransactionType(null);
       }}

@@ -16,10 +16,18 @@ import {
   Inbox,
   HeartHandshake,
   MapPin,
-  Save
+  Save,
+  ArrowUp,
+  ArrowDown,
+  RotateCcw,
+  ScrollText,
+  Lock,
+  Unlock
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ziarahSites as localSites, ZiarahSite } from '../data/sites';
+import { DEFAULT_INFAQ_PROGRAMS, InfaqProgramItem } from './InfaqDigital';
+import { DEFAULT_RUBRIK_GATE_SETTINGS, RubrikGateSettings, RubrikItem } from './RubrikKisah';
 import { useSites } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -44,7 +52,7 @@ interface ContributionItem {
 
 export const AdminKurator: React.FC = () => {
   const { sites, isSeededInCloud, cloudSiteCount } = useSites();
-  const [activeTab, setActiveTab] = useState<'kontribusi' | 'makam' | 'infaq'>('kontribusi');
+  const [activeTab, setActiveTab] = useState<'kontribusi' | 'makam' | 'rubrik' | 'infaq'>('kontribusi');
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedMessage, setSeedMessage] = useState('');
   const [user, setUser] = useState<User | null>(null);
@@ -65,6 +73,8 @@ export const AdminKurator: React.FC = () => {
     category: 'Ulama Nusantara',
     description: '',
     history: '',
+    untoldStory: '',
+    karomah: [],
     imageUrl: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80',
     openingHours: 'Buka 24 Jam',
     facilities: ['Masjid / Musholla', 'Area Parkir', 'Tempat Wudhu'],
@@ -79,11 +89,23 @@ export const AdminKurator: React.FC = () => {
   const [isSavingSite, setIsSavingSite] = useState(false);
   const [siteStatusMsg, setSiteStatusMsg] = useState('');
 
-  // Infaq settings & donations state
-  const [bankName, setBankName] = useState('Bank Syariah Indonesia (BSI)');
-  const [accountNumber, setAccountNumber] = useState('7123-4567-8901');
-  const [accountHolder, setAccountHolder] = useState('Yayasan Makam Aulia Nusantara');
+  // Infaq settings, programs, rubrik gate & donations state
+  const [bankName, setBankName] = useState('Bank BCA');
+  const [accountNumber, setAccountNumber] = useState('5470-0856-08');
+  const [accountHolder, setAccountHolder] = useState('ARIF NURACHMAN HAKIM');
   const [qrisImageUrl, setQrisImageUrl] = useState('');
+  const [infaqPrograms, setInfaqPrograms] = useState<InfaqProgramItem[]>(DEFAULT_INFAQ_PROGRAMS);
+  const [rubrikGate, setRubrikGate] = useState<RubrikGateSettings>(DEFAULT_RUBRIK_GATE_SETTINGS);
+  const [newCustomArticle, setNewCustomArticle] = useState<Partial<RubrikItem>>({
+    title: '',
+    siteName: '',
+    location: 'Nusantara',
+    category: 'Kisah Rahasia',
+    content: '',
+    source: 'Arsip Kurator Ziarah Nusantara',
+    readTime: '3 mnt',
+  });
+  const [isAddingCustomArticle, setIsAddingCustomArticle] = useState(false);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState('');
   const [donations, setDonations] = useState<any[]>([]);
@@ -152,6 +174,20 @@ export const AdminKurator: React.FC = () => {
           if (d.accountNumber) setAccountNumber(d.accountNumber);
           if (d.accountHolder) setAccountHolder(d.accountHolder);
           if (d.qrisImageUrl !== undefined) setQrisImageUrl(d.qrisImageUrl);
+          if (Array.isArray(d.programs) && d.programs.length > 0) {
+            setInfaqPrograms(d.programs);
+          }
+          if (d.rubrikGate) {
+            setRubrikGate({
+              lockEnabled: d.rubrikGate.lockEnabled !== undefined ? Boolean(d.rubrikGate.lockEnabled) : DEFAULT_RUBRIK_GATE_SETTINGS.lockEnabled,
+              freeSampleCount: typeof d.rubrikGate.freeSampleCount === 'number' ? d.rubrikGate.freeSampleCount : DEFAULT_RUBRIK_GATE_SETTINGS.freeSampleCount,
+              minDonationAmount: typeof d.rubrikGate.minDonationAmount === 'number' ? d.rubrikGate.minDonationAmount : DEFAULT_RUBRIK_GATE_SETTINGS.minDonationAmount,
+              bannerTitle: d.rubrikGate.bannerTitle || DEFAULT_RUBRIK_GATE_SETTINGS.bannerTitle,
+              bannerDescription: d.rubrikGate.bannerDescription || DEFAULT_RUBRIK_GATE_SETTINGS.bannerDescription,
+              pinnedFreeArticleIds: Array.isArray(d.rubrikGate.pinnedFreeArticleIds) ? d.rubrikGate.pinnedFreeArticleIds : DEFAULT_RUBRIK_GATE_SETTINGS.pinnedFreeArticleIds,
+              customArticles: Array.isArray(d.rubrikGate.customArticles) ? d.rubrikGate.customArticles : [],
+            });
+          }
         }
       })
       .catch(() => {});
@@ -334,8 +370,8 @@ export const AdminKurator: React.FC = () => {
     }
   };
 
-  const handleSaveInfaqSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveInfaqSettings = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!isAdmin || isSavingSettings) return;
     setIsSavingSettings(true);
     setSettingsMsg('');
@@ -345,9 +381,11 @@ export const AdminKurator: React.FC = () => {
         accountNumber: accountNumber.trim().slice(0, 60),
         accountHolder: accountHolder.trim().slice(0, 120),
         qrisImageUrl: qrisImageUrl.trim().slice(0, 1000),
+        programs: infaqPrograms,
+        rubrikGate,
         updatedAt: serverTimestamp(),
       });
-      setSettingsMsg('Berhasil menyimpan pengaturan rekening & QRIS. Halaman Infaq Digital telah diperbarui.');
+      setSettingsMsg('Berhasil menyimpan seluruh pengaturan Program Kebaikan, Rekening/QRIS, dan Kunci Donasi Rubrik ke Firestore.');
     } catch (error: any) {
       setSettingsMsg('Gagal menyimpan pengaturan: ' + error.message);
       try {
@@ -356,6 +394,93 @@ export const AdminKurator: React.FC = () => {
     } finally {
       setIsSavingSettings(false);
     }
+  };
+
+  const handleMoveProgram = (index: number, direction: 'up' | 'down') => {
+    setInfaqPrograms((prev) => {
+      const next = [...prev];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= next.length) return prev;
+      const temp = next[index];
+      next[index] = next[targetIndex];
+      next[targetIndex] = temp;
+      return next;
+    });
+  };
+
+  const handleAddProgram = () => {
+    const newId = `program-${Date.now()}`;
+    setInfaqPrograms((prev) => [
+      ...prev,
+      {
+        id: newId,
+        title: 'Program Kebaikan Baru',
+        desc: 'Tuliskan deskripsi program infaq/wakaf di sini...',
+        tag: 'Prioritas',
+        iconName: 'HeartHandshake',
+        color: 'from-emerald-500 to-teal-700',
+      },
+    ]);
+  };
+
+  const handleUpdateProgramField = (index: number, field: keyof InfaqProgramItem, value: string) => {
+    setInfaqPrograms((prev) =>
+      prev.map((item, idx) => (idx === index ? { ...item, [field]: value } : item))
+    );
+  };
+
+  const handleDeleteProgram = (index: number) => {
+    if (infaqPrograms.length <= 1) return;
+    setInfaqPrograms((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleTogglePinnedFreeArticle = (articleId: string) => {
+    setRubrikGate((prev) => {
+      const exists = prev.pinnedFreeArticleIds.includes(articleId);
+      return {
+        ...prev,
+        pinnedFreeArticleIds: exists
+          ? prev.pinnedFreeArticleIds.filter((id) => id !== articleId)
+          : [...prev.pinnedFreeArticleIds, articleId],
+      };
+    });
+  };
+
+  const handleAddCustomRubrikArticle = () => {
+    if (!newCustomArticle.title?.trim() || !newCustomArticle.content?.trim()) return;
+    const item: RubrikItem = {
+      id: `rubrik-custom-${Date.now()}`,
+      siteId: 'sunan-kalijaga',
+      siteName: newCustomArticle.siteName?.trim() || 'Aulia Nusantara',
+      location: newCustomArticle.location?.trim() || 'Nusantara',
+      category: (newCustomArticle.category as any) || 'Kisah Rahasia',
+      title: newCustomArticle.title.trim(),
+      content: newCustomArticle.content.trim(),
+      source: newCustomArticle.source?.trim() || 'Arsip Kurator Ziarah Nusantara',
+      readTime: newCustomArticle.readTime?.trim() || '3 mnt',
+    };
+    setRubrikGate((prev) => ({
+      ...prev,
+      customArticles: [item, ...(prev.customArticles || [])],
+    }));
+    setNewCustomArticle({
+      title: '',
+      siteName: '',
+      location: 'Nusantara',
+      category: 'Kisah Rahasia',
+      content: '',
+      source: 'Arsip Kurator Ziarah Nusantara',
+      readTime: '3 mnt',
+    });
+    setIsAddingCustomArticle(false);
+  };
+
+  const handleDeleteCustomRubrikArticle = (id: string) => {
+    setRubrikGate((prev) => ({
+      ...prev,
+      customArticles: (prev.customArticles || []).filter((a) => a.id !== id),
+      pinnedFreeArticleIds: prev.pinnedFreeArticleIds.filter((pid) => pid !== id),
+    }));
   };
 
   const handleDeleteDonation = async (id: string) => {
@@ -394,10 +519,10 @@ export const AdminKurator: React.FC = () => {
           </div>
 
           {isAdmin && (
-            <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200/80 self-start sm:self-auto">
+            <div className="flex flex-wrap bg-slate-100 p-1 rounded-2xl border border-slate-200/80 self-start sm:self-auto gap-1">
               <button
                 onClick={() => setActiveTab('kontribusi')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center cursor-pointer ${
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center cursor-pointer ${
                   activeTab === 'kontribusi' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -406,7 +531,7 @@ export const AdminKurator: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveTab('makam')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center cursor-pointer ${
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center cursor-pointer ${
                   activeTab === 'makam' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -414,13 +539,22 @@ export const AdminKurator: React.FC = () => {
                 Direktori ({sites.length})
               </button>
               <button
+                onClick={() => setActiveTab('rubrik')}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center cursor-pointer ${
+                  activeTab === 'rubrik' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <ScrollText className="w-3.5 h-3.5 mr-1.5" />
+                Rubrik & Kunci Donasi
+              </button>
+              <button
                 onClick={() => setActiveTab('infaq')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center cursor-pointer ${
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center cursor-pointer ${
                   activeTab === 'infaq' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <HeartHandshake className="w-3.5 h-3.5 mr-1.5" />
-                Infaq & QRIS
+                Infaq & Program
               </button>
             </div>
           )}
@@ -765,6 +899,34 @@ export const AdminKurator: React.FC = () => {
                         className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Kisah Rahasia / Untold Story (Tampil di Rubrik)</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Tuliskan kisah rahasia atau manuskrip khusus tokoh ini..."
+                        value={editingSite.untoldStory || ''}
+                        onChange={(e) => setEditingSite({ ...editingSite, untoldStory: e.target.value })}
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Daftar Hikmah & Karomah (Pisahkan setiap karomah dengan baris baru / Enter)</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Satu baris untuk satu kisah karomah..."
+                        value={(editingSite.karomah || []).join('\n')}
+                        onChange={(e) =>
+                          setEditingSite({
+                            ...editingSite,
+                            karomah: e.target.value
+                              .split('\n')
+                              .map((s) => s.trim())
+                              .filter(Boolean),
+                          })
+                        }
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
+                      />
+                    </div>
                     <div className="flex justify-end gap-2">
                       <button
                         type="button"
@@ -799,7 +961,7 @@ export const AdminKurator: React.FC = () => {
                             setIsSiteFormOpen(true);
                           }}
                           className="p-2 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
-                          title="Edit Makam"
+                          title="Edit Makam, Kisah Rahasia & Karomah"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
@@ -819,26 +981,422 @@ export const AdminKurator: React.FC = () => {
               </div>
             )}
 
-            {/* TAB 3: PENGATURAN REKENING, QRIS & RIWAYAT INFAQ */}
+            {/* TAB 3: KELOLA RUBRIK, CONTOH GRATIS & KUNCI DONASI */}
+            {activeTab === 'rubrik' && (
+              <div className="space-y-6">
+                {settingsMsg && (
+                  <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold rounded-2xl flex items-center justify-between">
+                    <span>{settingsMsg}</span>
+                    <button onClick={() => setSettingsMsg('')} className="text-emerald-700 hover:underline ml-2">Tutup</button>
+                  </div>
+                )}
+
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base">Pengaturan Kunci Donasi & Contoh Gratis Rubrik</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Atur berapa tulisan yang dibuka gratis sebagai contoh (pancingan minat) dan buramkan sisanya hingga pengunjung berdonasi.
+                      </p>
+                    </div>
+                    <label className="inline-flex items-center gap-2 bg-white px-3.5 py-2 rounded-xl border border-slate-200 cursor-pointer shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={rubrikGate.lockEnabled}
+                        onChange={(e) => setRubrikGate({ ...rubrikGate, lockEnabled: e.target.checked })}
+                        className="rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
+                      />
+                      <span className="text-xs font-bold text-slate-800">
+                        {rubrikGate.lockEnabled ? '🔒 Kunci Donasi Aktif' : '🔓 Semua Terbuka Gratis'}
+                      </span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Jumlah Tulisan Contoh Gratis (Tidak Dikunci per Halaman/Tab)
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={20}
+                        value={rubrikGate.freeSampleCount}
+                        onChange={(e) => setRubrikGate({ ...rubrikGate, freeSampleCount: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Default: <strong>2 tulisan pertama</strong> terbuka penuh sebagai contoh menarik, sisanya dibuat buram.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Nominal Rekomendasi Infaq Pembuka Arsip (Rp)
+                      </label>
+                      <input
+                        type="number"
+                        step={5000}
+                        min={5000}
+                        value={rubrikGate.minDonationAmount}
+                        onChange={(e) => setRubrikGate({ ...rubrikGate, minDonationAmount: Math.max(5000, parseInt(e.target.value, 10) || 25000) })}
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Judul Banner Informasi di Halaman Rubrik</label>
+                      <input
+                        type="text"
+                        value={rubrikGate.bannerTitle}
+                        onChange={(e) => setRubrikGate({ ...rubrikGate, bannerTitle: e.target.value })}
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Pesan Penjelasan Donasi & Contoh Bacaan Gratis</label>
+                      <textarea
+                        rows={2}
+                        value={rubrikGate.bannerDescription}
+                        onChange={(e) => setRubrikGate({ ...rubrikGate, bannerDescription: e.target.value })}
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Tambah Tulisan Rubrik Baru */}
+                  <div className="pt-3 border-t border-slate-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900">Tulisan Rubrik Kustom & Pilihan Contoh Gratis</h4>
+                        <p className="text-[11px] text-slate-500">
+                          Tambahkan kisah rahasia/karomah baru atau tandai tulisan tertentu agar selalu terbuka gratis.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingCustomArticle(!isAddingCustomArticle)}
+                        className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Tambah Tulisan Rubrik</span>
+                      </button>
+                    </div>
+
+                    {isAddingCustomArticle && (
+                      <div className="bg-white p-4 rounded-2xl border border-emerald-200 space-y-3 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">Judul Tulisan *</label>
+                            <input
+                              type="text"
+                              placeholder="Contoh: Rahasia Riyadloh Sunan..."
+                              value={newCustomArticle.title || ''}
+                              onChange={(e) => setNewCustomArticle({ ...newCustomArticle, title: e.target.value })}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">Tokoh Wali / Ulama *</label>
+                            <input
+                              type="text"
+                              placeholder="Contoh: Sunan Kalijaga"
+                              value={newCustomArticle.siteName || ''}
+                              onChange={(e) => setNewCustomArticle({ ...newCustomArticle, siteName: e.target.value })}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">Kategori Rubrik</label>
+                            <select
+                              value={newCustomArticle.category || 'Kisah Rahasia'}
+                              onChange={(e) => setNewCustomArticle({ ...newCustomArticle, category: e.target.value as any })}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                            >
+                              <option value="Kisah Rahasia">Kisah Rahasia</option>
+                              <option value="Hikmah & Karomah">Hikmah & Karomah</option>
+                              <option value="Manuskrip">Manuskrip</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">Isi Lengkap Naskah / Kisah *</label>
+                          <textarea
+                            rows={3}
+                            placeholder="Tuliskan isi kisah rahasia, manuskrip, atau hikmah karomah..."
+                            value={newCustomArticle.content || ''}
+                            onChange={(e) => setNewCustomArticle({ ...newCustomArticle, content: e.target.value })}
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setIsAddingCustomArticle(false)}
+                            className="px-3.5 py-1.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl cursor-pointer"
+                          >
+                            Batal
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleAddCustomRubrikArticle}
+                            className="px-4 py-1.5 bg-emerald-700 text-white text-xs font-bold rounded-xl cursor-pointer"
+                          >
+                            Tambahkan ke Daftar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Daftar Artikel Kustom & Bawaan untuk Toggle Gratis/Kunci */}
+                    <div className="max-h-72 overflow-y-auto bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100">
+                      {[
+                        ...(rubrikGate.customArticles || []).map((ca) => ({ ...ca, isCustom: true })),
+                        {
+                          id: 'rubrik-wali-songo-strategy',
+                          title: 'Filosofi Gamelan & Tembang Lir-Ilir dalam Dakwah Kultural',
+                          siteName: 'Sunan Kalijaga',
+                          category: 'Manuskrip',
+                          isCustom: false,
+                        },
+                        {
+                          id: 'rubrik-sekumpul-adab',
+                          title: 'Adab Menghadiri Majelis Maulid & Keberkahan Jamuan Musafir',
+                          siteName: 'Abah Guru Sekumpul',
+                          category: 'Hikmah & Karomah',
+                          isCustom: false,
+                        },
+                        ...sites.slice(0, 12).map((s) => ({
+                          id: `rubrik-${s.id}-untold`,
+                          title: `Catatan Khusus: ${s.name}`,
+                          siteName: s.name,
+                          category: 'Kisah Rahasia',
+                          isCustom: false,
+                        })),
+                      ].map((art) => {
+                        const isPinnedFree = rubrikGate.pinnedFreeArticleIds.includes(art.id);
+                        return (
+                          <div key={art.id} className="p-3 flex items-center justify-between gap-3 hover:bg-slate-50">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                                  {art.category}
+                                </span>
+                                {art.isCustom && (
+                                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">
+                                    Kustom Kurator
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs font-bold text-slate-900 truncate mt-1">{art.title}</p>
+                              <p className="text-[11px] text-slate-500">{art.siteName}</p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleTogglePinnedFreeArticle(art.id)}
+                                className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1 border transition-colors cursor-pointer ${
+                                  isPinnedFree
+                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                    : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
+                                }`}
+                              >
+                                {isPinnedFree ? (
+                                  <>
+                                    <Unlock className="w-3 h-3 text-emerald-700" />
+                                    <span>Contoh Gratis</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Lock className="w-3 h-3 text-amber-700" />
+                                    <span>Terkunci (Buram)</span>
+                                  </>
+                                )}
+                              </button>
+                              {art.isCustom && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCustomRubrikArticle(art.id)}
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg cursor-pointer"
+                                  title="Hapus tulisan kustom"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSaveInfaqSettings()}
+                      disabled={isSavingSettings}
+                      className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center cursor-pointer shadow-xs"
+                    >
+                      <Save className="w-3.5 h-3.5 mr-1.5" />
+                      {isSavingSettings ? 'Menyimpan...' : 'Simpan Pengaturan Rubrik ke Firestore'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: PENGATURAN PROGRAM KEBAIKAN, REKENING, QRIS & RIWAYAT INFAQ */}
             {activeTab === 'infaq' && (
               <div className="space-y-6">
+                {settingsMsg && (
+                  <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold rounded-2xl flex items-center justify-between">
+                    <span>{settingsMsg}</span>
+                    <button onClick={() => setSettingsMsg('')} className="text-emerald-700 hover:underline ml-2">Tutup</button>
+                  </div>
+                )}
+
+                {/* Bagian A: Kelola Daftar Program Kebaikan (Prioritas Utama di Paling Atas) */}
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base">Kelola Pilihan Program Kebaikan Infaq</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Program pada urutan <strong>#1 Paling Atas</strong> otomatis tampil penuh sebagai <strong>Prioritas Utama</strong> di halaman Infaq Digital.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setInfaqPrograms(DEFAULT_INFAQ_PROGRAMS)}
+                        className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                        title="Kembalikan ke daftar program bawaan"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Reset Default</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAddProgram}
+                        className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Tambah Program</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {infaqPrograms.map((prog, idx) => (
+                      <div
+                        key={prog.id}
+                        className={`p-4 rounded-2xl border bg-white space-y-3 ${
+                          idx === 0 ? 'border-emerald-500 ring-2 ring-emerald-500/15' : 'border-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase ${
+                              idx === 0 ? 'bg-emerald-800 text-white' : 'bg-slate-100 text-slate-700'
+                            }`}>
+                              {idx === 0 ? '★ Prioritas Utama (#1 Paling Atas)' : `Urutan #${idx + 1}`}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => handleMoveProgram(idx, 'up')}
+                              className="p-1.5 text-slate-500 hover:text-emerald-700 hover:bg-slate-100 rounded-lg disabled:opacity-30 cursor-pointer"
+                              title="Naikkan Urutan Prioritas"
+                            >
+                              <ArrowUp className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === infaqPrograms.length - 1}
+                              onClick={() => handleMoveProgram(idx, 'down')}
+                              className="p-1.5 text-slate-500 hover:text-emerald-700 hover:bg-slate-100 rounded-lg disabled:opacity-30 cursor-pointer"
+                              title="Turunkan Urutan"
+                            >
+                              <ArrowDown className="w-4 h-4" />
+                            </button>
+                            {infaqPrograms.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteProgram(idx)}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer ml-1"
+                                title="Hapus Program"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                          <div className="sm:col-span-6">
+                            <label className="block text-[11px] font-bold text-slate-600 mb-1">Nama Program Kebaikan</label>
+                            <input
+                              type="text"
+                              value={prog.title}
+                              onChange={(e) => handleUpdateProgramField(idx, 'title', e.target.value)}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900"
+                            />
+                          </div>
+                          <div className="sm:col-span-3">
+                            <label className="block text-[11px] font-bold text-slate-600 mb-1">Label Badge</label>
+                            <input
+                              type="text"
+                              value={prog.tag}
+                              onChange={(e) => handleUpdateProgramField(idx, 'tag', e.target.value)}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                            />
+                          </div>
+                          <div className="sm:col-span-3">
+                            <label className="block text-[11px] font-bold text-slate-600 mb-1">Ikon</label>
+                            <select
+                              value={prog.iconName}
+                              onChange={(e) => handleUpdateProgramField(idx, 'iconName', e.target.value as any)}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                            >
+                              <option value="Database">Database & Riset Web</option>
+                              <option value="Building2">Bangunan / Makam</option>
+                              <option value="Droplets">Air / Wudhu</option>
+                              <option value="Users">Sosial / Jamaah</option>
+                              <option value="BookOpen">Kitab / Al-Qur'an</option>
+                              <option value="HeartHandshake">Amal / Infaq</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-600 mb-1">Deskripsi Program</label>
+                          <textarea
+                            rows={2}
+                            value={prog.desc}
+                            onChange={(e) => handleUpdateProgramField(idx, 'desc', e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bagian B: Konfigurasi Rekening & QRIS */}
                 <form onSubmit={handleSaveInfaqSettings} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
                   <div>
                     <h3 className="font-bold text-slate-900 text-base">Konfigurasi Rekening & Gambar QRIS Resmi</h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Ubah nomor rekening yayasan dan URL gambar QRIS statis resmi Anda di sini agar siap digunakan untuk transaksi nyata saat self-hosting.
+                      Ubah nomor rekening bank dan URL gambar QRIS statis resmi Anda di sini. Kosongkan URL QRIS jika hanya menggunakan transfer bank manual.
                     </p>
                   </div>
 
-                  {settingsMsg && (
-                    <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold rounded-xl">
-                      {settingsMsg}
-                    </div>
-                  )}
-
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Nama Bank Syariah / Umum</label>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Nama Bank</label>
                       <input
                         type="text"
                         value={bankName}
@@ -856,7 +1414,7 @@ export const AdminKurator: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Atas Nama (Yayasan / Pengurus)</label>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Atas Nama</label>
                       <input
                         type="text"
                         value={accountHolder}
@@ -867,10 +1425,10 @@ export const AdminKurator: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">URL Gambar QRIS Statis Resmi (Opsional)</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">URL Gambar QRIS Statis Resmi (Kosongkan jika belum ada QRIS)</label>
                     <input
                       type="url"
-                      placeholder="https://domain-anda.com/qris-yayasan.png (Kosongkan untuk QR standar)"
+                      placeholder="https://domain-anda.com/qris-yayasan.png (Kosongkan agar QR tidak tampil)"
                       value={qrisImageUrl}
                       onChange={(e) => setQrisImageUrl(e.target.value)}
                       className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
@@ -884,7 +1442,7 @@ export const AdminKurator: React.FC = () => {
                       className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center cursor-pointer shadow-xs"
                     >
                       <Save className="w-3.5 h-3.5 mr-1.5" />
-                      {isSavingSettings ? 'Menyimpan...' : 'Simpan Pengaturan Infaq'}
+                      {isSavingSettings ? 'Menyimpan...' : 'Simpan Seluruh Pengaturan & Program Infaq'}
                     </button>
                   </div>
                 </form>

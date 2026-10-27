@@ -111,13 +111,21 @@
     },
     "AppSettings": {
       "title": "Application Settings",
-      "description": "Configurable settings for self-hosting such as bank account details and official QRIS image.",
+      "description": "Configurable settings for self-hosting such as bank account details, official QRIS image, and customizable Infaq programs.",
       "type": "object",
       "properties": {
         "bankName": { "type": "string", "maxLength": 100 },
         "accountNumber": { "type": "string", "maxLength": 60 },
         "accountHolder": { "type": "string", "maxLength": 120 },
         "qrisImageUrl": { "type": "string", "maxLength": 1000 },
+        "programs": {
+          "type": "array",
+          "description": "Customizable list of Infaq programs managed by the curator."
+        },
+        "rubrikGate": {
+          "type": "object",
+          "description": "Configuration for the Rubrik donation gate, free sample count, and custom curator articles."
+        },
         "updatedAt": { "type": "string" }
       }
     }

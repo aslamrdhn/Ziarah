@@ -95,9 +95,11 @@ export default function App() {
     if (!isDataLoaded) return;
     
     // Save to local storage as fallback
-    localStorage.setItem('savedZiarah', JSON.stringify(savedSiteIds));
-    localStorage.setItem('savedDoas', JSON.stringify(savedDoas));
-    localStorage.setItem('savedRubrik', JSON.stringify(savedRubrik));
+    try {
+      localStorage.setItem('savedZiarah', JSON.stringify(savedSiteIds));
+      localStorage.setItem('savedDoas', JSON.stringify(savedDoas));
+      localStorage.setItem('savedRubrik', JSON.stringify(savedRubrik));
+    } catch {}
 
     // Save to Firestore if logged in
     const saveToFirestore = async () => {
@@ -213,6 +215,8 @@ export default function App() {
               <Route path="/infaq" element={<InfaqDigital />} />
               <Route path="/kurasi" element={<KebijakanKurasi />} />
               <Route path="/admin" element={<AdminKurator />} />
+              <Route path="/kurator-admin" element={<AdminKurator />} />
+              <Route path="*" element={<DaftarMakam onSelectSite={handleSelectSite} />} />
             </Routes>
             </Suspense>
           </motion.div>
