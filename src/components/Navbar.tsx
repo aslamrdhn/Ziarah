@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { PWAInstallButton } from './PWAInstallButton';
 import { auth, googleProvider } from '../lib/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { APP_BRAND } from '../config/brand';
 
 interface NavbarProps {
   onOpenKontribusi: () => void;
@@ -19,6 +20,12 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
   const [authErrorModal, setAuthErrorModal] = useState<{ title: string; message: string; isNetworkOrIframe: boolean } | null>(null);
 
   const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
+
+  useEffect(() => {
+    if (typeof document !== 'undefined' && APP_BRAND.documentTitle) {
+      document.title = APP_BRAND.documentTitle;
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -95,10 +102,17 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
   return (
     <>
       {/* Top Navbar following Clean 3-Zone Editorial Contract (Mobile, Tablet, Desktop) */}
-      <nav className="w-full flex items-center justify-between gap-3 lg:gap-8 px-4 sm:px-6 lg:px-8 py-3.5">
-        {/* Zone 1: Single-line Brand Wordmark */}
-        <Link to="/" className="font-serif font-bold tracking-tight text-stone-900 text-lg sm:text-xl whitespace-nowrap shrink-0">
-          Ziarah Nusantara
+      <nav className="w-full flex items-center justify-between gap-3 lg:gap-8 px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+        {/* Zone 1: Brand Wordmark & Editorial Tagline */}
+        <Link to="/" className="group flex flex-col justify-center shrink-0">
+          <span className="font-serif font-bold tracking-tight text-stone-900 group-hover:text-emerald-950 transition-colors text-lg sm:text-xl leading-tight whitespace-nowrap">
+            {APP_BRAND.name}
+          </span>
+          {APP_BRAND.tagline && (
+            <span className="text-[10px] sm:text-[11px] font-medium tracking-wider uppercase text-stone-500 leading-tight whitespace-nowrap mt-0.5">
+              {APP_BRAND.tagline}
+            </span>
+          )}
         </Link>
 
         {/* Zone 2: Clean Editorial Text Navigation Links (Compact on Tablet md, Full on Desktop lg) */}
