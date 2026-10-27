@@ -1,12 +1,22 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSites } from '../context/SiteContext';
 import { BookOpen, Sparkles, MapPin, Bookmark, BookmarkCheck, Search, Copy, Check } from 'lucide-react';
-import { motion } from 'motion/react';
+import { db } from '../lib/firebase';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 interface KumpulanDoaProps {
   savedDoas: string[];
   onToggleSaveDoa: (id: string) => void;
+}
+
+interface DoaKaromahItem {
+  id: string;
+  siteId: string;
+  siteName: string;
+  type: 'doa' | 'karomah';
+  title: string;
+  text: string;
+  translation?: string;
 }
 
 export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, onToggleSaveDoa }) => {
@@ -15,6 +25,34 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   const [activeTab, setActiveTab] = useState<'semua' | 'tersimpan'>('semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [approvedCommunityDoas, setApprovedCommunityDoas] = useState<DoaKaromahItem[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'contributions'), where('status', '==', 'approved'));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const items: DoaKaromahItem[] = [];
+        snapshot.docs.forEach(docSnap => {
+          const d = docSnap.data();
+          if (d.type === 'doa') {
+            items.push({
+              id: `doa-contrib-${docSnap.id}`,
+              siteId: d.siteId || 'nusantara',
+              siteName: d.targetName || 'Waliyullah Nusantara',
+              type: 'doa',
+              title: `Amalan & Doa: ${d.targetName || 'Waliyullah'} (Kontribusi ${d.contributorName || 'Jamaah'})`,
+              text: d.content || '',
+              translation: d.translation || undefined,
+            });
+          }
+        });
+        setApprovedCommunityDoas(items);
+      },
+      () => {}
+    );
+    return () => unsubscribe();
+  }, []);
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -22,17 +60,9 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
     setTimeout(() => setCopiedId(null), 2000);
   };
   
-  // Extract all Doa and Karomah from sites
+  // Extract all Doa and Karomah from sites + approved community contributions
   const allDoaKaromah = useMemo(() => {
-    const list: Array<{
-      id: string;
-      siteId: string;
-      siteName: string;
-      type: 'doa' | 'karomah';
-      title: string;
-      text: string;
-      translation?: string;
-    }> = [];
+    const list: DoaKaromahItem[] = [...approvedCommunityDoas];
 
     ziarahSites.forEach(site => {
       if (site.doaKhusus) {
@@ -64,7 +94,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
     });
 
     return list;
-  }, [ziarahSites]);
+  }, [ziarahSites, approvedCommunityDoas]);
 
   const filteredList = useMemo(() => {
     let result = allDoaKaromah;
@@ -97,7 +127,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   return (
     <div className="flex-1 overflow-y-auto pb-20">
       {/* Header Hub */}
-      <div className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-20 transition-all">
+      <div className="bg-[#F9F8F4]/95 backdrop-blur-md border-b border-stone-300/80 sticky top-0 z-20 transition-all">
         <div className="max-w-4xl mx-auto px-4 py-5 sm:py-7">
           <div className="mb-4">
             <h1 className="text-xl sm:text-3xl font-serif font-black text-slate-900 tracking-tight mb-1">
@@ -116,27 +146,25 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                 placeholder="Cari doa, amalan, atau nama wali..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-slate-900 text-xs sm:text-sm font-medium placeholder-slate-400 transition-all"
+                className="w-full pl-11 pr-4 py-2.5 sm:py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-slate-900 text-xs sm:text-sm font-medium placeholder-slate-400 transition-all"
               />
             </div>
             
             <div className="flex bg-slate-100 p-1 rounded-2xl shrink-0 border border-slate-200/80">
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
+              <button 
+                type="button"
                 onClick={() => setActiveTab('semua')}
                 className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${activeTab === 'semua' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
               >
                 Semua ({allDoaKaromah.length})
-              </motion.button>
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
+              </button>
+              <button 
+                type="button"
                 onClick={() => setActiveTab('tersimpan')}
                 className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${activeTab === 'tersimpan' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
               >
                 Tersimpan ({savedDoas.length})
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
@@ -159,14 +187,9 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:gap-6">
             {filteredList.map((item) => (
-              <motion.div 
+              <div 
                 key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                whileHover={{ y: -5, scale: 1.008 }}
-                transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:border-emerald-300 hover:shadow-lg transition-all"
+                className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:border-emerald-300 hover:shadow-md transition-all"
               >
                 <div className={`p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between ${item.type === 'doa' ? 'bg-emerald-50/70' : 'bg-amber-50/70'}`}>
                   <div className="flex items-center space-x-3">
@@ -183,20 +206,19 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                   </div>
                   
                   <div className="flex items-center space-x-1.5">
-                    <motion.button 
-                      whileTap={{ scale: 0.85 }}
+                    <button 
+                      type="button"
                       onClick={() => handleCopy(item.id, `${item.title}\n\n${item.text}${item.translation ? `\n\nArtinya:\n${item.translation}` : ''}`)}
-                      className="p-2 bg-white rounded-xl shadow-2xs border border-slate-200 text-slate-400 hover:text-emerald-700 transition-colors cursor-pointer"
+                      className="p-2 bg-white rounded-xl shadow-2xs border border-slate-200 text-slate-400 hover:text-emerald-700 active:scale-95 transition-all cursor-pointer"
                       title="Salin doa"
                     >
                       {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                    </motion.button>
+                    </button>
                     
-                    <motion.button 
-                      whileTap={{ scale: 1.35 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                    <button 
+                      type="button"
                       onClick={() => onToggleSaveDoa(item.id)}
-                      className="p-2 bg-white rounded-xl shadow-2xs border border-slate-200 text-slate-400 hover:text-emerald-700 transition-colors cursor-pointer"
+                      className="p-2 bg-white rounded-xl shadow-2xs border border-slate-200 text-slate-400 hover:text-emerald-700 active:scale-95 transition-all cursor-pointer"
                       title={savedDoas.includes(item.id) ? "Hapus dari simpanan" : "Simpan doa"}
                     >
                       {savedDoas.includes(item.id) ? (
@@ -204,7 +226,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                       ) : (
                         <Bookmark className="w-4 h-4" />
                       )}
-                    </motion.button>
+                    </button>
                   </div>
                 </div>
                 
@@ -227,7 +249,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                     </p>
                   )}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

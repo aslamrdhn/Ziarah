@@ -63,12 +63,21 @@ export default function App() {
             if (Array.isArray(data.savedDoas)) setSavedDoas(data.savedDoas);
             if (Array.isArray(data.savedRubrik)) setSavedRubrik(data.savedRubrik);
           } else {
-            // Merge local data to firestore on first login
+            // Merge current local storage data to Firestore on first login
+            let initialSites: string[] = [];
+            let initialDoas: string[] = [];
+            let initialRubrik: string[] = [];
+            try {
+              initialSites = JSON.parse(localStorage.getItem('savedZiarah') || '[]');
+              initialDoas = JSON.parse(localStorage.getItem('savedDoas') || '[]');
+              initialRubrik = JSON.parse(localStorage.getItem('savedRubrik') || '[]');
+            } catch {}
+
             await setDoc(userRef, {
               userId: currentUser.uid,
-              savedSiteIds: savedSiteIds,
-              savedDoas: savedDoas,
-              savedRubrik: savedRubrik,
+              savedSiteIds: initialSites,
+              savedDoas: initialDoas,
+              savedRubrik: initialRubrik,
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp()
             });

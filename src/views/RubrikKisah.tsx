@@ -265,14 +265,9 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
           {filteredArticles.map((article) => {
             const isSaved = savedArticles.includes(article.id);
             return (
-              <motion.article
+              <article
                 key={article.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                whileHover={{ y: -6, scale: 1.015 }}
-                transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs hover:shadow-xl hover:border-emerald-300 transition-all flex flex-col justify-between group relative overflow-hidden"
+                className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300 transition-all duration-200 flex flex-col justify-between group relative overflow-hidden"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3 text-xs">
@@ -329,7 +324,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                     <ChevronRight className="w-4 h-4 ml-0.5" />
                   </motion.button>
                 </div>
-              </motion.article>
+              </article>
             );
           })}
         </div>
