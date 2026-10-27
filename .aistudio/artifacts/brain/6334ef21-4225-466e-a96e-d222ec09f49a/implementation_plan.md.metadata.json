@@ -1,6 +1,6 @@
 {
-  "summary":  "Rencana perbaikan error 404 NOT_FOUND pada deployment Vercel dengan mengunci konfigurasi framework Vite, buildCommand, outputDirectory dist, dan SPA rewrites di vercel.json, disertai panduan sinkronisasi GitHub dan penambahan domain Vercel ke Firebase Authorized Domains.",
-  "updatedAt":  "2026-10-27T04:25:30.249418095Z",
+  "summary":  "Rencana implementasi konfigurasi domain resmi ziarahnusantara.my.id (IDCloudHost ke Vercel), pembaruan metadata SEO & OpenGraph default, serta penambahan autentikasi Panel Admin Kurator bebas pop-up (Redirect Google & Kode Akses PIN Kurator).",
+  "updatedAt":  "2026-10-27T06:23:56.000475180Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

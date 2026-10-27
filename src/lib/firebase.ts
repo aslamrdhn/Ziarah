@@ -32,11 +32,11 @@ try {
 
 export const db = firestoreInstance;
 
-// Use initializeAuth with robust fallback persistence for iframes, private browsing, and partitioned storage
+// Use initializeAuth with browserLocalPersistence first (synchronous) to prevent popup-blocked errors on click
 let authInstance;
 try {
   authInstance = initializeAuth(app, {
-    persistence: [indexedDBLocalPersistence, browserLocalPersistence, inMemoryPersistence],
+    persistence: [browserLocalPersistence, indexedDBLocalPersistence, inMemoryPersistence],
     popupRedirectResolver: browserPopupRedirectResolver,
   });
 } catch {

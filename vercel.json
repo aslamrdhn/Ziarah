@@ -5,7 +5,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/((?!assets/|pwa-|icon\\.svg|manifest\\.webmanifest|sw\\.js|workbox-).*)",
+      "source": "/((?!assets/|pwa-|icon\\.svg|apple-touch-icon\\.png|manifest\\.webmanifest|sw\\.js|workbox-|robots\\.txt|sitemap\\.xml).*)",
       "destination": "/index.html"
     }
   ]

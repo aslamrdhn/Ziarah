@@ -118,6 +118,7 @@
         "accountNumber": { "type": "string", "maxLength": 60 },
         "accountHolder": { "type": "string", "maxLength": 120 },
         "qrisImageUrl": { "type": "string", "maxLength": 1000 },
+        "customDomain": { "type": "string", "maxLength": 120 },
         "programs": {
           "type": "array",
           "description": "Customizable list of Infaq programs managed by the curator."

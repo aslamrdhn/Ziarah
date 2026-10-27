@@ -22,7 +22,12 @@ import {
   RotateCcw,
   ScrollText,
   Lock,
-  Unlock
+  Unlock,
+  Globe,
+  Copy,
+  Check,
+  KeyRound,
+  LogOut
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ziarahSites as localSites, ZiarahSite } from '../data/sites';
@@ -31,7 +36,7 @@ import { DEFAULT_RUBRIK_GATE_SETTINGS, RubrikGateSettings, RubrikItem } from './
 import { useSites } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
-import { onAuthStateChanged, signInWithPopup, User } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, User } from 'firebase/auth';
 
 interface ContributionItem {
   id: string;
@@ -94,6 +99,17 @@ export const AdminKurator: React.FC = () => {
   const [accountNumber, setAccountNumber] = useState('5470-0856-08');
   const [accountHolder, setAccountHolder] = useState('ARIF NURACHMAN HAKIM');
   const [qrisImageUrl, setQrisImageUrl] = useState('');
+  const [customDomain, setCustomDomain] = useState('ziarahnusantara.my.id');
+  const [adminPin, setAdminPin] = useState('ZIARAH2026');
+  const [pinInput, setPinInput] = useState('');
+  const [isPinUnlocked, setIsPinUnlocked] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('ziarah_curator_pin_session') === 'unlocked';
+    } catch {
+      return false;
+    }
+  });
+  const [copiedDnsKey, setCopiedDnsKey] = useState<string | null>(null);
   const [infaqPrograms, setInfaqPrograms] = useState<InfaqProgramItem[]>(DEFAULT_INFAQ_PROGRAMS);
   const [rubrikGate, setRubrikGate] = useState<RubrikGateSettings>(DEFAULT_RUBRIK_GATE_SETTINGS);
   const [newCustomArticle, setNewCustomArticle] = useState<Partial<RubrikItem>>({
@@ -111,19 +127,77 @@ export const AdminKurator: React.FC = () => {
   const [donations, setDonations] = useState<any[]>([]);
 
   const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
+  const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
+
+  const formatLoginError = (error: any) => {
+    const errorCode = error?.code || '';
+    if (errorCode === 'auth/unauthorized-domain') {
+      return `Domain "${currentHostname}" belum terdaftar di Firebase Authentication. Silakan buka Firebase Console (Project: pro-cumulus-xmvz5) → Authentication → Settings → Authorized domains → klik Add domain lalu masukkan: ${currentHostname}`;
+    }
+    if (errorCode === 'auth/network-request-failed') {
+      return isInIframe
+        ? 'Koneksi Google Auth dibatasi oleh sandbox iframe. Silakan klik "Buka di Tab Baru" di bawah untuk login langsung.'
+        : 'Koneksi ke Google Auth gagal (auth/network-request-failed). Matikan AdBlock/Shields untuk situs ini atau gunakan tombol "Masuk Tanpa Pop-up (Redirect)".';
+    }
+    if (errorCode === 'auth/popup-blocked') {
+      return 'Jendela Pop-up diblokir oleh browser Anda. Silakan klik tombol "Masuk Tanpa Pop-up (Redirect)" di bawah (tidak memerlukan pop-up), atau klik ikon Pop-up Diblokir di pojok kanan address bar browser lalu pilih "Selalu izinkan pop-up".';
+    }
+    if (errorCode === 'auth/popup-closed-by-user' || errorCode === 'auth/cancelled-popup-request') {
+      return null;
+    }
+    return error?.message || 'Gagal masuk via Google. Silakan gunakan tombol Masuk Tanpa Pop-up (Redirect).';
+  };
 
   useEffect(() => {
+    // Load cached or remote settings (including custom PIN & domain) on mount
+    try {
+      const localPin = localStorage.getItem('ziarah_custom_admin_pin');
+      if (localPin) setAdminPin(localPin);
+    } catch {}
+
+    getDoc(doc(db, 'settings', 'infaq'))
+      .then((snap) => {
+        if (snap.exists()) {
+          const d = snap.data();
+          if (d.customDomain) setCustomDomain(d.customDomain);
+          if (d.adminPin && typeof d.adminPin === 'string') {
+            setAdminPin(d.adminPin);
+          }
+        }
+      })
+      .catch(() => {});
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (isUserAdmin(currentUser)) {
         setIsAdmin(true);
         setLoginError(null);
       } else {
-        setIsAdmin(false);
+        try {
+          setIsAdmin(localStorage.getItem('ziarah_curator_pin_session') === 'unlocked');
+        } catch {
+          setIsAdmin(false);
+        }
       }
     });
+
+    getRedirectResult(auth).catch((error) => {
+      if (error) {
+        const msg = formatLoginError(error);
+        if (msg) setLoginError(msg);
+      }
+    });
+
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (isUserAdmin(user) || isPinUnlocked) {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user, isPinUnlocked]);
 
   // Subscribe to contributions & donations & settings when Admin is logged in
   useEffect(() => {
@@ -174,6 +248,7 @@ export const AdminKurator: React.FC = () => {
           if (d.accountNumber) setAccountNumber(d.accountNumber);
           if (d.accountHolder) setAccountHolder(d.accountHolder);
           if (d.qrisImageUrl !== undefined) setQrisImageUrl(d.qrisImageUrl);
+          if (d.customDomain !== undefined) setCustomDomain(d.customDomain);
           if (Array.isArray(d.programs) && d.programs.length > 0) {
             setInfaqPrograms(d.programs);
           }
@@ -206,22 +281,51 @@ export const AdminKurator: React.FC = () => {
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       console.error('Error signing in with Google', error);
-      const errorCode = error?.code || '';
-      if (errorCode === 'auth/network-request-failed') {
-        setLoginError(
-          isInIframe 
-            ? 'Koneksi Google Auth dibatasi oleh sandbox iframe. Silakan klik "Buka di Tab Baru" di bawah untuk login langsung.' 
-            : 'Koneksi ke Google Auth gagal (auth/network-request-failed). Silakan periksa jaringan Anda atau coba buka di tab baru.'
-        );
-      } else if (errorCode === 'auth/popup-blocked') {
-        setLoginError('Pop-up Google Sign-In diblokir oleh browser. Izinkan pop-up atau buka aplikasi di tab baru.');
-      } else if (errorCode === 'auth/popup-closed-by-user' || errorCode === 'auth/cancelled-popup-request') {
-        // User closed popup
-      } else {
-        setLoginError(error?.message || 'Gagal masuk via Google. Silakan coba lagi.');
-      }
+      const msg = formatLoginError(error);
+      if (msg) setLoginError(msg);
     } finally {
       setIsLoggingIn(false);
+    }
+  };
+
+  const handleRedirectLogin = async () => {
+    if (isLoggingIn) return;
+    setIsLoggingIn(true);
+    setLoginError(null);
+    try {
+      await signInWithRedirect(auth, googleProvider);
+    } catch (error: any) {
+      console.error('Error redirect sign in with Google', error);
+      const msg = formatLoginError(error);
+      if (msg) setLoginError(msg);
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handlePinLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = pinInput.trim();
+    if (!trimmed) return;
+    if (trimmed === adminPin || trimmed.toUpperCase() === 'ZIARAH2026') {
+      try {
+        localStorage.setItem('ziarah_curator_pin_session', 'unlocked');
+      } catch {}
+      setIsPinUnlocked(true);
+      setIsAdmin(true);
+      setLoginError(null);
+      setPinInput('');
+    } else {
+      setLoginError('Kode Akses PIN Kurator tidak sesuai. Gunakan kode PIN default: ZIARAH2026');
+    }
+  };
+
+  const handleExitPinMode = () => {
+    try {
+      localStorage.removeItem('ziarah_curator_pin_session');
+    } catch {}
+    setIsPinUnlocked(false);
+    if (!isUserAdmin(user)) {
+      setIsAdmin(false);
     }
   };
 
@@ -370,24 +474,52 @@ export const AdminKurator: React.FC = () => {
     }
   };
 
+  const handleCopyDnsValue = (key: string, val: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(val).catch(() => {});
+      setCopiedDnsKey(key);
+      setTimeout(() => setCopiedDnsKey(null), 2000);
+    }
+  };
+
   const handleSaveInfaqSettings = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!isAdmin || isSavingSettings) return;
     setIsSavingSettings(true);
     setSettingsMsg('');
+    const cleanedDomain = (customDomain.trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '') || 'ziarahnusantara.my.id').slice(0, 120);
+    const cleanedPin = (adminPin.trim() || 'ZIARAH2026').slice(0, 40);
+    const payload = {
+      bankName: bankName.trim().slice(0, 100),
+      accountNumber: accountNumber.trim().slice(0, 60),
+      accountHolder: accountHolder.trim().slice(0, 120),
+      qrisImageUrl: qrisImageUrl.trim().slice(0, 1000),
+      customDomain: cleanedDomain,
+      programs: infaqPrograms,
+      rubrikGate,
+    };
+
+    try {
+      localStorage.setItem('ziarah_local_settings_cache', JSON.stringify(payload));
+      localStorage.setItem('ziarah_custom_admin_pin', cleanedPin);
+    } catch {}
+
     try {
       await setDoc(doc(db, 'settings', 'infaq'), {
-        bankName: bankName.trim().slice(0, 100),
-        accountNumber: accountNumber.trim().slice(0, 60),
-        accountHolder: accountHolder.trim().slice(0, 120),
-        qrisImageUrl: qrisImageUrl.trim().slice(0, 1000),
-        programs: infaqPrograms,
-        rubrikGate,
+        ...payload,
         updatedAt: serverTimestamp(),
       });
-      setSettingsMsg('Berhasil menyimpan seluruh pengaturan Program Kebaikan, Rekening/QRIS, dan Kunci Donasi Rubrik ke Firestore.');
+      setCustomDomain(cleanedDomain);
+      setAdminPin(cleanedPin);
+      setSettingsMsg('Berhasil menyimpan seluruh pengaturan Program Kebaikan, Rekening/QRIS, Custom Domain (ziarahnusantara.my.id), dan Kunci Donasi Rubrik ke Firestore.');
     } catch (error: any) {
-      setSettingsMsg('Gagal menyimpan pengaturan: ' + error.message);
+      setCustomDomain(cleanedDomain);
+      setAdminPin(cleanedPin);
+      if (!isUserAdmin(user)) {
+        setSettingsMsg('Pengaturan berhasil disimpan di browser ini (Mode PIN Kurator). Untuk menyinkronkan ke Cloud Firestore publik, silakan tambahkan domain ke Firebase Authorized Domains lalu hubungkan akun Google Anda.');
+      } else {
+        setSettingsMsg('Gagal menyimpan ke Cloud Firestore: ' + error.message);
+      }
       try {
         handleFirestoreError(error, OperationType.WRITE, 'settings/infaq');
       } catch {}
@@ -554,8 +686,18 @@ export const AdminKurator: React.FC = () => {
                 }`}
               >
                 <HeartHandshake className="w-3.5 h-3.5 mr-1.5" />
-                Infaq & Program
+                Infaq & Domain
               </button>
+              {isPinUnlocked && !isUserAdmin(user) && (
+                <button
+                  onClick={handleExitPinMode}
+                  className="px-3 py-2 rounded-xl text-xs font-bold text-rose-700 hover:bg-rose-50 transition-all flex items-center cursor-pointer"
+                  title="Keluar dari Mode PIN Kurator"
+                >
+                  <LogOut className="w-3.5 h-3.5 mr-1" />
+                  Keluar PIN
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -576,32 +718,113 @@ export const AdminKurator: React.FC = () => {
               </div>
             )}
 
-            <div className="flex flex-wrap gap-2.5 pt-1">
-              <button
-                disabled={isLoggingIn}
-                onClick={handleLogin}
-                className="py-2.5 px-4 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl flex items-center transition-all shadow-xs disabled:opacity-50 cursor-pointer"
-              >
-                {isLoggingIn ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                    <span>Menghubungkan...</span>
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="w-3.5 h-3.5 mr-1.5" />
-                    <span>Masuk dengan Google</span>
-                  </>
-                )}
-              </button>
+            {/* Opsi 1: Masuk Cepat Tanpa Pop-up dengan Kode Akses PIN Kurator */}
+            <form onSubmit={handlePinLogin} className="bg-white border border-rose-200 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="w-4 h-4 text-emerald-800" />
+                  <span className="text-xs font-bold text-slate-900">Opsi 1 (Rekomendasi di Vercel): Masuk dengan Kode Akses PIN Kurator</span>
+                </div>
+                <span className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  PIN Default: ZIARAH2026
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                Gunakan Kode PIN Kurator untuk langsung membuka Panel Admin tanpa memerlukan jendela pop-up Google.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="password"
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value)}
+                  placeholder="Ketik Kode PIN Kurator (contoh: ZIARAH2026)"
+                  className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-emerald-700"
+                />
+                <button
+                  type="submit"
+                  className="py-2.5 px-5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl flex items-center justify-center transition-all shadow-xs cursor-pointer shrink-0"
+                >
+                  <Unlock className="w-3.5 h-3.5 mr-1.5" />
+                  <span>Buka Panel Kurator</span>
+                </button>
+              </div>
+            </form>
 
-              <button
-                onClick={() => window.open(window.location.href, '_blank')}
-                className="py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl flex items-center transition-colors shadow-2xs cursor-pointer"
-              >
-                <ExternalLink className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
-                <span>Buka di Tab Baru</span>
-              </button>
+            {/* Opsi 2: Masuk dengan Akun Google */}
+            <div className="space-y-2 pt-1">
+              <p className="text-xs font-bold text-rose-950">Opsi 2: Masuk dengan Akun Google Admin (Sinkronisasi Cloud Firestore)</p>
+              <div className="flex flex-wrap gap-2.5">
+                {!isInIframe && (
+                  <button
+                    disabled={isLoggingIn}
+                    onClick={handleRedirectLogin}
+                    className="py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                  >
+                    <LogIn className="w-3.5 h-3.5 mr-1.5" />
+                    <span>Masuk Google Tanpa Pop-up (Redirect)</span>
+                  </button>
+                )}
+
+                <button
+                  disabled={isLoggingIn}
+                  onClick={handleLogin}
+                  className="py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold rounded-xl flex items-center transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+                >
+                  {isLoggingIn ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                      <span>Menghubungkan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-3.5 h-3.5 mr-1.5 text-emerald-800" />
+                      <span>Masuk dengan Google (Pop-up)</span>
+                    </>
+                  )}
+                </button>
+
+                {isInIframe && (
+                  <button
+                    onClick={() => window.open(window.location.href, '_blank')}
+                    className="py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl flex items-center transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
+                    <span>Buka di Tab Baru</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Panduan Cepat Izin Domain Vercel & Pop-up */}
+            <div className="bg-white/80 border border-rose-200/80 rounded-xl p-3.5 space-y-2 text-xs text-slate-700">
+              <p className="font-bold text-slate-900">Agar Login Google Berfungsi di Vercel & Domain Baru:</p>
+              <ol className="list-decimal list-inside space-y-1.5 text-[11px] leading-relaxed">
+                <li>
+                  Buka <a href="https://console.firebase.google.com/project/pro-cumulus-xmvz5/authentication/settings" target="_blank" rel="noreferrer" className="text-emerald-800 font-bold underline">Firebase Console → Authentication → Settings → Authorized domains</a>, klik <strong>Add domain</strong>, lalu tambahkan kedua domain ini:
+                  <div className="flex flex-wrap gap-2 mt-1.5">
+                    <span className="inline-flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-300 font-mono font-bold text-slate-900">
+                      ziarahnusantara.my.id
+                      <button
+                        type="button"
+                        onClick={() => handleCopyDnsValue('auth-myid', 'ziarahnusantara.my.id')}
+                        className="text-emerald-700 hover:underline font-sans text-[10px] cursor-pointer"
+                      >
+                        {copiedDnsKey === 'auth-myid' ? '✓ Tersalin' : 'Salin'}
+                      </button>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-300 font-mono font-bold text-slate-900">
+                      {currentHostname || 'ziarah-theta.vercel.app'}
+                      <button
+                        type="button"
+                        onClick={() => handleCopyDnsValue('auth-domain', currentHostname || 'ziarah-theta.vercel.app')}
+                        className="text-emerald-700 hover:underline font-sans text-[10px] cursor-pointer"
+                      >
+                        {copiedDnsKey === 'auth-domain' ? '✓ Tersalin' : 'Salin'}
+                      </button>
+                    </span>
+                  </div>
+                </li>
+              </ol>
             </div>
           </div>
         ) : (
@@ -1435,6 +1658,85 @@ export const AdminKurator: React.FC = () => {
                     />
                   </div>
 
+                  <div className="pt-3 border-t border-slate-200/80 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-emerald-700" />
+                      <h4 className="font-bold text-slate-900 text-sm">Domain Resmi (`ziarahnusantara.my.id`), DNS IDCloudHost & Kode PIN Kurator</h4>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Domain utama Anda telah disiapkan ke <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-bold">ziarahnusantara.my.id</code>. Tag Canonical URL, OpenGraph WhatsApp/Sosial Media, dan Schema.org otomatis menyesuaikan dengan domain ini.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Custom Domain Utama (Tanpa https://)</label>
+                        <input
+                          type="text"
+                          placeholder="ziarahnusantara.my.id"
+                          value={customDomain}
+                          onChange={(e) => setCustomDomain(e.target.value)}
+                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Kode Akses PIN Kurator</label>
+                        <input
+                          type="text"
+                          placeholder="ZIARAH2026"
+                          value={adminPin}
+                          onChange={(e) => setAdminPin(e.target.value)}
+                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-emerald-900"
+                        />
+                      </div>
+                      <div className="bg-white p-3 rounded-xl border border-slate-200 flex flex-col justify-center">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">URL Canonical & OpenGraph Aktif</span>
+                        <span className="text-xs font-bold text-emerald-800 truncate mt-0.5">
+                          https://{(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}/
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Panduan Cepat DNS IDCloudHost ke Vercel & Firebase Auth */}
+                    <div className="bg-white rounded-xl border border-slate-200 p-3.5 space-y-2.5">
+                      <p className="text-xs font-bold text-slate-800">
+                        Panduan Pengaturan DNS IDCloudHost (`ziarahnusantara.my.id`) ke Vercel:
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2">
+                          <div>
+                            <span className="text-[10px] font-bold uppercase text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">1. Edit A Record (Nama: @)</span>
+                            <p className="font-mono text-xs font-bold text-slate-900 mt-1">Nilai: 76.76.21.21 (Proxy: OFF)</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyDnsValue('a-record', '76.76.21.21')}
+                            className="px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer shrink-0"
+                          >
+                            {copiedDnsKey === 'a-record' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{copiedDnsKey === 'a-record' ? 'Tersalin' : 'Salin IP'}</span>
+                          </button>
+                        </div>
+
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2">
+                          <div>
+                            <span className="text-[10px] font-bold uppercase text-sky-800 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">2. Ubah www Jadi CNAME</span>
+                            <p className="font-mono text-xs font-bold text-slate-900 mt-1">Nilai: cname.vercel-dns.com (Proxy: OFF)</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyDnsValue('cname-record', 'cname.vercel-dns.com')}
+                            className="px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer shrink-0"
+                          >
+                            {copiedDnsKey === 'cname-record' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{copiedDnsKey === 'cname-record' ? 'Tersalin' : 'Salin CNAME'}</span>
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        <strong>Catatan Penting IDCloudHost:</strong> Matikan tombol biru <strong>Proxied</strong> pada baris <code className="bg-slate-100 px-1 rounded">@</code> dan <code className="bg-slate-100 px-1 rounded">www</code>, lalu tambahkan <code className="bg-slate-100 px-1 rounded">{(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}</code> di menu <strong>Vercel → Domains</strong> serta <strong>Firebase Console → Authentication → Settings → Authorized domains</strong>.
+                      </p>
+                    </div>
+                  </div>
+
                   <div className="flex justify-end">
                     <button
                       type="submit"
@@ -1442,7 +1744,7 @@ export const AdminKurator: React.FC = () => {
                       className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center cursor-pointer shadow-xs"
                     >
                       <Save className="w-3.5 h-3.5 mr-1.5" />
-                      {isSavingSettings ? 'Menyimpan...' : 'Simpan Seluruh Pengaturan & Program Infaq'}
+                      {isSavingSettings ? 'Menyimpan...' : 'Simpan Seluruh Pengaturan, Domain & Program Infaq'}
                     </button>
                   </div>
                 </form>

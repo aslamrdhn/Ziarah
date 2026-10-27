@@ -32,6 +32,73 @@ export default function App() {
   const [savedDoas, setSavedDoas] = useState<string[]>([]);
   const [savedRubrik, setSavedRubrik] = useState<string[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [customDomainOrigin, setCustomDomainOrigin] = useState<string>('https://ziarahnusantara.my.id');
+
+  // Load custom domain setting from Firestore settings/infaq
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem('ziarah_local_settings_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.customDomain && typeof parsed.customDomain === 'string') {
+          const raw = parsed.customDomain.trim().replace(/\/+$/, '');
+          if (raw) {
+            setCustomDomainOrigin(raw.startsWith('http://') || raw.startsWith('https://') ? raw : `https://${raw}`);
+          }
+        }
+      }
+    } catch {}
+
+    getDoc(doc(db, 'settings', 'infaq'))
+      .then((snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.customDomain && typeof data.customDomain === 'string') {
+            const raw = data.customDomain.trim().replace(/\/+$/, '');
+            if (raw) {
+              const normalized = raw.startsWith('http://') || raw.startsWith('https://') ? raw : `https://${raw}`;
+              setCustomDomainOrigin(normalized);
+            }
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Dynamically sync canonical URL, OpenGraph URL/image, and JSON-LD on route/domain change
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const baseOrigin = customDomainOrigin || window.location.origin;
+    const cleanPath = location.pathname === '/' ? '/' : location.pathname;
+    const fullUrl = `${baseOrigin}${cleanPath}`;
+    const fullImageUrl = `${baseOrigin}/pwa-512x512.png`;
+
+    const canonicalEl = document.getElementById('canonical-link') as HTMLLinkElement | null;
+    if (canonicalEl) canonicalEl.href = fullUrl;
+
+    const ogUrlEl = document.getElementById('og-url') as HTMLMetaElement | null;
+    if (ogUrlEl) ogUrlEl.content = fullUrl;
+
+    const ogImgEl = document.getElementById('og-image') as HTMLMetaElement | null;
+    if (ogImgEl) ogImgEl.content = fullImageUrl;
+
+    const twitterImgEl = document.getElementById('twitter-image') as HTMLMetaElement | null;
+    if (twitterImgEl) twitterImgEl.content = fullImageUrl;
+
+    const schemaEl = document.getElementById('schema-jsonld');
+    if (schemaEl) {
+      schemaEl.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: 'Ziarah Nusantara',
+        url: `${baseOrigin}/`,
+        inLanguage: 'id-ID',
+        applicationCategory: 'ReferenceApplication',
+        operatingSystem: 'All',
+        description: 'Platform interaktif pemetaan dan basis data lokasi ziarah Walisongo, Ulama, dan Habaib di Indonesia.',
+      });
+    }
+  }, [location.pathname, customDomainOrigin]);
 
   // Load from local storage initially
   useEffect(() => {

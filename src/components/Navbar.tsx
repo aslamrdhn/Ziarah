@@ -3,7 +3,7 @@ import { Compass, Map as MapIcon, BookOpen, ShieldCheck, UserCog, Bookmark, More
 import { Link, useLocation } from 'react-router-dom';
 import { PWAInstallButton } from './PWAInstallButton';
 import { auth, googleProvider } from '../lib/firebase';
-import { signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { APP_BRAND } from '../config/brand';
 
 interface NavbarProps {
@@ -17,15 +17,64 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [authErrorModal, setAuthErrorModal] = useState<{ title: string; message: string; isNetworkOrIframe: boolean } | null>(null);
+  const [authErrorModal, setAuthErrorModal] = useState<{
+    title: string;
+    message: string;
+    showOpenNewTab: boolean;
+    showRedirectLogin: boolean;
+    unauthorizedDomain?: string;
+  } | null>(null);
 
   const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
+  const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
 
   useEffect(() => {
     if (typeof document !== 'undefined' && APP_BRAND.documentTitle) {
       document.title = APP_BRAND.documentTitle;
     }
   }, []);
+
+  const handleAuthError = (error: any) => {
+    console.error("Error signing in with Google", error);
+    const errorCode = error?.code || '';
+
+    if (errorCode === 'auth/unauthorized-domain') {
+      setAuthErrorModal({
+        title: 'Domain Belum Diizinkan di Firebase',
+        message: `Domain "${currentHostname}" belum terdaftar di Firebase Authentication. Buka Firebase Console → Authentication → Settings → Authorized domains, lalu tambahkan "${currentHostname}".`,
+        showOpenNewTab: false,
+        showRedirectLogin: false,
+        unauthorizedDomain: currentHostname,
+      });
+    } else if (errorCode === 'auth/network-request-failed') {
+      setAuthErrorModal({
+        title: 'Koneksi Autentikasi Dibatasi',
+        message: isInIframe
+          ? 'Pratinjau iframe membatasi akses kredensial ke Google Auth. Buka aplikasi di Tab Baru untuk login dengan akun Google Anda.'
+          : 'Gagal menghubungi server Google Auth (auth/network-request-failed). Periksa koneksi internet atau matikan pemblokir iklan/ekstensi privasi untuk situs ini.',
+        showOpenNewTab: isInIframe,
+        showRedirectLogin: !isInIframe,
+      });
+    } else if (errorCode === 'auth/popup-blocked') {
+      setAuthErrorModal({
+        title: 'Jendela Pop-up Diblokir Browser',
+        message: isInIframe
+          ? 'Browser memblokir pop-up di dalam pratinjau. Silakan klik "Buka di Tab Baru" di bawah.'
+          : 'Browser atau ekstensi Anda memblokir jendela pop-up Google Sign-In. Anda dapat langsung masuk tanpa pop-up dengan menekan tombol "Masuk Tanpa Pop-up (Redirect)" di bawah, atau izinkan pop-up pada ikon di ujung kanan address bar browser.',
+        showOpenNewTab: isInIframe,
+        showRedirectLogin: !isInIframe,
+      });
+    } else if (errorCode === 'auth/popup-closed-by-user' || errorCode === 'auth/cancelled-popup-request') {
+      // User closed the popup
+    } else {
+      setAuthErrorModal({
+        title: 'Gagal Masuk via Google',
+        message: error?.message || 'Terjadi kendala saat menghubungkan ke akun Google Anda. Silakan coba lagi.',
+        showOpenNewTab: isInIframe,
+        showRedirectLogin: !isInIframe,
+      });
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -34,6 +83,11 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
         setAuthErrorModal(null);
       }
     });
+
+    getRedirectResult(auth).catch((error) => {
+      if (error) handleAuthError(error);
+    });
+
     return () => unsubscribe();
   }, []);
 
@@ -45,33 +99,21 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
       setDropdownOpen(false);
       setAuthErrorModal(null);
     } catch (error: any) {
-      console.error("Error signing in with Google", error);
-      const errorCode = error?.code || '';
-      
-      if (errorCode === 'auth/network-request-failed') {
-        setAuthErrorModal({
-          title: 'Koneksi Autentikasi Dibatasi',
-          message: isInIframe 
-            ? 'Browser Anda atau pratinjau iframe membatasi akses kredensial ke Google Auth. Buka aplikasi di Tab Baru untuk login dengan akun Google Anda.'
-            : 'Gagal menghubungi server Google Auth (auth/network-request-failed). Periksa koneksi internet Anda atau buka aplikasi di tab baru.',
-          isNetworkOrIframe: true
-        });
-      } else if (errorCode === 'auth/popup-blocked') {
-        setAuthErrorModal({
-          title: 'Jendela Pop-up Diblokir',
-          message: 'Browser memblokir jendela pop-up Google Sign-In. Silakan izinkan pop-up untuk situs ini atau buka di tab baru.',
-          isNetworkOrIframe: true
-        });
-      } else if (errorCode === 'auth/popup-closed-by-user' || errorCode === 'auth/cancelled-popup-request') {
-        // User closed the popup
-      } else {
-        setAuthErrorModal({
-          title: 'Gagal Masuk via Google',
-          message: error?.message || 'Terjadi kendala saat menghubungkan ke akun Google Anda. Silakan coba lagi.',
-          isNetworkOrIframe: false
-        });
-      }
+      handleAuthError(error);
     } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleRedirectLogin = async () => {
+    if (isLoggingIn) return;
+    setIsLoggingIn(true);
+    try {
+      setDropdownOpen(false);
+      setAuthErrorModal(null);
+      await signInWithRedirect(auth, googleProvider);
+    } catch (error: any) {
+      handleAuthError(error);
       setIsLoggingIn(false);
     }
   };
@@ -303,8 +345,30 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
               {authErrorModal.message}
             </p>
 
+            {authErrorModal.unauthorizedDomain && (
+              <div className="mb-5 p-3 bg-stone-100 rounded-xl border border-stone-200 flex items-center justify-between gap-2">
+                <code className="text-xs font-bold text-stone-900 truncate">{authErrorModal.unauthorizedDomain}</code>
+                <button
+                  type="button"
+                  onClick={() => navigator.clipboard?.writeText(authErrorModal.unauthorizedDomain || '')}
+                  className="px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-300 rounded-lg text-xs font-bold text-stone-800 shrink-0 cursor-pointer"
+                >
+                  Salin Domain
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row gap-2.5">
-              {authErrorModal.isNetworkOrIframe && (
+              {authErrorModal.showRedirectLogin && (
+                <button
+                  onClick={handleRedirectLogin}
+                  className="flex-1 py-2.5 px-4 bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-semibold rounded-xl flex items-center justify-center transition-colors shadow-sm cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Masuk Tanpa Pop-up (Redirect)
+                </button>
+              )}
+              {authErrorModal.showOpenNewTab && (
                 <button
                   onClick={() => {
                     window.open(window.location.href, '_blank');
@@ -327,7 +391,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                     <span>Mencoba...</span>
                   </>
                 ) : (
-                  <span>Coba Lagi</span>
+                  <span>Coba Pop-up Lagi</span>
                 )}
               </button>
               <button
