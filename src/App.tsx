@@ -256,6 +256,7 @@ export default function App() {
             }>
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<DaftarMakam onSelectSite={handleSelectSite} />} />
+              <Route path="/direktori" element={<DaftarMakam onSelectSite={handleSelectSite} />} />
               <Route path="/peta" element={
                 <PetaLokasi 
                   selectedSite={selectedSite}

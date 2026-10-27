@@ -10,9 +10,9 @@ export const APP_BRAND = {
   tagline: 'Arsip & Direktori Makam Wali Nusantara',
 
   /** Judul lengkap pada tab browser (<title>) */
-  documentTitle: 'Ziarah Nusantara — Arsip & Direktori Makam Wali Nusantara',
+  documentTitle: 'Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara',
 
   /** Deskripsi ringkas untuk metadata SEO */
   description:
-    'Platform interaktif pemetaan, arsip sejarah, dan basis data lokasi ziarah Walisongo, Ulama, serta Habaib di Indonesia.',
+    'Ziarah Nusantara adalah platform panduan dan informasi jejak spiritual makam para Waliyullah, ulama, dan tokoh bersejarah di seluruh Nusantara.',
 } as const;

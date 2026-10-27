@@ -31,13 +31,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://ziarahnusantara.my.id/doa</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://ziarahnusantara.my.id/infaq</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/kontribusi</loc>
+    <loc>https://ziarahnusantara.my.id/kurasi</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ShieldAlert, 
   ShieldCheck, 
   Database, 
   UploadCloud, 
@@ -26,17 +25,17 @@ import {
   Globe,
   Copy,
   Check,
-  KeyRound,
   LogOut
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { ziarahSites as localSites, ZiarahSite } from '../data/sites';
 import { DEFAULT_INFAQ_PROGRAMS, InfaqProgramItem } from './InfaqDigital';
 import { DEFAULT_RUBRIK_GATE_SETTINGS, RubrikGateSettings, RubrikItem } from './RubrikKisah';
 import { useSites } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
-import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, User } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, User } from 'firebase/auth';
 
 interface ContributionItem {
   id: string;
@@ -100,15 +99,6 @@ export const AdminKurator: React.FC = () => {
   const [accountHolder, setAccountHolder] = useState('ARIF NURACHMAN HAKIM');
   const [qrisImageUrl, setQrisImageUrl] = useState('');
   const [customDomain, setCustomDomain] = useState('ziarahnusantara.my.id');
-  const [adminPin, setAdminPin] = useState('ZIARAH2026');
-  const [pinInput, setPinInput] = useState('');
-  const [isPinUnlocked, setIsPinUnlocked] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('ziarah_curator_pin_session') === 'unlocked';
-    } catch {
-      return false;
-    }
-  });
   const [copiedDnsKey, setCopiedDnsKey] = useState<string | null>(null);
   const [infaqPrograms, setInfaqPrograms] = useState<InfaqProgramItem[]>(DEFAULT_INFAQ_PROGRAMS);
   const [rubrikGate, setRubrikGate] = useState<RubrikGateSettings>(DEFAULT_RUBRIK_GATE_SETTINGS);
@@ -149,10 +139,10 @@ export const AdminKurator: React.FC = () => {
   };
 
   useEffect(() => {
-    // Load cached or remote settings (including custom PIN & domain) on mount
+    // Bersihkan sesi PIN lama agar akses hanya melalui autentikasi Google Admin resmi
     try {
-      const localPin = localStorage.getItem('ziarah_custom_admin_pin');
-      if (localPin) setAdminPin(localPin);
+      localStorage.removeItem('ziarah_curator_pin_session');
+      localStorage.removeItem('ziarah_custom_admin_pin');
     } catch {}
 
     getDoc(doc(db, 'settings', 'infaq'))
@@ -160,9 +150,6 @@ export const AdminKurator: React.FC = () => {
         if (snap.exists()) {
           const d = snap.data();
           if (d.customDomain) setCustomDomain(d.customDomain);
-          if (d.adminPin && typeof d.adminPin === 'string') {
-            setAdminPin(d.adminPin);
-          }
         }
       })
       .catch(() => {});
@@ -173,11 +160,7 @@ export const AdminKurator: React.FC = () => {
         setIsAdmin(true);
         setLoginError(null);
       } else {
-        try {
-          setIsAdmin(localStorage.getItem('ziarah_curator_pin_session') === 'unlocked');
-        } catch {
-          setIsAdmin(false);
-        }
+        setIsAdmin(false);
       }
     });
 
@@ -192,12 +175,8 @@ export const AdminKurator: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (isUserAdmin(user) || isPinUnlocked) {
-      setIsAdmin(true);
-    } else {
-      setIsAdmin(false);
-    }
-  }, [user, isPinUnlocked]);
+    setIsAdmin(isUserAdmin(user));
+  }, [user]);
 
   // Subscribe to contributions & donations & settings when Admin is logged in
   useEffect(() => {
@@ -302,31 +281,11 @@ export const AdminKurator: React.FC = () => {
     }
   };
 
-  const handlePinLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = pinInput.trim();
-    if (!trimmed) return;
-    if (trimmed === adminPin || trimmed.toUpperCase() === 'ZIARAH2026') {
-      try {
-        localStorage.setItem('ziarah_curator_pin_session', 'unlocked');
-      } catch {}
-      setIsPinUnlocked(true);
-      setIsAdmin(true);
-      setLoginError(null);
-      setPinInput('');
-    } else {
-      setLoginError('Kode Akses PIN Kurator tidak sesuai. Gunakan kode PIN default: ZIARAH2026');
-    }
-  };
-
-  const handleExitPinMode = () => {
+  const handleSwitchAccount = async () => {
     try {
-      localStorage.removeItem('ziarah_curator_pin_session');
+      await signOut(auth);
+      setLoginError(null);
     } catch {}
-    setIsPinUnlocked(false);
-    if (!isUserAdmin(user)) {
-      setIsAdmin(false);
-    }
   };
 
   const handleSeedDatabase = async () => {
@@ -488,7 +447,6 @@ export const AdminKurator: React.FC = () => {
     setIsSavingSettings(true);
     setSettingsMsg('');
     const cleanedDomain = (customDomain.trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '') || 'ziarahnusantara.my.id').slice(0, 120);
-    const cleanedPin = (adminPin.trim() || 'ZIARAH2026').slice(0, 40);
     const payload = {
       bankName: bankName.trim().slice(0, 100),
       accountNumber: accountNumber.trim().slice(0, 60),
@@ -501,7 +459,6 @@ export const AdminKurator: React.FC = () => {
 
     try {
       localStorage.setItem('ziarah_local_settings_cache', JSON.stringify(payload));
-      localStorage.setItem('ziarah_custom_admin_pin', cleanedPin);
     } catch {}
 
     try {
@@ -510,16 +467,10 @@ export const AdminKurator: React.FC = () => {
         updatedAt: serverTimestamp(),
       });
       setCustomDomain(cleanedDomain);
-      setAdminPin(cleanedPin);
       setSettingsMsg('Berhasil menyimpan seluruh pengaturan Program Kebaikan, Rekening/QRIS, Custom Domain (ziarahnusantara.my.id), dan Kunci Donasi Rubrik ke Firestore.');
     } catch (error: any) {
       setCustomDomain(cleanedDomain);
-      setAdminPin(cleanedPin);
-      if (!isUserAdmin(user)) {
-        setSettingsMsg('Pengaturan berhasil disimpan di browser ini (Mode PIN Kurator). Untuk menyinkronkan ke Cloud Firestore publik, silakan tambahkan domain ke Firebase Authorized Domains lalu hubungkan akun Google Anda.');
-      } else {
-        setSettingsMsg('Gagal menyimpan ke Cloud Firestore: ' + error.message);
-      }
+      setSettingsMsg('Gagal menyimpan ke Cloud Firestore: ' + error.message);
       try {
         handleFirestoreError(error, OperationType.WRITE, 'settings/infaq');
       } catch {}
@@ -635,17 +586,17 @@ export const AdminKurator: React.FC = () => {
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center space-x-3">
-            <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${isAdmin ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
+            <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${isAdmin ? 'bg-emerald-50 border-emerald-200' : 'bg-stone-100 border-stone-200'}`}>
               {isAdmin ? (
                 <ShieldCheck className="w-6 h-6 text-emerald-700" />
               ) : (
-                <ShieldAlert className="w-6 h-6 text-rose-600" />
+                <Lock className="w-6 h-6 text-stone-700" />
               )}
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-serif font-black text-slate-900 tracking-tight">Panel Admin Kurator</h1>
+              <h1 className="text-xl sm:text-2xl font-serif font-black text-slate-900 tracking-tight">Portal Dewan Kurator</h1>
               <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                {isAdmin ? 'Akses Penuh (Super Admin & Dewan Kurator)' : 'Preview Mode - Read Only'}
+                {isAdmin ? `Terverifikasi sebagai Super Admin (${user?.email})` : 'Akses Terkunci — Khusus Akun Pengurus & Kurator Terdaftar'}
               </p>
             </div>
           </div>
@@ -688,143 +639,110 @@ export const AdminKurator: React.FC = () => {
                 <HeartHandshake className="w-3.5 h-3.5 mr-1.5" />
                 Infaq & Domain
               </button>
-              {isPinUnlocked && !isUserAdmin(user) && (
-                <button
-                  onClick={handleExitPinMode}
-                  className="px-3 py-2 rounded-xl text-xs font-bold text-rose-700 hover:bg-rose-50 transition-all flex items-center cursor-pointer"
-                  title="Keluar dari Mode PIN Kurator"
-                >
-                  <LogOut className="w-3.5 h-3.5 mr-1" />
-                  Keluar PIN
-                </button>
-              )}
             </div>
           )}
         </div>
 
         {!isAdmin ? (
-          <div className="bg-rose-50 border border-rose-200/80 rounded-2xl p-5 space-y-4">
-            <div>
-              <p className="text-sm font-bold text-rose-950">Akses Terbatas (Khusus Akun Kurator)</p>
-              <p className="text-xs text-rose-800 mt-1 leading-relaxed">
-                {user ? `Akun Anda (${user.email}) tidak terdaftar sebagai admin.` : 'Silakan login menggunakan akun Google Admin Kurator.'} Untuk self-hosting, Anda dapat menambahkan email admin melalui variabel environment <code className="bg-white px-1.5 py-0.5 rounded border border-rose-200">VITE_ADMIN_EMAILS</code>.
+          <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-6 sm:p-8 space-y-5">
+            <div className="max-w-2xl space-y-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-200/80 text-stone-800 text-[11px] font-bold uppercase tracking-wider">
+                <Lock className="w-3 h-3" /> Area Internal Terproteksi
+              </span>
+              <h2 className="text-base sm:text-lg font-bold text-stone-900">
+                {user
+                  ? 'Akun Anda Tidak Memiliki Hak Akses Kurator'
+                  : 'Autentikasi Akun Google Dewan Kurator'}
+              </h2>
+              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+                {user
+                  ? `Anda saat ini masuk sebagai ${user.email} (Akun Peziarah Reguler). Halaman manajemen database dan kurasi ini hanya dapat diakses oleh email Super Admin / Dewan Kurator resmi yang telah diverifikasi di sistem.`
+                  : 'Halaman ini dikhususkan bagi pengelola resmi Ziarah Nusantara. Pengunjung umum tidak dapat masuk ke halaman ini. Jika Anda adalah Admin Kurator, silakan masuk menggunakan akun Google resmi Anda.'}
               </p>
             </div>
 
             {loginError && (
-              <div className="bg-white/90 border border-rose-300 rounded-xl p-3 flex items-start space-x-2.5">
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start space-x-2.5">
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                <p className="text-xs text-rose-800 leading-relaxed">{loginError}</p>
+                <div className="space-y-2 text-xs text-rose-900 leading-relaxed">
+                  <p className="font-semibold">{loginError}</p>
+                  {loginError.includes('belum terdaftar di Firebase Authentication') && (
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <span className="inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-rose-200 font-mono font-bold text-slate-900">
+                        {currentHostname || 'ziarahnusantara.my.id'}
+                        <button
+                          type="button"
+                          onClick={() => handleCopyDnsValue('auth-domain', currentHostname || 'ziarahnusantara.my.id')}
+                          className="text-emerald-700 hover:underline font-sans text-[10px] cursor-pointer"
+                        >
+                          {copiedDnsKey === 'auth-domain' ? '✓ Tersalin' : 'Salin Domain'}
+                        </button>
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* Opsi 1: Masuk Cepat Tanpa Pop-up dengan Kode Akses PIN Kurator */}
-            <form onSubmit={handlePinLogin} className="bg-white border border-rose-200 rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <KeyRound className="w-4 h-4 text-emerald-800" />
-                  <span className="text-xs font-bold text-slate-900">Opsi 1 (Rekomendasi di Vercel): Masuk dengan Kode Akses PIN Kurator</span>
-                </div>
-                <span className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  PIN Default: ZIARAH2026
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-600 leading-relaxed">
-                Gunakan Kode PIN Kurator untuk langsung membuka Panel Admin tanpa memerlukan jendela pop-up Google.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="password"
-                  value={pinInput}
-                  onChange={(e) => setPinInput(e.target.value)}
-                  placeholder="Ketik Kode PIN Kurator (contoh: ZIARAH2026)"
-                  className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-emerald-700"
-                />
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              {user ? (
                 <button
-                  type="submit"
-                  className="py-2.5 px-5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl flex items-center justify-center transition-all shadow-xs cursor-pointer shrink-0"
+                  type="button"
+                  onClick={handleSwitchAccount}
+                  className="py-2.5 px-5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold rounded-xl flex items-center transition-all shadow-xs cursor-pointer"
                 >
-                  <Unlock className="w-3.5 h-3.5 mr-1.5" />
-                  <span>Buka Panel Kurator</span>
+                  <LogOut className="w-3.5 h-3.5 mr-2" />
+                  <span>Ganti ke Akun Google Admin</span>
                 </button>
-              </div>
-            </form>
+              ) : (
+                <>
+                  {!isInIframe && (
+                    <button
+                      disabled={isLoggingIn}
+                      onClick={handleRedirectLogin}
+                      className="py-2.5 px-5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl flex items-center transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                    >
+                      <LogIn className="w-3.5 h-3.5 mr-2" />
+                      <span>Masuk Akun Kurator (Redirect Tanpa Pop-up)</span>
+                    </button>
+                  )}
 
-            {/* Opsi 2: Masuk dengan Akun Google */}
-            <div className="space-y-2 pt-1">
-              <p className="text-xs font-bold text-rose-950">Opsi 2: Masuk dengan Akun Google Admin (Sinkronisasi Cloud Firestore)</p>
-              <div className="flex flex-wrap gap-2.5">
-                {!isInIframe && (
                   <button
                     disabled={isLoggingIn}
-                    onClick={handleRedirectLogin}
-                    className="py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                    onClick={handleLogin}
+                    className="py-2.5 px-5 bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 text-xs font-bold rounded-xl flex items-center transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
                   >
-                    <LogIn className="w-3.5 h-3.5 mr-1.5" />
-                    <span>Masuk Google Tanpa Pop-up (Redirect)</span>
+                    {isLoggingIn ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                        <span>Memverifikasi...</span>
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="w-3.5 h-3.5 mr-2 text-emerald-800" />
+                        <span>Masuk via Pop-up Google</span>
+                      </>
+                    )}
                   </button>
-                )}
 
-                <button
-                  disabled={isLoggingIn}
-                  onClick={handleLogin}
-                  className="py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold rounded-xl flex items-center transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
-                >
-                  {isLoggingIn ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                      <span>Menghubungkan...</span>
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className="w-3.5 h-3.5 mr-1.5 text-emerald-800" />
-                      <span>Masuk dengan Google (Pop-up)</span>
-                    </>
+                  {isInIframe && (
+                    <button
+                      onClick={() => window.open(window.location.href, '_blank')}
+                      className="py-2.5 px-4 bg-white hover:bg-stone-100 border border-stone-300 text-stone-700 text-xs font-semibold rounded-xl flex items-center transition-colors shadow-2xs cursor-pointer"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 mr-1.5 text-stone-500" />
+                      <span>Buka di Tab Baru</span>
+                    </button>
                   )}
-                </button>
+                </>
+              )}
 
-                {isInIframe && (
-                  <button
-                    onClick={() => window.open(window.location.href, '_blank')}
-                    className="py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl flex items-center transition-colors shadow-2xs cursor-pointer"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
-                    <span>Buka di Tab Baru</span>
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Panduan Cepat Izin Domain Vercel & Pop-up */}
-            <div className="bg-white/80 border border-rose-200/80 rounded-xl p-3.5 space-y-2 text-xs text-slate-700">
-              <p className="font-bold text-slate-900">Agar Login Google Berfungsi di Vercel & Domain Baru:</p>
-              <ol className="list-decimal list-inside space-y-1.5 text-[11px] leading-relaxed">
-                <li>
-                  Buka <a href="https://console.firebase.google.com/project/pro-cumulus-xmvz5/authentication/settings" target="_blank" rel="noreferrer" className="text-emerald-800 font-bold underline">Firebase Console → Authentication → Settings → Authorized domains</a>, klik <strong>Add domain</strong>, lalu tambahkan kedua domain ini:
-                  <div className="flex flex-wrap gap-2 mt-1.5">
-                    <span className="inline-flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-300 font-mono font-bold text-slate-900">
-                      ziarahnusantara.my.id
-                      <button
-                        type="button"
-                        onClick={() => handleCopyDnsValue('auth-myid', 'ziarahnusantara.my.id')}
-                        className="text-emerald-700 hover:underline font-sans text-[10px] cursor-pointer"
-                      >
-                        {copiedDnsKey === 'auth-myid' ? '✓ Tersalin' : 'Salin'}
-                      </button>
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-300 font-mono font-bold text-slate-900">
-                      {currentHostname || 'ziarah-theta.vercel.app'}
-                      <button
-                        type="button"
-                        onClick={() => handleCopyDnsValue('auth-domain', currentHostname || 'ziarah-theta.vercel.app')}
-                        className="text-emerald-700 hover:underline font-sans text-[10px] cursor-pointer"
-                      >
-                        {copiedDnsKey === 'auth-domain' ? '✓ Tersalin' : 'Salin'}
-                      </button>
-                    </span>
-                  </div>
-                </li>
-              </ol>
+              <Link
+                to="/"
+                className="py-2.5 px-4 bg-transparent hover:bg-stone-200/70 text-stone-600 hover:text-stone-900 text-xs font-semibold rounded-xl transition-colors"
+              >
+                ← Kembali ke Beranda Direktori
+              </Link>
             </div>
           </div>
         ) : (
@@ -1661,12 +1579,12 @@ export const AdminKurator: React.FC = () => {
                   <div className="pt-3 border-t border-slate-200/80 space-y-3">
                     <div className="flex items-center gap-2">
                       <Globe className="w-4 h-4 text-emerald-700" />
-                      <h4 className="font-bold text-slate-900 text-sm">Domain Resmi (`ziarahnusantara.my.id`), DNS IDCloudHost & Kode PIN Kurator</h4>
+                      <h4 className="font-bold text-slate-900 text-sm">Domain Resmi (`ziarahnusantara.my.id`) &amp; Pengaturan DNS IDCloudHost</h4>
                     </div>
                     <p className="text-xs text-slate-500">
                       Domain utama Anda telah disiapkan ke <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-bold">ziarahnusantara.my.id</code>. Tag Canonical URL, OpenGraph WhatsApp/Sosial Media, dan Schema.org otomatis menyesuaikan dengan domain ini.
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">Custom Domain Utama (Tanpa https://)</label>
                         <input
@@ -1675,16 +1593,6 @@ export const AdminKurator: React.FC = () => {
                           value={customDomain}
                           onChange={(e) => setCustomDomain(e.target.value)}
                           className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Kode Akses PIN Kurator</label>
-                        <input
-                          type="text"
-                          placeholder="ZIARAH2026"
-                          value={adminPin}
-                          onChange={(e) => setAdminPin(e.target.value)}
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-emerald-900"
                         />
                       </div>
                       <div className="bg-white p-3 rounded-xl border border-slate-200 flex flex-col justify-center">

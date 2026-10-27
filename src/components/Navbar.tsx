@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Compass, Map as MapIcon, BookOpen, ShieldCheck, UserCog, Bookmark, MoreVertical, LogIn, LogOut, ExternalLink, AlertCircle, Loader2, X, ScrollText, HeartHandshake } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { PWAInstallButton } from './PWAInstallButton';
-import { auth, googleProvider } from '../lib/firebase';
+import { auth, googleProvider, isUserAdmin } from '../lib/firebase';
 import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { APP_BRAND } from '../config/brand';
 
@@ -240,13 +240,15 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                     >
                       <ShieldCheck className="w-4 h-4 mr-2.5 text-emerald-800" /> Standar Kurasi
                     </Link>
-                    <Link 
-                      to="/admin" 
-                      onClick={() => setDropdownOpen(false)}
-                      className="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium text-stone-700 hover:bg-stone-200/60 hover:text-stone-900 rounded-xl flex items-center transition-colors"
-                    >
-                      <UserCog className="w-4 h-4 mr-2.5 text-emerald-800" /> Panel Kurator
-                    </Link>
+                    {isUserAdmin(user) && (
+                      <Link 
+                        to="/admin" 
+                        onClick={() => setDropdownOpen(false)}
+                        className="w-full text-left px-3 py-2 text-xs sm:text-sm font-semibold text-emerald-900 bg-emerald-50/70 hover:bg-emerald-100/80 rounded-xl flex items-center transition-colors"
+                      >
+                        <UserCog className="w-4 h-4 mr-2.5 text-emerald-800" /> Panel Kurator
+                      </Link>
+                    )}
                     
                     <div className="my-1 border-t border-stone-200/80"></div>
 
