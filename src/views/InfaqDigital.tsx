@@ -36,9 +36,9 @@ interface InfaqSettings {
 }
 
 const DEFAULT_INFAQ_SETTINGS: InfaqSettings = {
-  bankName: 'Bank Syariah Indonesia (BSI)',
-  accountNumber: '7123-4567-8901',
-  accountHolder: 'Yayasan Makam Aulia Nusantara',
+  bankName: 'Bank BCA',
+  accountNumber: '5470-0856-08',
+  accountHolder: 'ARIF NURACHMAN HAKIM',
   qrisImageUrl: '',
 };
 
