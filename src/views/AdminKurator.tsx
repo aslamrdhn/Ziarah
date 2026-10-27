@@ -1735,6 +1735,70 @@ export const AdminKurator: React.FC = () => {
                         <strong>Catatan Penting IDCloudHost:</strong> Matikan tombol biru <strong>Proxied</strong> pada baris <code className="bg-slate-100 px-1 rounded">@</code> dan <code className="bg-slate-100 px-1 rounded">www</code>, lalu tambahkan <code className="bg-slate-100 px-1 rounded">{(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}</code> di menu <strong>Vercel → Domains</strong> serta <strong>Firebase Console → Authentication → Settings → Authorized domains</strong>.
                       </p>
                     </div>
+
+                    {/* Kartu SEO Google Search Console, Sitemap.xml & Robots.txt */}
+                    <div className="bg-emerald-50/60 rounded-xl border border-emerald-200 p-4 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-800 text-white mb-1">
+                            SEO &amp; Google Search Console Aktif
+                          </span>
+                          <h5 className="text-xs font-bold text-slate-900">
+                            Peta Situs (`sitemap.xml`), `robots.txt` &amp; Kata Kunci &ldquo;Ziarah Nusantara&rdquo;
+                          </h5>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <a
+                            href="/sitemap.xml"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1.5 bg-white hover:bg-emerald-50 border border-emerald-300 rounded-lg text-[11px] font-bold text-emerald-900 flex items-center gap-1 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3 text-emerald-700" />
+                            <span>Cek Sitemap.xml</span>
+                          </a>
+                          <a
+                            href="/robots.txt"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1.5 bg-white hover:bg-emerald-50 border border-emerald-300 rounded-lg text-[11px] font-bold text-emerald-900 flex items-center gap-1 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3 text-emerald-700" />
+                            <span>Cek Robots.txt</span>
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-lg border border-emerald-200/80 p-3 space-y-1.5 text-xs">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                          <div>
+                            <span className="text-[10px] font-bold uppercase text-slate-400 block">URL Peta Situs untuk Dikirim ke Google Search Console:</span>
+                            <code className="font-mono text-xs font-bold text-emerald-900">
+                              https://{(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}/sitemap.xml
+                            </code>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleCopyDnsValue(
+                                'sitemap-url',
+                                `https://${(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}/sitemap.xml`
+                              )
+                            }
+                            className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shrink-0 self-start sm:self-center"
+                          >
+                            {copiedDnsKey === 'sitemap-url' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{copiedDnsKey === 'sitemap-url' ? 'URL Sitemap Tersalin' : 'Salin URL Sitemap'}</span>
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-slate-700">
+                          <strong>Judul SEO (`&lt;title&gt;`):</strong> Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara
+                        </p>
+                        <p className="text-[11px] text-slate-600 leading-relaxed">
+                          <strong>Deskripsi Meta (`description`):</strong> Ziarah Nusantara adalah platform panduan dan informasi jejak spiritual makam para Waliyullah, ulama, dan tokoh bersejarah di seluruh Nusantara.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex justify-end">

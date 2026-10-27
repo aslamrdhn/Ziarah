@@ -1,6 +1,6 @@
 {
   "name": "Ziarah Nusantara",
-  "description": "Platform interaktif pemetaan dan basis data lokasi ziarah di Indonesia.",
+  "description": "Ziarah Nusantara adalah platform panduan dan informasi jejak spiritual makam para Waliyullah, ulama, dan tokoh bersejarah di seluruh Nusantara.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

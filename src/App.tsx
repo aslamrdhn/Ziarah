@@ -73,6 +73,13 @@ export default function App() {
     const fullUrl = `${baseOrigin}${cleanPath}`;
     const fullImageUrl = `${baseOrigin}/pwa-512x512.png`;
 
+    const defaultTitle = 'Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara';
+    const defaultDesc = 'Ziarah Nusantara adalah platform panduan dan informasi jejak spiritual makam para Waliyullah, ulama, dan tokoh bersejarah di seluruh Nusantara.';
+    document.title = defaultTitle;
+
+    const descEl = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (descEl) descEl.content = defaultDesc;
+
     const canonicalEl = document.getElementById('canonical-link') as HTMLLinkElement | null;
     if (canonicalEl) canonicalEl.href = fullUrl;
 
@@ -91,11 +98,12 @@ export default function App() {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'Ziarah Nusantara',
+        alternateName: defaultTitle,
         url: `${baseOrigin}/`,
         inLanguage: 'id-ID',
         applicationCategory: 'ReferenceApplication',
         operatingSystem: 'All',
-        description: 'Platform interaktif pemetaan dan basis data lokasi ziarah Walisongo, Ulama, dan Habaib di Indonesia.',
+        description: defaultDesc,
       });
     }
   }, [location.pathname, customDomainOrigin]);

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ziarahnusantara.my.id/sitemap.xml
