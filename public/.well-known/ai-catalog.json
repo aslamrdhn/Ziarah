@@ -1,0 +1,77 @@
+{
+  "$schema": "https://schema.org/DataCatalog",
+  "schema_version": "1.0",
+  "version": "1.0.0",
+  "id": "https://ziarahnusantara.my.id/.well-known/ai-catalog.json",
+  "name": "Ziarah Nusantara",
+  "title": "Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara",
+  "description": "Situs resmi Ziarah Nusantara (ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Menyediakan direktori makam Wali Songo, ulama Nusantara, peta rute ziarah interaktif, adab ziarah, kumpulan doa tahlil & tawassul, serta literasi sejarah Islam Nusantara.",
+  "url": "https://ziarahnusantara.my.id/",
+  "homepage": "https://ziarahnusantara.my.id/",
+  "documentation_url": "https://ziarahnusantara.my.id/llms.txt",
+  "llms_txt": "https://ziarahnusantara.my.id/llms.txt",
+  "llms_full_txt": "https://ziarahnusantara.my.id/llms-full.txt",
+  "sitemap_url": "https://ziarahnusantara.my.id/sitemap.xml",
+  "logo_url": "https://ziarahnusantara.my.id/pwa-512x512.png",
+  "publisher": {
+    "name": "Tim Kurator Arsip Ziarah Nusantara",
+    "url": "https://ziarahnusantara.my.id/kurasi"
+  },
+  "capabilities": {
+    "agentic_navigation": true,
+    "structured_data": true,
+    "llms_txt": true
+  },
+  "resources": [
+    {
+      "id": "direktori-makam",
+      "name": "Arsip & Direktori Makam Waliyullah Nusantara",
+      "type": "directory",
+      "url": "https://ziarahnusantara.my.id/direktori",
+      "description": "Katalog ensiklopedis makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya Nusantara beserta koordinat geospasial dan referensi jurnal ilmiah."
+    },
+    {
+      "id": "peta-rute-ziarah",
+      "name": "Peta Rute Geospasial Ziarah Nusantara",
+      "type": "map",
+      "url": "https://ziarahnusantara.my.id/peta",
+      "description": "Peta interaktif titik lokasi makam Waliyullah dan navigasi rute perjalanan peziarah di seluruh Indonesia."
+    },
+    {
+      "id": "panduan-adab-ziarah",
+      "name": "Panduan Adab & Tata Cara Ziarah Kubur",
+      "type": "guide",
+      "url": "https://ziarahnusantara.my.id/panduan",
+      "description": "Tuntunan adab, niat, salam, dan tata cara ziarah makam sesuai tradisi ulama Ahlussunnah wal Jamaah."
+    },
+    {
+      "id": "rubrik-kisah-sejarah",
+      "name": "Rubrik Kisah, Karomah & Naskah Sejarah",
+      "type": "articles",
+      "url": "https://ziarahnusantara.my.id/rubrik",
+      "description": "Artikel sejarah dakwah, sanad keilmuan, dan biografi para Waliyullah Nusantara."
+    },
+    {
+      "id": "kumpulan-doa-tahlil",
+      "name": "Kumpulan Doa Khusus, Tahlil & Tawassul",
+      "type": "liturgy",
+      "url": "https://ziarahnusantara.my.id/doa",
+      "description": "Bacaan salam ziarah, tawassul, Yasin, dan tahlil lengkap teks Arab, transliterasi Latin, dan terjemahan Indonesia."
+    },
+    {
+      "id": "infaq-digital-qris",
+      "name": "Infaq Digital & Pelestarian Arsip Ziarah Nusantara",
+      "type": "service",
+      "url": "https://ziarahnusantara.my.id/infaq",
+      "description": "Layanan infaq dan wakaf digital QRIS resmi Ziarah Nusantara untuk riset literasi sejarah dan pelestarian situs makam."
+    }
+  ],
+  "tools": [
+    {
+      "name": "search_ziarah_directory",
+      "description": "Mencari lokasi makam Waliyullah berdasarkan nama tokoh, kota, provinsi, atau kategori jaringan dakwah.",
+      "url": "https://ziarahnusantara.my.id/direktori",
+      "method": "GET"
+    }
+  ]
+}

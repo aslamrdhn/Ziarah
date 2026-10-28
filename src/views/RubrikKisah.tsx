@@ -18,12 +18,18 @@ import {
   CheckCircle2,
   MessageSquareHeart,
   Loader2,
-  BookOpenCheck
+  BookOpenCheck,
+  AlertCircle,
+  ShieldCheck
 } from 'lucide-react';
 import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
 import { auth, db, handleFirestoreError, OperationType, isUserAdmin } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { QrisPaymentCard } from '../components/QrisPaymentCard';
+import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
+import { TransferProofUploadField } from '../components/TransferProofUploadField';
+import { CompressedReceiptResult, saveVerifiedDonationRecord, useVerifiedDonationUnlock } from '../lib/transferProof';
 
 export interface RubrikItem {
   id: string;
@@ -45,6 +51,7 @@ export interface RubrikGateSettings {
   bannerDescription: string;
   pinnedFreeArticleIds: string[];
   customArticles: RubrikItem[];
+  requireManualVerification?: boolean;
 }
 
 export const DEFAULT_RUBRIK_GATE_SETTINGS: RubrikGateSettings = {
@@ -53,12 +60,13 @@ export const DEFAULT_RUBRIK_GATE_SETTINGS: RubrikGateSettings = {
   minDonationAmount: 25000,
   bannerTitle: 'Khazanah Kisah Rahasia, Manuskrip & Hikmah Karomah',
   bannerDescription:
-    'Sebagai contoh kurasi sejarah & sanad, 2 tulisan pilihan dibuka secara gratis untuk Anda baca penuh. Seluruh naskah lainnya ditampilkan buram dan dapat diakses sepenuhnya setelah Anda berinfaq untuk mendukung Riset Sejarah, Perluasan Database Makam & Operasional Web.',
+    'Sebagai contoh kurasi sejarah & sanad, 2 tulisan pilihan dibuka secara gratis untuk Anda baca penuh. Seluruh naskah lainnya dikunci dan hanya dapat dibuka setelah Anda berinfaq serta mengunggah bukti transfer yang sah.',
   pinnedFreeArticleIds: [
     'rubrik-guru-sekumpul-untold',
     'rubrik-wali-songo-strategy',
   ],
   customArticles: [],
+  requireManualVerification: false,
 };
 
 interface RubrikKisahProps {
@@ -93,20 +101,23 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     accountNumber: '5470-0856-08',
     accountHolder: 'ARIF NURACHMAN HAKIM',
     qrisImageUrl: '',
+    qrisPayload: OFFICIAL_QRIS_STATIC_PAYLOAD,
   });
-  const [hasDonated, setHasDonated] = useState<boolean>(() => {
-    try {
-      const flag = localStorage.getItem('hasDonatedRubrik') === 'true';
-      const unlockedList = JSON.parse(localStorage.getItem('unlockedUntold') || '[]');
-      return flag || (Array.isArray(unlockedList) && unlockedList.length > 0);
-    } catch {
-      return false;
-    }
-  });
+
+  const {
+    isUnlocked: hasDonated,
+    isPendingAdmin,
+    referenceCode: verifiedRefCode,
+  } = useVerifiedDonationUnlock(undefined, Boolean(gateSettings.requireManualVerification));
 
   // Unlock modal form state
   const [selectedNominal, setSelectedNominal] = useState<number>(25000);
-  const [donorName, setDonorName] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>('QRIS');
+  const [senderAccount, setSenderAccount] = useState<string>('');
+  const [receipt, setReceipt] = useState<CompressedReceiptResult | null>(null);
+  const [agreedToAkad, setAgreedToAkad] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [unlockSuccessState, setUnlockSuccessState] = useState<boolean>(false);
   const [copiedBank, setCopiedBank] = useState<boolean>(false);
   const [isSubmittingDonation, setIsSubmittingDonation] = useState<boolean>(false);
 
@@ -137,6 +148,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             accountNumber: d.accountNumber || '5470-0856-08',
             accountHolder: d.accountHolder || 'ARIF NURACHMAN HAKIM',
             qrisImageUrl: d.qrisImageUrl || '',
+            qrisPayload: d.qrisPayload || OFFICIAL_QRIS_STATIC_PAYLOAD,
           });
           if (d.rubrikGate) {
             const rg = d.rubrikGate;
@@ -149,6 +161,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               bannerDescription: rg.bannerDescription || DEFAULT_RUBRIK_GATE_SETTINGS.bannerDescription,
               pinnedFreeArticleIds: Array.isArray(rg.pinnedFreeArticleIds) ? rg.pinnedFreeArticleIds : DEFAULT_RUBRIK_GATE_SETTINGS.pinnedFreeArticleIds,
               customArticles: Array.isArray(rg.customArticles) ? rg.customArticles : [],
+              requireManualVerification: Boolean(rg.requireManualVerification),
             });
             setSelectedNominal(minAmt);
           }
@@ -283,16 +296,40 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     return false;
   };
 
+  const openUnlockModalFor = (article: RubrikItem | null) => {
+    setSubmitError(null);
+    setUnlockSuccessState(false);
+    setReceipt(null);
+    setAgreedToAkad(false);
+    if (auth.currentUser?.displayName && !senderAccount) {
+      setSenderAccount(auth.currentUser.displayName);
+    }
+    setUnlockModalArticle(article);
+  };
+
   const handleCopyAccount = () => {
     navigator.clipboard.writeText(bankDetails.accountNumber.replace(/[^0-9]/g, '') || bankDetails.accountNumber);
     setCopiedBank(true);
     setTimeout(() => setCopiedBank(false), 2000);
   };
 
+  const isProofComplete = Boolean(receipt && senderAccount.trim().length >= 3);
+
   const handleConfirmUnlockDonation = async () => {
     if (isSubmittingDonation) return;
+    setSubmitError(null);
+
+    if (!receipt || !receipt.dataUrl) {
+      setSubmitError('Wajib mengunggah foto/screenshot bukti transfer terlebih dahulu.');
+      return;
+    }
+    if (senderAccount.trim().length < 3) {
+      setSubmitError('Wajib mengisi nama pengirim sesuai bukti transfer (minimal 3 karakter).');
+      return;
+    }
+
     setIsSubmittingDonation(true);
-    const finalDonor = (donorName.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
+    const finalDonor = (senderAccount.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
     const donationRef = doc(collection(db, 'donations'));
 
     try {
@@ -304,37 +341,37 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         siteName: unlockModalArticle?.siteName || 'Riset Database & Operasional Web',
         amount: selectedNominal,
         donorName: finalDonor,
+        paymentMethod,
+        senderAccount: senderAccount.trim().slice(0, 80),
+        proofImageUrl: receipt.dataUrl,
+        referenceCode: receipt.referenceCode,
         doaHajat: `Infaq Riset & Pembukaan Arsip Rubrik (${unlockModalArticle?.title || 'Khazanah Nusantara'})`,
         authorUid: auth.currentUser?.uid || 'guest',
         status: 'confirmed',
         createdAt: serverTimestamp(),
       });
+
+      saveVerifiedDonationRecord(donationRef.id, unlockModalArticle?.siteId);
+      setIsSubmittingDonation(false);
+      setUnlockSuccessState(true);
     } catch (error) {
+      setSubmitError('Gagal mengunggah bukti transfer ke database. Periksa koneksi internet Anda dan coba kembali.');
       try {
         handleFirestoreError(error, OperationType.CREATE, `donations/${donationRef.id}`);
       } catch {}
-    } finally {
-      try {
-        localStorage.setItem('hasDonatedRubrik', 'true');
-      } catch {}
-      setHasDonated(true);
       setIsSubmittingDonation(false);
-      const targetToRead = unlockModalArticle;
-      setUnlockModalArticle(null);
-      if (targetToRead) {
-        setActiveStoryModal(targetToRead);
-      }
     }
   };
 
   const categories = ['Semua', 'Kisah Rahasia', 'Manuskrip', 'Hikmah & Karomah', 'Tersimpan'];
-  const finalDonorForWa = (donorName.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
-  const waUnlockMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya ingin konfirmasi Infaq Riset & Pembukaan Akses Rubrik (Kisah Rahasia & Karomah):\n\n` +
-    `• *Nama Pewakif:* ${finalDonorForWa}\n` +
-    `• *Program:* Riset Sejarah, Perluasan Database & Operasional Web\n` +
+  const finalDonorForWa = (senderAccount.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
+  const waUnlockMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq Riset & Pembukaan Akses Rubrik:\n\n` +
+    `• *Kode Referensi Bukti:* ${receipt?.referenceCode || verifiedRefCode || '-'}\n` +
+    `• *Nama Pengirim:* ${finalDonorForWa}\n` +
+    `• *Metode Pembayaran:* ${paymentMethod}\n` +
     `• *Nominal Infaq:* Rp ${selectedNominal.toLocaleString('id-ID')}\n` +
-    `• *Tujuan Transfer:* ${bankDetails.bankName} (${bankDetails.accountNumber} a.n. ${bankDetails.accountHolder})\n\n` +
-    `Berikut saya lampirkan bukti transfernya. Terima kasih.`;
+    `• *Program:* Riset Sejarah, Perluasan Database & Operasional Web\n\n` +
+    `Screenshot bukti transfer telah terunggah di sistem Admin Kurator. Terima kasih.`;
   const waUnlockUrl = `https://wa.me/6285717378885?text=${encodeURIComponent(waUnlockMessage)}`;
 
   return (
@@ -374,6 +411,29 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       </motion.div>
 
       {/* Banner Informasi Akses Donasi & 2 Tulisan Contoh Gratis */}
+      {isPendingAdmin && !isAllUnlocked && (
+        <div className="bg-amber-50 rounded-2xl p-4 border border-amber-300 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+            <div className="text-xs text-amber-950">
+              <p className="font-bold">Bukti Transfer Terkirim (Ref: #{verifiedRefCode}) — Menunggu Verifikasi Admin Kurator</p>
+              <p className="text-amber-800 mt-0.5">
+                Bukti transfer Anda sedang diperiksa oleh Admin Kurator. Halaman ini akan otomatis terbuka begitu Admin memverifikasi bukti Anda.
+              </p>
+            </div>
+          </div>
+          <a
+            href={waUnlockUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3.5 py-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold rounded-xl shrink-0 inline-flex items-center gap-1.5"
+          >
+            <MessageSquareHeart className="w-3.5 h-3.5" />
+            Percepat via WhatsApp
+          </a>
+        </div>
+      )}
+
       {gateSettings.lockEnabled && !isAllUnlocked ? (
         <div className="bg-gradient-to-br from-amber-50/90 via-white to-emerald-50/70 rounded-3xl p-5 sm:p-6 border border-amber-200/80 shadow-xs mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
@@ -391,11 +451,11 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
           <div className="flex flex-col sm:flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto">
             <button
               type="button"
-              onClick={() => setUnlockModalArticle(filteredArticles[gateSettings.freeSampleCount] || filteredArticles[0] || null)}
+              onClick={() => openUnlockModalFor(filteredArticles[gateSettings.freeSampleCount] || filteredArticles[0] || null)}
               className="px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-2xl transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
             >
               <HeartHandshake className="w-4 h-4 text-emerald-300" />
-              <span>Donasi & Buka Seluruh Naskah</span>
+              <span>Donasi & Unggah Bukti Transfer</span>
             </button>
             <Link
               to="/infaq"
@@ -412,12 +472,12 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             <span>
               {isAdmin
                 ? 'Mode Kurator Aktif: Seluruh arsip Kisah Rahasia, Manuskrip & Karomah terbuka penuh.'
-                : 'Alhamdulillah, seluruh arsip Kisah Rahasia, Manuskrip & Karomah telah terbuka untuk Anda.'}
+                : 'Alhamdulillah, bukti transfer Anda terverifikasi. Seluruh arsip Kisah Rahasia, Manuskrip & Karomah telah terbuka.'}
             </span>
           </div>
           {hasDonated && !isAdmin && (
             <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-white text-emerald-800 border border-emerald-200 shrink-0">
-              Akses Pewakif Aktif
+              Bukti Terverifikasi {verifiedRefCode ? `(#${verifiedRefCode})` : ''}
             </span>
           )}
         </div>
@@ -471,15 +531,14 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
           {filteredArticles.map((article, idx) => {
             const isSaved = savedArticles.includes(article.id);
             const isUnlocked = checkIsArticleUnlocked(article, idx);
-            const hookLead = article.content.slice(0, 75);
-            const blurredTail = article.content.slice(75);
+            const hookLead = article.content.slice(0, 68);
 
             return (
               <article
                 key={article.id}
                 onClick={() => {
                   if (!isUnlocked) {
-                    setUnlockModalArticle(article);
+                    openUnlockModalFor(article);
                   }
                 }}
                 className={`bg-white rounded-3xl p-6 border transition-all duration-200 flex flex-col justify-between group relative overflow-hidden ${
@@ -549,13 +608,13 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                         <span>{hookLead}... </span>
                         <span className="blur-[4px] select-none opacity-65">
-                          {blurredTail || 'Kisah rahasia dan catatan karomah ini hanya dibuka bagi peziarah yang telah mendukung program riset database situs Ziarah Nusantara.'}
+                          Isi lengkap naskah sejarah, sanad, dan hikmah karomah ini terkunci oleh sistem verifikasi donasi. Selesaikan infaq riset dan unggah bukti transfer untuk membuka seluruh arsip.
                         </span>
                       </p>
                       <div className="mt-2.5 pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] font-bold text-amber-900">
                         <span className="inline-flex items-center gap-1.5">
                           <Lock className="w-3.5 h-3.5 text-amber-700" />
-                          Tulisan diburamkan — Buka dengan Infaq Riset
+                          Terkunci — Wajib Donasi & Bukti Transfer
                         </span>
                         <span className="text-emerald-800 underline">Buka Akses</span>
                       </div>
@@ -585,12 +644,12 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setUnlockModalArticle(article);
+                        openUnlockModalFor(article);
                       }}
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
                     >
                       <Lock className="w-3 h-3 text-amber-700" />
-                      <span>Donasi & Baca Penuh</span>
+                      <span>Infaq & Bukti Transfer</span>
                     </button>
                   )}
                 </div>
@@ -600,7 +659,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         </div>
       )}
 
-      {/* Modal Buka Akses Rubrik (Donasi / Infaq Riset) */}
+      {/* Modal Buka Akses Rubrik (Donasi / Infaq Riset + Bukti Transfer Wajib) */}
       <AnimatePresence>
         {unlockModalArticle && (
           <div className="fixed inset-0 z-[3000] bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -610,7 +669,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               className="bg-white rounded-3xl max-w-md w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
             >
-              <div className="p-6 bg-gradient-to-r from-emerald-900 via-brand-900 to-teal-950 text-white relative">
+              <div className="p-5 sm:p-6 bg-gradient-to-r from-emerald-900 via-brand-900 to-teal-950 text-white relative shrink-0">
                 <button
                   onClick={() => setUnlockModalArticle(null)}
                   className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/15 rounded-full transition-colors cursor-pointer"
@@ -619,7 +678,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                 </button>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-gold-300 text-[11px] font-bold mb-2">
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Buka Seluruh Khazanah Rubrik & Karomah</span>
+                  <span>Verifikasi Infaq & Bukti Transfer</span>
                 </div>
                 <h3 className="text-lg font-serif font-black leading-snug">
                   {unlockModalArticle.title}
@@ -629,105 +688,183 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                 </p>
               </div>
 
-              <div className="p-6 overflow-y-auto space-y-4">
-                <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-2xl text-xs text-amber-950 leading-relaxed">
-                  <p className="font-bold mb-1">Mengapa Naskah Ini Diburamkan?</p>
-                  <p>
-                    Untuk menjaga keberlangsungan <strong>riset lapangan, verifikasi sanad, penambahan database makam ulama Nusantara, serta langganan domain & server VPS</strong>, akses penuh ke seluruh arsip <em>Kisah Rahasia</em> dan <em>Hikmah Karomah</em> dibuka khusus bagi pengunjung yang berpartisipasi dalam <strong>Infaq Riset</strong>.
-                  </p>
-                </div>
+              <div className="p-5 sm:p-6 overflow-y-auto space-y-4">
+                {unlockSuccessState ? (
+                  <div className="text-center py-3">
+                    <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-emerald-100 shadow-xs">
+                      <CheckCircle2 className="w-8 h-8" />
+                    </div>
+                    <span className="inline-block text-[10px] font-bold font-mono uppercase tracking-wider bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 mb-2">
+                      Kode Referensi Bukti: #{receipt?.referenceCode}
+                    </span>
+                    <h4 className="font-bold text-slate-900 text-lg mb-1">
+                      {gateSettings.requireManualVerification
+                        ? 'Bukti Transfer Terkirim ke Kurator!'
+                        : 'Bukti Transfer Terverifikasi — Naskah Terbuka!'}
+                    </h4>
+                    <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                      {gateSettings.requireManualVerification
+                        ? 'Bukti transfer Anda telah masuk ke antrean Admin Kurator. Silakan klik tombol WhatsApp di bawah untuk mempercepat pembukaan akses.'
+                        : 'Jazakumullahu khairan. Bukti transfer Anda telah tersimpan di database Kurator dan seluruh naskah Rubrik kini dapat Anda baca penuh.'}
+                    </p>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
-                    Pilih Nominal Infaq Pembuka Seluruh Arsip:
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {[15000, 25000, 50000, 100000].map((amt) => (
+                    {receipt && (
+                      <div className="mb-4 p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3 text-left">
+                        <img
+                          src={receipt.dataUrl}
+                          alt="Bukti Transfer"
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
+                        />
+                        <div className="text-xs min-w-0">
+                          <p className="font-bold text-slate-900 truncate">{finalDonorForWa} ({paymentMethod})</p>
+                          <p className="text-emerald-700 font-semibold">Rp {selectedNominal.toLocaleString('id-ID')}</p>
+                          <p className="text-[10px] text-slate-400">Bukti tersimpan di Database Admin</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-2.5">
+                      <a
+                        href={waUnlockUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <MessageSquareHeart className="w-4 h-4" />
+                        <span>Teruskan Bukti ke WhatsApp Admin (+62 857-1737-8885)</span>
+                      </a>
                       <button
-                        key={amt}
                         type="button"
-                        onClick={() => setSelectedNominal(amt)}
-                        className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                          selectedNominal === amt
-                            ? 'bg-emerald-800 text-white border-emerald-800 shadow-2xs'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50'
+                        onClick={() => {
+                          const targetToRead = unlockModalArticle;
+                          setUnlockModalArticle(null);
+                          if (!gateSettings.requireManualVerification && targetToRead) {
+                            setActiveStoryModal(targetToRead);
+                          }
+                        }}
+                        className="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer"
+                      >
+                        {gateSettings.requireManualVerification ? 'Selesai & Tutup' : 'Baca Naskah Lengkap Sekarang →'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-2xl text-xs text-amber-950 leading-relaxed">
+                      <p className="font-bold mb-1">Ketentuan Membuka Naskah Terkunci:</p>
+                      <p>
+                        Naskah ini tidak dapat dibuka sebelum Anda melakukan <strong>Infaq Riset</strong> (via QRIS atau Transfer Bank) dan <strong>mengunggah screenshot bukti transfer yang sah</strong> pada formulir di bawah ini.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-2">
+                        Pilih Nominal Infaq Pembuka Seluruh Arsip:
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {[15000, 25000, 50000, 100000].map((amt) => (
+                          <button
+                            key={amt}
+                            type="button"
+                            onClick={() => setSelectedNominal(amt)}
+                            className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                              selectedNominal === amt
+                                ? 'bg-emerald-800 text-white border-emerald-800 shadow-2xs'
+                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50'
+                            }`}
+                          >
+                            Rp {amt.toLocaleString('id-ID')}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Barcode QRIS Resmi Ziarah Nusantara */}
+                    <QrisPaymentCard
+                      qrisPayload={bankDetails.qrisPayload}
+                      qrisImageUrl={bankDetails.qrisImageUrl}
+                      selectedAmount={selectedNominal}
+                      compact
+                    />
+
+                    {/* Rekening Bank BCA */}
+                    <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                      <p className="text-[11px] font-bold text-slate-600 mb-2">Alternatif Transfer Rekening Bank:</p>
+                      <div className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-slate-900 text-xs">{bankDetails.bankName}</p>
+                          <p className="text-slate-800 font-mono text-xs font-bold mt-0.5">{bankDetails.accountNumber}</p>
+                          <p className="text-[10px] text-slate-500">a.n. {bankDetails.accountHolder}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleCopyAccount}
+                          className="px-3 py-1.5 bg-slate-50 hover:bg-emerald-50 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+                        >
+                          {copiedBank ? (
+                            <span className="text-emerald-600">Tersalin!</span>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Salin</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Wajib Unggah Bukti Transfer */}
+                    <TransferProofUploadField
+                      paymentMethod={paymentMethod}
+                      onPaymentMethodChange={setPaymentMethod}
+                      senderAccount={senderAccount}
+                      onSenderAccountChange={setSenderAccount}
+                      receipt={receipt}
+                      onReceiptChange={setReceipt}
+                      agreedToAkad={agreedToAkad}
+                      onAgreedToAkadChange={setAgreedToAkad}
+                      accentColor="emerald"
+                      requiredForUnlock
+                    />
+
+                    {submitError && (
+                      <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-rose-800 text-xs">
+                        <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                        <span>{submitError}</span>
+                      </div>
+                    )}
+
+                    <div className="space-y-2.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleConfirmUnlockDonation}
+                        disabled={isSubmittingDonation || !isProofComplete}
+                        className={`w-full py-3.5 font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-sm flex items-center justify-center gap-2 ${
+                          !isProofComplete
+                            ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-emerald-700 via-emerald-800 to-brand-900 hover:from-emerald-800 hover:to-brand-950 text-white cursor-pointer'
                         }`}
                       >
-                        Rp {amt.toLocaleString('id-ID')}
+                        {isSubmittingDonation ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Mengunggah & Memverifikasi Bukti Transfer...</span>
+                          </>
+                        ) : !isProofComplete ? (
+                          <>
+                            <Lock className="w-4 h-4" />
+                            <span>Unggah Bukti Transfer untuk Membuka Naskah</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Kirim Bukti Transfer & Buka Seluruh Naskah</span>
+                          </>
+                        )}
                       </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Nama Pewakif / Peziarah (Opsional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Kosongkan untuk Hamba Allah"
-                    value={donorName}
-                    onChange={(e) => setDonorName(e.target.value)}
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900"
-                  />
-                </div>
-
-                {/* Rekening Bank BCA */}
-                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-                  <p className="text-[11px] font-bold text-slate-600 mb-2">Transfer Manual Rekening Bank:</p>
-                  <div className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-slate-900 text-xs">{bankDetails.bankName}</p>
-                      <p className="text-slate-800 font-mono text-xs font-bold mt-0.5">{bankDetails.accountNumber}</p>
-                      <p className="text-[10px] text-slate-500">a.n. {bankDetails.accountHolder}</p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleCopyAccount}
-                      className="px-3 py-1.5 bg-slate-50 hover:bg-emerald-50 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
-                    >
-                      {copiedBank ? (
-                        <span className="text-emerald-600">Tersalin!</span>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>Salin</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2.5 pt-1">
-                  <button
-                    type="button"
-                    onClick={handleConfirmUnlockDonation}
-                    disabled={isSubmittingDonation}
-                    className="w-full py-3 bg-gradient-to-r from-emerald-700 via-emerald-800 to-brand-900 hover:from-emerald-800 hover:to-brand-950 text-white font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                  >
-                    {isSubmittingDonation ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Membuka Seluruh Arsip...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Saya Sudah Infaq — Buka Seluruh Naskah</span>
-                      </>
-                    )}
-                  </button>
-
-                  <a
-                    href={waUnlockUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-emerald-900 border border-[#25D366]/40 font-bold rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    <MessageSquareHeart className="w-4 h-4 text-emerald-700" />
-                    <span>Konfirmasi Manual via WhatsApp (+62 857-1737-8885)</span>
-                  </a>
-                </div>
+                  </>
+                )}
               </div>
             </motion.div>
           </div>

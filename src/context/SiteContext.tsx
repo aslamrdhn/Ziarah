@@ -26,30 +26,77 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [cloudSiteCount, setCloudSiteCount] = useState(0);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, 'sites'),
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const fetchedSites = snapshot.docs.map(doc => doc.data() as ZiarahSite);
-          setSites(fetchedSites);
-          setIsSeededInCloud(true);
-          setCloudSiteCount(fetchedSites.length);
-        } else {
+    let unsubscribe: (() => void) | null = null;
+    let cancelled = false;
+
+    const connectCloudSites = () => {
+      if (cancelled) return;
+      unsubscribe = onSnapshot(
+        collection(db, 'sites'),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const fetchedSites = snapshot.docs.map((docSnap) => docSnap.data() as ZiarahSite);
+            const localMap = new Map<string, ZiarahSite>();
+            localSites.forEach((s) => localMap.set(s.id, s));
+
+            // Merge cloud sites with enriched local data & preserve newly added local sites
+            const mergedMap = new Map<string, ZiarahSite>();
+            localSites.forEach((s) => mergedMap.set(s.id, s));
+
+            fetchedSites.forEach((cloudSite) => {
+              const baseLocal = localMap.get(cloudSite.id);
+              if (baseLocal) {
+                mergedMap.set(cloudSite.id, {
+                  ...baseLocal,
+                  ...cloudSite,
+                  imageUrl: baseLocal.imageUrl,
+                  imageSource: cloudSite.imageSource || baseLocal.imageSource,
+                  era: cloudSite.era || baseLocal.era,
+                  sanad: cloudSite.sanad || baseLocal.sanad,
+                  karya: cloudSite.karya && cloudSite.karya.length > 0 ? cloudSite.karya : baseLocal.karya,
+                  references:
+                    cloudSite.references && cloudSite.references.length > 0
+                      ? cloudSite.references
+                      : baseLocal.references,
+                  karomah:
+                    cloudSite.karomah && cloudSite.karomah.length > 0 ? cloudSite.karomah : baseLocal.karomah,
+                  doaKhusus:
+                    cloudSite.doaKhusus && cloudSite.doaKhusus.length > 0
+                      ? cloudSite.doaKhusus
+                      : baseLocal.doaKhusus,
+                  untoldStory: cloudSite.untoldStory || baseLocal.untoldStory,
+                });
+              } else {
+                mergedMap.set(cloudSite.id, cloudSite);
+              }
+            });
+
+            setSites(Array.from(mergedMap.values()));
+            setIsSeededInCloud(true);
+            setCloudSiteCount(fetchedSites.length);
+          } else {
+            setSites(localSites);
+            setIsSeededInCloud(false);
+            setCloudSiteCount(0);
+          }
+          setIsLoading(false);
+        },
+        () => {
           setSites(localSites);
           setIsSeededInCloud(false);
-          setCloudSiteCount(0);
+          setIsLoading(false);
         }
-        setIsLoading(false);
-      },
-      () => {
-        // Gracefully use local fallback when offline or unreachable
-        setSites(localSites);
-        setIsSeededInCloud(false);
-        setIsLoading(false);
-      }
-    );
+      );
+    };
 
-    return () => unsubscribe();
+    // Defer cloud listener slightly so initial render & LCP complete with zero main-thread contention
+    const timer = window.setTimeout(connectCloudSites, 2200);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   return (

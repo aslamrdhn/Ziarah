@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="emeraldBg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#134E42" />
+      <stop offset="55%" stop-color="#0D3B32" />
+      <stop offset="100%" stop-color="#07241E" />
+    </linearGradient>
+    <linearGradient id="goldDome" x1="128" y1="72" x2="384" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FBF0B9" />
+      <stop offset="35%" stop-color="#E6C35C" />
+      <stop offset="70%" stop-color="#C99E32" />
+      <stop offset="100%" stop-color="#9A7218" />
+    </linearGradient>
+    <linearGradient id="goldBorder" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F6E39B" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#9C761C" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded Emerald Shield Background -->
+  <rect width="512" height="512" rx="112" fill="url(#emeraldBg)" />
+  <rect x="20" y="20" width="472" height="472" rx="96" stroke="url(#goldBorder)" stroke-width="10" stroke-opacity="0.78" />
+  <rect x="34" y="34" width="444" height="444" rx="84" stroke="#E6C35C" stroke-width="2.5" stroke-opacity="0.35" />
+
+  <!-- Finial / Crescent & Star at Pinnacle -->
+  <circle cx="256" cy="74" r="10" fill="url(#goldDome)" />
+  <rect x="252" y="80" width="8" height="28" rx="4" fill="url(#goldDome)" />
+  <circle cx="256" cy="108" r="7" fill="url(#goldDome)" />
+
+  <!-- Classic Islamic Nusantara Golden Dome (Kubah Emas) -->
+  <path
+    d="M256 114C198 148 146 196 146 258C146 276 152 290 160 302H352C360 290 366 276 366 258C366 196 314 148 256 114Z"
+    fill="url(#goldDome)"
+  />
+
+  <!-- Inner Dome Arch Cutout (Mihrab Silhouette) -->
+  <path
+    d="M256 154C214 182 180 218 180 264V302H332V264C332 218 298 182 256 154Z"
+    fill="#0A2E27"
+  />
+
+  <!-- 9 Stars of Wali Songo Arc Inside Dome -->
+  <circle cx="204" cy="224" r="4.5" fill="#FBF0B9" />
+  <circle cx="218" cy="207" r="5" fill="#FBF0B9" />
+  <circle cx="236" cy="195" r="5.5" fill="#FBF0B9" />
+  <circle cx="256" cy="189" r="7" fill="#FBF0B9" />
+  <circle cx="276" cy="195" r="5.5" fill="#FBF0B9" />
+  <circle cx="294" cy="207" r="5" fill="#FBF0B9" />
+  <circle cx="308" cy="224" r="4.5" fill="#FBF0B9" />
+
+  <!-- Base Pillar & Archway Frame -->
+  <rect x="132" y="302" width="248" height="16" rx="8" fill="url(#goldDome)" />
+
+  <!-- Calligraphic Monogram "ZN" (Ziarah Nusantara) -->
+  <path
+    d="M148 340H242L178 416H244V436H144L208 360H148V340Z"
+    fill="url(#goldDome)"
+  />
+  <path
+    d="M268 340H292L342 404V340H364V436H340L290 372V436H268V340Z"
+    fill="url(#goldDome)"
+  />
+
+  <!-- Bottom Ornamental Pedestal Line -->
+  <rect x="164" y="454" width="184" height="6" rx="3" fill="#E6C35C" fill-opacity="0.7" />
+</svg>

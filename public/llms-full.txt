@@ -1,0 +1,28 @@
+# Ziarah Nusantara — Dokumentasi Lengkap Arsip & Direktori Waliyullah Nusantara
+
+> Dokumentasi komprehensif platform Ziarah Nusantara (https://ziarahnusantara.my.id), dikelola secara resmi oleh Tim Kurator Arsip Ziarah Nusantara sebagai pusat literasi sejarah, pemetaan geospasial, dan panduan ziarah makam para Waliyullah di Indonesia.
+
+## Identitas Resmi Platform
+
+- Nama Resmi: Ziarah Nusantara
+- Pengelola & Penerbit: Tim Kurator Arsip Ziarah Nusantara
+- Domain Resmi: https://ziarahnusantara.my.id
+- Bahasa Utama: Bahasa Indonesia (id-ID)
+- Fokus Kajian: Sejarah Islam Nusantara, Makam Wali Songo, Sanad Ulama Pesantren, Habaib, Kesultanan Islam, serta Tuntunan Adab & Doa Ziarah.
+
+## Empat Pilar Klasifikasi Makam Nusantara
+
+1. **Dewan Walisongo (Abad ke-15 hingga ke-16 M)**: Sembilan wali pelopor dakwah Islam di Pulau Jawa (Maulana Malik Ibrahim Gresik, Sunan Ampel Surabaya, Sunan Bonang Tuban, Sunan Drajat Lamongan, Sunan Giri Gresik, Sunan Kalijaga Demak, Sunan Kudus, Sunan Muria, dan Sunan Gunung Jati Cirebon).
+2. **Ulama Nusantara & Poros Pesantren (Abad ke-17 hingga ke-20 M)**: Para mahaguru penyambung sanad keilmuan Haramain dan Nusantara seperti Syekh Abdurrauf As-Singkili (Aceh), Syekh Yusuf Al-Makassari, Syekh Muhammad Arsyad Al-Banjari (Martapura), Syaikhona Kholil Bangkalan, KH. Hasyim Asy'ari (Tebuireng), dan KH. Muhammad Zaini Abdul Ghani (Abah Guru Sekumpul).
+3. **Para Habaib & Dzurriyah (Abad ke-18 hingga ke-20 M)**: Tokoh dakwah dan penyusun wirid/ratib di kota-kota pelabuhan Nusantara seperti Habib Husein bin Abubakar Alaydrus (Luar Batang), Habib Ahmad bin Abdullah bin Thalib Al-Attas (Pekalongan), Habib Abu Bakar bin Muhammad Assegaf (Gresik), dan Habib Ali bin Abdurrahman Al-Habsyi (Kwitang).
+4. **Auliya Nusantara & Raja Sufi (Abad ke-14 hingga ke-19 M)**: Para sultan sufi dan pembuka tanah perdikan seperti Sultan Malikussaleh (Samudera Pasai), Sultan Maulana Hasanuddin (Banten), Sunan Pandanaran (Tembayat Klaten), dan jaringan Wali Pitu di Bali.
+
+## Navigasi Halaman Publik
+
+- [Direktori Utama](https://ziarahnusantara.my.id/direktori): Pencarian makam berdasarkan nama tokoh, provinsi, kategori jaringan dakwah, dan referensi ilmiah.
+- [Peta Geospasial](https://ziarahnusantara.my.id/peta): Koordinat presisi makam dan navigasi rute peziarah.
+- [Panduan Ziarah](https://ziarahnusantara.my.id/panduan): Tata cara dan adab ziarah kubur.
+- [Rubrik Sejarah & Karomah](https://ziarahnusantara.my.id/rubrik): Naskah biografi dan keteladanan para Waliyullah.
+- [Doa, Tahlil & Tawassul](https://ziarahnusantara.my.id/doa): Bacaan lengkap teks Arab, transliterasi, dan arti.
+- [Infaq Digital QRIS](https://ziarahnusantara.my.id/infaq): Program pelestarian arsip sejarah Islam Nusantara.
+- [Kebijakan Kurasi](https://ziarahnusantara.my.id/kurasi): Standar verifikasi sumber akademik dan naskah babad.

@@ -1,0 +1,22 @@
+# Ziarah Nusantara
+
+> Situs resmi Ziarah Nusantara (https://ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Platform direktori ensiklopedis makam para Waliyullah, Wali Songo, ulama Nusantara, peta rute geospasial, panduan adab ziarah, kumpulan doa tahlil & tawassul, serta literasi sejarah Islam Nusantara berbasis referensi jurnal ilmiah dan naskah babad.
+
+Ziarah Nusantara menyediakan dokumentasi terverifikasi mengenai lokasi makam, biografi sejarah, jaringan sanad keilmuan, karya tulis (kitab kuning/manuskrip), karomah, serta tuntunan doa ziarah kubur di seluruh provinsi Indonesia. Seluruh data dikurasi oleh Tim Kurator Arsip Ziarah Nusantara.
+
+## Direktori & Layanan Utama
+
+- [Beranda & Katalog Direktori Makam](https://ziarahnusantara.my.id/): Halaman utama dan indeks pencarian seluruh situs makam Waliyullah, Wali Songo, Ulama Pesantren, Habaib, dan Auliya Nusantara.
+- [Arsip & Direktori Makam Waliyullah](https://ziarahnusantara.my.id/direktori): Katalog lengkap situs ziarah di Jawa, Sumatera, Kalimantan, Sulawesi, Bali, NTB, dan Maluku beserta rujukan akademik.
+- [Peta Rute Geospasial Ziarah](https://ziarahnusantara.my.id/peta): Peta interaktif lokasi makam Waliyullah dengan perhitungan rute jalan raya dan estimasi waktu tempuh peziarah.
+- [Panduan Adab & Tata Cara Ziarah](https://ziarahnusantara.my.id/panduan): Pedoman adab sopan santun, niat, salam ziarah, dan tuntunan ziarah kubur sesuai tradisi Ahlussunnah wal Jamaah.
+- [Rubrik Kisah, Karomah & Naskah Sejarah](https://ziarahnusantara.my.id/rubrik): Kajian biografi mendalam, sanad keilmuan Haramain-Nusantara, dan keteladanan dakwah para Waliyullah.
+- [Kumpulan Doa Khusus, Tahlil & Tawassul](https://ziarahnusantara.my.id/doa): Bacaan salam ziarah, susunan tawassul, Surah Yasin, dan tahlil lengkap teks Arab, Latin, dan terjemahan Bahasa Indonesia.
+- [Infaq Digital & Pelestarian Arsip](https://ziarahnusantara.my.id/infaq): Program infaq dan wakaf digital QRIS resmi Ziarah Nusantara untuk riset literasi sejarah dan pemeliharaan situs makam.
+
+## Dokumentasi, Kebijakan & Metadata Agen
+
+- [Standar & Kebijakan Kurasi Ilmiah](https://ziarahnusantara.my.id/kurasi): Metodologi verifikasi sumber sejarah, jurnal akademik, skripsi, dan naskah babad oleh Tim Kurator Arsip Ziarah Nusantara.
+- [Dokumentasi Lengkap LLMs](https://ziarahnusantara.my.id/llms-full.txt): Ringkasan komprehensif seluruh kategori makam, daftar tokoh Wali Songo & Ulama Nusantara, serta struktur data platform.
+- [Katalog AI & WebMCP](https://ziarahnusantara.my.id/.well-known/ai-catalog.json): Skema katalog terstruktur untuk penjelajahan agen AI dan integrasi indeks pengetahuan.
+- [Peta Situs XML](https://ziarahnusantara.my.id/sitemap.xml): Daftar indeks seluruh halaman publik Ziarah Nusantara.

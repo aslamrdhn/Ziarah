@@ -4,6 +4,7 @@ import { BookOpen, Sparkles, MapPin, Bookmark, BookmarkCheck, Search, Copy, Chec
 import { auth, db, isUserAdmin } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
+import { useVerifiedDonationUnlock } from '../lib/transferProof';
 
 interface KumpulanDoaProps {
   savedDoas: string[];
@@ -29,15 +30,8 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   const [approvedCommunityDoas, setApprovedCommunityDoas] = useState<DoaKaromahItem[]>([]);
   const [lockEnabled, setLockEnabled] = useState<boolean>(true);
   const [freeSampleCount, setFreeSampleCount] = useState<number>(2);
-  const [hasDonated, setHasDonated] = useState<boolean>(() => {
-    try {
-      const flag = localStorage.getItem('hasDonatedRubrik') === 'true';
-      const unlockedList = JSON.parse(localStorage.getItem('unlockedUntold') || '[]');
-      return flag || (Array.isArray(unlockedList) && unlockedList.length > 0);
-    } catch {
-      return false;
-    }
-  });
+  const [requireManualVerification, setRequireManualVerification] = useState<boolean>(true);
+  const { isUnlocked: hasDonated } = useVerifiedDonationUnlock(undefined, requireManualVerification);
 
   useEffect(() => {
     const unsubSettings = onSnapshot(
@@ -50,24 +44,15 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
             if (typeof d.rubrikGate.freeSampleCount === 'number') {
               setFreeSampleCount(d.rubrikGate.freeSampleCount);
             }
+            if (d.rubrikGate.requireManualVerification !== undefined) {
+              setRequireManualVerification(Boolean(d.rubrikGate.requireManualVerification));
+            }
           }
         }
       },
       () => {}
     );
     return () => unsubSettings();
-  }, []);
-
-  useEffect(() => {
-    const checkStorage = () => {
-      try {
-        const flag = localStorage.getItem('hasDonatedRubrik') === 'true';
-        const unlockedList = JSON.parse(localStorage.getItem('unlockedUntold') || '[]');
-        setHasDonated(flag || (Array.isArray(unlockedList) && unlockedList.length > 0));
-      } catch {}
-    };
-    window.addEventListener('storage', checkStorage);
-    return () => window.removeEventListener('storage', checkStorage);
   }, []);
 
   useEffect(() => {
@@ -324,7 +309,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                       <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                         <span>{item.text.slice(0, 50)}... </span>
                         <span className="blur-[4px] select-none opacity-65">
-                          {item.text.slice(50) || 'Kisah karomah lanjutan dibuka khusus bagi pengunjung yang telah melakukan donasi infaq riset database.'}
+                          Kisah karomah lanjutan dibuka khusus bagi pengunjung yang telah melakukan donasi infaq riset database dan terverifikasi oleh kurator.
                         </span>
                       </p>
                       <div className="pt-1 flex items-center justify-between border-t border-slate-100">

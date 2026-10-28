@@ -4,11 +4,95 @@
   "installCommand": "npm install --include=dev",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "rewrites": [
+  "cleanUrls": false,
+  "trailingSlash": false,
+  "headers": [
     {
-      "source": "/((?!assets/|pwa-|icon\\.svg|apple-touch-icon\\.png|manifest\\.webmanifest|sw\\.js|workbox-|robots\\.txt|sitemap\\.xml).*)",
-      "destination": "/index.html"
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(sitemap\\.xml|rss\\.xml)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(sitemap\\.txt|robots\\.txt)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(favicon\\.ico|favicon\\.svg|icon\\.svg|favicon-48x48\\.png|favicon-96x96\\.png|apple-touch-icon\\.png|pwa-192x192\\.png|pwa-512x512\\.png|pwa-maskable-512x512\\.png)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/(llms\\.txt|llms-full\\.txt)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/markdown; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/(\\.well-known/ai-catalog\\.json|ai-catalog\\.json)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
     }
+  ],
+  "rewrites": [
+    { "source": "/direktori", "destination": "/index.html" },
+    { "source": "/peta", "destination": "/index.html" },
+    { "source": "/makam", "destination": "/index.html" },
+    { "source": "/makam/:id*", "destination": "/index.html" },
+    { "source": "/panduan", "destination": "/index.html" },
+    { "source": "/rubrik", "destination": "/index.html" },
+    { "source": "/doa", "destination": "/index.html" },
+    { "source": "/infaq", "destination": "/index.html" },
+    { "source": "/kurasi", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/kurator-admin", "destination": "/index.html" }
   ]
 }
-

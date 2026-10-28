@@ -36,6 +36,8 @@ import { useSites } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, User } from 'firebase/auth';
+import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
+import { QrisPaymentCard } from '../components/QrisPaymentCard';
 
 interface ContributionItem {
   id: string;
@@ -98,6 +100,7 @@ export const AdminKurator: React.FC = () => {
   const [accountNumber, setAccountNumber] = useState('5470-0856-08');
   const [accountHolder, setAccountHolder] = useState('ARIF NURACHMAN HAKIM');
   const [qrisImageUrl, setQrisImageUrl] = useState('');
+  const [qrisPayload, setQrisPayload] = useState(OFFICIAL_QRIS_STATIC_PAYLOAD);
   const [customDomain, setCustomDomain] = useState('ziarahnusantara.my.id');
   const [copiedDnsKey, setCopiedDnsKey] = useState<string | null>(null);
   const [infaqPrograms, setInfaqPrograms] = useState<InfaqProgramItem[]>(DEFAULT_INFAQ_PROGRAMS);
@@ -115,6 +118,7 @@ export const AdminKurator: React.FC = () => {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState('');
   const [donations, setDonations] = useState<any[]>([]);
+  const [previewProofDonation, setPreviewProofDonation] = useState<any | null>(null);
 
   const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
   const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -227,6 +231,7 @@ export const AdminKurator: React.FC = () => {
           if (d.accountNumber) setAccountNumber(d.accountNumber);
           if (d.accountHolder) setAccountHolder(d.accountHolder);
           if (d.qrisImageUrl !== undefined) setQrisImageUrl(d.qrisImageUrl);
+          if (d.qrisPayload) setQrisPayload(d.qrisPayload);
           if (d.customDomain !== undefined) setCustomDomain(d.customDomain);
           if (Array.isArray(d.programs) && d.programs.length > 0) {
             setInfaqPrograms(d.programs);
@@ -240,6 +245,7 @@ export const AdminKurator: React.FC = () => {
               bannerDescription: d.rubrikGate.bannerDescription || DEFAULT_RUBRIK_GATE_SETTINGS.bannerDescription,
               pinnedFreeArticleIds: Array.isArray(d.rubrikGate.pinnedFreeArticleIds) ? d.rubrikGate.pinnedFreeArticleIds : DEFAULT_RUBRIK_GATE_SETTINGS.pinnedFreeArticleIds,
               customArticles: Array.isArray(d.rubrikGate.customArticles) ? d.rubrikGate.customArticles : [],
+              requireManualVerification: Boolean(d.rubrikGate.requireManualVerification),
             });
           }
         }
@@ -452,6 +458,7 @@ export const AdminKurator: React.FC = () => {
       accountNumber: accountNumber.trim().slice(0, 60),
       accountHolder: accountHolder.trim().slice(0, 120),
       qrisImageUrl: qrisImageUrl.trim().slice(0, 1000),
+      qrisPayload: (qrisPayload.trim() || OFFICIAL_QRIS_STATIC_PAYLOAD).slice(0, 1000),
       customDomain: cleanedDomain,
       programs: infaqPrograms,
       rubrikGate,
@@ -566,10 +573,27 @@ export const AdminKurator: React.FC = () => {
     }));
   };
 
+  const handleVerifyDonation = async (id: string) => {
+    if (!isAdmin) return;
+    try {
+      await updateDoc(doc(db, 'donations', id), {
+        status: 'verified',
+      });
+      if (previewProofDonation?.id === id) {
+        setPreviewProofDonation((prev: any) => prev ? { ...prev, status: 'verified' } : null);
+      }
+    } catch (error) {
+      console.error('Error verifying donation:', error);
+    }
+  };
+
   const handleDeleteDonation = async (id: string) => {
     if (!isAdmin) return;
     try {
       await deleteDoc(doc(db, 'donations', id));
+      if (previewProofDonation?.id === id) {
+        setPreviewProofDonation(null);
+      }
     } catch (error) {
       console.error('Error deleting donation:', error);
     }
@@ -726,13 +750,15 @@ export const AdminKurator: React.FC = () => {
                   </button>
 
                   {isInIframe && (
-                    <button
-                      onClick={() => window.open(window.location.href, '_blank')}
+                    <a
+                      href={typeof window !== 'undefined' ? window.location.href : '/admin'}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="py-2.5 px-4 bg-white hover:bg-stone-100 border border-stone-300 text-stone-700 text-xs font-semibold rounded-xl flex items-center transition-colors shadow-2xs cursor-pointer"
                     >
                       <ExternalLink className="w-3.5 h-3.5 mr-1.5 text-stone-500" />
                       <span>Buka di Tab Baru</span>
-                    </button>
+                    </a>
                   )}
                 </>
               )}
@@ -877,7 +903,7 @@ export const AdminKurator: React.FC = () => {
                       disabled={isSeeding}
                       className="py-2.5 px-5 bg-emerald-700 hover:bg-emerald-800 disabled:bg-emerald-300 text-white font-bold rounded-xl text-xs transition-all shrink-0 cursor-pointer shadow-xs"
                     >
-                      {isSeeding ? 'Memproses...' : 'Sinkronkan 33 Makam Bawaan'}
+                      {isSeeding ? 'Memproses...' : `Sinkronkan ${localSites.length} Makam Bawaan`}
                     </button>
                   </div>
                   {seedMessage && (
@@ -1148,7 +1174,29 @@ export const AdminKurator: React.FC = () => {
                         className="rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
                       />
                       <span className="text-xs font-bold text-slate-800">
-                        {rubrikGate.lockEnabled ? '🔒 Kunci Donasi Aktif' : '🔓 Semua Terbuka Gratis'}
+                        {rubrikGate.lockEnabled ? '🔒 Kunci Donasi & Bukti Transfer Aktif' : '🔓 Semua Terbuka Gratis'}
+                      </span>
+                    </label>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">
+                        Mode Persetujuan Bukti Transfer (Proteksi Ketat)
+                      </p>
+                      <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                        Seluruh naskah terkunci <strong>wajib mengunggah foto bukti transfer</strong>. Aktifkan opsi di samping jika Anda ingin naskah baru terbuka setelah Admin mengeklik tombol <em>&ldquo;Verifikasi Bukti&rdquo;</em> secara manual.
+                      </p>
+                    </div>
+                    <label className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 cursor-pointer shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(rubrikGate.requireManualVerification)}
+                        onChange={(e) => setRubrikGate({ ...rubrikGate, requireManualVerification: e.target.checked })}
+                        className="rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
+                      />
+                      <span className="text-xs font-bold text-emerald-950">
+                        {rubrikGate.requireManualVerification ? 'Wajib Klik Verifikasi Admin' : 'Verifikasi Bukti Otomatis'}
                       </span>
                     </label>
                   </div>
@@ -1565,15 +1613,61 @@ export const AdminKurator: React.FC = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">URL Gambar QRIS Statis Resmi (Kosongkan jika belum ada QRIS)</label>
-                    <input
-                      type="url"
-                      placeholder="https://domain-anda.com/qris-yayasan.png (Kosongkan agar QR tidak tampil)"
-                      value={qrisImageUrl}
-                      onChange={(e) => setQrisImageUrl(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
+                  <div className="bg-white rounded-2xl border border-emerald-200 p-4 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-800 text-white mb-1">
+                          Payment Gateway QRIS Aktif
+                        </span>
+                        <label className="block text-xs font-bold text-slate-900">
+                          String Barcode Statis QRIS Resmi (Standar EMVCo GPN / Bank Indonesia)
+                        </label>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setQrisPayload(OFFICIAL_QRIS_STATIC_PAYLOAD)}
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[11px] font-bold flex items-center gap-1.5 cursor-pointer self-start sm:self-center"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Reset ke Barcode Resmi Ziarah Nusantara</span>
+                      </button>
+                    </div>
+                    <textarea
+                      rows={3}
+                      value={qrisPayload}
+                      onChange={(e) => setQrisPayload(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800"
                     />
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center pt-1">
+                      <div className="md:col-span-6">
+                        <QrisPaymentCard
+                          qrisPayload={qrisPayload}
+                          qrisImageUrl={qrisImageUrl}
+                          selectedAmount={25000}
+                          compact
+                        />
+                      </div>
+                      <div className="md:col-span-6 space-y-2 text-xs text-slate-600">
+                        <p className="font-bold text-slate-900">
+                          Pratinjau Langsung Barcode QRIS Statis
+                        </p>
+                        <p className="leading-relaxed">
+                          String EMVCo di atas otomatis dirender menjadi barcode QRIS beresolusi tinggi dengan validasi checksum <strong>CRC-16/CCITT-FALSE (`8587`)</strong> untuk merchant <strong>Ziarah Nusantara, Organis (Bekasi 17415 • NMID: ID1026625971761)</strong>.
+                        </p>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Opsional: Override URL Gambar QRIS Kustom (Kosongkan untuk gunakan Generator Barcode Resmi di atas)
+                          </label>
+                          <input
+                            type="url"
+                            placeholder="Kosongkan agar menggunakan generator barcode EMVCo otomatis"
+                            value={qrisImageUrl}
+                            onChange={(e) => setQrisImageUrl(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="pt-3 border-t border-slate-200/80 space-y-3">
@@ -1644,18 +1738,54 @@ export const AdminKurator: React.FC = () => {
                       </p>
                     </div>
 
-                    {/* Kartu SEO Google Search Console, Sitemap.xml & Robots.txt */}
-                    <div className="bg-emerald-50/60 rounded-xl border border-emerald-200 p-4 space-y-3">
+                    {/* Kartu SEO Google Search Console, Favicon Kubah Emas ZN, AI Overview & Agentic Web */}
+                    <div className="bg-emerald-50/60 rounded-xl border border-emerald-200 p-4 space-y-4">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-800 text-white mb-1">
-                            SEO &amp; Google Search Console Aktif
+                            SEO 100 • Favicon Kubah Emas ZN • Agentic Web Aktif
                           </span>
                           <h5 className="text-xs font-bold text-slate-900">
-                            Peta Situs (`sitemap.xml`), `robots.txt` &amp; Kata Kunci &ldquo;Ziarah Nusantara&rdquo;
+                            Status Ikon Profil Google Search, Identitas AI Overview &amp; Penjelajahan Agentic
                           </h5>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <a
+                            href="/favicon.svg"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1.5 bg-white hover:bg-emerald-50 border border-emerald-300 rounded-lg text-[11px] font-bold text-emerald-900 flex items-center gap-1 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3 text-emerald-700" />
+                            <span>Cek Favicon SVG</span>
+                          </a>
+                          <a
+                            href="/pwa-192x192.png"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1.5 bg-white hover:bg-emerald-50 border border-emerald-300 rounded-lg text-[11px] font-bold text-emerald-900 flex items-center gap-1 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3 text-emerald-700" />
+                            <span>Cek PNG 192px</span>
+                          </a>
+                          <a
+                            href="/llms.txt"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1.5 bg-white hover:bg-emerald-50 border border-emerald-300 rounded-lg text-[11px] font-bold text-emerald-900 flex items-center gap-1 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3 text-emerald-700" />
+                            <span>Cek llms.txt</span>
+                          </a>
+                          <a
+                            href="/.well-known/ai-catalog.json"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1.5 bg-white hover:bg-emerald-50 border border-emerald-300 rounded-lg text-[11px] font-bold text-emerald-900 flex items-center gap-1 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3 text-emerald-700" />
+                            <span>Cek ai-catalog.json</span>
+                          </a>
                           <a
                             href="/sitemap.xml"
                             target="_blank"
@@ -1666,45 +1796,112 @@ export const AdminKurator: React.FC = () => {
                             <span>Cek Sitemap.xml</span>
                           </a>
                           <a
-                            href="/robots.txt"
+                            href="/sitemap.txt"
                             target="_blank"
                             rel="noreferrer"
                             className="px-2.5 py-1.5 bg-white hover:bg-emerald-50 border border-emerald-300 rounded-lg text-[11px] font-bold text-emerald-900 flex items-center gap-1 transition-colors"
                           >
                             <ExternalLink className="w-3 h-3 text-emerald-700" />
-                            <span>Cek Robots.txt</span>
+                            <span>Cek Sitemap.txt</span>
                           </a>
                         </div>
                       </div>
 
-                      <div className="bg-white rounded-lg border border-emerald-200/80 p-3 space-y-1.5 text-xs">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                      {/* Pratinjau Tampilan Hasil Pencarian Google (Google SERP Snippet Preview) */}
+                      <div className="bg-slate-950 text-white rounded-xl p-4 border border-slate-800 space-y-2">
+                        <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-400">
+                          Pratinjau Tampilan Resmi di Hasil Pencarian Google Mobile
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src="/pwa-192x192.png"
+                            alt="Favicon Kubah Emas ZN"
+                            className="w-7 h-7 rounded-full border border-emerald-500/40 shrink-0 bg-emerald-950"
+                          />
+                          <div className="leading-tight">
+                            <div className="text-xs font-semibold text-slate-100">Ziarah Nusantara</div>
+                            <div className="text-[11px] text-slate-400">
+                              https://{(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-sm sm:text-base font-medium text-[#8ab4f8] leading-snug pt-0.5">
+                          Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                          Situs resmi Ziarah Nusantara (ziarahnusantara.my.id) dikelola oleh <strong>Tim Kurator Arsip Ziarah Nusantara</strong>. Direktori makam Wali Songo, ulama Nusantara, peta interaktif, adab ziarah, kumpulan doa tahlil &amp; tawassul...
+                        </p>
+                      </div>
+
+                      <div className="bg-white rounded-lg border border-emerald-200/80 p-3.5 space-y-3 text-xs">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
                           <div>
-                            <span className="text-[10px] font-bold uppercase text-slate-400 block">URL Peta Situs untuk Dikirim ke Google Search Console:</span>
+                            <span className="text-[10px] font-bold uppercase text-slate-500 block">
+                              URL Peta Situs Resmi untuk Menu &ldquo;Peta Situs (Sitemaps)&rdquo; di Google Search Console:
+                            </span>
                             <code className="font-mono text-xs font-bold text-emerald-900">
                               https://{(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}/sitemap.xml
                             </code>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleCopyDnsValue(
-                                'sitemap-url',
-                                `https://${(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}/sitemap.xml`
-                              )
-                            }
-                            className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shrink-0 self-start sm:self-center"
-                          >
-                            {copiedDnsKey === 'sitemap-url' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                            <span>{copiedDnsKey === 'sitemap-url' ? 'URL Sitemap Tersalin' : 'Salin URL Sitemap'}</span>
-                          </button>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleCopyDnsValue(
+                                  'sitemap-url',
+                                  `https://${(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}/sitemap.xml`
+                                )
+                              }
+                              className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
+                            >
+                              {copiedDnsKey === 'sitemap-url' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                              <span>{copiedDnsKey === 'sitemap-url' ? 'Sitemap.xml Tersalin' : 'Salin Sitemap.xml'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleCopyDnsValue(
+                                  'sitemap-txt-url',
+                                  `https://${(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}/sitemap.txt`
+                                )
+                              }
+                              className="px-3 py-1.5 bg-teal-800 hover:bg-teal-900 text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
+                            >
+                              {copiedDnsKey === 'sitemap-txt-url' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                              <span>{copiedDnsKey === 'sitemap-txt-url' ? 'Sitemap.txt Tersalin' : 'Salin Sitemap.txt (Alternatif)'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleCopyDnsValue(
+                                  'homepage-url',
+                                  `https://${(customDomain || 'ziarahnusantara.my.id').replace(/^https?:\/\//i, '').replace(/\/+$/, '')}/`
+                                )
+                              }
+                              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
+                            >
+                              {copiedDnsKey === 'homepage-url' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                              <span>{copiedDnsKey === 'homepage-url' ? 'URL Utama Tersalin' : 'Salin URL Inspeksi'}</span>
+                            </button>
+                          </div>
                         </div>
-                        <p className="text-[11px] text-slate-700">
-                          <strong>Judul SEO (`&lt;title&gt;`):</strong> Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara
-                        </p>
-                        <p className="text-[11px] text-slate-600 leading-relaxed">
-                          <strong>Deskripsi Meta (`description`):</strong> Ziarah Nusantara adalah platform panduan dan informasi jejak spiritual makam para Waliyullah, ulama, dan tokoh bersejarah di seluruh Nusantara.
-                        </p>
+
+                        <div className="p-3 rounded-lg bg-amber-50/80 border border-amber-200/90 space-y-1.5 text-[11px] text-amber-950 leading-relaxed">
+                          <p className="font-bold text-amber-900">
+                            Solusi Mengatasi Status &ldquo;Tidak dapat mengambil peta situs&rdquo; di Google Search Console:
+                          </p>
+                          <ol className="list-decimal list-inside space-y-1">
+                            <li>
+                              <strong>Hapus entri <code className="bg-white px-1 rounded">https://ziarahnusantara.my.id/</code> dari menu Peta Situs:</strong> URL beranda (<code className="bg-white px-1 rounded">/</code>) adalah halaman HTML, bukan file peta situs, sehingga Google pasti menolaknya dengan status <em>Tidak diketahui / Tidak dapat mengambil peta situs</em>.
+                            </li>
+                            <li>
+                              <strong>Deploy ulang ke Vercel</strong>, lalu pada kolom <strong>Tambahkan peta situs baru</strong> masukkan <code className="bg-white px-1 rounded font-bold">https://ziarahnusantara.my.id/sitemap.xml</code> DAN <code className="bg-white px-1 rounded font-bold">https://ziarahnusantara.my.id/sitemap.txt</code>, lalu klik <strong>KIRIM</strong>.
+                            </li>
+                            <li>
+                              Untuk URL beranda <code className="bg-white px-1 rounded">https://ziarahnusantara.my.id/</code>, masukkan di menu <strong>Inspeksi URL (URL Inspection)</strong> di bagian paling atas halaman Search Console, lalu klik <strong>Minta Pengindeksan</strong>.
+                            </li>
+                          </ol>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1721,31 +1918,113 @@ export const AdminKurator: React.FC = () => {
                   </div>
                 </form>
 
-                {/* Daftar Konfirmasi Infaq */}
+                {/* Daftar Konfirmasi Infaq & Verifikasi Bukti Transfer */}
                 <div>
-                  <h3 className="font-bold text-slate-900 text-base mb-3">Riwayat Konfirmasi Infaq Masuk ({donations.length})</h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base">
+                        Riwayat Konfirmasi Infaq &amp; Verifikasi Bukti Transfer ({donations.length})
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Periksa foto struk bukti transfer pewakif. Jika bukti tidak valid, klik <strong>Cabut &amp; Hapus</strong> untuk mengunci kembali akses secara real-time.
+                      </p>
+                    </div>
+                  </div>
                   {donations.length === 0 ? (
                     <p className="text-xs text-slate-500 italic">Belum ada data konfirmasi infaq di database.</p>
                   ) : (
-                    <div className="max-h-80 overflow-y-auto border border-slate-200 rounded-2xl divide-y divide-slate-100">
-                      {donations.map((d) => (
-                        <div key={d.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50">
-                          <div>
-                            <p className="text-xs font-bold text-slate-900">
-                              {d.donorName} — <span className="text-emerald-700">Rp {Number(d.amount || 0).toLocaleString('id-ID')}</span>
-                            </p>
-                            <p className="text-[11px] text-slate-500">{d.programTitle} • {d.siteName}</p>
-                            {d.doaHajat && <p className="text-[11px] text-slate-600 italic mt-0.5">"{d.doaHajat}"</p>}
+                    <div className="max-h-[480px] overflow-y-auto border border-slate-200 rounded-2xl divide-y divide-slate-100 bg-white">
+                      {donations.map((d) => {
+                        const hasProof = typeof d.proofImageUrl === 'string' && d.proofImageUrl.startsWith('data:image/');
+                        const isVerified = d.status === 'verified';
+                        return (
+                          <div key={d.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50">
+                            <div className="flex items-start gap-3 min-w-0">
+                              {hasProof ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewProofDonation(d)}
+                                  className="w-14 h-14 rounded-xl overflow-hidden border-2 border-emerald-300 bg-slate-100 shrink-0 relative group cursor-pointer"
+                                  title="Klik untuk memperbesar Bukti Transfer"
+                                >
+                                  <img
+                                    src={d.proofImageUrl}
+                                    alt="Bukti Transfer"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                  />
+                                  <span className="absolute inset-x-0 bottom-0 bg-slate-950/70 text-white text-[9px] font-bold text-center py-0.5">
+                                    Lihat Struk
+                                  </span>
+                                </button>
+                              ) : (
+                                <div className="w-14 h-14 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-[10px] font-bold text-amber-800 text-center p-1 shrink-0">
+                                  Tanpa Struk
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  <p className="text-xs font-bold text-slate-900">
+                                    {d.donorName}
+                                  </p>
+                                  <span className="text-xs font-black text-emerald-700">
+                                    Rp {Number(d.amount || 0).toLocaleString('id-ID')}
+                                  </span>
+                                  {d.referenceCode && (
+                                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200">
+                                      #{d.referenceCode}
+                                    </span>
+                                  )}
+                                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
+                                    isVerified
+                                      ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                                      : hasProof
+                                        ? 'bg-sky-50 text-sky-900 border border-sky-200'
+                                        : 'bg-amber-50 text-amber-900 border border-amber-200'
+                                  }`}>
+                                    {isVerified ? '✓ Bukti Terverifikasi' : hasProof ? 'Bukti Terlampir' : 'Data Lama (Akses Terkunci)'}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-slate-600 mt-0.5">
+                                  <strong>Metode:</strong> {d.paymentMethod || 'Manual'} • <strong>Pengirim:</strong> {d.senderAccount || d.donorName}
+                                </p>
+                                <p className="text-[11px] text-slate-500">{d.programTitle} • {d.siteName}</p>
+                                {d.doaHajat && <p className="text-[11px] text-slate-600 italic mt-0.5">&ldquo;{d.doaHajat}&rdquo;</p>}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                              {hasProof && (
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewProofDonation(d)}
+                                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold rounded-xl cursor-pointer"
+                                >
+                                  Cek Bukti
+                                </button>
+                              )}
+                              {!isVerified && hasProof && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleVerifyDonation(d.id)}
+                                  className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold rounded-xl flex items-center gap-1 cursor-pointer"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  <span>Verifikasi</span>
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteDonation(d.id)}
+                                className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                                title="Hapus catatan & cabut akses pembuka kunci"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Cabut</span>
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            onClick={() => handleDeleteDonation(d.id)}
-                            className="p-2 text-slate-400 hover:text-rose-600 rounded-lg cursor-pointer"
-                            title="Hapus catatan"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -1755,6 +2034,98 @@ export const AdminKurator: React.FC = () => {
         )}
 
       </motion.div>
+
+      {/* Lightbox Modal Pemeriksaan Bukti Transfer */}
+      {previewProofDonation && (
+        <div
+          className="fixed inset-0 z-[3000] bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setPreviewProofDonation(null)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 sm:p-5 bg-slate-900 text-white flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-800 text-emerald-200">
+                  Ref: #{previewProofDonation.referenceCode || previewProofDonation.id?.slice(0, 8)}
+                </span>
+                <h4 className="text-sm sm:text-base font-bold mt-1">
+                  Bukti Transfer — {previewProofDonation.donorName}
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewProofDonation(null)}
+                className="p-2 text-white/70 hover:text-white rounded-full cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
+              <div className="bg-slate-100 rounded-2xl p-2 border border-slate-200 flex items-center justify-center max-h-[52vh] overflow-auto">
+                <img
+                  src={previewProofDonation.proofImageUrl}
+                  alt="Screenshot Bukti Transfer"
+                  className="max-w-full max-h-[48vh] object-contain rounded-xl"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Nominal Infaq</span>
+                  <span className="font-black text-emerald-800 text-sm">
+                    Rp {Number(previewProofDonation.amount || 0).toLocaleString('id-ID')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Metode &amp; Pengirim</span>
+                  <span className="font-bold text-slate-900">
+                    {previewProofDonation.paymentMethod || 'QRIS'} — {previewProofDonation.senderAccount || previewProofDonation.donorName}
+                  </span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Program &amp; Tujuan</span>
+                  <span className="font-semibold text-slate-700">
+                    {previewProofDonation.programTitle} ({previewProofDonation.siteName})
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteDonation(previewProofDonation.id)}
+                  className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Tolak &amp; Cabut Akses</span>
+                </button>
+                <div className="flex items-center gap-2">
+                  {previewProofDonation.status !== 'verified' && (
+                    <button
+                      type="button"
+                      onClick={() => handleVerifyDonation(previewProofDonation.id)}
+                      className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Verifikasi Sah</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewProofDonation(null)}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

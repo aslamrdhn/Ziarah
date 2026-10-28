@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   HeartHandshake, 
-  QrCode, 
   Building2, 
   Droplets, 
   Users, 
@@ -12,11 +11,16 @@ import {
   Loader2,
   Sparkles,
   MessageSquareHeart,
-  Database
+  Database,
+  Lock,
+  AlertCircle
 } from 'lucide-react';
-import { useSites } from '../context/SiteContext';
 import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { QrisPaymentCard } from '../components/QrisPaymentCard';
+import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
+import { TransferProofUploadField } from '../components/TransferProofUploadField';
+import { CompressedReceiptResult, saveVerifiedDonationRecord } from '../lib/transferProof';
 
 interface DonationRecord {
   id: string;
@@ -46,38 +50,6 @@ export const DEFAULT_INFAQ_PROGRAMS: InfaqProgramItem[] = [
     iconName: 'Database',
     color: 'from-emerald-600 to-brand-900',
     tag: 'Prioritas Utama'
-  },
-  {
-    id: 'pemeliharaan',
-    title: 'Pemeliharaan & Revitalisasi Makam',
-    desc: 'Perbaikan sarana, atap kubah, penerangan makam, dan pelestarian arsitektur bersejarah.',
-    iconName: 'Building2',
-    color: 'from-emerald-500 to-teal-700',
-    tag: 'Prioritas'
-  },
-  {
-    id: 'kebersihan',
-    title: 'Fasilitas Wudhu & Kebersihan',
-    desc: 'Penyediaan air bersih, pemeliharaan tempat wudhu, karpet sholat, dan sanitasi jamaah.',
-    iconName: 'Droplets',
-    color: 'from-blue-500 to-cyan-700',
-    tag: 'Operasional'
-  },
-  {
-    id: 'dhuafa',
-    title: 'Santunan Musafir & Dhuafa',
-    desc: 'Bantuan makanan berbuka/sahur, santunan yatim dan peziarah dhuafa di sekitar makam.',
-    iconName: 'Users',
-    color: 'from-amber-500 to-orange-700',
-    tag: 'Sosial'
-  },
-  {
-    id: 'kitab',
-    title: 'Wakaf Al-Qur\'an & Kitab Doa',
-    desc: 'Pengadaan mushaf Al-Qur\'an, buku panduan ziarah, dan kitab tahlil untuk para peziarah.',
-    iconName: 'BookOpen',
-    color: 'from-purple-500 to-indigo-700',
-    tag: 'Jariyah'
   }
 ];
 
@@ -86,6 +58,7 @@ interface InfaqSettings {
   accountNumber: string;
   accountHolder: string;
   qrisImageUrl: string;
+  qrisPayload: string;
   programs: InfaqProgramItem[];
 }
 
@@ -94,6 +67,7 @@ const DEFAULT_INFAQ_SETTINGS: InfaqSettings = {
   accountNumber: '5470-0856-08',
   accountHolder: 'ARIF NURACHMAN HAKIM',
   qrisImageUrl: '',
+  qrisPayload: OFFICIAL_QRIS_STATIC_PAYLOAD,
   programs: DEFAULT_INFAQ_PROGRAMS,
 };
 
@@ -107,7 +81,6 @@ const ICON_MAP = {
 };
 
 export const InfaqDigital: React.FC = () => {
-  const { sites } = useSites();
   const [selectedProgram, setSelectedProgram] = useState<string>('riset-web');
   const [selectedSiteId, setSelectedSiteId] = useState<string>('web-riset');
   const [nominal, setNominal] = useState<number>(50000);
@@ -115,6 +88,12 @@ export const InfaqDigital: React.FC = () => {
   const [donorName, setDonorName] = useState<string>('');
   const [isAnonim, setIsAnonim] = useState<boolean>(false);
   const [doaHajat, setDoaHajat] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>('QRIS');
+  const [senderAccount, setSenderAccount] = useState<string>('');
+  const [receipt, setReceipt] = useState<CompressedReceiptResult | null>(null);
+  const [agreedToAkad, setAgreedToAkad] = useState<boolean>(true);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [lastSubmittedReceipt, setLastSubmittedReceipt] = useState<CompressedReceiptResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSuccessModal, setIsSuccessModal] = useState<boolean>(false);
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
@@ -124,26 +103,32 @@ export const InfaqDigital: React.FC = () => {
 
   // Pre-fill donor name if logged in
   useEffect(() => {
-    if (auth.currentUser?.displayName && !donorName) {
-      setDonorName(auth.currentUser.displayName);
+    if (auth.currentUser?.displayName) {
+      if (!donorName) setDonorName(auth.currentUser.displayName);
+      if (!senderAccount) setSenderAccount(auth.currentUser.displayName);
     }
   }, []);
 
   // Load configurable Bank, QRIS & Programs settings from Firestore (/settings/infaq)
   useEffect(() => {
+    const removedIds = new Set(['pemeliharaan', 'kebersihan', 'dhuafa', 'kitab']);
     const unsubSettings = onSnapshot(
       doc(db, 'settings', 'infaq'),
       (snap) => {
         if (snap.exists()) {
           const data = snap.data();
-          const loadedPrograms = Array.isArray(data.programs) && data.programs.length > 0
-            ? data.programs
+          const rawPrograms = Array.isArray(data.programs)
+            ? data.programs.filter((p: InfaqProgramItem) => !removedIds.has(p.id))
+            : [];
+          const loadedPrograms = rawPrograms.length > 0
+            ? rawPrograms
             : DEFAULT_INFAQ_PROGRAMS;
           setInfaqSettings({
             bankName: data.bankName || DEFAULT_INFAQ_SETTINGS.bankName,
             accountNumber: data.accountNumber || DEFAULT_INFAQ_SETTINGS.accountNumber,
             accountHolder: data.accountHolder || DEFAULT_INFAQ_SETTINGS.accountHolder,
             qrisImageUrl: data.qrisImageUrl || '',
+            qrisPayload: data.qrisPayload || OFFICIAL_QRIS_STATIC_PAYLOAD,
             programs: loadedPrograms,
           });
           setSelectedProgram((prev) =>
@@ -203,17 +188,28 @@ export const InfaqDigital: React.FC = () => {
   const currentAmount = customNominal ? parseInt(customNominal, 10) || 0 : nominal;
   const targetSiteName = selectedSiteId === 'web-riset'
     ? 'Riset Database & Operasional Web (Domain & VPS)'
-    : selectedSiteId === 'all' 
-      ? 'Kompleks Makam Seluruh Nusantara' 
-      : sites.find(s => s.id === selectedSiteId)?.name || 'Makam Aulia';
+    : 'Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)';
   const activeProgramTitle = programs.find(p => p.id === selectedProgram)?.title || programs[0]?.title || 'Riset & Operasional Web';
+
+  const isProofComplete = Boolean(receipt && senderAccount.trim().length >= 3);
 
   const handleBayar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (currentAmount < 5000 || isSubmitting) return;
+    setSubmitError(null);
+
+    if (!receipt || !receipt.dataUrl) {
+      setSubmitError('Wajib mengunggah screenshot / foto bukti transfer terlebih dahulu.');
+      return;
+    }
+    if (senderAccount.trim().length < 3) {
+      setSubmitError('Wajib mengisi nama pengirim sesuai bukti transfer (minimal 3 karakter).');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    const finalDonorName = (isAnonim ? 'Hamba Allah' : (donorName.trim() || 'Hamba Allah')).slice(0, 100);
+    const finalDonorName = (isAnonim ? 'Hamba Allah' : (donorName.trim() || senderAccount.trim() || 'Hamba Allah')).slice(0, 100);
     const donationRef = doc(collection(db, 'donations'));
 
     try {
@@ -225,18 +221,24 @@ export const InfaqDigital: React.FC = () => {
         siteName: targetSiteName,
         amount: currentAmount,
         donorName: finalDonorName,
+        paymentMethod,
+        senderAccount: senderAccount.trim().slice(0, 80),
+        proofImageUrl: receipt.dataUrl,
+        referenceCode: receipt.referenceCode,
         doaHajat: doaHajat.trim().slice(0, 1000),
         authorUid: auth.currentUser?.uid || 'guest',
         status: 'confirmed',
         createdAt: serverTimestamp(),
       });
-      try {
-        localStorage.setItem('hasDonatedRubrik', 'true');
-      } catch {}
+      saveVerifiedDonationRecord(donationRef.id, selectedSiteId);
+      setLastSubmittedReceipt(receipt);
       setIsSuccessModal(true);
       setDoaHajat('');
+      setReceipt(null);
+      setAgreedToAkad(false);
     } catch (error) {
       console.error('Error recording infaq in Firestore:', error);
+      setSubmitError('Gagal mengunggah bukti transfer ke database. Periksa koneksi internet Anda dan coba kembali.');
       try {
         handleFirestoreError(error, OperationType.CREATE, `donations/${donationRef.id}`);
       } catch {
@@ -248,17 +250,18 @@ export const InfaqDigital: React.FC = () => {
   };
 
   const totalTerkumpul = recentDonations.reduce((acc, item) => acc + item.amount, 0);
-  const hasCustomQr = Boolean(infaqSettings.qrisImageUrl && infaqSettings.qrisImageUrl.trim() !== '');
 
-  const finalDonorDisplay = isAnonim ? 'Hamba Allah' : (donorName.trim() || 'Hamba Allah');
-  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya ingin konfirmasi Infaq secara manual:\n\n` +
-    `• *Nama Pewakif:* ${finalDonorDisplay}\n` +
+  const finalDonorDisplay = isAnonim ? 'Hamba Allah' : (donorName.trim() || senderAccount.trim() || 'Hamba Allah');
+  const activeRefCode = lastSubmittedReceipt?.referenceCode || receipt?.referenceCode || '-';
+  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq di sistem:\n\n` +
+    `• *Kode Referensi Bukti:* ${activeRefCode}\n` +
+    `• *Nama Pewakif / Pengirim:* ${finalDonorDisplay} (${senderAccount.trim() || '-'})\n` +
+    `• *Metode Pembayaran:* ${paymentMethod}\n` +
     `• *Program:* ${activeProgramTitle}\n` +
     `• *Tujuan Alokasi:* ${targetSiteName}\n` +
-    `• *Nominal Infaq:* Rp ${currentAmount.toLocaleString('id-ID')}\n` +
-    `• *Tujuan Transfer:* ${infaqSettings.bankName} (${infaqSettings.accountNumber} a.n. ${infaqSettings.accountHolder})` +
+    `• *Nominal Infaq:* Rp ${currentAmount.toLocaleString('id-ID')}` +
     (doaHajat.trim() ? `\n• *Doa / Hajat:* "${doaHajat.trim()}"` : '') +
-    `\n\nBerikut saya lampirkan bukti transfernya. Terima kasih.`;
+    `\n\nScreenshot bukti transfer telah terunggah di sistem Admin Kurator. Terima kasih.`;
   const waConfirmUrl = `https://wa.me/6285717378885?text=${encodeURIComponent(waMessage)}`;
 
   return (
@@ -369,11 +372,6 @@ export const InfaqDigital: React.FC = () => {
             >
               <option value="web-riset">💻 Riset Sejarah, Perluasan Database Makam & Operasional Web (Domain & VPS)</option>
               <option value="all">🌐 Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)</option>
-              {sites.map((site) => (
-                <option key={site.id} value={site.id}>
-                  📍 {site.name} ({site.location.city}, {site.location.province})
-                </option>
-              ))}
             </select>
             <p className="text-[11px] text-slate-400 mt-2">
               Infaq akan disalurkan sesuai akad pilihan program (tim riset database & server web atau pengurus kompleks makam terkait).
@@ -504,40 +502,13 @@ export const InfaqDigital: React.FC = () => {
               </span>
             </div>
 
-            {/* Metode QRIS (Dikosongkan jika belum ada QRIS resmi) */}
-            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-5 text-center">
-              <div className="flex items-center justify-center space-x-2 text-xs font-bold text-slate-700 mb-3">
-                <QrCode className="w-4 h-4 text-emerald-600" />
-                <span>QRIS Nasional (Bebas Biaya Admin)</span>
-              </div>
-              
-              {hasCustomQr ? (
-                <>
-                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 inline-block shadow-2xs mb-2 relative overflow-hidden group">
-                    <img 
-                      src={infaqSettings.qrisImageUrl} 
-                      alt="QRIS Infaq Ziarah"
-                      className="w-36 h-36 mx-auto rounded-lg object-contain"
-                    />
-                    <motion.div 
-                      animate={{ y: [0, 134, 0] }}
-                      transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-                      className="absolute left-3 right-3 h-0.5 bg-gradient-to-r from-transparent via-emerald-500 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.9)] pointer-events-none"
-                    />
-                  </div>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Pindai menggunakan aplikasi Mobile Banking apa saja (BCA, Mandiri, BRI, BSI) atau e-Wallet (GoPay, OVO, ShopeePay, DANA).
-                  </p>
-                </>
-              ) : (
-                <div className="bg-white p-5 rounded-2xl border border-dashed border-slate-300 inline-flex flex-col items-center justify-center w-full max-w-[230px] min-h-[150px] mb-2">
-                  <QrCode className="w-9 h-9 text-slate-300 mb-2" />
-                  <p className="text-xs font-bold text-slate-600">Kode QR Belum Tersedia</p>
-                  <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
-                    Silakan salurkan infaq melalui Transfer Rekening Bank di bawah ini.
-                  </p>
-                </div>
-              )}
+            {/* Metode QRIS Resmi Ziarah Nusantara */}
+            <div className="mb-5">
+              <QrisPaymentCard
+                qrisPayload={infaqSettings.qrisPayload}
+                qrisImageUrl={infaqSettings.qrisImageUrl}
+                selectedAmount={currentAmount}
+              />
             </div>
 
             {/* Transfer Manual Rekening Bank */}
@@ -567,43 +538,59 @@ export const InfaqDigital: React.FC = () => {
               </div>
             </div>
 
+            {/* Wajib Unggah Bukti Transfer */}
+            <div className="mb-4">
+              <TransferProofUploadField
+                paymentMethod={paymentMethod}
+                onPaymentMethodChange={setPaymentMethod}
+                senderAccount={senderAccount}
+                onSenderAccountChange={setSenderAccount}
+                receipt={receipt}
+                onReceiptChange={setReceipt}
+                agreedToAkad={agreedToAkad}
+                onAgreedToAkadChange={setAgreedToAkad}
+                accentColor="emerald"
+                requiredForUnlock
+              />
+            </div>
+
+            {submitError && (
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-rose-800 text-xs">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                <span>{submitError}</span>
+              </div>
+            )}
+
             {/* Tombol Catat Doa & Infaq di Website */}
             <motion.button
-              whileHover={{ scale: 1.015 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={isProofComplete ? { scale: 1.015 } : {}}
+              whileTap={isProofComplete ? { scale: 0.97 } : {}}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
               onClick={handleBayar}
-              disabled={currentAmount < 5000 || isSubmitting}
-              className="w-full py-3.5 bg-gradient-to-r from-emerald-700 via-emerald-800 to-brand-900 hover:from-emerald-800 hover:to-brand-950 text-white font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-md shadow-emerald-950/10 border border-emerald-600/30 flex items-center justify-center disabled:opacity-50 cursor-pointer"
+              disabled={currentAmount < 5000 || isSubmitting || !isProofComplete}
+              className={`w-full py-3.5 font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 ${
+                currentAmount < 5000 || !isProofComplete
+                  ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-emerald-700 via-emerald-800 to-brand-900 hover:from-emerald-800 hover:to-brand-950 text-white shadow-emerald-950/10 border border-emerald-600/30 cursor-pointer'
+              }`}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Menyimpan ke Database...
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Mengunggah & Memverifikasi Bukti Transfer...</span>
+                </>
+              ) : !isProofComplete ? (
+                <>
+                  <Lock className="w-4 h-4" />
+                  <span>Unggah Bukti Transfer Terlebih Dahulu</span>
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Catat Doa & Konfirmasi Infaq
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Kirim Bukti Transfer & Konfirmasi Infaq</span>
                 </>
               )}
             </motion.button>
-
-            {/* Tombol Konfirmasi Manual via WhatsApp */}
-            <div className="mt-3">
-              <a
-                href={waConfirmUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-emerald-900 border border-[#25D366]/40 font-bold rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <MessageSquareHeart className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>Konfirmasi Manual via WhatsApp (+62 857-1737-8885)</span>
-              </a>
-              <p className="text-[11px] text-slate-400 text-center mt-1.5">
-                Kirim bukti transfer langsung ke WhatsApp pengurus setelah melakukan infaq.
-              </p>
-            </div>
           </div>
         </div>
       </div>

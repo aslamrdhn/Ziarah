@@ -7,24 +7,87 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    target: 'es2020',
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('src/data/sites')) {
+            return 'data-sites';
+          }
+          if (id.includes('node_modules')) {
+            if (id.includes('@firebase/auth') || id.includes('firebase/auth')) {
+              return 'vendor-firebase-auth';
+            }
+            if (id.includes('firebase') || id.includes('@firebase')) {
+              return 'vendor-firebase-db';
+            }
+            if (id.includes('leaflet') || id.includes('react-leaflet')) {
+              return 'vendor-leaflet';
+            }
+            if (id.includes('motion') || id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            if (
+              id.includes('react-dom') ||
+              id.includes('react-router') ||
+              id.includes('scheduler')
+            ) {
+              return 'vendor-react';
+            }
+          }
+        },
+      },
+    },
   },
   plugins: [
     react(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
+      injectRegister: 'script-defer',
+      includeAssets: [
+        'favicon.ico',
+        'favicon.svg',
+        'favicon-48x48.png',
+        'favicon-96x96.png',
+        'apple-touch-icon.png',
+        'icon.svg',
+        'robots.txt',
+        'sitemap.xml',
+        'sitemap.txt',
+        'rss.xml',
+        'llms.txt',
+        'llms-full.txt',
+        'ai-catalog.json',
+      ],
       manifest: {
         id: '/',
-        name: 'Ziarah Nusantara',
-        short_name: 'Ziarah',
-        description: 'Direktori & peta interaktif lokasi ziarah di Indonesia',
-        theme_color: '#F9F8F4',
+        name: 'Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara',
+        short_name: 'Ziarah Nusantara',
+        description:
+          'Situs resmi Ziarah Nusantara (ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Direktori & peta interaktif makam Waliyullah Nusantara.',
+        theme_color: '#0D3B32',
         background_color: '#F9F8F4',
         display: 'standalone',
         start_url: '/',
         scope: '/',
         icons: [
+          {
+            src: '/favicon-48x48.png',
+            sizes: '48x48',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/favicon-96x96.png',
+            sizes: '96x96',
+            type: 'image/png',
+            purpose: 'any',
+          },
           {
             src: '/pwa-192x192.png',
             sizes: '192x192',
@@ -46,15 +109,27 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,txt,json}'],
+        globIgnores: ['**/assets/aistudio/**', '**/makam/**/index.html'],
+        navigateFallbackDenylist: [
+          /^\/sitemap\.xml$/,
+          /^\/sitemap\.txt$/,
+          /^\/rss\.xml$/,
+          /^\/robots\.txt$/,
+          /^\/llms\.txt$/,
+          /^\/llms-full\.txt$/,
+          /^\/ai-catalog\.json$/,
+          /^\/\.well-known\/.*/,
+          /^\/favicon\..*/,
+        ],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/upload\.wikimedia\.org\/.*/i,
+            urlPattern: /^https:\/\/(upload\.wikimedia\.org|wsrv\.nl|images\.unsplash\.com)\/.*/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'wikimedia-images-cache',
+              cacheName: 'ziarah-images-cache-v2',
               expiration: {
-                maxEntries: 50,
+                maxEntries: 80,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
               },
               cacheableResponse: {

@@ -5,6 +5,7 @@ import L from 'leaflet';
 import { MapPin, Navigation, Compass } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import 'leaflet/dist/leaflet.css';
+import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
 
 interface MapProps {
   sites: ZiarahSite[];
@@ -15,6 +16,9 @@ interface MapProps {
 function MapUpdater({ selectedSite }: { selectedSite: ZiarahSite | null }) {
   const map = useMap();
   useEffect(() => {
+    const timer = window.setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
     if (
       selectedSite &&
       Number.isFinite(Number(selectedSite.location?.lat)) &&
@@ -25,6 +29,7 @@ function MapUpdater({ selectedSite }: { selectedSite: ZiarahSite | null }) {
         duration: 1.2
       });
     }
+    return () => window.clearTimeout(timer);
   }, [selectedSite, map]);
   return null;
 }
@@ -62,11 +67,15 @@ function UserLocationControl() {
           <Popup>Lokasi Anda Saat Ini</Popup>
         </Marker>
       )}
-      <div className="leaflet-top leaflet-right mt-3 mr-3 z-[1000] absolute">
-        <div className="leaflet-control">
+      <div className="leaflet-top leaflet-left mt-20 ml-2.5 z-[1000] absolute pointer-events-auto">
+        <div className="leaflet-control pointer-events-auto">
           <button 
-            onClick={() => map.locate({ setView: true, maxZoom: 14 })}
-            className="bg-[#FBF9F5]/95 backdrop-blur-md p-3 rounded-xl shadow-md border border-stone-300/90 text-stone-800 hover:text-emerald-800 hover:bg-white transition-all active:scale-95 cursor-pointer"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              map.locate({ setView: true, maxZoom: 14 });
+            }}
+            className="bg-[#FBF9F5]/95 backdrop-blur-md p-2.5 rounded-xl shadow-md border border-stone-300/90 text-stone-800 hover:text-emerald-800 hover:bg-white transition-all active:scale-95 cursor-pointer pointer-events-auto"
             title="Temukan Lokasi Saya"
           >
             <Compass className="w-5 h-5 text-emerald-800" />
@@ -94,7 +103,7 @@ const getCustomIcon = (category: string, isSelected: boolean): L.DivIcon => {
   }
 
   const iconMarkup = renderToStaticMarkup(
-    <div className={`flex items-center justify-center w-8 h-8 rounded-xl shadow-md border-2 transition-transform ${colorClass}`}>
+    <div className={`flex items-center justify-center w-8 h-8 rounded-xl shadow-md border-2 transition-transform cursor-pointer ${colorClass}`}>
       <MapPin className="w-4 h-4" />
     </div>
   );
@@ -132,7 +141,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        <ZoomControl position="bottomright" />
+        <ZoomControl position="topleft" />
         <MapUpdater selectedSite={selectedSite} />
         <UserLocationControl />
         
@@ -148,7 +157,8 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
             <Popup className="custom-popup">
               <div className="p-4 w-64 bg-[#FBF9F5] text-stone-900 rounded-2xl">
                 <img 
-                  src={site.imageUrl} 
+                  src={optimizeSiteImageUrl(site.imageUrl, 400, 72)} 
+                  onError={(e) => handleOptimizedImageError(e, site.imageUrl)}
                   alt={site.title} 
                   loading="lazy"
                   decoding="async"
@@ -165,6 +175,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
                   <span className="truncate">{site.location.city}, {site.location.province}</span>
                 </div>
                 <button 
+                  type="button"
                   className="w-full py-2 bg-stone-900 hover:bg-emerald-900 text-[#F9F8F4] rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                   onClick={() => onSelectSite(site)}
                 >

@@ -50,7 +50,8 @@ service cloud.firestore {
       return data.programId is string && data.programId.size() >= 1 && data.programId.size() <= 100 &&
         data.amount is number && data.amount >= 5000 && data.amount <= 1000000000 &&
         data.donorName is string && data.donorName.size() >= 1 && data.donorName.size() <= 100 &&
-        data.status in ['confirmed', 'verified'];
+        data.proofImageUrl is string && data.proofImageUrl.size() >= 500 && data.proofImageUrl.size() <= 500000 &&
+        data.status in ['confirmed', 'verified', 'rejected'];
     }
 
     match /admins/{adminUid} {
@@ -87,7 +88,7 @@ service cloud.firestore {
     match /donations/{donationId} {
       allow read: if true;
       allow create: if isValidId(donationId) && isValidDonation(incoming());
-      allow update: if isAdmin() && isValidId(donationId) && isValidDonation(incoming());
+      allow update: if isAdmin() && isValidId(donationId);
       allow delete: if isAdmin() && isValidId(donationId);
     }
 

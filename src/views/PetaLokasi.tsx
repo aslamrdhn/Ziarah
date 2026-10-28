@@ -66,10 +66,10 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
           <>
             {/* Mobile & Tablet Backdrop Overlay */}
             <div 
-              className="md:hidden absolute inset-0 z-[999] bg-stone-950/35 backdrop-blur-xs pointer-events-auto rounded-2xl"
+              className="md:hidden absolute inset-0 z-[999] bg-stone-950/35 backdrop-blur-xs pointer-events-auto rounded-2xl cursor-pointer"
               onClick={handleClose}
             />
-            <div className="absolute inset-0 md:top-3 md:right-3 md:bottom-3 md:left-auto z-[1000] w-full md:w-[390px] lg:w-[420px] pointer-events-none">
+            <div className="absolute inset-0 md:inset-y-3 md:right-3 md:left-auto z-[1000] w-full md:w-[400px] lg:w-[420px] pointer-events-auto">
               <SiteDetails 
                 site={selectedSite} 
                 onClose={handleClose} 

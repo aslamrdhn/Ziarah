@@ -1,6 +1,6 @@
 {
-  "summary":  "Rencana implementasi optimasi SEO kata kunci \"Ziarah Nusantara\", pembuatan file public/robots.txt dan public/sitemap.xml lengkap untuk seluruh halaman publik di domain ziarahnusantara.my.id, serta penambahan panel verifikasi Google Search Console di Admin Kurator.",
-  "updatedAt":  "2026-10-27T06:54:05.575558012Z",
+  "summary":  "Rencana implementasi peningkatan SEO, Ikon Profil Google Search (Favicon Multi-Ukuran & Lambang Kubah Emas ZN Hijau Zamrud), Structured Data Schema.org @graph (Organization, WebSite, ItemList Direktori Makam dengan pengelola Tim Kurator Arsip Ziarah Nusantara), Ringkasan Statis Crawlable di index.html untuk koreksi Google AI Overview, serta Panel Diagnostik Favicon & Panduan Request Indexing Google Search Console di Admin Kurator.",
+  "updatedAt":  "2026-10-28T07:48:06.050257990Z",
   "requestFeedback":  true,
   "userFacing":  true
 }
