@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Compass,
   Map as MapIcon,
@@ -18,16 +19,21 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { PWAInstallButton } from './PWAInstallButton';
-import { auth, googleProvider, isUserAdmin } from '../lib/firebase';
-import {
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  signOut,
-  onAuthStateChanged,
-  User as FirebaseUser,
-} from 'firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth';
 import { APP_BRAND } from '../config/brand';
+
+const DEFAULT_ADMIN_EMAILS = ['aslamramadhan08@gmail.com'];
+
+function checkIsUserAdmin(user: FirebaseUser | null): boolean {
+  if (!user || !user.email) return false;
+  const rawEnv = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_ADMIN_EMAILS || '';
+  const envEmails = rawEnv
+    .split(',')
+    .map((e: string) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const allowed = new Set([...DEFAULT_ADMIN_EMAILS.map((e) => e.toLowerCase()), ...envEmails]);
+  return allowed.has(user.email.toLowerCase());
+}
 
 interface NavbarProps {
   onOpenKontribusi: () => void;
@@ -95,20 +101,29 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
 
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
-    const timer = window.setTimeout(() => {
-      unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        setUser(currentUser);
-        if (currentUser) {
-          setAuthErrorModal(null);
-        }
-      });
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        const [{ auth }, { onAuthStateChanged, getRedirectResult }] = await Promise.all([
+          import('../lib/firebase'),
+          import('firebase/auth'),
+        ]);
+        if (cancelled) return;
+        unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+          setUser(currentUser);
+          if (currentUser) {
+            setAuthErrorModal(null);
+          }
+        });
 
-      getRedirectResult(auth).catch((error) => {
-        if (error) handleAuthError(error);
-      });
+        getRedirectResult(auth).catch((error) => {
+          if (error) handleAuthError(error);
+        });
+      } catch {}
     }, 1200);
 
     return () => {
+      cancelled = true;
       window.clearTimeout(timer);
       if (unsubscribe) unsubscribe();
     };
@@ -118,6 +133,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
     if (isLoggingIn) return;
     setIsLoggingIn(true);
     try {
+      const [{ auth, googleProvider }, { signInWithPopup }] = await Promise.all([
+        import('../lib/firebase'),
+        import('firebase/auth'),
+      ]);
       await signInWithPopup(auth, googleProvider);
       setDropdownOpen(false);
       setAuthErrorModal(null);
@@ -134,6 +153,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
     try {
       setDropdownOpen(false);
       setAuthErrorModal(null);
+      const [{ auth, googleProvider }, { signInWithRedirect }] = await Promise.all([
+        import('../lib/firebase'),
+        import('firebase/auth'),
+      ]);
       await signInWithRedirect(auth, googleProvider);
     } catch (error: any) {
       handleAuthError(error);
@@ -143,6 +166,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
 
   const handleLogout = async () => {
     try {
+      const [{ auth }, { signOut }] = await Promise.all([
+        import('../lib/firebase'),
+        import('firebase/auth'),
+      ]);
       await signOut(auth);
     } catch (error) {
       console.error('Error signing out', error);
@@ -169,10 +196,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
       {/* Top Navbar following Clean 3-Zone Editorial Contract (Mobile, Tablet, Desktop) */}
       <nav
         aria-label="Navigasi Utama"
-        className="w-full flex items-center justify-between gap-3 lg:gap-8 px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3"
+        className="w-full h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6 px-4 sm:px-6 lg:px-8"
       >
         {/* Zone 1: Official Kubah Emas ZN Logo, Brand Wordmark & Editorial Tagline */}
-        <Link to="/" className="group flex items-center gap-2.5 sm:gap-3 shrink-0">
+        <Link to="/" className="group flex items-center gap-2.5 sm:gap-3 min-w-0 shrink-0">
           <img
             src="/favicon.svg"
             alt="Logo Resmi Ziarah Nusantara — Kubah Emas ZN"
@@ -180,12 +207,12 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
             height={36}
             className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-xs border border-emerald-900/15 shrink-0"
           />
-          <div className="flex flex-col justify-center">
-            <span className="font-serif font-bold tracking-tight text-stone-950 group-hover:text-emerald-950 transition-colors text-lg sm:text-xl leading-tight whitespace-nowrap">
+          <div className="flex flex-col justify-center min-w-0">
+            <span className="font-serif font-bold tracking-tight text-stone-950 group-hover:text-emerald-950 transition-colors text-base sm:text-lg lg:text-xl leading-tight whitespace-nowrap">
               {APP_BRAND.name}
             </span>
             {APP_BRAND.tagline && (
-              <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-stone-700 leading-tight whitespace-nowrap mt-0.5">
+              <span className="hidden sm:block md:hidden xl:block text-[10px] font-semibold tracking-wider uppercase text-stone-600 leading-tight truncate mt-0.5">
                 {APP_BRAND.tagline}
               </span>
             )}
@@ -193,7 +220,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
         </Link>
 
         {/* Zone 2: Clean Editorial Text Navigation Links (Compact on Tablet md, Full on Desktop lg) */}
-        <div className="hidden md:flex items-center gap-3.5 lg:gap-6 text-xs lg:text-sm font-semibold text-stone-700">
+        <div className="hidden md:flex items-center justify-center gap-3 lg:gap-5 xl:gap-6 text-xs lg:text-sm font-semibold text-stone-700">
           {navItems.map((item) => {
             const active = isNavActive(item.id);
             return (
@@ -222,7 +249,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
           <button
             type="button"
             onClick={onOpenKontribusi}
-            className="px-3 sm:px-4 py-2 bg-stone-900 hover:bg-emerald-950 active:scale-[0.98] text-[#F9F8F4] rounded-lg font-semibold text-xs transition-all cursor-pointer whitespace-nowrap shrink-0"
+            className="px-3 sm:px-3.5 py-2 bg-stone-900 hover:bg-emerald-950 active:scale-[0.98] text-[#F9F8F4] rounded-lg font-semibold text-xs transition-all cursor-pointer whitespace-nowrap shrink-0"
           >
             <span className="sm:hidden">+ Arsip</span>
             <span className="hidden sm:inline">Kontribusi Arsip</span>
@@ -281,7 +308,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                     >
                       <ShieldCheck className="w-4 h-4 mr-2.5 text-emerald-900" aria-hidden="true" /> Standar Kurasi
                     </Link>
-                    {isUserAdmin(user) && (
+                    {checkIsUserAdmin(user) && (
                       <Link
                         to="/admin"
                         role="menuitem"
@@ -350,127 +377,134 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
         </div>
       </nav>
 
-      {/* Floating Bottom Nav for Mobile / Smartphone Users */}
-      <nav
-        aria-label="Navigasi Bawah Mobile"
-        className="md:hidden fixed bottom-2.5 left-2.5 right-2.5 z-[2500] pointer-events-none"
-      >
-        <div className="bg-[#FBF9F5]/95 backdrop-blur-md border border-stone-300 shadow-[0_10px_30px_rgba(28,25,23,0.12)] rounded-2xl p-1.5 flex items-center justify-around pointer-events-auto max-w-md mx-auto">
-          {navItems.map((item) => {
-            const active = isNavActive(item.id);
-            return (
-              <Link
-                key={item.id}
-                to={item.id}
-                aria-current={active ? 'page' : undefined}
-                className={`relative flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-xl transition-colors duration-150 ${
-                  active
-                    ? 'text-stone-950 font-bold bg-stone-200/90 border border-stone-300'
-                    : 'text-stone-700 hover:text-stone-950'
-                }`}
-              >
-                <item.icon
-                  aria-hidden="true"
-                  className={`w-4 h-4 mb-0.5 transition-transform ${
-                    active ? 'text-emerald-900 scale-105' : 'text-stone-700'
-                  }`}
-                />
-                <span className="text-[10px] leading-tight font-semibold tracking-tight truncate max-w-[54px] whitespace-nowrap">
-                  {item.shortLabel || item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Auth Error Modal */}
-      {authErrorModal && (
-        <div className="fixed inset-0 z-[3000] bg-stone-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#FBF9F5] rounded-3xl max-w-md w-full p-6 shadow-2xl border border-stone-200 relative animate-in fade-in zoom-in-95 duration-150">
-            <button
-              type="button"
-              onClick={() => setAuthErrorModal(null)}
-              className="absolute top-4 right-4 p-2 text-stone-600 hover:text-stone-900 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
-              aria-label="Tutup"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-start space-x-3 mb-4">
-              <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 shrink-0">
-                <AlertCircle className="w-6 h-6 text-amber-800" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-stone-950">{authErrorModal.title}</h3>
-                <p className="text-xs text-stone-700 mt-0.5">Kendala Autentikasi Google</p>
-              </div>
+      {/* Floating Bottom Nav for Mobile / Smartphone Users (Portaled to document.body so it is never trapped inside <header>) */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <nav
+            aria-label="Navigasi Bawah Mobile"
+            className="md:hidden fixed bottom-2.5 left-2.5 right-2.5 z-[2500] pointer-events-none"
+          >
+            <div className="bg-[#FBF9F5]/95 backdrop-blur-md border border-stone-300 shadow-[0_10px_30px_rgba(28,25,23,0.12)] rounded-2xl p-1.5 flex items-center justify-around pointer-events-auto max-w-md mx-auto">
+              {navItems.map((item) => {
+                const active = isNavActive(item.id);
+                return (
+                  <Link
+                    key={item.id}
+                    to={item.id}
+                    aria-current={active ? 'page' : undefined}
+                    className={`relative flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-xl transition-colors duration-150 ${
+                      active
+                        ? 'text-stone-950 font-bold bg-stone-200/90 border border-stone-300'
+                        : 'text-stone-700 hover:text-stone-950'
+                    }`}
+                  >
+                    <item.icon
+                      aria-hidden="true"
+                      className={`w-4 h-4 mb-0.5 transition-transform ${
+                        active ? 'text-emerald-900 scale-105' : 'text-stone-700'
+                      }`}
+                    />
+                    <span className="text-[10px] leading-tight font-semibold tracking-tight truncate max-w-[54px] whitespace-nowrap">
+                      {item.shortLabel || item.label}
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
+          </nav>,
+          document.body
+        )}
 
-            <p className="text-sm text-stone-700 leading-relaxed mb-5">{authErrorModal.message}</p>
-
-            {authErrorModal.unauthorizedDomain && (
-              <div className="mb-5 p-3 bg-stone-100 rounded-xl border border-stone-200 flex items-center justify-between gap-2">
-                <code className="text-xs font-bold text-stone-950 truncate">{authErrorModal.unauthorizedDomain}</code>
-                <button
-                  type="button"
-                  onClick={() => navigator.clipboard?.writeText(authErrorModal.unauthorizedDomain || '')}
-                  className="px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-300 rounded-lg text-xs font-bold text-stone-900 shrink-0 cursor-pointer"
-                >
-                  Salin Domain
-                </button>
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row gap-2.5">
-              {authErrorModal.showRedirectLogin && (
-                <button
-                  type="button"
-                  onClick={handleRedirectLogin}
-                  className="flex-1 py-2.5 px-4 bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-semibold rounded-xl flex items-center justify-center transition-colors shadow-sm cursor-pointer"
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Masuk Tanpa Pop-up (Redirect)
-                </button>
-              )}
-              {authErrorModal.showOpenNewTab && (
-                <a
-                  href={typeof window !== 'undefined' ? window.location.href : '/'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setAuthErrorModal(null)}
-                  className="flex-1 py-2.5 px-4 bg-stone-900 hover:bg-emerald-900 text-white text-sm font-semibold rounded-xl flex items-center justify-center transition-colors shadow-sm cursor-pointer"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Buka di Tab Baru
-                </a>
-              )}
-              <button
-                type="button"
-                disabled={isLoggingIn}
-                onClick={handleLogin}
-                className="py-2.5 px-4 bg-stone-200 hover:bg-stone-300 text-stone-900 text-sm font-semibold rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                {isLoggingIn ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                    <span>Mencoba...</span>
-                  </>
-                ) : (
-                  <span>Coba Pop-up Lagi</span>
-                )}
-              </button>
+      {/* Auth Error Modal (Portaled to document.body) */}
+      {authErrorModal &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div className="fixed inset-0 z-[3000] bg-stone-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-[#FBF9F5] rounded-3xl max-w-md w-full p-6 shadow-2xl border border-stone-200 relative animate-in fade-in zoom-in-95 duration-150">
               <button
                 type="button"
                 onClick={() => setAuthErrorModal(null)}
-                className="py-2.5 px-3 text-stone-700 hover:text-stone-950 text-sm font-medium rounded-xl hover:bg-stone-100 transition-colors cursor-pointer"
+                className="absolute top-4 right-4 p-2 text-stone-600 hover:text-stone-900 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
+                aria-label="Tutup"
               >
-                Tutup
+                <X className="w-5 h-5" />
               </button>
+
+              <div className="flex items-start space-x-3 mb-4">
+                <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 shrink-0">
+                  <AlertCircle className="w-6 h-6 text-amber-800" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-stone-950">{authErrorModal.title}</h3>
+                  <p className="text-xs text-stone-700 mt-0.5">Kendala Autentikasi Google</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-stone-700 leading-relaxed mb-5">{authErrorModal.message}</p>
+
+              {authErrorModal.unauthorizedDomain && (
+                <div className="mb-5 p-3 bg-stone-100 rounded-xl border border-stone-200 flex items-center justify-between gap-2">
+                  <code className="text-xs font-bold text-stone-950 truncate">{authErrorModal.unauthorizedDomain}</code>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard?.writeText(authErrorModal.unauthorizedDomain || '')}
+                    className="px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-300 rounded-lg text-xs font-bold text-stone-900 shrink-0 cursor-pointer"
+                  >
+                    Salin Domain
+                  </button>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-2.5">
+                {authErrorModal.showRedirectLogin && (
+                  <button
+                    type="button"
+                    onClick={handleRedirectLogin}
+                    className="flex-1 py-2.5 px-4 bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-semibold rounded-xl flex items-center justify-center transition-colors shadow-sm cursor-pointer"
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Masuk Tanpa Pop-up (Redirect)
+                  </button>
+                )}
+                {authErrorModal.showOpenNewTab && (
+                  <a
+                    href={typeof window !== 'undefined' ? window.location.href : '/'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setAuthErrorModal(null)}
+                    className="flex-1 py-2.5 px-4 bg-stone-900 hover:bg-emerald-900 text-white text-sm font-semibold rounded-xl flex items-center justify-center transition-colors shadow-sm cursor-pointer"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Buka di Tab Baru
+                  </a>
+                )}
+                <button
+                  type="button"
+                  disabled={isLoggingIn}
+                  onClick={handleLogin}
+                  className="py-2.5 px-4 bg-stone-200 hover:bg-stone-300 text-stone-900 text-sm font-semibold rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {isLoggingIn ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                      <span>Mencoba...</span>
+                    </>
+                  ) : (
+                    <span>Coba Pop-up Lagi</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthErrorModal(null)}
+                  className="py-2.5 px-3 text-stone-700 hover:text-stone-950 text-sm font-medium rounded-xl hover:bg-stone-100 transition-colors cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 });

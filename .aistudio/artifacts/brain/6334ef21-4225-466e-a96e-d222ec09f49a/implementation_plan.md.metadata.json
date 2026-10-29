@@ -1,6 +1,6 @@
 {
-  "summary":  "Rencana implementasi peningkatan SEO, Ikon Profil Google Search (Favicon Multi-Ukuran & Lambang Kubah Emas ZN Hijau Zamrud), Structured Data Schema.org @graph (Organization, WebSite, ItemList Direktori Makam dengan pengelola Tim Kurator Arsip Ziarah Nusantara), Ringkasan Statis Crawlable di index.html untuk koreksi Google AI Overview, serta Panel Diagnostik Favicon & Panduan Request Indexing Google Search Console di Admin Kurator.",
-  "updatedAt":  "2026-10-28T07:48:06.050257990Z",
+  "summary":  "Rencana finalisasi pra-push GitHub dan pra-deploy Vercel untuk Ziarah Nusantara (https://ziarahnusantara.my.id), mencakup perbaikan 0 error TypeScript, pemisahan jalur kritis JS (lazy-load Firebase Auth/Firestore & animasi Hero), penguncian SEO/Sitemap kanonik, dan sanitasi repositori Git.",
+  "updatedAt":  "2026-10-29T03:58:41.425659304Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

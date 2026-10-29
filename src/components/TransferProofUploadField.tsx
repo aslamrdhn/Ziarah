@@ -22,8 +22,6 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
   onSenderAccountChange,
   receipt,
   onReceiptChange,
-  agreedToAkad,
-  onAgreedToAkadChange,
   accentColor = 'emerald',
   requiredForUnlock = true,
 }) => {

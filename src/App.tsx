@@ -15,11 +15,8 @@ const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ de
 
 import { ZiarahSite } from './data/sites';
 import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
-
-import { auth, db, handleFirestoreError, OperationType } from './lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import type { User } from 'firebase/auth';
 import { SiteProvider } from './context/SiteContext';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function App() {
   const location = useLocation();
@@ -50,21 +47,24 @@ export default function App() {
       }
     } catch {}
 
-    const timer = window.setTimeout(() => {
-      getDoc(doc(db, 'settings', 'infaq'))
-        .then((snap) => {
-          if (snap.exists()) {
-            const data = snap.data();
-            if (data.customDomain && typeof data.customDomain === 'string') {
-              const raw = data.customDomain.trim().replace(/\/+$/, '');
-              if (raw) {
-                const normalized = raw.startsWith('http://') || raw.startsWith('https://') ? raw : `https://${raw}`;
-                setCustomDomainOrigin(normalized);
-              }
+    const timer = window.setTimeout(async () => {
+      try {
+        const [{ db }, { doc, getDoc }] = await Promise.all([
+          import('./lib/firebase'),
+          import('firebase/firestore'),
+        ]);
+        const snap = await getDoc(doc(db, 'settings', 'infaq'));
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.customDomain && typeof data.customDomain === 'string') {
+            const raw = data.customDomain.trim().replace(/\/+$/, '');
+            if (raw) {
+              const normalized = raw.startsWith('http://') || raw.startsWith('https://') ? raw : `https://${raw}`;
+              setCustomDomainOrigin(normalized);
             }
           }
-        })
-        .catch(() => {});
+        }
+      } catch {}
     }, 2500);
 
     return () => window.clearTimeout(timer);
@@ -232,46 +232,57 @@ export default function App() {
   // Sync with Firestore when auth state changes (deferred slightly to avoid blocking initial paint)
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
-    const timer = window.setTimeout(() => {
-      unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-        setUser(currentUser);
-        if (currentUser) {
-          try {
-            const userRef = doc(db, 'users', currentUser.uid);
-            const docSnap = await getDoc(userRef);
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        const [{ auth, db, handleFirestoreError, OperationType }, { onAuthStateChanged }, { doc, getDoc, setDoc, serverTimestamp }] =
+          await Promise.all([
+            import('./lib/firebase'),
+            import('firebase/auth'),
+            import('firebase/firestore'),
+          ]);
+        if (cancelled) return;
+        unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+          setUser(currentUser);
+          if (currentUser) {
+            try {
+              const userRef = doc(db, 'users', currentUser.uid);
+              const docSnap = await getDoc(userRef);
 
-            if (docSnap.exists()) {
-              const data = docSnap.data();
-              if (Array.isArray(data.savedSiteIds)) setSavedSiteIds(data.savedSiteIds);
-              if (Array.isArray(data.savedDoas)) setSavedDoas(data.savedDoas);
-              if (Array.isArray(data.savedRubrik)) setSavedRubrik(data.savedRubrik);
-            } else {
-              let initialSites: string[] = [];
-              let initialDoas: string[] = [];
-              let initialRubrik: string[] = [];
-              try {
-                initialSites = JSON.parse(localStorage.getItem('savedZiarah') || '[]');
-                initialDoas = JSON.parse(localStorage.getItem('savedDoas') || '[]');
-                initialRubrik = JSON.parse(localStorage.getItem('savedRubrik') || '[]');
-              } catch {}
+              if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (Array.isArray(data.savedSiteIds)) setSavedSiteIds(data.savedSiteIds);
+                if (Array.isArray(data.savedDoas)) setSavedDoas(data.savedDoas);
+                if (Array.isArray(data.savedRubrik)) setSavedRubrik(data.savedRubrik);
+              } else {
+                let initialSites: string[] = [];
+                let initialDoas: string[] = [];
+                let initialRubrik: string[] = [];
+                try {
+                  initialSites = JSON.parse(localStorage.getItem('savedZiarah') || '[]');
+                  initialDoas = JSON.parse(localStorage.getItem('savedDoas') || '[]');
+                  initialRubrik = JSON.parse(localStorage.getItem('savedRubrik') || '[]');
+                } catch {}
 
-              await setDoc(userRef, {
-                userId: currentUser.uid,
-                savedSiteIds: initialSites,
-                savedDoas: initialDoas,
-                savedRubrik: initialRubrik,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-              });
+                await setDoc(userRef, {
+                  userId: currentUser.uid,
+                  savedSiteIds: initialSites,
+                  savedDoas: initialDoas,
+                  savedRubrik: initialRubrik,
+                  createdAt: serverTimestamp(),
+                  updatedAt: serverTimestamp(),
+                });
+              }
+            } catch (error) {
+              handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
             }
-          } catch (error) {
-            handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
           }
-        }
-      });
+        });
+      } catch {}
     }, 1500);
 
     return () => {
+      cancelled = true;
       window.clearTimeout(timer);
       if (unsubscribe) unsubscribe();
     };
@@ -290,6 +301,10 @@ export default function App() {
     const saveToFirestore = async () => {
       if (user) {
         try {
+          const [{ db }, { doc, setDoc, serverTimestamp }] = await Promise.all([
+            import('./lib/firebase'),
+            import('firebase/firestore'),
+          ]);
           const userRef = doc(db, 'users', user.uid);
           await setDoc(
             userRef,
@@ -303,6 +318,7 @@ export default function App() {
             { merge: true }
           );
         } catch (error) {
+          const { handleFirestoreError, OperationType } = await import('./lib/firebase');
           handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
         }
       }
@@ -334,15 +350,15 @@ export default function App() {
   return (
     <SiteProvider>
       <div className="flex flex-col min-h-screen w-full bg-[#F9F8F4] font-sans text-stone-900 selection:bg-stone-300 selection:text-stone-950 relative antialiased">
-        {/* Editorial Glass Header */}
-        <header className="fixed top-0 left-0 right-0 z-[2000] bg-[#F9F8F4]/95 backdrop-blur-md border-b border-stone-300/80 flex justify-center">
-          <div className="w-full max-w-6xl">
+        {/* Editorial Glass Header (backdrop-blur applied on ::before so fixed descendants are never trapped) */}
+        <header className="fixed top-0 left-0 right-0 z-[2000] border-b border-stone-300/80 flex justify-center before:content-[''] before:absolute before:inset-0 before:bg-[#F9F8F4]/95 before:backdrop-blur-md before:-z-10 before:pointer-events-none">
+          <div className="w-full max-w-6xl relative z-10">
             <Navbar onOpenKontribusi={() => setIsKontribusiOpen(true)} />
           </div>
         </header>
 
         {/* Main Content Area (Rendered immediately at opacity 1 for fast FCP/LCP) */}
-        <main className="flex-1 flex flex-col relative z-10 pt-16 md:pt-20 pb-24 md:pb-12 w-full overflow-x-hidden">
+        <main className="flex-1 flex flex-col relative z-10 pt-14 sm:pt-16 pb-24 md:pb-12 w-full overflow-x-hidden">
           <Suspense
             fallback={
               <div className="flex-1 flex items-center justify-center p-12">

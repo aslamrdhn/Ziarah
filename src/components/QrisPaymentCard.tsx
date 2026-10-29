@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
-import { QrCode, Download, Copy, Check, Maximize2, X, ShieldCheck } from 'lucide-react';
+import { QrCode, Download, Copy, Check, Maximize2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   OFFICIAL_QRIS_STATIC_PAYLOAD,

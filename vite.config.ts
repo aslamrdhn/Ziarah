@@ -9,6 +9,7 @@ export default defineConfig({
     emptyOutDir: true,
     target: 'es2020',
     cssMinify: true,
+    chunkSizeWarningLimit: 650,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -19,8 +20,11 @@ export default defineConfig({
             if (id.includes('@firebase/auth') || id.includes('firebase/auth')) {
               return 'vendor-firebase-auth';
             }
+            if (id.includes('@firebase/firestore') || id.includes('firebase/firestore')) {
+              return 'vendor-firebase-firestore';
+            }
             if (id.includes('firebase') || id.includes('@firebase')) {
-              return 'vendor-firebase-db';
+              return 'vendor-firebase-core';
             }
             if (id.includes('leaflet') || id.includes('react-leaflet')) {
               return 'vendor-leaflet';

@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ZiarahSite, ziarahSites as localSites } from '../data/sites';
-import { db } from '../lib/firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
 
 interface SiteContextType {
   sites: ZiarahSite[];
@@ -29,11 +27,17 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let unsubscribe: (() => void) | null = null;
     let cancelled = false;
 
-    const connectCloudSites = () => {
+    const connectCloudSites = async () => {
       if (cancelled) return;
-      unsubscribe = onSnapshot(
-        collection(db, 'sites'),
-        (snapshot) => {
+      try {
+        const [{ db }, { collection, onSnapshot }] = await Promise.all([
+          import('../lib/firebase'),
+          import('firebase/firestore'),
+        ]);
+        if (cancelled) return;
+        unsubscribe = onSnapshot(
+          collection(db, 'sites'),
+          (snapshot) => {
           if (!snapshot.empty) {
             const fetchedSites = snapshot.docs.map((docSnap) => docSnap.data() as ZiarahSite);
             const localMap = new Map<string, ZiarahSite>();
@@ -87,6 +91,11 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false);
         }
       );
+      } catch {
+        setSites(localSites);
+        setIsSeededInCloud(false);
+        setIsLoading(false);
+      }
     };
 
     // Defer cloud listener slightly so initial render & LCP complete with zero main-thread contention

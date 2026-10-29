@@ -1,44 +1,78 @@
-# Rencana Pembaruan Identitas Google Search, Ikon Profil (Favicon), & Koreksi AI Overview (`ziarahnusantara.my.id`)
+# Ziarah Nusantara — Implementation Plan (Finalisasi Pra-Push GitHub & Pra-Deploy Vercel)
 
-## 1. Tujuan & Akar Masalah yang Diperbaiki
-Berdasarkan hasil pencarian Google untuk `ziarah nusantara.my.id`, pembaruan ini mengatasi dua masalah utama secara permanen:
-1. **Menampilkan Ikon Profil Resmi di Google Search (Menggantikan Ikon Bola Dunia Abu-abu)**:
-   - Merancang ulang ikon resmi (`/public/icon.svg` dan `/public/favicon.svg`) dengan **Lambang Kubah Emas dan Kaligrafi Monogram ZN di atas Latar Hijau Zamrud (`#0F3D33`)**.
-   - Menambahkan deklarasi `<link rel="icon">` multi-ukuran yang diwajibkan oleh *Google Search Favicon Guidelines* (`sizes="48x48"`, `sizes="96x96"`, `sizes="192x192"`, `sizes="512x512"`, `shortcut icon`, dan `apple-touch-icon`) pada kode statis `/index.html`.
-2. **Meluruskan Informasi Google AI Overview & Identitas Pemilik Situs**:
-   - Menyematkan **Schema.org `@graph` JSON-LD** lengkap di `/index.html` dan `/src/App.tsx` yang menghubungkan entitas `Organization` (**Tim Kurator Arsip Ziarah Nusantara**), `WebSite` (`https://ziarahnusantara.my.id/`), `alternateName` (`["Ziarah Nusantara", "ziarahnusantara.my.id", "ziarah nusantara.my.id", "Direktori Makam Waliyullah Nusantara"]`), `logo` resmi, serta `ItemList` Direktori Makam Wali Songo & Ulama Nusantara.
-   - Menambahkan konten semantik statis (*crawlable fallback*) di dalam `/index.html` agar bot pencari dan AI Google langsung membaca profil resmi **Ziarah Nusantara** (dikelola oleh **Tim Kurator Arsip Ziarah Nusantara**) tanpa tertukar dengan blog pihak ketiga (`nusantara.my.id`).
+Rencana pematangan akhir aplikasi **Ziarah Nusantara** sebelum di-push ke repositori GitHub dan di-deploy ulang ke Vercel pada domain resmi `https://ziarahnusantara.my.id`. Fokus utama mencakup pembersihan 100% pemeriksaan TypeScript ketat (`tsc --noEmit`), pemangkasan beban JavaScript pada jalur render awal (*critical rendering path*) untuk mendongkrak skor Mobile PageSpeed (FCP & LCP), penguncian konfigurasi SEO/Sitemap kanonik, serta sanitasi aturan Git.
+
+## User Review & Critical Decisions
+
+> [!IMPORTANT]
+> **Keputusan yang Telah Dikonfirmasi:**
+> 1. **Optimasi Performa FCP/LCP & Perbaikan Lint**: Menerapkan seluruh perbaikan kode TypeScript (`0 error` pada `tsc --noEmit`) sekaligus memisahkan pemuatan modul berat (Firebase SDK & animasi sinematik Hero) dari bundel sinkron awal menggunakan *dynamic import* dan *lazy loading*.
+> 2. **Domain Kanonik Produksi**: Mengunci `https://ziarahnusantara.my.id` sebagai satu-satunya acuan domain utama untuk seluruh tag `<link rel="canonical">`, OpenGraph, Schema.org JSON-LD (`@graph`), `robots.txt`, dan pembangkitan otomatis `sitemap.xml` saat proses *post-build* Vercel.
 
 ---
 
-## 2. Daftar Perubahan File & Fitur
+## 1. Overview & Core Concept
 
-### A. Desain Ikon Profil & Favicon Resmi (`/public/icon.svg` & `/public/favicon.svg`)
-- Memperbarui `/public/icon.svg` dan membuat `/public/favicon.svg` dengan desain **Kubah Masjid/Makam Klasik Emas (`#D4AF37`), Bintang Sembilan Wali Songo, dan Kaligrafi/Monogram "ZN" di atas Latar Hijau Zamrud (`#0F3D33`)** yang tajam pada ukuran kecil (16x16 / 48x48 di hasil pencarian Google Mobile & Desktop) maupun ukuran besar (512x512).
+**Ziarah Nusantara** adalah direktori ensiklopedis, pemetaan geospasial interaktif, panduan adab ziarah, kumpulan doa tahlil/tawassul, serta portal literasi sejarah Waliyullah dan Ulama Nusantara. Hasil audit menyeluruh menunjukkan arsitektur fitur dan tampilan telah matang, namun terdapat empat aspek krusial yang perlu diselesaikan agar proses *push* ke GitHub dan *re-deploy* ke Vercel berjalan mulus tanpa peringatan:
 
-### B. Standarisasi Tag Favicon, Meta Identitas, & Schema.org `@graph` di `/index.html`
-- Menambahkan deklarasi lengkap di `<head>` `/index.html`:
-  - `<link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="any" />`
-  - `<link rel="icon" type="image/svg+xml" href="/icon.svg" sizes="48x48 96x96 144x144 192x192 512x512" />`
-  - `<link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />`
-  - `<link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png" />`
-  - `<link rel="shortcut icon" href="/pwa-192x192.png" />`
-  - `<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />`
-  - `<meta name="author" content="Tim Kurator Arsip Ziarah Nusantara" />`
-  - `<meta name="publisher" content="Tim Kurator Arsip Ziarah Nusantara" />`
-  - `<meta name="application-name" content="Ziarah Nusantara" />`
-- Memperbarui `<script type="application/ld+json" id="schema-jsonld">` menjadi struktur `@graph` yang mencakup:
-  - **`Organization`**: Nama `Ziarah Nusantara`, `legalName` & `publishingPrinciples` oleh **Tim Kurator Arsip Ziarah Nusantara**, `url: "https://ziarahnusantara.my.id/"`, dan `logo` ImageObject (`https://ziarahnusantara.my.id/pwa-512x512.png` & `/favicon.svg`).
-  - **`WebSite`**: Nama `Ziarah Nusantara`, `alternateName: ["ziarahnusantara.my.id", "ziarah nusantara.my.id", "Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara"]`, `publisher` merujuk ke `@id: "https://ziarahnusantara.my.id/#organization"`.
-  - **`ItemList`**: Ringkasan terstruktur direktori makam Wali Songo dan Ulama Nusantara, panduan adab ziarah, kumpulan doa tahlil/tawassul, serta program infaq pelestarian situs sejarah Islam Nusantara.
-- Menyediakan ringkasan HTML semantik di dalam `<div id="root">` (yang otomatis digantikan oleh React saat aplikasi dimuat di browser pengguna, namun langsung terbaca oleh *crawler* HTML statis Googlebot dan AI Overview).
+- **Kepatuhan Kompilasi TypeScript (`Zero Lint Errors`)**: Menghapus variabel dan impor yang tidak terpakai pada komponen pembayaran QRIS dan unggah bukti transfer agar pemeriksaan tipe ketat (`npm run lint`) lulus 100% di pipeline CI/CD.
+- **Dekonstruksi Beban Bundel Awal (Optimasi FCP & LCP Mobile)**: Saat ini modul Firebase Firestore (`~455 KB`), Firebase Auth (`~113 KB`), serta animasi `motion/react` (`~127 KB`) masih diimpor secara statis di tingkat atas (*top-level import*) pada jalur beranda utama. Mengubahnya menjadi pemuatan dinamis (*dynamic import* pasca-render awal) akan memangkas hampir **~790 KB** JavaScript dari jalur kritis sebelum judul utama (LCP) dirender.
+- **Kesiapan SEO & Indeksasi Google Search Console**: Memastikan generator `sitemap.xml` dan prarender rute statis menghasilkan berkas XML/HTML murni yang langsung dapat diambil oleh Googlebot tanpa terhalang *rewrite* SPA di Vercel.
+- **Sanitasi Repositori GitHub**: Memperketat aturan pengecualian Git agar artefak lokal dan direktori sementara tidak ikut ter-commit ke GitHub.
 
-### C. Sinkronisasi Dinamis SEO & Schema.org per Halaman (`/src/App.tsx` & `/public/sitemap.xml`)
-- Memperbarui hook SEO di `/src/App.tsx` agar setiap rute (`/`, `/peta`, `/direktori`, `/panduan`, `/rubrik`, `/doa`, `/infaq`, `/kurasi`) memiliki judul halaman spesifik, deskripsi yang kaya konteks sejarah & akademik, serta menjaga struktur JSON-LD `@graph` (`Organization` + `WebSite` + `WebPage`) tetap konsisten.
-- Memperbarui tanggal `<lastmod>` pada `/public/sitemap.xml` agar Google Search Console mendeteksi pembaruan metadata dan ikon terbaru.
+---
 
-### D. Alat Cek Status Favicon & Panduan *Request Indexing* di Panel Admin (`/src/views/AdminKurator.tsx`)
-- Menambahkan kartu diagnostik **"Status Ikon Profil Google (Favicon) & Identitas AI Overview"** pada tab **Pengaturan Infaq & QRIS** di `/admin`:
-  - **Pratinjau Live Tampilan Google Search (SERP Snippet Preview)**: Menampilkan simulasi nyata bagaimana `ziarahnusantara.my.id` tampil di Google Mobile lengkap dengan ikon Kubah Emas ZN, nama situs `Ziarah Nusantara`, dan atribusi **Tim Kurator Arsip Ziarah Nusantara**.
-  - **Cek Kesehatan Asset Ikon & Schema.org**: Indikator pemeriksaan otomatis untuk `/favicon.svg`, `/pwa-192x192.png`, `/pwa-512x512.png`, dan JSON-LD `Organization`.
-  - **Tombol Salin Cepat & Panduan 3 Langkah *Request Indexing* Google Search Console**: Langkah praktis untuk meminta `Google-Favicon` dan `Googlebot` memperbarui gambar profil serta mereset ringkasan AI Overview pada domain `https://ziarahnusantara.my.id/`.
+## 2. User Experience & Visual Design
+
+Seluruh optimasi teknis dilakukan dengan menjaga keutuhan estetika **Museum & Editorial Warisan Islam Nusantara** serta stabilitas tata letak (*Zero Cumulative Layout Shift / CLS = 0.00*):
+
+- **Palet Warna & Tipografi Kuratorial**: Mempertahankan kertas arsip hangat (`#F9F8F4`), zamrud tua (`#0D3B32`), dan aksen emas kubah (`#C5A059`) dengan pasangan tipografi serif *Cormorant Garamond* untuk tajuk utama dan *Plus Jakarta Sans* untuk teks bacaan.
+- **Pratinjau Hero Instan Tanpa Kedipan (*Zero-Flicker Hero Fallback*)**: Saat komponen `HeroCinemaShowcase` dimuat secara tunda (*lazy*), beranda menampilkan kartu pratinjau statis berdimensi identik dengan ilustrasi kubah zamrud sehingga teks utama halaman langsung tampil instan di layar perangkat seluler tanpa pergeseran tata letak.
+- **Navigasi Atas & Bawah Bebas Halangan**: Bilah navigasi atas menggunakan efek buram pada elemen semu (`before:backdrop-blur-md`) dan merender navigasi bawah seluler melalui `createPortal` langsung ke `document.body`, memastikan posisi tombol selalu presisi di semua ukuran layar.
+
+---
+
+## 3. Key Product Decisions & Trade-Offs
+
+- **Pemuatan Dinamis Firebase (`import()`) vs Impor Statis**:
+  - *Keputusan*: Mengganti impor statis `firebase/firestore` dan `firebase/auth` pada konteks situs, komponen utama, dan bilah navigasi menjadi pemuatan modul dinamis di dalam efek latar belakang atau saat pengguna menekan tombol masuk.
+  - *Dampak*: Pengunjung pertama kali dapat langsung membaca direktori makam, panduan ziarah, dan doa dalam hitungan milidetik menggunakan data arsip kurasi bawaan (`localStorage` + katalog statis), sementara sinkronisasi awan Firestore bekerja secara asinkron di latar belakang.
+- **Isolasi Animasi `motion/react` dari Jalur Kritis Pertama**:
+  - *Keputusan*: Memuat `HeroCinemaShowcase` menggunakan `React.lazy` + `<Suspense>` dengan kerangka visual statis yang selaras.
+  - *Dampak*: Browser tidak perlu mengunduh dan mengeksekusi mesin animasi 127 KB sebelum menampilkan teks judul beranda utama.
+- **Konsistensi Domain Kanonik `https://ziarahnusantara.my.id`**:
+  - *Keputusan*: Menetapkan `https://ziarahnusantara.my.id` sebagai nilai bawaan (`default fallback`) di seluruh lapisan aplikasi dan skrip *post-build*, namun tetap mengizinkan pembaruan dinamis dari pengaturan kurator apabila dibutuhkan di masa mendatang.
+
+---
+
+## 4. Technical Architecture & Data Strategy
+
+### Alur Render Jalur Kritis & Pemuatan Asinkron
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    KUNJUNGAN AWAL (FIRST PAINT / LCP)                   │
+│  HTML Prarender + CSS Kritis + Katalog Arsip Bawaan + Cache Lokal       │
+│  (Tanpa memblokir render untuk mengunduh SDK Firebase / Motion)         │
+└───────────────────────────────────┬─────────────────────────────────────┘
+                                    │
+                  Render Instan (< 1.2 dtk di Mobile)
+                                    │
+        ┌───────────────────────────┴───────────────────────────┐
+        ▼                                                       ▼
+┌───────────────────────────────┐               ┌───────────────────────────────┐
+│   HIDRASI VISUAL INTERAKTIF   │               │   SINKRONISASI LATAR (IDLE)   │
+│ • Lazy-load HeroCinemaShowcase│               │ • Dynamic import() Firestore  │
+│ • Navigasi Portal Mobile      │               │ • Dynamic import() Auth SDK   │
+│ • Pencarian & Filter Instan   │               │ • Pembaruan Koleksi & Infaq   │
+└───────────────────────────────┘               └───────────────────────────────┘
+```
+
+### Pemetaan Status Interaktif & Kesiapan Produksi
+
+| Area Sistem | Kondisi Saat Ini | Perbaikan & Optimasi Pra-Deploy | Hasil Akhir yang Diverifikasi |
+| :--- | :--- | :--- | :--- |
+| **Pemeriksaan Tipe (`tsc --noEmit`)** | Terdapat 3 peringatan variabel/impor tak terpakai (`TS6133`) pada modul pembayaran & bukti transfer | Membersihkan deklarasi yang tidak digunakan agar kode 100% bersih | `npm run lint` lulus sempurna dengan kode keluar `0` |
+| **Jalur Kritis Beranda (FCP / LCP)** | SDK Firebase (`~568 KB`) & Motion (`~127 KB`) terikat pada impor statis awal | Mengubah ke `import()` dinamis pada layanan Firebase & `React.lazy` pada *showcase* Hero | Bundel JS awal menyusut drastis; teks LCP langsung tampil |
+| **SEO, Sitemap & Vercel Routing** | `vercel.json` dan skrip *post-build* menghasilkan halaman statis per rute + `sitemap.xml` | Memastikan header `Content-Type: application/xml` dan canonical URL terkunci ke `https://ziarahnusantara.my.id` | Google Search Console dapat membaca `/sitemap.xml` dengan status sukses |
+| **Kebersihan Repositori Git** | `.gitignore` standar belum mengecualikan direktori aset pratinjau sementara & cache Vercel | Menambahkan pengecualian untuk folder sementara dan berkas lokal | `git status` bersih dan siap di-*push* ke GitHub |

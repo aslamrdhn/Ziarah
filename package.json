@@ -46,5 +46,14 @@
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
     "tsx": "^4.21.0"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.0"
+  },
+  "allowScripts": {
+    "@firebase/util": true,
+    "@google/genai": true,
+    "esbuild": true,
+    "protobufjs": true
   }
 }
