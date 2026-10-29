@@ -1,78 +1,80 @@
-# Ziarah Nusantara — Implementation Plan (Finalisasi Pra-Push GitHub & Pra-Deploy Vercel)
+# Solusi Tuntas "Tidak Dapat Membaca Peta Situs" di Google Search Console
 
-Rencana pematangan akhir aplikasi **Ziarah Nusantara** sebelum di-push ke repositori GitHub dan di-deploy ulang ke Vercel pada domain resmi `https://ziarahnusantara.my.id`. Fokus utama mencakup pembersihan 100% pemeriksaan TypeScript ketat (`tsc --noEmit`), pemangkasan beban JavaScript pada jalur render awal (*critical rendering path*) untuk mendongkrak skor Mobile PageSpeed (FCP & LCP), penguncian konfigurasi SEO/Sitemap kanonik, serta sanitasi aturan Git.
+Rencana ini mengatasi masalah status **"Tidak dapat mengambil peta situs" (`Tidak dapat membaca peta situs`)** dan **"URL tidak ada di Google"** pada Google Search Console untuk **`https://ziarahnusantara.my.id`**, baik dari sisi teknis kode/server Vercel maupun langkah pemicu indeks di dashboard Google Search Console.
 
-## User Review & Critical Decisions
+---
+
+## User Review & Keputusan Penting
 
 > [!IMPORTANT]
-> **Keputusan yang Telah Dikonfirmasi:**
-> 1. **Optimasi Performa FCP/LCP & Perbaikan Lint**: Menerapkan seluruh perbaikan kode TypeScript (`0 error` pada `tsc --noEmit`) sekaligus memisahkan pemuatan modul berat (Firebase SDK & animasi sinematik Hero) dari bundel sinkron awal menggunakan *dynamic import* dan *lazy loading*.
-> 2. **Domain Kanonik Produksi**: Mengunci `https://ziarahnusantara.my.id` sebagai satu-satunya acuan domain utama untuk seluruh tag `<link rel="canonical">`, OpenGraph, Schema.org JSON-LD (`@graph`), `robots.txt`, dan pembangkitan otomatis `sitemap.xml` saat proses *post-build* Vercel.
+> **Mengapa Terjadi "Tidak dapat membaca peta situs" & "URL tidak ada di Google"?**
+> 1. **Domain Baru Belum Pernah Di-crawl Sama Sekali (`URL tidak ada di Google`)**: Saat Anda memasukkan URL ke kotak Inspeksi URL dan muncul tulisan *"URL tidak ada di Google"*, itu artinya Googlebot **belum mengindeks halaman utama (`https://ziarahnusantara.my.id/`) sama sekali**. Untuk domain `.my.id` yang baru dibuat, Google tidak akan memproses *sitemap* sebelum halaman utamanya diminta pengindeksan (*Request Indexing*) atau diuji via tombol **Uji URL Aktif (Test Live URL)**.
+> 2. **Bug Properti Domain (`sc-domain:ziarahnusantara.my.id`) & Cache URL Sitemap**: Di Google Search Console, jika sebuah URL *sitemap* (`sitemap.xml`) pernah gagal/tertunda satu kali pada properti `sc-domain`, Google mengunci (*cache*) status *"Tidak dapat membaca peta situs"* untuk nama file tersebut meskipun dikirim ulang berkali-kali.
+> 3. **Penyederhanaan Skema XML & Header Vercel**: Google telah menghentikan dukungan tag `<changefreq>` dan `<priority>` di dalam `sitemap.xml`, serta lebih stabil membaca *header* `application/xml` dengan *caching* CDN standar dibandingkan `max-age=0, must-revalidate`.
+
+- **Keputusan Terkonfirmasi 1**: Pesan detail di Search Console adalah **"Tidak dapat membaca peta situs"** dan status inspeksi awal adalah **"URL tidak ada di Google"**.
+- **Keputusan Terkonfirmasi 2**: Kita akan menyediakan file peta situs dengan nama baru yang bersih dari *cache* kegagalan Google (**`/sitemap-utama.xml`** dan **`/sitemap_index.xml`**) sekaligus membersihkan format XML dan panduan langkah klik di Google Search Console.
 
 ---
 
-## 1. Overview & Core Concept
+## 1. Gambaran Umum & Konsep Utama
 
-**Ziarah Nusantara** adalah direktori ensiklopedis, pemetaan geospasial interaktif, panduan adab ziarah, kumpulan doa tahlil/tawassul, serta portal literasi sejarah Waliyullah dan Ulama Nusantara. Hasil audit menyeluruh menunjukkan arsitektur fitur dan tampilan telah matang, namun terdapat empat aspek krusial yang perlu diselesaikan agar proses *push* ke GitHub dan *re-deploy* ke Vercel berjalan mulus tanpa peringatan:
-
-- **Kepatuhan Kompilasi TypeScript (`Zero Lint Errors`)**: Menghapus variabel dan impor yang tidak terpakai pada komponen pembayaran QRIS dan unggah bukti transfer agar pemeriksaan tipe ketat (`npm run lint`) lulus 100% di pipeline CI/CD.
-- **Dekonstruksi Beban Bundel Awal (Optimasi FCP & LCP Mobile)**: Saat ini modul Firebase Firestore (`~455 KB`), Firebase Auth (`~113 KB`), serta animasi `motion/react` (`~127 KB`) masih diimpor secara statis di tingkat atas (*top-level import*) pada jalur beranda utama. Mengubahnya menjadi pemuatan dinamis (*dynamic import* pasca-render awal) akan memangkas hampir **~790 KB** JavaScript dari jalur kritis sebelum judul utama (LCP) dirender.
-- **Kesiapan SEO & Indeksasi Google Search Console**: Memastikan generator `sitemap.xml` dan prarender rute statis menghasilkan berkas XML/HTML murni yang langsung dapat diambil oleh Googlebot tanpa terhalang *rewrite* SPA di Vercel.
-- **Sanitasi Repositori GitHub**: Memperketat aturan pengecualian Git agar artefak lokal dan direktori sementara tidak ikut ter-commit ke GitHub.
-
----
-
-## 2. User Experience & Visual Design
-
-Seluruh optimasi teknis dilakukan dengan menjaga keutuhan estetika **Museum & Editorial Warisan Islam Nusantara** serta stabilitas tata letak (*Zero Cumulative Layout Shift / CLS = 0.00*):
-
-- **Palet Warna & Tipografi Kuratorial**: Mempertahankan kertas arsip hangat (`#F9F8F4`), zamrud tua (`#0D3B32`), dan aksen emas kubah (`#C5A059`) dengan pasangan tipografi serif *Cormorant Garamond* untuk tajuk utama dan *Plus Jakarta Sans* untuk teks bacaan.
-- **Pratinjau Hero Instan Tanpa Kedipan (*Zero-Flicker Hero Fallback*)**: Saat komponen `HeroCinemaShowcase` dimuat secara tunda (*lazy*), beranda menampilkan kartu pratinjau statis berdimensi identik dengan ilustrasi kubah zamrud sehingga teks utama halaman langsung tampil instan di layar perangkat seluler tanpa pergeseran tata letak.
-- **Navigasi Atas & Bawah Bebas Halangan**: Bilah navigasi atas menggunakan efek buram pada elemen semu (`before:backdrop-blur-md`) dan merender navigasi bawah seluler melalui `createPortal` langsung ke `document.body`, memastikan posisi tombol selalu presisi di semua ukuran layar.
+- **Apa yang Dilakukan**:
+  1. Memperbarui generator *sitemap* pasca-*build* agar menghasilkan struktur XML paling murni sesuai standar spesifikasi terbaru Google (hanya elemen `<url><loc>...</loc></url>` tanpa atribut yang sudah didepresiasi Google).
+  2. Menghasilkan file baru **`/sitemap-utama.xml`** dan **`/sitemap_index.xml`** agar saat Anda memasukkannya ke Google Search Console, Google menganggapnya sebagai URL baru (tidak terkena *cache* merah dari `sitemap.xml` sebelumnya).
+  3. Menyesuaikan konfigurasi *header* dan *rewrite* di Vercel agar merespons semua varian URL *sitemap* dengan cepat dari *Edge CDN*.
+- **Nilai Utama**: Memutus *cache* status gagal di Google Search Console dan memastikan Googlebot langsung membaca daftar 106 halaman situs Ziarah Nusantara.
 
 ---
 
-## 3. Key Product Decisions & Trade-Offs
+## 2. Pengalaman Pengguna & Langkah di Google Search Console
 
-- **Pemuatan Dinamis Firebase (`import()`) vs Impor Statis**:
-  - *Keputusan*: Mengganti impor statis `firebase/firestore` dan `firebase/auth` pada konteks situs, komponen utama, dan bilah navigasi menjadi pemuatan modul dinamis di dalam efek latar belakang atau saat pengguna menekan tombol masuk.
-  - *Dampak*: Pengunjung pertama kali dapat langsung membaca direktori makam, panduan ziarah, dan doa dalam hitungan milidetik menggunakan data arsip kurasi bawaan (`localStorage` + katalog statis), sementara sinkronisasi awan Firestore bekerja secara asinkron di latar belakang.
-- **Isolasi Animasi `motion/react` dari Jalur Kritis Pertama**:
-  - *Keputusan*: Memuat `HeroCinemaShowcase` menggunakan `React.lazy` + `<Suspense>` dengan kerangka visual statis yang selaras.
-  - *Dampak*: Browser tidak perlu mengunduh dan mengeksekusi mesin animasi 127 KB sebelum menampilkan teks judul beranda utama.
-- **Konsistensi Domain Kanonik `https://ziarahnusantara.my.id`**:
-  - *Keputusan*: Menetapkan `https://ziarahnusantara.my.id` sebagai nilai bawaan (`default fallback`) di seluruh lapisan aplikasi dan skrip *post-build*, namun tetap mengizinkan pembaruan dinamis dari pengaturan kurator apabila dibutuhkan di masa mendatang.
+> [!NOTE]
+> Setelah kode ini di-*push* dan di-*deploy* ke Vercel, lakukan **3 langkah wajib** berikut di layar Google Search Console Anda (hanya butuh 2 menit):
+
+1. **Langkah 1 — Paksa Googlebot Mengunjungi Halaman Utama (Wajib karena status masih "URL tidak ada di Google")**:
+   - Ketik **`https://ziarahnusantara.my.id/`** di kotak pencarian paling atas (**"Periksa semua URL di ziarahnusantara.my.id"**) lalu tekan **Enter**.
+   - Saat muncul layar **"URL tidak ada di Google"**, klik tombol **"UJI URL AKTIF"** (*Test Live URL*) di pojok kanan atas.
+   - Tunggu 10–15 detik hingga berubah menjadi hijau (**"URL tersedia untuk Google"**), lalu klik tombol **"MINTA PENGINDEKSAN"** (*Request Indexing*).
+2. **Langkah 2 — Gunakan Properti "Awalan URL" (`URL Prefix`) sebagai Pendamping**:
+   - Klik dropdown **`ziarahnusantara.my.id`** di pojok kiri atas Google Search Console -> pilih **`+ Tambahkan properti`**.
+   - Pilih kotak sebelah kanan: **Awalan URL (URL Prefix)** -> masukkan **`https://ziarahnusantara.my.id`** -> klik **Lanjutkan** (akan langsung terverifikasi otomatis tanpa perlu atur DNS lagi).
+3. **Langkah 3 — Kirim Nama File Sitemap Baru (`sitemap-utama.xml`)**:
+   - Masuk ke menu **Peta Situs (Sitemaps)** pada properti **Awalan URL (`https://ziarahnusantara.my.id`)** tersebut.
+   - Ketik **`sitemap-utama.xml`** lalu klik **KIRIM**.
 
 ---
 
-## 4. Technical Architecture & Data Strategy
+## 3. Keputusan Teknis & Trade-Off
 
-### Alur Render Jalur Kritis & Pemuatan Asinkron
+- **Keputusan 1: Menghapus Tag `<changefreq>` dan `<priority>` dari XML Sitemap**
+  - *Pendekatan*: Menyisakan tag wajib `<loc>` saja di dalam setiap blok `<url>`.
+  - *Alasan*: Dokumentasi resmi Google Search Central menyatakan Google mengabaikan `<priority>` dan `<changefreq>`, dan struktur XML yang hanya berisi `<loc>` memiliki ukuran lebih kecil serta bebas dari potensi penolakan *strict parser* Googlebot.
+- **Keputusan 2: Menyediakan Endpoint `/sitemap-utama.xml` dan `/sitemap_index.xml`**
+  - *Pendekatan*: Membuat file fisik tambahan `sitemap-utama.xml` dan `sitemap_index.xml` selain `sitemap.xml`.
+  - *Alasan*: Google Search Console menyimpan *cache* status gagal berdasarkan URL. Menggunakan nama file baru memaksa antrean Googlebot melakukan pengambilan (*fetch*) baru dari nol.
+
+---
+
+## 4. Arsitektur Teknis & Alur Pengambilan Sitemap
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    KUNJUNGAN AWAL (FIRST PAINT / LCP)                   │
-│  HTML Prarender + CSS Kritis + Katalog Arsip Bawaan + Cache Lokal       │
-│  (Tanpa memblokir render untuk mengunduh SDK Firebase / Motion)         │
-└───────────────────────────────────┬─────────────────────────────────────┘
-                                    │
-                  Render Instan (< 1.2 dtk di Mobile)
-                                    │
-        ┌───────────────────────────┴───────────────────────────┐
-        ▼                                                       ▼
-┌───────────────────────────────┐               ┌───────────────────────────────┐
-│   HIDRASI VISUAL INTERAKTIF   │               │   SINKRONISASI LATAR (IDLE)   │
-│ • Lazy-load HeroCinemaShowcase│               │ • Dynamic import() Firestore  │
-│ • Navigasi Portal Mobile      │               │ • Dynamic import() Auth SDK   │
-│ • Pencarian & Filter Instan   │               │ • Pembaruan Koleksi & Infaq   │
-└───────────────────────────────┘               └───────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                     Google Search Console & Googlebot                │
+└──────────────────┬────────────────────────────────┬──────────────────┘
+                   │ 1. Uji URL Aktif / Indexing    │ 2. Fetch Sitemap Baru
+                   ▼                                ▼
+┌──────────────────────────────────┐ ┌─────────────────────────────────┐
+│  https://ziarahnusantara.my.id/  │ │ /sitemap-utama.xml              │
+│  (Pre-rendered HTML + Meta SEO)  │ │ /sitemap_index.xml              │
+│  Status: HTTP 200 OK             │ │ /sitemap.xml & /sitemap.txt     │
+└──────────────────────────────────┘ └──────────────┬──────────────────┘
+                                                    │
+                                                    ▼
+                                     ┌─────────────────────────────────┐
+                                     │ Vercel Edge CDN Header          │
+                                     │ Content-Type: application/xml   │
+                                     │ Cache-Control: public, s-maxage │
+                                     │ 106 Canonical URLs (<loc> only) │
+                                     └─────────────────────────────────┘
 ```
-
-### Pemetaan Status Interaktif & Kesiapan Produksi
-
-| Area Sistem | Kondisi Saat Ini | Perbaikan & Optimasi Pra-Deploy | Hasil Akhir yang Diverifikasi |
-| :--- | :--- | :--- | :--- |
-| **Pemeriksaan Tipe (`tsc --noEmit`)** | Terdapat 3 peringatan variabel/impor tak terpakai (`TS6133`) pada modul pembayaran & bukti transfer | Membersihkan deklarasi yang tidak digunakan agar kode 100% bersih | `npm run lint` lulus sempurna dengan kode keluar `0` |
-| **Jalur Kritis Beranda (FCP / LCP)** | SDK Firebase (`~568 KB`) & Motion (`~127 KB`) terikat pada impor statis awal | Mengubah ke `import()` dinamis pada layanan Firebase & `React.lazy` pada *showcase* Hero | Bundel JS awal menyusut drastis; teks LCP langsung tampil |
-| **SEO, Sitemap & Vercel Routing** | `vercel.json` dan skrip *post-build* menghasilkan halaman statis per rute + `sitemap.xml` | Memastikan header `Content-Type: application/xml` dan canonical URL terkunci ke `https://ziarahnusantara.my.id` | Google Search Console dapat membaca `/sitemap.xml` dengan status sukses |
-| **Kebersihan Repositori Git** | `.gitignore` standar belum mengecualikan direktori aset pratinjau sementara & cache Vercel | Menambahkan pengecualian untuk folder sementara dan berkas lokal | `git status` bersih dan siap di-*push* ke GitHub |

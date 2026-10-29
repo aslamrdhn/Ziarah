@@ -1,6 +1,6 @@
 {
-  "summary":  "Rencana finalisasi pra-push GitHub dan pra-deploy Vercel untuk Ziarah Nusantara (https://ziarahnusantara.my.id), mencakup perbaikan 0 error TypeScript, pemisahan jalur kritis JS (lazy-load Firebase Auth/Firestore & animasi Hero), penguncian SEO/Sitemap kanonik, dan sanitasi repositori Git.",
-  "updatedAt":  "2026-10-29T03:58:41.425659304Z",
+  "summary":  "Rencana perbaikan masalah \"Tidak dapat membaca peta situs\" & \"URL tidak ada di Google\" pada Google Search Console untuk https://ziarahnusantara.my.id beserta pembuatan endpoint sitemap baru bebas cache GSC dan panduan langkah di dashboard Search Console.",
+  "updatedAt":  "2026-10-29T04:18:35.482275607Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

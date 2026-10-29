@@ -141,18 +141,29 @@ const allEntries = [
   })),
 ];
 
-// 1. Generate clean standards-compliant sitemap.xml (no future lastmod dates)
+// 1. Generate ultra-clean standards-compliant sitemap XML (<loc> only, no deprecated <changefreq>/<priority> tags)
 const xmlLines = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
   ...allEntries.map(
-    (entry) =>
-      `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n    <changefreq>${entry.changefreq}</changefreq>\n    <priority>${entry.priority}</priority>\n  </url>`
+    (entry) => `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n  </url>`
   ),
   '</urlset>',
   '',
 ];
 const sitemapXmlContent = xmlLines.join('\n');
+
+// 1b. Generate a Sitemap Index file (sitemap_index.xml) pointing to sitemap-utama.xml
+const sitemapIndexLines = [
+  '<?xml version="1.0" encoding="UTF-8"?>',
+  '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+  '  <sitemap>',
+  `    <loc>${SITE_ORIGIN}/sitemap-utama.xml</loc>`,
+  '  </sitemap>',
+  '</sitemapindex>',
+  '',
+];
+const sitemapIndexContent = sitemapIndexLines.join('\n');
 
 // 2. Generate plain-text sitemap.txt (100% immune to XML parser issues in Google Search Console)
 const sitemapTxtContent = allEntries.map((entry) => entry.loc).join('\n') + '\n';
@@ -181,6 +192,8 @@ const rssXmlContent = rssLines.join('\n');
 for (const targetFolder of [rootPublic, rootDist]) {
   if (fs.existsSync(targetFolder)) {
     fs.writeFileSync(path.join(targetFolder, 'sitemap.xml'), sitemapXmlContent, 'utf8');
+    fs.writeFileSync(path.join(targetFolder, 'sitemap-utama.xml'), sitemapXmlContent, 'utf8');
+    fs.writeFileSync(path.join(targetFolder, 'sitemap_index.xml'), sitemapIndexContent, 'utf8');
     fs.writeFileSync(path.join(targetFolder, 'sitemap.txt'), sitemapTxtContent, 'utf8');
     fs.writeFileSync(path.join(targetFolder, 'rss.xml'), rssXmlContent, 'utf8');
   }
