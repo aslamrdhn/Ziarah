@@ -17,6 +17,7 @@ import { useSites } from '../context/SiteContext';
 import { HeroCinemaShowcase } from '../components/HeroCinemaShowcase';
 import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
+import { getSitePath } from '../lib/siteSlugs';
 
 const InteractiveHeritageCanvas = lazy(() =>
   import('../components/InteractiveHeritageCanvas').then((m) => ({ default: m.InteractiveHeritageCanvas }))
@@ -619,28 +620,28 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
               site.doaKhusus && site.doaKhusus.length > 0 ? 'Doa Khusus' : null,
             ].filter(Boolean);
             const optimizedThumb = optimizeSiteImageUrl(site.imageUrl, 520, 74);
+            const siteUrl = getSitePath(site);
 
             return (
               <article
                 key={site.id}
-                role="button"
-                tabIndex={0}
-                aria-label={`Buka arsip dan rute ${site.name} (${site.title}) di ${site.location.city}, ${site.location.province}`}
                 onClick={() => onSelectSite(site)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onSelectSite(site);
-                  }
-                }}
-                className="group cursor-pointer bg-[#FBF9F5] rounded-2xl border border-stone-300/90 hover:border-stone-500 hover:-translate-y-1 flex flex-col h-full overflow-hidden transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-800"
+                className="group cursor-pointer bg-[#FBF9F5] rounded-2xl border border-stone-300/90 hover:border-stone-500 hover:-translate-y-1 flex flex-col h-full overflow-hidden transition-all duration-200 focus-within:ring-2 focus-within:ring-emerald-800"
               >
                 {/* Card Image Frame */}
-                <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-stone-200">
+                <Link
+                  to={siteUrl}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectSite(site);
+                  }}
+                  aria-label={`Buka profil, sejarah, dan rute makam ${site.title} (${site.name}) di ${site.location.city}, ${site.location.province}`}
+                  className="relative h-48 sm:h-52 w-full overflow-hidden bg-stone-200 block"
+                >
                   <img
                     src={optimizedThumb}
                     onError={(e) => handleOptimizedImageError(e, site.imageUrl)}
-                    alt={`${site.title} — ${site.location.city}, ${site.location.province}`}
+                    alt={`Makam ${site.title} (${site.name}) — ${site.location.city}, ${site.location.province}`}
                     width={520}
                     height={208}
                     loading="lazy"
@@ -662,7 +663,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                       {site.title}
                     </h3>
                   </div>
-                </div>
+                </Link>
 
                 {/* Card Archival Body */}
                 <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between">
@@ -683,7 +684,16 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                     )}
 
                     <p className="text-base font-serif font-semibold text-stone-950 mb-2 line-clamp-1 group-hover:text-emerald-950 transition-colors">
-                      {site.name}
+                      <Link
+                        to={siteUrl}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectSite(site);
+                        }}
+                        className="hover:underline"
+                      >
+                        {site.name}
+                      </Link>
                     </p>
 
                     <p className="text-xs sm:text-sm text-stone-700 leading-relaxed line-clamp-2 mb-3">
@@ -708,13 +718,20 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                     <span className="text-stone-700 font-medium truncate max-w-[140px] sm:max-w-[160px]">
                       {site.openingHours}
                     </span>
-                    <span className="font-bold text-stone-950 group-hover:text-emerald-950 inline-flex items-center gap-1 transition-colors whitespace-nowrap shrink-0">
+                    <Link
+                      to={siteUrl}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectSite(site);
+                      }}
+                      className="font-bold text-stone-950 group-hover:text-emerald-950 inline-flex items-center gap-1 transition-colors whitespace-nowrap shrink-0"
+                    >
                       <span>Buka Arsip &amp; Rute</span>
                       <ChevronRight
                         className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
                         aria-hidden="true"
                       />
-                    </span>
+                    </Link>
                   </div>
                 </div>
               </article>
@@ -768,6 +785,142 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             </button>
           </div>
         )}
+      </section>
+
+      {/* =====================================================================
+          SECTION 4 & 5: CRAWLABLE SEO & 96-SITE DIRECTORY INDEX (SR-ONLY)
+          ===================================================================== */}
+      <section
+        aria-label="Pengertian, Hukum, dan Tata Cara Ziarah Kubur dalam Islam"
+        className="sr-only"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          <div className="lg:col-span-6 space-y-4">
+            <div className="text-xs uppercase tracking-widest text-emerald-950 font-bold">
+              03 / LITERASI &amp; FIQIH ZIARAH KUBUR
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-serif font-normal text-stone-950 leading-snug">
+              Pengertian, Hukum, &amp; Tujuan Ziarah Kubur dalam Islam
+            </h2>
+            <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
+              Secara bahasa, <strong>ziarah</strong> (زيارة) berarti berkunjung atau menengok. Dalam syariat Islam,{' '}
+              <strong>ziarah kubur</strong> adalah amalan sunnah mendatangi makam kaum muslimin, orang tua, ulama, dan
+              para Waliyullah untuk mendoakan ampunan serta rahmat bagi ahli kubur sekaligus mengingatkan diri akan
+              kehidupan akhirat.
+            </p>
+            <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
+              Rasulullah SAW bersabda: <em>&ldquo;Dahulu aku melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu mengingatkan kalian kepada akhirat.&rdquo;</em> (HR. Muslim). Dalam tradisi Ahlussunnah wal Jamaah, menziarahi makam para Waliyullah juga menjadi sarana meneladani kesalehan, perjuangan dakwah, dan menyambung sanad keilmuan.
+            </p>
+            <div className="pt-2 flex flex-wrap gap-3">
+              <Link
+                to="/panduan"
+                className="px-4 py-2.5 bg-stone-900 hover:bg-emerald-950 text-[#F9F8F4] text-xs font-semibold rounded-lg inline-flex items-center gap-2 transition-colors"
+              >
+                <BookOpen className="w-4 h-4" aria-hidden="true" />
+                <span>Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin &amp; Artinya)</span>
+              </Link>
+              <Link
+                to="/doa"
+                className="px-4 py-2.5 bg-[#EFECE4] hover:bg-stone-200 text-stone-900 border border-stone-300 text-xs font-semibold rounded-lg inline-flex items-center gap-2 transition-colors"
+              >
+                <span>Kumpulan Tawassul &amp; Tahlil</span>
+                <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 bg-[#FBF9F5] rounded-2xl border border-stone-300/90 p-6 sm:p-7 space-y-4">
+            <h3 className="text-lg sm:text-xl font-serif font-semibold text-stone-950">
+              Urutan Bacaan Doa Ziarah Kubur Singkat &amp; Adab di Maqbarah
+            </h3>
+            <ol className="space-y-2.5 text-xs sm:text-sm text-stone-700 list-decimal list-inside leading-relaxed">
+              <li>
+                <strong className="text-stone-950">Berwudhu &amp; Meluruskan Niat:</strong> Memasuki area makam dengan
+                sopan, melepas alas kaki, dan berniat ziarah karena Allah SWT.
+              </li>
+              <li>
+                <strong className="text-stone-950">Mengucapkan Salam Ahli Kubur:</strong>{' '}
+                <em>
+                  &ldquo;Assalamu&apos;alaikum ahlad-diyaar minal mu&apos;miniina wal muslimiin, wa innaa insyaa Allaahu bikum laahiquun...&rdquo;
+                </em>
+              </li>
+              <li>
+                <strong className="text-stone-950">Membaca Istighfar &amp; Tawassul Al-Fatihah:</strong> Menghadiahkan
+                bacaan Al-Fatihah kepada Rasulullah SAW, keluarga, sahabat, para Waliyullah, dan ahli kubur.
+              </li>
+              <li>
+                <strong className="text-stone-950">Membaca Surah Yasin &amp; Surat Pendek:</strong> Dilanjutkan Al-Ikhlas
+                (3x), Al-Falaq, An-Nas, Ayat Kursi, serta kalimat thayyibah Tahlil (<em>Laa ilaaha illallaah</em>).
+              </li>
+              <li>
+                <strong className="text-stone-950">Doa Khusus Ziarah Kubur:</strong> Memohonkan ampunan, keluasan kubur,
+                dan keberkahan ilmu di sisi Allah SWT dengan menghadap kiblat.
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================================
+          SECTION 5: CRAWLABLE HTML DIRECTORY INDEX OF ALL 96 SITES & 18 PROVINCES
+          ===================================================================== */}
+      <section
+        id="indeks-lengkap-96-situs"
+        aria-label="Indeks Direktori Lengkap 96 Situs Makam Waliyullah di 18 Provinsi"
+        className="sr-only"
+      >
+        <div className="mb-8">
+          <div className="text-xs uppercase tracking-widest text-stone-700 font-semibold mb-2">
+            04 / INDEKS ARSIP PERMANEN ({ziarahSites.length} LOKASI · {provinces.length - 1} PROVINSI)
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-serif font-normal text-stone-950 tracking-tight mb-2">
+            Daftar Lengkap {ziarahSites.length} Makam Waliyullah, Walisongo, Ulama &amp; Habaib per Provinsi
+          </h2>
+          <p className="text-xs sm:text-sm text-stone-700 max-w-3xl">
+            Tautan arsip langsung ke seluruh {ziarahSites.length} halaman profil makam terverifikasi di{' '}
+            {provinces.length - 1} provinsi Indonesia—lengkap dengan titik koordinat peta rute, sejarah dakwah, sanad
+            keilmuan, dan bacaan doa tawassul khusus.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {provinces
+            .filter((prov) => prov !== 'Semua Provinsi')
+            .map((prov) => {
+              const provSites = ziarahSites.filter((s) => s.location.province === prov);
+              return (
+                <div
+                  key={prov}
+                  className="bg-[#FBF9F5] rounded-2xl border border-stone-300/90 p-5 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-stone-200">
+                      <h3 className="text-base font-serif font-bold text-stone-950">{prov}</h3>
+                      <span className="text-[11px] font-mono font-semibold text-emerald-950 bg-[#EFECE4] px-2.5 py-0.5 rounded-md">
+                        {provSites.length} Makam
+                      </span>
+                    </div>
+                    <ul className="space-y-1.5 text-xs text-stone-700">
+                      {provSites.map((site) => (
+                        <li key={site.id} className="leading-snug">
+                          <Link
+                            to={getSitePath(site)}
+                            onClick={() => onSelectSite(site)}
+                            className="hover:text-emerald-950 hover:underline font-medium text-stone-900 inline-flex items-baseline gap-1"
+                          >
+                            <span>{site.title}</span>
+                            <span className="text-[11px] text-stone-600 font-normal">
+                              ({site.location.city})
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
       </section>
     </div>
   );

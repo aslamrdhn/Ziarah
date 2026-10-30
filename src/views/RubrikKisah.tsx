@@ -60,7 +60,7 @@ export const DEFAULT_RUBRIK_GATE_SETTINGS: RubrikGateSettings = {
   minDonationAmount: 25000,
   bannerTitle: 'Khazanah Kisah Rahasia, Manuskrip & Hikmah Karomah',
   bannerDescription:
-    'Sebagai contoh kurasi sejarah & sanad, 2 tulisan pilihan dibuka secara gratis untuk Anda baca penuh. Seluruh naskah lainnya dikunci dan hanya dapat dibuka setelah Anda berinfaq serta mengunggah bukti transfer yang sah.',
+    'Sebagai contoh kurasi sejarah & sanad, 2 tulisan pilihan dibuka secara gratis untuk Anda baca penuh. Seluruh naskah lainnya dikunci dan hanya dapat dibuka setelah Anda berdonasi serta mengunggah bukti transfer yang sah.',
   pinnedFreeArticleIds: [
     'rubrik-guru-sekumpul-untold',
     'rubrik-wali-songo-strategy',
@@ -345,7 +345,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         senderAccount: senderAccount.trim().slice(0, 80),
         proofImageUrl: receipt.dataUrl,
         referenceCode: receipt.referenceCode,
-        doaHajat: `Infaq Riset & Pembukaan Arsip Rubrik (${unlockModalArticle?.title || 'Khazanah Nusantara'})`,
+        doaHajat: `Donasi Riset & Pembukaan Arsip Rubrik (${unlockModalArticle?.title || 'Khazanah Nusantara'})`,
         authorUid: auth.currentUser?.uid || 'guest',
         status: 'confirmed',
         createdAt: serverTimestamp(),
@@ -365,11 +365,11 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
   const categories = ['Semua', 'Kisah Rahasia', 'Manuskrip', 'Hikmah & Karomah', 'Tersimpan'];
   const finalDonorForWa = (senderAccount.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
-  const waUnlockMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq Riset & Pembukaan Akses Rubrik:\n\n` +
+  const waUnlockMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Donasi Riset & Pembukaan Akses Rubrik:\n\n` +
     `• *Kode Referensi Bukti:* ${receipt?.referenceCode || verifiedRefCode || '-'}\n` +
     `• *Nama Pengirim:* ${finalDonorForWa}\n` +
     `• *Metode Pembayaran:* ${paymentMethod}\n` +
-    `• *Nominal Infaq:* Rp ${selectedNominal.toLocaleString('id-ID')}\n` +
+    `• *Nominal Donasi:* Rp ${selectedNominal.toLocaleString('id-ID')}\n` +
     `• *Program:* Riset Sejarah, Perluasan Database & Operasional Web\n\n` +
     `Screenshot bukti transfer telah terunggah di sistem Admin Kurator. Terima kasih.`;
   const waUnlockUrl = `https://wa.me/6285717378885?text=${encodeURIComponent(waUnlockMessage)}`;
@@ -461,7 +461,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               to="/infaq"
               className="px-4 py-2 bg-white hover:bg-slate-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold rounded-xl transition-colors text-center"
             >
-              Ke Halaman Infaq Riset →
+              Ke Halaman Donasi Riset →
             </Link>
           </div>
         </div>
@@ -608,7 +608,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                         <span>{hookLead}... </span>
                         <span className="blur-[4px] select-none opacity-65">
-                          Isi lengkap naskah sejarah, sanad, dan hikmah karomah ini terkunci oleh sistem verifikasi donasi. Selesaikan infaq riset dan unggah bukti transfer untuk membuka seluruh arsip.
+                          Isi lengkap naskah sejarah, sanad, dan hikmah karomah ini terkunci oleh sistem verifikasi donasi. Selesaikan donasi riset dan unggah bukti transfer untuk membuka seluruh arsip.
                         </span>
                       </p>
                       <div className="mt-2.5 pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] font-bold text-amber-900">
@@ -649,7 +649,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
                     >
                       <Lock className="w-3 h-3 text-amber-700" />
-                      <span>Infaq & Bukti Transfer</span>
+                      <span>Donasi & Bukti Transfer</span>
                     </button>
                   )}
                 </div>
@@ -678,7 +678,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                 </button>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-gold-300 text-[11px] font-bold mb-2">
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Verifikasi Infaq & Bukti Transfer</span>
+                  <span>Verifikasi Donasi & Bukti Transfer</span>
                 </div>
                 <h3 className="text-lg font-serif font-black leading-snug">
                   {unlockModalArticle.title}
@@ -753,13 +753,13 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                     <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-2xl text-xs text-amber-950 leading-relaxed">
                       <p className="font-bold mb-1">Ketentuan Membuka Naskah Terkunci:</p>
                       <p>
-                        Naskah ini tidak dapat dibuka sebelum Anda melakukan <strong>Infaq Riset</strong> (via QRIS atau Transfer Bank) dan <strong>mengunggah screenshot bukti transfer yang sah</strong> pada formulir di bawah ini.
+                        Naskah ini tidak dapat dibuka sebelum Anda melakukan <strong>Donasi Riset</strong> (via QRIS atau Transfer Bank) dan <strong>mengunggah screenshot bukti transfer yang sah</strong> pada formulir di bawah ini.
                       </p>
                     </div>
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-2">
-                        Pilih Nominal Infaq Pembuka Seluruh Arsip:
+                        Pilih Nominal Donasi Pembuka Seluruh Arsip:
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {[15000, 25000, 50000, 100000].map((amt) => (

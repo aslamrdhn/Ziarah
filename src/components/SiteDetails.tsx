@@ -388,11 +388,11 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                         <QrCode className="w-4 h-4" />
                       </div>
                       <div className="text-left">
-                        <span className="text-xs font-bold text-emerald-950 block">Infaq Digital Makam</span>
+                        <span className="text-xs font-bold text-emerald-950 block">Donasi Digital Makam</span>
                         <span className="text-[10px] text-emerald-700 font-medium">Sedekah Jariyah & Pemeliharaan Kompleks</span>
                       </div>
                     </div>
-                    <span className="text-xs font-bold text-emerald-800 bg-white px-2.5 py-1 rounded-lg border border-emerald-200 shadow-2xs">Infaq →</span>
+                    <span className="text-xs font-bold text-emerald-800 bg-white px-2.5 py-1 rounded-lg border border-emerald-200 shadow-2xs">Donasi →</span>
                   </button>
                 </div>
               </motion.div>
@@ -430,7 +430,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pr-2">
                               <span>{item.slice(0, 42)}... </span>
                               <span className="blur-[4px] select-none opacity-60">
-                                Naskah lanjutan karomah ini terkunci dan hanya dapat diakses setelah menyelesaikan infaq riset serta mengunggah bukti transfer.
+                                Naskah lanjutan karomah ini terkunci dan hanya dapat diakses setelah menyelesaikan donasi riset serta mengunggah bukti transfer.
                               </span>
                             </p>
                             <button
@@ -439,7 +439,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                               className="mt-2 inline-flex items-center text-[11px] font-bold text-amber-800 hover:text-amber-950 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 cursor-pointer"
                             >
                               <Unlock className="w-3 h-3 mr-1" />
-                              Infaq & Kirim Bukti Transfer untuk Membuka
+                              Donasi & Kirim Bukti Transfer untuk Membuka
                             </button>
                           </div>
                         )}
@@ -649,7 +649,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                       </div>
                       <h4 className="font-bold text-slate-900 mb-1 text-sm sm:text-base">Kisah Rahasia & Manuskrip Terkunci</h4>
                       <p className="text-xs text-slate-500 mb-4 max-w-[270px] leading-relaxed">
-                        Naskah khusus ini hanya dapat dibuka setelah Anda berinfaq dan mengunggah bukti transfer yang sah.
+                        Naskah khusus ini hanya dapat dibuka setelah Anda berdonasi dan mengunggah bukti transfer yang sah.
                       </p>
                       <button 
                         onClick={() => setTransactionType('untold')}
@@ -661,7 +661,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                     {/* Non-leaking blurred placeholder text */}
                     <p className="text-slate-400 leading-relaxed text-xs italic blur-[4px] select-none">
                       {site.untoldStory ? `${site.untoldStory.slice(0, 50)}... ` : ''}
-                      Arsip manuskrip dan catatan sejarah khusus ini dilindungi sistem verifikasi donasi Ziarah Nusantara. Silakan selesaikan infaq riset dan unggah bukti transfer untuk membaca isi lengkapnya.
+                      Arsip manuskrip dan catatan sejarah khusus ini dilindungi sistem verifikasi donasi Ziarah Nusantara. Silakan selesaikan donasi riset dan unggah bukti transfer untuk membaca isi lengkapnya.
                     </p>
                   </div>
                 )}

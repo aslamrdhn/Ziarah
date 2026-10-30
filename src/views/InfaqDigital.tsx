@@ -154,7 +154,7 @@ export const InfaqDigital: React.FC = () => {
             id: docSnap.id,
             donorName: d.donorName || 'Hamba Allah',
             amount: Number(d.amount) || 0,
-            programTitle: d.programTitle || 'Infaq Pemeliharaan',
+            programTitle: d.programTitle || 'Donasi Pemeliharaan',
             siteName: d.siteName || 'Kompleks Makam Nusantara',
             doaHajat: d.doaHajat || '',
             dateLabel,
@@ -253,13 +253,13 @@ export const InfaqDigital: React.FC = () => {
 
   const finalDonorDisplay = isAnonim ? 'Hamba Allah' : (donorName.trim() || senderAccount.trim() || 'Hamba Allah');
   const activeRefCode = lastSubmittedReceipt?.referenceCode || receipt?.referenceCode || '-';
-  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq di sistem:\n\n` +
+  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Donasi di sistem:\n\n` +
     `• *Kode Referensi Bukti:* ${activeRefCode}\n` +
     `• *Nama Pewakif / Pengirim:* ${finalDonorDisplay} (${senderAccount.trim() || '-'})\n` +
     `• *Metode Pembayaran:* ${paymentMethod}\n` +
     `• *Program:* ${activeProgramTitle}\n` +
     `• *Tujuan Alokasi:* ${targetSiteName}\n` +
-    `• *Nominal Infaq:* Rp ${currentAmount.toLocaleString('id-ID')}` +
+    `• *Nominal Donasi:* Rp ${currentAmount.toLocaleString('id-ID')}` +
     (doaHajat.trim() ? `\n• *Doa / Hajat:* "${doaHajat.trim()}"` : '') +
     `\n\nScreenshot bukti transfer telah terunggah di sistem Admin Kurator. Terima kasih.`;
   const waConfirmUrl = `https://wa.me/6285717378885?text=${encodeURIComponent(waMessage)}`;
@@ -280,15 +280,15 @@ export const InfaqDigital: React.FC = () => {
               <span>Sedekah Jariyah & Amal Kebaikan</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
-              Infaq Digital Makam Aulia Nusantara
+              Donasi Digital Makam Aulia Nusantara
             </h1>
             <p className="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed">
-              Salurkan sedekah dan infaq secara langsung, transparan, dan tercatat untuk pemeliharaan makam, fasilitas jamaah, dan santunan sosial di berbagai situs ziarah Nusantara.
+              Salurkan sedekah dan donasi secara langsung, transparan, dan tercatat untuk pemeliharaan makam, fasilitas jamaah, dan santunan sosial di berbagai situs ziarah Nusantara.
             </p>
           </div>
           {recentDonations.length > 0 && (
             <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 shrink-0 min-w-[200px]">
-              <p className="text-[11px] uppercase tracking-wider text-emerald-300 font-bold mb-1">Total Infaq Tercatat</p>
+              <p className="text-[11px] uppercase tracking-wider text-emerald-300 font-bold mb-1">Total Donasi Tercatat</p>
               <p className="text-xl sm:text-2xl font-serif font-black text-white">Rp {totalTerkumpul.toLocaleString('id-ID')}</p>
               <p className="text-[11px] text-slate-300 mt-0.5">Dari {recentDonations.length} konfirmasi pewakif</p>
             </div>
@@ -363,7 +363,7 @@ export const InfaqDigital: React.FC = () => {
           <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
             <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-3.5 flex items-center">
               <span className="w-6 h-6 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center mr-2.5">2</span>
-              Tujuan Alokasi Infaq
+              Tujuan Alokasi Donasi
             </h2>
             <select
               value={selectedSiteId}
@@ -374,7 +374,7 @@ export const InfaqDigital: React.FC = () => {
               <option value="all">🌐 Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)</option>
             </select>
             <p className="text-[11px] text-slate-400 mt-2">
-              Infaq akan disalurkan sesuai akad pilihan program (tim riset database & server web atau pengurus kompleks makam terkait).
+              Donasi akan disalurkan sesuai akad pilihan program (tim riset database & server web atau pengurus kompleks makam terkait).
             </p>
           </div>
 
@@ -382,7 +382,7 @@ export const InfaqDigital: React.FC = () => {
           <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
             <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-3.5 flex items-center">
               <span className="w-6 h-6 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center mr-2.5">3</span>
-              Pilih Nominal Infaq
+              Pilih Nominal Donasi
             </h2>
             <div className="grid grid-cols-3 gap-2.5 mb-3">
               {quickNominals.map((val) => {
@@ -447,7 +447,7 @@ export const InfaqDigital: React.FC = () => {
                   onChange={(e) => setIsAnonim(e.target.checked)}
                   className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 mr-2"
                 />
-                Infaq sebagai Hamba Allah (Anonim)
+                Donasi sebagai Hamba Allah (Anonim)
               </label>
             </div>
 
@@ -467,10 +467,10 @@ export const InfaqDigital: React.FC = () => {
 
         {/* Kolom Kanan: Rincian & Metode Pembayaran */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Ringkasan Infaq */}
+          {/* Ringkasan Donasi */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs sticky top-24">
             <h3 className="font-bold text-slate-900 text-base mb-4 flex items-center justify-between">
-              <span>Ringkasan Infaq</span>
+              <span>Ringkasan Donasi</span>
               <span className="text-[11px] px-2.5 py-1 bg-emerald-50 text-emerald-800 font-bold rounded-xl border border-emerald-200/60">Akad Jariyah</span>
             </h3>
 
@@ -587,7 +587,7 @@ export const InfaqDigital: React.FC = () => {
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Kirim Bukti Transfer & Konfirmasi Infaq</span>
+                  <span>Kirim Bukti Transfer & Konfirmasi Donasi</span>
                 </>
               )}
             </motion.button>
@@ -595,7 +595,7 @@ export const InfaqDigital: React.FC = () => {
         </div>
       </div>
 
-      {/* Live Doa & Riwayat Infaq Pewakif (Real-time Firestore) */}
+      {/* Live Doa & Riwayat Donasi Pewakif (Real-time Firestore) */}
       <div className="mt-12">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center space-x-2.5">
@@ -608,14 +608,14 @@ export const InfaqDigital: React.FC = () => {
             </div>
           </div>
           <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-            {recentDonations.length} Infaq Tercatat
+            {recentDonations.length} Donasi Tercatat
           </span>
         </div>
 
         {recentDonations.length === 0 ? (
           <div className="bg-white rounded-3xl p-8 text-center border border-slate-200/90 shadow-xs">
             <Sparkles className="w-8 h-8 text-emerald-600 mx-auto mb-2 opacity-60" />
-            <p className="text-xs sm:text-sm font-semibold text-slate-700">Belum ada catatan infaq hari ini</p>
+            <p className="text-xs sm:text-sm font-semibold text-slate-700">Belum ada catatan donasi hari ini</p>
             <p className="text-xs text-slate-500 mt-1">Jadilah pewakif pertama yang mencatatkan doa dan amal jariyah.</p>
           </div>
         ) : (
@@ -684,7 +684,7 @@ export const InfaqDigital: React.FC = () => {
               
               <div className="my-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left text-xs space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Nominal Infaq</span>
+                  <span className="text-slate-500">Nominal Donasi</span>
                   <span className="font-bold text-slate-900">Rp {currentAmount.toLocaleString('id-ID')}</span>
                 </div>
                 <div className="flex justify-between">

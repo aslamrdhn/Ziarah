@@ -182,12 +182,13 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
     { id: '/panduan', label: 'Panduan', shortLabel: 'Panduan', icon: BookOpen },
     { id: '/rubrik', label: 'Rubrik', shortLabel: 'Rubrik', icon: ScrollText },
     { id: '/doa', label: 'Doa Khusus', shortLabel: 'Doa', icon: Bookmark },
-    { id: '/infaq', label: 'Infaq', shortLabel: 'Infaq', icon: HeartHandshake },
+    { id: '/infaq', label: 'Donasi', shortLabel: 'Donasi', icon: HeartHandshake },
   ];
 
   const isNavActive = (id: string) => {
     if (id === '/') return currentPath === '/' || currentPath === '/direktori';
-    if (id === '/peta') return currentPath === '/peta' || currentPath.startsWith('/makam');
+    if (id === '/peta') return currentPath === '/peta' || currentPath.startsWith('/makam') || currentPath.startsWith('/situs');
+    if (id === '/infaq') return currentPath === '/infaq' || currentPath === '/donasi';
     return currentPath === id;
   };
 

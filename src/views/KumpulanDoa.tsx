@@ -309,7 +309,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                       <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                         <span>{item.text.slice(0, 50)}... </span>
                         <span className="blur-[4px] select-none opacity-65">
-                          Kisah karomah lanjutan dibuka khusus bagi pengunjung yang telah melakukan donasi infaq riset database dan terverifikasi oleh kurator.
+                          Kisah karomah lanjutan dibuka khusus bagi pengunjung yang telah melakukan donasi riset database dan terverifikasi oleh kurator.
                         </span>
                       </p>
                       <div className="pt-1 flex items-center justify-between border-t border-slate-100">
@@ -319,7 +319,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition-colors"
                         >
                           <Unlock className="w-3.5 h-3.5 text-amber-700" />
-                          <span>Buka via Infaq di Rubrik</span>
+                          <span>Buka via Donasi di Rubrik</span>
                         </Link>
                       </div>
                     </div>

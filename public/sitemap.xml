@@ -2,522 +2,314 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ziarahnusantara.my.id/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
   </url>
   <url>
     <loc>https://ziarahnusantara.my.id/direktori</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://ziarahnusantara.my.id/peta</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://ziarahnusantara.my.id/panduan</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ziarahnusantara.my.id/rubrik</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ziarahnusantara.my.id/doa</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ziarahnusantara.my.id/infaq</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ziarahnusantara.my.id/kurasi</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/wali-1</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-gresik</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/wali-2</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-ampel-surabaya</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/wali-3</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-bonang-tuban</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/wali-4</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-drajat-lamongan</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/wali-5</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-kudus</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/wali-6</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-giri-gresik</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/wali-7</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-kalijaga-demak</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/wali-8</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-muria-kudus</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/wali-9</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-gunung-jati-cirebon</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-1</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-ali-kwitang-jakarta-pusat</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-2</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-husein-luar-batang-jakarta-utara</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-3</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/mbah-priok-jakarta-utara</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-4</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-kuncung-jakarta-selatan</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-5</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-utsman-bin-yahya-jakarta-timur</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-1</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/pangeran-jayakarta-jakarta-timur</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-5</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/guru-marzuki-cipinang-muara-jakarta-timur</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-2</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sultan-maulana-hasanuddin-banten-serang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-6</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-nawawi-al-bantani-serang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-7</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-asnawi-caringin-pandeglang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-8</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-abdul-muhyi-pamijahan-tasikmalaya</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-6</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-empang-bogor</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-9</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/mama-falak-pagentongan-bogor</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-10</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-qurotul-ain-karawang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-3</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/keramat-kampung-mahmud-bandung</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-4</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-subakir-magelang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-5</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-bayat-klaten</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-6</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/raden-fattah-demak</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-11</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-ahmad-mutamakkin-pati</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-7</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-jangkung-pati</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-12</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/mbah-dalhar-gunungpring-magelang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-13</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/kh-sholeh-darat-semarang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-7</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-ahmad-sapuro-pekalongan</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-14</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/kh-arwani-amin-yanbu-kudus</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-8</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/kyai-nur-iman-mlangi-sleman</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-9</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-maulana-maghribi-parangtritis-bantul</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-15</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syaikhona-kholil-bangkalan</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-1</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-tebuireng-kh-hasyim-asy-jombang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-16</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/mbah-wahab-chasbullah-jombang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-17</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/mbah-bisri-syansuri-jombang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-18</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-rejoso-peterongan-darul-jombang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-19</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/kh-abdul-hamid-pasuruan</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-8</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-abu-bakar-assegaf-gresik</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-9</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-sholeh-tanggul-jember</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-20</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/kh-as-situbondo</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-21</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-masyayikh-pesantren-lirboyo-kediri</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-22</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/gus-miek-kediri</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-10</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-jumadil-kubro-mojokerto</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-11</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-ibrahim-asmoroqondi-tuban</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-12</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/asta-tinggi-asta-yusuf-sumenep</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-13</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/wali-pitu-bali-keramat-pantai-seseh-badung</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-10</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/wali-pitu-bali-habib-ali-kusamba-klungkung</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-11</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/wali-pitu-bali-habib-ali-bafaqih-jembrana</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-14</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/wali-pitu-bali-keramat-bukit-bedugul-tabanan</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-23</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/tuan-guru-kyai-haji-zainuddin-abdul-madjid-lombok-timur</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-15</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-keramat-loang-baloq-mataram</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-3</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/teungku-syiah-kuala-banda-aceh</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-24</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-hamzah-fansuri-subulussalam</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-25</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-burhanuddin-ulakan-padang-pariaman</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-26</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/tuan-guru-babussalam-langkat</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-27</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/kiai-marogan-palembang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-2</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/abah-guru-sekumpul-banjar</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-28</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/datu-kalampayan-banjar</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-12</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-basirih-banjarmasin</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-16</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-sultan-suriansyah-banjarmasin</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-4</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-yusuf-al-makassari-gowa</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-17</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-datuk-ri-bandang-makassar</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-13</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/guru-tua-palu</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-29</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-kyai-mojo-minahasa</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-30</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/kh-noer-ali-bekasi</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-31</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/mbah-moen-rembang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-32</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-masyayikh-masjid-jami-rembang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-18</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sultan-maulana-yusuf-serang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-19</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-datuk-kahfi-cirebon</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-14</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-hasyim-bin-yahya-pekalongan</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-33</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/kh-munawwir-krapyak-bantul</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-34</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/syekh-ihsan-jampes-kediri</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-20</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-syekh-maulana-ishaq-lamongan</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-21</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/sunan-bejagung-lor-tuban</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-35</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/guru-bangil-pasuruan</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-22</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/wali-pitu-bali-keramat-karangrupit-buleleng</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-23</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/wali-pitu-bali-keramat-ratu-denpasar</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-24</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/wali-pitu-bali-makam-wali-kembar-karanggasem-karangasem</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-15</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/teungku-di-anjong-banda-aceh</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-25</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-sultan-malikussaleh-aceh-utara</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-36</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-keramat-papan-tinggi-tapanuli-tengah</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-26</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/kompleks-makam-kawah-tengkurep-palembang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-37</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-ulama-kampung-melayu-dalam-pagar-banjar</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-38</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-datu-abulung-banjar</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/habib-16</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/habib-husein-al-qadri-mempawah</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-27</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-datuk-patimang-luwu-utara</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-28</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-datuk-ri-tiro-bulukumba</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-39</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/agh-muhammad-as-wajo</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-29</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-sultan-babullah-kesultanan-ternate</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-40</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/kh-ahmad-rifa-batang</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/ulama-41</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/pesantren-tremas-makam-masyayikh-tremas-pacitan</loc>
   </url>
   <url>
-    <loc>https://ziarahnusantara.my.id/makam/auliya-30</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ziarahnusantara.my.id/situs/makam-kyai-ageng-hasan-besari-ponorogo</loc>
   </url>
 </urlset>

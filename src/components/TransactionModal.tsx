@@ -69,7 +69,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
   const donorName = (senderAccount.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
   const isProofComplete = Boolean(receipt && senderAccount.trim().length >= 3);
 
-  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer ${type === 'infaq' ? 'Infaq Pemeliharaan Makam' : 'Infaq Literasi Pembuka Rubrik'} di sistem:\n\n` +
+  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer ${type === 'infaq' ? 'Donasi Pemeliharaan Makam' : 'Donasi Literasi Pembuka Rubrik'} di sistem:\n\n` +
     `• *Kode Referensi:* ${receipt?.referenceCode || '-'}\n` +
     `• *Nama Pengirim:* ${donorName}\n` +
     `• *Metode Pembayaran:* ${paymentMethod}\n` +
@@ -113,7 +113,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         senderAccount: senderAccount.trim().slice(0, 80),
         proofImageUrl: receipt.dataUrl,
         referenceCode: receipt.referenceCode,
-        doaHajat: type === 'infaq' ? `Infaq pemeliharaan untuk ${site.name}` : `Apresiasi pembukaan manuskrip ${site.name}`,
+        doaHajat: type === 'infaq' ? `Donasi pemeliharaan untuk ${site.name}` : `Apresiasi pembukaan manuskrip ${site.name}`,
         authorUid: auth.currentUser?.uid || 'guest',
         status: 'confirmed',
         createdAt: serverTimestamp(),
@@ -157,7 +157,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
               {type === 'infaq' ? (
                 <>
                   <HeartHandshake className="w-3.5 h-3.5 mr-1" />
-                  <span>Infaq Digital Makam</span>
+                  <span>Donasi Digital Makam</span>
                 </>
               ) : (
                 <>
@@ -186,12 +186,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 Kode Referensi Bukti: #{receipt?.referenceCode}
               </span>
               <h3 className="font-bold text-slate-900 text-lg mb-1">
-                {type === 'infaq' ? 'Bukti Infaq Berhasil Terkirim!' : 'Bukti Terverifikasi — Akses Rubrik Terbuka!'}
+                {type === 'infaq' ? 'Bukti Donasi Berhasil Terkirim!' : 'Bukti Terverifikasi — Akses Rubrik Terbuka!'}
               </h3>
               <p className="text-xs text-slate-500 mb-4 leading-relaxed">
                 {type === 'infaq' 
                   ? 'Jazakumullahu khairan katsiran. Bukti transfer Anda telah tersimpan di database Admin Kurator.' 
-                  : 'Terima kasih atas infaq riset Anda. Naskah manuskrip dan kisah karomah khusus kini telah terbuka untuk Anda.'}
+                  : 'Terima kasih atas donasi riset Anda. Naskah manuskrip dan kisah karomah khusus kini telah terbuka untuk Anda.'}
               </p>
 
               {receipt && (
@@ -231,7 +231,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
             <div className="space-y-4">
               {type === 'infaq' ? (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">Pilih Nominal Infaq:</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">Pilih Nominal Donasi:</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[10000, 25000, 50000, 100000, 250000, 500000].map((nominal) => (
                       <motion.button
@@ -257,7 +257,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                   <ScrollText className="w-7 h-7 text-purple-600 mx-auto mb-1.5" />
                   <h4 className="font-bold text-purple-900 text-sm mb-1">Akses Rubrik Kisah Khusus</h4>
                   <p className="text-xs text-purple-700 leading-relaxed">
-                    Buka akses penuh ke catatan manuskrip, karomah lanjutan, dan sejarah tak terungkap dengan infaq literasi <strong className="font-bold">Rp 15.000</strong> serta mengunggah bukti transfer.
+                    Buka akses penuh ke catatan manuskrip, karomah lanjutan, dan sejarah tak terungkap dengan donasi literasi <strong className="font-bold">Rp 15.000</strong> serta mengunggah bukti transfer.
                   </p>
                 </div>
               )}
@@ -336,7 +336,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                     <CheckCircle2 className="w-4 h-4" />
                     <span>
                       {type === 'infaq'
-                        ? `Kirim Bukti & Konfirmasi Infaq (Rp ${amount.toLocaleString('id-ID')})`
+                        ? `Kirim Bukti & Konfirmasi Donasi (Rp ${amount.toLocaleString('id-ID')})`
                         : 'Kirim Bukti Transfer & Buka Akses Rubrik'}
                     </span>
                   </>
@@ -350,7 +350,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                     onClick={onClose}
                     className="text-xs text-emerald-700 hover:text-emerald-900 hover:underline font-semibold"
                   >
-                    Buka Halaman Lengkap Infaq Digital →
+                    Buka Halaman Lengkap Donasi Digital →
                   </Link>
                 </div>
               )}

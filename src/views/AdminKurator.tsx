@@ -505,7 +505,7 @@ export const AdminKurator: React.FC = () => {
       {
         id: newId,
         title: 'Program Kebaikan Baru',
-        desc: 'Tuliskan deskripsi program infaq/wakaf di sini...',
+        desc: 'Tuliskan deskripsi program donasi/wakaf di sini...',
         tag: 'Prioritas',
         iconName: 'HeartHandshake',
         color: 'from-emerald-500 to-teal-700',
@@ -661,7 +661,7 @@ export const AdminKurator: React.FC = () => {
                 }`}
               >
                 <HeartHandshake className="w-3.5 h-3.5 mr-1.5" />
-                Infaq & Domain
+                Donasi & Domain
               </button>
             </div>
           )}
@@ -1221,7 +1221,7 @@ export const AdminKurator: React.FC = () => {
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Nominal Rekomendasi Infaq Pembuka Arsip (Rp)
+                        Nominal Rekomendasi Donasi Pembuka Arsip (Rp)
                       </label>
                       <input
                         type="number"
@@ -1450,9 +1450,9 @@ export const AdminKurator: React.FC = () => {
                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <h3 className="font-bold text-slate-900 text-base">Kelola Pilihan Program Kebaikan Infaq</h3>
+                      <h3 className="font-bold text-slate-900 text-base">Kelola Pilihan Program Kebaikan Donasi</h3>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Program pada urutan <strong>#1 Paling Atas</strong> otomatis tampil penuh sebagai <strong>Prioritas Utama</strong> di halaman Infaq Digital.
+                        Program pada urutan <strong>#1 Paling Atas</strong> otomatis tampil penuh sebagai <strong>Prioritas Utama</strong> di halaman Donasi Digital.
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -1555,7 +1555,7 @@ export const AdminKurator: React.FC = () => {
                               <option value="Droplets">Air / Wudhu</option>
                               <option value="Users">Sosial / Jamaah</option>
                               <option value="BookOpen">Kitab / Al-Qur'an</option>
-                              <option value="HeartHandshake">Amal / Infaq</option>
+                              <option value="HeartHandshake">Amal / Donasi</option>
                             </select>
                           </div>
                         </div>
@@ -1913,17 +1913,17 @@ export const AdminKurator: React.FC = () => {
                       className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center cursor-pointer shadow-xs"
                     >
                       <Save className="w-3.5 h-3.5 mr-1.5" />
-                      {isSavingSettings ? 'Menyimpan...' : 'Simpan Seluruh Pengaturan, Domain & Program Infaq'}
+                      {isSavingSettings ? 'Menyimpan...' : 'Simpan Seluruh Pengaturan, Domain & Program Donasi'}
                     </button>
                   </div>
                 </form>
 
-                {/* Daftar Konfirmasi Infaq & Verifikasi Bukti Transfer */}
+                {/* Daftar Konfirmasi Donasi & Verifikasi Bukti Transfer */}
                 <div>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div>
                       <h3 className="font-bold text-slate-900 text-base">
-                        Riwayat Konfirmasi Infaq &amp; Verifikasi Bukti Transfer ({donations.length})
+                        Riwayat Konfirmasi Donasi &amp; Verifikasi Bukti Transfer ({donations.length})
                       </h3>
                       <p className="text-xs text-slate-500">
                         Periksa foto struk bukti transfer pewakif. Jika bukti tidak valid, klik <strong>Cabut &amp; Hapus</strong> untuk mengunci kembali akses secara real-time.
@@ -1931,7 +1931,7 @@ export const AdminKurator: React.FC = () => {
                     </div>
                   </div>
                   {donations.length === 0 ? (
-                    <p className="text-xs text-slate-500 italic">Belum ada data konfirmasi infaq di database.</p>
+                    <p className="text-xs text-slate-500 italic">Belum ada data konfirmasi donasi di database.</p>
                   ) : (
                     <div className="max-h-[480px] overflow-y-auto border border-slate-200 rounded-2xl divide-y divide-slate-100 bg-white">
                       {donations.map((d) => {
@@ -2074,7 +2074,7 @@ export const AdminKurator: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Nominal Infaq</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Nominal Donasi</span>
                   <span className="font-black text-emerald-800 text-sm">
                     Rp {Number(previewProofDonation.amount || 0).toLocaleString('id-ID')}
                   </span>

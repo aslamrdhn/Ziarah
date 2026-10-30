@@ -13,10 +13,11 @@ const KumpulanDoa = lazy(() => import('./views/KumpulanDoa').then((m) => ({ defa
 const RubrikKisah = lazy(() => import('./views/RubrikKisah').then((m) => ({ default: m.RubrikKisah })));
 const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })));
 
-import { ZiarahSite } from './data/sites';
+import { ZiarahSite, ziarahSites } from './data/sites';
 import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { SiteProvider } from './context/SiteContext';
+import { findSiteByParam, getSitePath } from './lib/siteSlugs';
 
 export default function App() {
   const location = useLocation();
@@ -80,136 +81,175 @@ export default function App() {
 
     const routeSeoMap: Record<string, { title: string; desc: string }> = {
       '/': {
-        title: 'Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara',
-        desc: 'Situs resmi Ziarah Nusantara (ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Direktori makam Wali Songo, ulama Nusantara, peta interaktif, adab ziarah, kumpulan doa tahlil & tawassul, serta literasi sejarah Islam Nusantara.',
+        title: 'Ziarah Kubur & Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab & 96 Lokasi Makam | Ziarah Nusantara',
+        desc: 'Panduan lengkap pengertian, hukum, tujuan, adab, dan bacaan doa ziarah kubur (Arab, Latin, Artinya), susunan Yasin, Tahlil & Tawassul, serta direktori 96 lokasi makam Walisongo, Ulama & Habaib di 18 provinsi Indonesia.',
       },
       '/direktori': {
-        title: 'Arsip & Direktori Makam Waliyullah — Ziarah Nusantara',
-        desc: 'Direktori ensiklopedis makam Wali Songo, Ulama Nusantara, dan Tokoh Kesultanan Islam beserta koordinat peta dan rujukan jurnal ilmiah oleh Tim Kurator Arsip Ziarah Nusantara.',
+        title: 'Direktori 96 Makam Walisongo, Ulama & Habaib di 18 Provinsi — Ziarah Nusantara',
+        desc: 'Indeks lengkap 96 lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia beserta alamat, koordinat peta rute, sejarah, dan bacaan doa tawassul.',
       },
       '/peta': {
-        title: 'Peta Rute Geospasial Makam Wali — Ziarah Nusantara',
-        desc: 'Peta interaktif titik lokasi dan navigasi rute ziarah makam para Waliyullah serta ulama bersejarah di seluruh kepulauan Nusantara.',
+        title: 'Peta Rute Ziarah Makam Wali Songo & Ulama Nusantara — Ziarah Nusantara',
+        desc: 'Peta interaktif titik lokasi GPS dan navigasi rute perjalanan ziarah ke 96 makam Waliyullah serta ulama besar di seluruh kepulauan Indonesia.',
       },
       '/panduan': {
-        title: 'Panduan Adab & Tata Cara Ziarah Kubur — Ziarah Nusantara',
-        desc: 'Tuntunan adab, niat, salam, dan tata cara ziarah makam para Waliyullah sesuai sunnah dan tradisi ulama Ahlussunnah wal Jamaah.',
+        title: 'Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin & Adab Ziarah Wali',
+        desc: 'Urutan bacaan doa ziarah kubur singkat dan lengkap (Arab, Latin, Artinya), salam ahli kubur, Qasidah Salamullah Ya Sadah, Tawassul, Yasin, Tahlil, serta tujuan & hukum ziarah kubur dalam Islam.',
       },
       '/rubrik': {
-        title: 'Rubrik Kisah, Karomah & Naskah Sejarah — Ziarah Nusantara',
-        desc: 'Kajian mendalam biografi, sanad keilmuan, sejarah dakwah, dan keteladanan para Waliyullah Nusantara yang dikurasi oleh Tim Kurator Arsip Ziarah Nusantara.',
+        title: 'Rubrik Sejarah, Kisah Karomah & Sanad Keilmuan Wali — Ziarah Nusantara',
+        desc: 'Kajian mendalam biografi, sanad keilmuan, sejarah dakwah, dan keteladanan para Waliyullah Nusantara berbasis naskah babad dan jurnal akademik.',
       },
       '/doa': {
-        title: 'Kumpulan Doa Khusus, Tahlil & Tawassul Lengkap — Ziarah Nusantara',
-        desc: 'Bacaan salam ziarah, susunan tawassul, Yasin, dan tahlil lengkap teks Arab, transliterasi Latin, serta terjemahan Bahasa Indonesia.',
+        title: 'Kumpulan Doa Khusus Ziarah Kubur, Tahlil & Tawassul Lengkap — Ziarah Nusantara',
+        desc: 'Bacaan salam ziarah kubur, susunan tawassul khusus para Waliyullah, Surah Yasin, dan tahlil lengkap teks Arab, transliterasi Latin, serta terjemahan Bahasa Indonesia.',
       },
       '/infaq': {
-        title: 'Infaq Digital & Pelestarian Arsip — Ziarah Nusantara',
-        desc: 'Layanan infaq dan wakaf digital QRIS resmi Ziarah Nusantara untuk mendukung riset literasi sejarah dan pelestarian situs makam Waliyullah.',
+        title: 'Donasi Digital & Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
+        desc: 'Layanan donasi dan wakaf digital QRIS resmi Ziarah Nusantara untuk mendukung riset literasi sejarah dan pelestarian situs makam Waliyullah.',
+      },
+      '/donasi': {
+        title: 'Donasi Digital & Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
+        desc: 'Layanan donasi dan wakaf digital QRIS resmi Ziarah Nusantara untuk mendukung riset literasi sejarah dan pelestarian situs makam Waliyullah.',
       },
       '/kurasi': {
-        title: 'Kebijakan Kurasi & Standar Referensi Ilmiah — Ziarah Nusantara',
-        desc: 'Pedoman metodologi verifikasi sumber sejarah, jurnal akademik, naskah babad, dan kurasi situs makam oleh Tim Kurator Arsip Ziarah Nusantara.',
+        title: 'Standar Kurasi & Metodologi Referensi Sejarah — Ziarah Nusantara',
+        desc: 'Pedoman metodologi verifikasi sumber sejarah, jurnal akademik, naskah babad, dan kurasi 96 situs makam oleh Tim Kurator Arsip Ziarah Nusantara.',
       },
     };
 
-    const activeSeo = routeSeoMap[cleanPath] || routeSeoMap['/'];
-    document.title = activeSeo.title;
+    let activeTitle = routeSeoMap[cleanPath]?.title || routeSeoMap['/'].title;
+    let activeDesc = routeSeoMap[cleanPath]?.desc || routeSeoMap['/'].desc;
+    let canonicalUrl = fullUrl;
+    let matchedSite: ZiarahSite | null = null;
+
+    if (cleanPath.startsWith('/situs/') || cleanPath.startsWith('/makam/')) {
+      const rawParam = cleanPath.replace(/^\/(situs|makam)\//, '');
+      matchedSite = findSiteByParam(ziarahSites, rawParam);
+      if (matchedSite) {
+        activeTitle = `Makam ${matchedSite.title} (${matchedSite.location.city}, ${matchedSite.location.province}) — Rute, Sejarah & Doa Ziarah | Ziarah Nusantara`;
+        activeDesc = `${matchedSite.description} Lokasi: ${matchedSite.location.address}, ${matchedSite.location.city}, ${matchedSite.location.province}. Lengkap dengan peta rute, riwayat karomah, dan doa tawassul.`;
+        canonicalUrl = `${baseOrigin}${getSitePath(matchedSite)}`;
+      }
+    }
+
+    document.title = activeTitle;
 
     const descEl = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
-    if (descEl) descEl.content = activeSeo.desc;
+    if (descEl) descEl.content = activeDesc;
 
     const canonicalEl = document.getElementById('canonical-link') as HTMLLinkElement | null;
-    if (canonicalEl) canonicalEl.href = fullUrl;
+    if (canonicalEl) canonicalEl.href = canonicalUrl;
 
     const ogTitleEl = document.getElementById('og-title') as HTMLMetaElement | null;
-    if (ogTitleEl) ogTitleEl.content = activeSeo.title;
+    if (ogTitleEl) ogTitleEl.content = activeTitle;
 
     const ogDescEl = document.getElementById('og-description') as HTMLMetaElement | null;
-    if (ogDescEl) ogDescEl.content = activeSeo.desc;
+    if (ogDescEl) ogDescEl.content = activeDesc;
 
     const ogUrlEl = document.getElementById('og-url') as HTMLMetaElement | null;
-    if (ogUrlEl) ogUrlEl.content = fullUrl;
+    if (ogUrlEl) ogUrlEl.content = canonicalUrl;
 
     const ogImgEl = document.getElementById('og-image') as HTMLMetaElement | null;
     if (ogImgEl) ogImgEl.content = fullImageUrl;
 
     const twitterTitleEl = document.getElementById('twitter-title') as HTMLMetaElement | null;
-    if (twitterTitleEl) twitterTitleEl.content = activeSeo.title;
+    if (twitterTitleEl) twitterTitleEl.content = activeTitle;
 
     const twitterDescEl = document.getElementById('twitter-description') as HTMLMetaElement | null;
-    if (twitterDescEl) twitterDescEl.content = activeSeo.desc;
+    if (twitterDescEl) twitterDescEl.content = activeDesc;
 
     const twitterImgEl = document.getElementById('twitter-image') as HTMLMetaElement | null;
     if (twitterImgEl) twitterImgEl.content = fullImageUrl;
 
     const schemaEl = document.getElementById('schema-jsonld');
     if (schemaEl) {
+      const graphNodes: Record<string, any>[] = [
+        {
+          '@type': 'Organization',
+          '@id': `${baseOrigin}/#organization`,
+          name: 'Ziarah Nusantara',
+          legalName: 'Tim Kurator Arsip Ziarah Nusantara',
+          url: `${baseOrigin}/`,
+          logo: {
+            '@type': 'ImageObject',
+            '@id': `${baseOrigin}/#logo`,
+            url: fullImageUrl,
+            contentUrl: fullImageUrl,
+            width: 512,
+            height: 512,
+          },
+        },
+        {
+          '@type': 'WebSite',
+          '@id': `${baseOrigin}/#website`,
+          url: `${baseOrigin}/`,
+          name: 'Ziarah Nusantara',
+          description: activeDesc,
+          inLanguage: 'id-ID',
+          publisher: { '@id': `${baseOrigin}/#organization` },
+        },
+        {
+          '@type': 'WebPage',
+          '@id': `${canonicalUrl}#webpage`,
+          url: canonicalUrl,
+          name: activeTitle,
+          description: activeDesc,
+          inLanguage: 'id-ID',
+          isPartOf: { '@id': `${baseOrigin}/#website` },
+        },
+      ];
+
+      if (matchedSite) {
+        graphNodes.push({
+          '@type': 'TouristAttraction',
+          '@id': `${canonicalUrl}#place`,
+          name: `Makam ${matchedSite.title} (${matchedSite.name})`,
+          description: matchedSite.description,
+          url: canonicalUrl,
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: matchedSite.location.address,
+            addressLocality: matchedSite.location.city,
+            addressRegion: matchedSite.location.province,
+            addressCountry: 'ID',
+          },
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: matchedSite.location.lat,
+            longitude: matchedSite.location.lng,
+          },
+        });
+      }
+
+      if (cleanPath === '/panduan') {
+        graphNodes.push({
+          '@type': 'FAQPage',
+          '@id': `${canonicalUrl}#faq`,
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'Apa Tujuan & Hukum Ziarah Kubur dalam Islam?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Hukum ziarah kubur dalam Islam adalah sunnah (dianjurkan) berdasarkan hadits riwayat Imam Muslim. Tujuannya adalah mengingatkan diri kepada kematian dan akhirat, mendoakan ampunan bagi ahli kubur, serta meneladani kesalehan dan perjuangan dakwah para Waliyullah.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Bagaimana Urutan Bacaan Doa Ziarah Kubur Singkat?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Urutan bacaan doa ziarah kubur singkat: (1) Berwudhu dan meluruskan niat, (2) Mengucapkan salam ahli kubur (Assalamu alaikum ahlad-diyaar...), (3) Membaca Istighfar 3x, (4) Membaca Al-Fatihah & Tawassul, (5) Membaca Surah Yasin, Al-Ikhlas 3x, Al-Falaq, An-Nas, dan Ayat Kursi, (6) Dzikir Tahlil (Laa ilaaha illallaah), dan (7) Membaca doa khusus ahli kubur.',
+              },
+            },
+          ],
+        });
+      }
+
       schemaEl.textContent = JSON.stringify({
         '@context': 'https://schema.org',
-        '@graph': [
-          {
-            '@type': 'Organization',
-            '@id': `${baseOrigin}/#organization`,
-            name: 'Ziarah Nusantara',
-            legalName: 'Tim Kurator Arsip Ziarah Nusantara',
-            alternateName: [
-              'Tim Kurator Arsip Ziarah Nusantara',
-              'ziarahnusantara.my.id',
-              'ziarah nusantara.my.id',
-              'Arsip & Direktori Makam Wali Nusantara',
-            ],
-            url: `${baseOrigin}/`,
-            description:
-              'Tim Kurator Arsip Ziarah Nusantara adalah pengelola resmi platform Ziarah Nusantara (ziarahnusantara.my.id), pusat direktori digital, pemetaan geospasial, literasi sejarah akademik, dan panduan adab ziarah makam para Waliyullah serta Ulama di seluruh kepulauan Nusantara.',
-            logo: {
-              '@type': 'ImageObject',
-              '@id': `${baseOrigin}/#logo`,
-              url: fullImageUrl,
-              contentUrl: fullImageUrl,
-              width: 512,
-              height: 512,
-              caption: 'Logo Resmi Ziarah Nusantara — Lambang Kubah Emas dan Kaligrafi ZN Hijau Zamrud',
-            },
-            image: {
-              '@id': `${baseOrigin}/#logo`,
-            },
-          },
-          {
-            '@type': 'WebSite',
-            '@id': `${baseOrigin}/#website`,
-            url: `${baseOrigin}/`,
-            name: 'Ziarah Nusantara',
-            alternateName: [
-              'Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara',
-              'ziarahnusantara.my.id',
-              'ziarah nusantara.my.id',
-              'Direktori Makam Waliyullah & Ulama Nusantara',
-            ],
-            description: activeSeo.desc,
-            inLanguage: 'id-ID',
-            publisher: {
-              '@id': `${baseOrigin}/#organization`,
-            },
-          },
-          {
-            '@type': 'WebPage',
-            '@id': `${fullUrl}#webpage`,
-            url: fullUrl,
-            name: activeSeo.title,
-            description: activeSeo.desc,
-            inLanguage: 'id-ID',
-            isPartOf: {
-              '@id': `${baseOrigin}/#website`,
-            },
-            about: {
-              '@id': `${baseOrigin}/#organization`,
-            },
-            primaryImageOfPage: {
-              '@id': `${baseOrigin}/#logo`,
-            },
-          },
-        ],
+        '@graph': graphNodes,
       });
     }
   }, [location.pathname, customDomainOrigin]);
@@ -342,7 +382,7 @@ export default function App() {
   const handleSelectSite = React.useCallback(
     (site: ZiarahSite) => {
       setSelectedSite(site);
-      navigate(`/makam/${site.id}`);
+      navigate(getSitePath(site));
     },
     [navigate]
   );
@@ -384,6 +424,20 @@ export default function App() {
                 }
               />
               <Route
+                path="/situs/:id"
+                element={
+                  <PetaLokasi
+                    selectedSite={selectedSite}
+                    setSelectedSite={setSelectedSite}
+                    savedSiteIds={savedSiteIds}
+                    handleToggleSave={handleToggleSave}
+                    savedDoas={savedDoas}
+                    onToggleSaveDoa={handleToggleSaveDoa}
+                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                  />
+                }
+              />
+              <Route
                 path="/makam/:id"
                 element={
                   <PetaLokasi
@@ -410,6 +464,7 @@ export default function App() {
               />
               <Route path="/doa" element={<KumpulanDoa savedDoas={savedDoas} onToggleSaveDoa={handleToggleSaveDoa} />} />
               <Route path="/infaq" element={<InfaqDigital />} />
+              <Route path="/donasi" element={<InfaqDigital />} />
               <Route path="/kurasi" element={<KebijakanKurasi />} />
               <Route path="/admin" element={<AdminKurator />} />
               <Route path="/kurator-admin" element={<AdminKurator />} />

@@ -81,12 +81,15 @@
   "rewrites": [
     { "source": "/direktori", "destination": "/index.html" },
     { "source": "/peta", "destination": "/index.html" },
+    { "source": "/situs", "destination": "/index.html" },
+    { "source": "/situs/:id*", "destination": "/index.html" },
     { "source": "/makam", "destination": "/index.html" },
     { "source": "/makam/:id*", "destination": "/index.html" },
     { "source": "/panduan", "destination": "/index.html" },
     { "source": "/rubrik", "destination": "/index.html" },
     { "source": "/doa", "destination": "/index.html" },
     { "source": "/infaq", "destination": "/index.html" },
+    { "source": "/donasi", "destination": "/index.html" },
     { "source": "/kurasi", "destination": "/index.html" },
     { "source": "/admin", "destination": "/index.html" },
     { "source": "/kurator-admin", "destination": "/index.html" }
