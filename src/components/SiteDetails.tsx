@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ZiarahSite } from '../data/sites';
-import { X, MapPin, Navigation, Info, Clock, CheckCircle2, Heart, Sparkles, BookOpen, Bookmark, BookmarkCheck, QrCode, MessageSquare, Send, Unlock, ScrollText, Trash2, Loader2 } from 'lucide-react';
+import { X, MapPin, Navigation, Info, Clock, CheckCircle2, Heart, Sparkles, BookOpen, Bookmark, BookmarkCheck, QrCode, MessageSquare, Send, Unlock, ScrollText, Trash2, Loader2, Calendar, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransactionModal } from './TransactionModal';
 import { auth, db, handleFirestoreError, OperationType, isUserAdmin } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useVerifiedDonationUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
+import { getSiteLogistics } from '../lib/siteLogistics';
+import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
 
 interface SiteDetailsProps {
   site: ZiarahSite | null;
@@ -91,15 +93,15 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
   const allStories = [...cloudStories, ...DEFAULT_STORIES];
 
   const handleAddStory = async () => {
-    if (!site || !newStory.trim() || newStory.trim().length < 3 || isSendingStory) return;
+    const cleanText = sanitizeMultilineText(newStory, 1000);
+    if (!site || cleanText.length < 3 || isSendingStory) return;
     setIsSendingStory(true);
     const storyRef = doc(collection(db, 'stories'));
-    const cleanName = (authorName.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
-    const cleanText = newStory.trim().slice(0, 1000);
+    const cleanName = sanitizePlainText(authorName, 100) || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
 
     try {
       await setDoc(storyRef, {
-        siteId: site.id,
+        siteId: sanitizePlainText(site.id, 128),
         authorName: cleanName,
         authorUid: auth.currentUser?.uid || 'guest',
         text: cleanText,
@@ -286,6 +288,29 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                     </div>
                   </div>
                 </div>
+
+                {/* Logistik Rombongan: Jadwal Haul Tahunan & Ketentuan Adab Lokal Juru Kunci */}
+                {(() => {
+                  const logistics = getSiteLogistics(site);
+                  return (
+                    <div className="bg-[#FAF8F5] rounded-2xl p-4 border border-stone-200/90 space-y-3">
+                      <div className="flex items-start gap-2.5">
+                        <Calendar className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                        <div>
+                          <div className="text-xs font-bold text-stone-900">Jadwal Haul Tahunan</div>
+                          <p className="text-xs text-stone-600 mt-0.5 leading-relaxed">{logistics.haulSchedule}</p>
+                        </div>
+                      </div>
+                      <div className="pt-2.5 border-t border-stone-200/70 flex items-start gap-2.5">
+                        <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                        <div>
+                          <div className="text-xs font-bold text-stone-900">Ketentuan Adab Lokal &amp; Juru Kunci</div>
+                          <p className="text-xs text-stone-600 mt-0.5 leading-relaxed">{logistics.localAdab}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div>
                   <div className="flex items-center mb-2.5">

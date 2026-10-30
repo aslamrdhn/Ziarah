@@ -389,9 +389,9 @@ export default function App() {
 
   return (
     <SiteProvider>
-      <div className="flex flex-col min-h-screen w-full bg-[#F9F8F4] font-sans text-stone-900 selection:bg-stone-300 selection:text-stone-950 relative antialiased">
+      <div className="flex flex-col min-h-screen w-full bg-[#FAF8F5] font-sans text-stone-900 selection:bg-emerald-900/15 selection:text-stone-950 relative antialiased">
         {/* Editorial Glass Header (backdrop-blur applied on ::before so fixed descendants are never trapped) */}
-        <header className="fixed top-0 left-0 right-0 z-[2000] border-b border-stone-300/80 flex justify-center before:content-[''] before:absolute before:inset-0 before:bg-[#F9F8F4]/95 before:backdrop-blur-md before:-z-10 before:pointer-events-none">
+        <header className="fixed top-0 left-0 right-0 z-[2000] border-b border-stone-200/70 flex justify-center before:content-[''] before:absolute before:inset-0 before:bg-[#FAF8F5]/90 before:backdrop-blur-md before:-z-10 before:pointer-events-none">
           <div className="w-full max-w-6xl relative z-10">
             <Navbar onOpenKontribusi={() => setIsKontribusiOpen(true)} />
           </div>

@@ -9,6 +9,7 @@ import { QrisPaymentCard } from './QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from './TransferProofUploadField';
 import { CompressedReceiptResult, saveVerifiedDonationRecord } from '../lib/transferProof';
+import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -65,9 +66,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
 
   if (!isOpen) return null;
 
-  const amount = type === 'infaq' ? selectedNominal : 15000;
-  const donorName = (senderAccount.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
-  const isProofComplete = Boolean(receipt && senderAccount.trim().length >= 3);
+  const amount = sanitizeDonationAmount(type === 'infaq' ? selectedNominal : 15000, 1000, 1000000000) || 15000;
+  const cleanSender = sanitizePlainText(senderAccount, 80);
+  const donorName = cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
+  const isProofComplete = Boolean(receipt && cleanSender.length >= 3);
 
   const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer ${type === 'infaq' ? 'Donasi Pemeliharaan Makam' : 'Donasi Literasi Pembuka Rubrik'} di sistem:\n\n` +
     `• *Kode Referensi:* ${receipt?.referenceCode || '-'}\n` +
@@ -92,7 +94,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       setSubmitError('Wajib mengunggah screenshot / foto bukti transfer terlebih dahulu.');
       return;
     }
-    if (senderAccount.trim().length < 3) {
+    if (cleanSender.length < 3) {
       setSubmitError('Wajib mengisi nama pengirim sesuai akun E-Wallet atau rekening bank (minimal 3 karakter).');
       return;
     }
@@ -105,15 +107,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         id: donationRef.id,
         programId: type === 'infaq' ? 'pemeliharaan' : 'rubrik-manuskrip',
         programTitle: type === 'infaq' ? 'Pemeliharaan & Revitalisasi Makam' : 'Apresiasi Literasi & Manuskrip Rubrik',
-        siteId: site.id,
-        siteName: site.name,
+        siteId: sanitizePlainText(site.id, 128),
+        siteName: sanitizePlainText(site.name, 150),
         amount,
         donorName,
         paymentMethod,
-        senderAccount: senderAccount.trim().slice(0, 80),
+        senderAccount: cleanSender,
         proofImageUrl: receipt.dataUrl,
         referenceCode: receipt.referenceCode,
-        doaHajat: type === 'infaq' ? `Donasi pemeliharaan untuk ${site.name}` : `Apresiasi pembukaan manuskrip ${site.name}`,
+        doaHajat: sanitizePlainText(
+          type === 'infaq' ? `Donasi pemeliharaan untuk ${site.name}` : `Apresiasi pembukaan manuskrip ${site.name}`,
+          1000
+        ),
         authorUid: auth.currentUser?.uid || 'guest',
         status: 'confirmed',
         createdAt: serverTimestamp(),

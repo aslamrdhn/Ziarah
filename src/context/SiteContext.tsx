@@ -50,10 +50,19 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
             fetchedSites.forEach((cloudSite) => {
               const baseLocal = localMap.get(cloudSite.id);
               if (baseLocal) {
+                const legacyPlaceholder =
+                  'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80';
+                const effectiveImageUrl =
+                  cloudSite.imageUrl &&
+                  cloudSite.imageUrl.trim() !== '' &&
+                  cloudSite.imageUrl.trim() !== legacyPlaceholder
+                    ? cloudSite.imageUrl.trim()
+                    : baseLocal.imageUrl;
+
                 mergedMap.set(cloudSite.id, {
                   ...baseLocal,
                   ...cloudSite,
-                  imageUrl: baseLocal.imageUrl,
+                  imageUrl: effectiveImageUrl,
                   imageSource: cloudSite.imageSource || baseLocal.imageSource,
                   era: cloudSite.era || baseLocal.era,
                   sanad: cloudSite.sanad || baseLocal.sanad,
@@ -69,6 +78,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
                       ? cloudSite.doaKhusus
                       : baseLocal.doaKhusus,
                   untoldStory: cloudSite.untoldStory || baseLocal.untoldStory,
+                  haulSchedule: cloudSite.haulSchedule || baseLocal.haulSchedule,
+                  localAdab: cloudSite.localAdab || baseLocal.localAdab,
                 });
               } else {
                 mergedMap.set(cloudSite.id, cloudSite);

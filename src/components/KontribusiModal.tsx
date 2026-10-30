@@ -3,6 +3,7 @@ import { X, Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl } from '../lib/sanitize';
 
 interface KontribusiModalProps {
   isOpen: boolean;
@@ -58,9 +59,17 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
     if (isSubmitting) return;
     setErrorMsg(null);
 
-    const cleanContributor = (contributorName.trim() || 'Hamba Allah').slice(0, 100);
-    const cleanTarget = targetName.trim().slice(0, 150);
-    const cleanContent = content.trim().slice(0, 3000);
+    const cleanContributor = sanitizePlainText(contributorName, 100) || 'Hamba Allah';
+    const cleanTarget = sanitizePlainText(targetName, 150);
+    const cleanContent = sanitizeMultilineText(content, 3000);
+    const cleanContact = sanitizePlainText(contributorContact, 120);
+    const cleanCity = activeTab === 'baru' ? sanitizePlainText(city, 100) : '';
+    const cleanProvince = activeTab === 'baru' ? sanitizePlainText(province, 100) : '';
+    const cleanMapsUrl =
+      activeTab === 'baru'
+        ? sanitizeHttpUrl(mapsUrl, 500) || sanitizePlainText(mapsUrl, 500)
+        : '';
+    const cleanTranslation = activeTab === 'doa' ? sanitizeMultilineText(translation, 1500) : '';
 
     if (!cleanTarget) {
       setErrorMsg('Mohon isi nama makam atau tokoh wali yang dimaksud.');
@@ -78,14 +87,14 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
         id: newDocRef.id,
         type: activeTab,
         contributorName: cleanContributor,
-        contributorContact: contributorContact.trim().slice(0, 120),
+        contributorContact: cleanContact,
         targetName: cleanTarget,
-        category: activeTab === 'baru' ? category : '',
-        city: activeTab === 'baru' ? city.trim().slice(0, 100) : '',
-        province: activeTab === 'baru' ? province.trim().slice(0, 100) : '',
-        mapsUrl: activeTab === 'baru' ? mapsUrl.trim().slice(0, 500) : '',
+        category: activeTab === 'baru' ? sanitizePlainText(category, 80) : '',
+        city: cleanCity,
+        province: cleanProvince,
+        mapsUrl: cleanMapsUrl,
         content: cleanContent,
-        translation: activeTab === 'doa' ? translation.trim().slice(0, 1500) : '',
+        translation: cleanTranslation,
         status: 'pending',
         authorUid: auth.currentUser?.uid || 'guest',
         createdAt: serverTimestamp(),

@@ -25,7 +25,7 @@ class RootErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#F9F8F4] flex items-center justify-center p-6 text-center font-sans text-stone-900">
+        <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center p-6 text-center font-sans text-stone-900">
           <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-stone-200 shadow-lg">
             <h1 className="text-xl font-serif font-bold text-stone-900 mb-2">
               Memuat Ulang Halaman

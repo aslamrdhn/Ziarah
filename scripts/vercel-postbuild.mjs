@@ -135,6 +135,14 @@ const staticRoutes = [
       'Bacaan salam ziarah kubur, susunan tawassul khusus para Waliyullah, Surah Yasin, dan tahlil lengkap teks Arab, transliterasi Latin, serta terjemahan Bahasa Indonesia.',
   },
   {
+    path: '/donasi',
+    priority: '0.8',
+    changefreq: 'monthly',
+    title: 'Donasi Digital & Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
+    description:
+      'Layanan donasi dan wakaf digital QRIS resmi Ziarah Nusantara untuk mendukung riset literasi sejarah dan pelestarian situs makam Waliyullah.',
+  },
+  {
     path: '/infaq',
     priority: '0.7',
     changefreq: 'monthly',

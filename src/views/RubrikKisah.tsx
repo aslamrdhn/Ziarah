@@ -30,6 +30,7 @@ import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
 import { CompressedReceiptResult, saveVerifiedDonationRecord, useVerifiedDonationUnlock } from '../lib/transferProof';
+import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
 
 export interface RubrikItem {
   id: string;
@@ -62,7 +63,8 @@ export const DEFAULT_RUBRIK_GATE_SETTINGS: RubrikGateSettings = {
   bannerDescription:
     'Sebagai contoh kurasi sejarah & sanad, 2 tulisan pilihan dibuka secara gratis untuk Anda baca penuh. Seluruh naskah lainnya dikunci dan hanya dapat dibuka setelah Anda berdonasi serta mengunggah bukti transfer yang sah.',
   pinnedFreeArticleIds: [
-    'rubrik-guru-sekumpul-untold',
+    'rubrik-ulama-3-untold',
+    'rubrik-sekumpul-adab',
     'rubrik-wali-songo-strategy',
   ],
   customArticles: [],
@@ -212,7 +214,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     // Add highlighted historical editorial entries near the top so they serve as compelling samples
     list.push({
       id: 'rubrik-wali-songo-strategy',
-      siteId: 'sunan-kalijaga',
+      siteId: 'wali-7',
       siteName: 'Sunan Kalijaga (Raden Sahid)',
       location: 'Demak, Jawa Tengah',
       category: 'Manuskrip',
@@ -224,7 +226,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
     list.push({
       id: 'rubrik-sekumpul-adab',
-      siteId: 'guru-sekumpul',
+      siteId: 'ulama-3',
       siteName: 'KH. Muhammad Zaini Abdul Ghani (Abah Guru Sekumpul)',
       location: 'Martapura, Kalimantan Selatan',
       category: 'Hikmah & Karomah',
@@ -329,7 +331,9 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     }
 
     setIsSubmittingDonation(true);
-    const finalDonor = (senderAccount.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
+    const cleanSender = sanitizePlainText(senderAccount, 80);
+    const finalDonor = cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
+    const cleanAmount = sanitizeDonationAmount(selectedNominal, 1000, 1000000000) || 25000;
     const donationRef = doc(collection(db, 'donations'));
 
     try {
@@ -337,15 +341,18 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         id: donationRef.id,
         programId: 'riset-web',
         programTitle: 'Riset Sejarah, Perluasan Database & Operasional Web (Pembuka Rubrik)',
-        siteId: unlockModalArticle?.siteId || 'web-riset',
-        siteName: unlockModalArticle?.siteName || 'Riset Database & Operasional Web',
-        amount: selectedNominal,
+        siteId: sanitizePlainText(unlockModalArticle?.siteId, 80) || 'web-riset',
+        siteName: sanitizePlainText(unlockModalArticle?.siteName, 160) || 'Riset Database & Operasional Web',
+        amount: cleanAmount,
         donorName: finalDonor,
         paymentMethod,
-        senderAccount: senderAccount.trim().slice(0, 80),
+        senderAccount: cleanSender || finalDonor,
         proofImageUrl: receipt.dataUrl,
         referenceCode: receipt.referenceCode,
-        doaHajat: `Donasi Riset & Pembukaan Arsip Rubrik (${unlockModalArticle?.title || 'Khazanah Nusantara'})`,
+        doaHajat: sanitizePlainText(
+          `Donasi Riset & Pembukaan Arsip Rubrik (${unlockModalArticle?.title || 'Khazanah Nusantara'})`,
+          1000
+        ),
         authorUid: auth.currentUser?.uid || 'guest',
         status: 'confirmed',
         createdAt: serverTimestamp(),
@@ -922,7 +929,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               {/* Footer Modal */}
               <div className="p-4 border-t border-slate-100 bg-white flex items-center justify-between">
                 <Link
-                  to={`/makam/${activeStoryModal.siteId}`}
+                  to={`/situs/${activeStoryModal.siteId}`}
                   onClick={() => setActiveStoryModal(null)}
                   className="text-xs font-bold text-emerald-800 hover:underline inline-flex items-center"
                 >

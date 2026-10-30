@@ -38,6 +38,7 @@ import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serv
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, User } from 'firebase/auth';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
+import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl, isSafeExternalUrl } from '../lib/sanitize';
 
 interface ContributionItem {
   id: string;
@@ -392,27 +393,36 @@ export const AdminKurator: React.FC = () => {
     setIsSavingSite(true);
     setSiteStatusMsg('');
 
-    const slug = (editingSite.id?.trim() || editingSite.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `site-${Date.now()}`).slice(0, 80);
+    const cleanName = sanitizePlainText(editingSite.name, 160) || 'Tokoh Ulama';
+    const slug = (editingSite.id?.trim() || cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `site-${Date.now()}`).slice(0, 80);
+    const cleanImageUrl =
+      sanitizeHttpUrl(editingSite.imageUrl, 1000) ||
+      'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80';
+    const cleanDesc = sanitizeMultilineText(editingSite.description, 1500);
+    const cleanHistory = sanitizeMultilineText(editingSite.history, 8000) || cleanDesc;
+
     const payload: ZiarahSite = {
       id: slug,
-      name: editingSite.name || 'Tokoh Ulama',
-      title: editingSite.title || `Makam ${editingSite.name}`,
+      name: cleanName,
+      title: sanitizePlainText(editingSite.title, 200) || `Makam ${cleanName}`,
       category: (editingSite.category as any) || 'Ulama Nusantara',
-      description: editingSite.description || '',
-      history: editingSite.history || editingSite.description || '',
-      imageUrl: editingSite.imageUrl || 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80',
-      openingHours: editingSite.openingHours || 'Buka 24 Jam',
-      facilities: editingSite.facilities || ['Masjid / Musholla', 'Area Parkir'],
+      description: cleanDesc,
+      history: cleanHistory,
+      imageUrl: cleanImageUrl,
+      openingHours: sanitizePlainText(editingSite.openingHours, 120) || 'Buka 24 Jam',
+      facilities: (editingSite.facilities || ['Masjid / Musholla', 'Area Parkir']).map((f) => sanitizePlainText(f, 80)).filter(Boolean),
       location: {
         lat: Number(editingSite.location?.lat) || -6.9,
         lng: Number(editingSite.location?.lng) || 110.4,
-        address: editingSite.location?.address || '',
-        city: editingSite.location?.city || '',
-        province: editingSite.location?.province || '',
+        address: sanitizePlainText(editingSite.location?.address, 400),
+        city: sanitizePlainText(editingSite.location?.city, 120),
+        province: sanitizePlainText(editingSite.location?.province, 120),
       },
-      karomah: editingSite.karomah || [],
+      karomah: (editingSite.karomah || []).map((k) => sanitizeMultilineText(k, 1500)).filter(Boolean),
       doaKhusus: editingSite.doaKhusus || [],
-      untoldStory: editingSite.untoldStory || '',
+      untoldStory: sanitizeMultilineText(editingSite.untoldStory, 4000),
+      haulSchedule: sanitizePlainText(editingSite.haulSchedule, 200),
+      localAdab: sanitizeMultilineText(editingSite.localAdab, 1500),
     };
 
     try {
@@ -540,14 +550,14 @@ export const AdminKurator: React.FC = () => {
     if (!newCustomArticle.title?.trim() || !newCustomArticle.content?.trim()) return;
     const item: RubrikItem = {
       id: `rubrik-custom-${Date.now()}`,
-      siteId: 'sunan-kalijaga',
-      siteName: newCustomArticle.siteName?.trim() || 'Aulia Nusantara',
-      location: newCustomArticle.location?.trim() || 'Nusantara',
+      siteId: 'wali-7',
+      siteName: sanitizePlainText(newCustomArticle.siteName, 140) || 'Aulia Nusantara',
+      location: sanitizePlainText(newCustomArticle.location, 140) || 'Nusantara',
       category: (newCustomArticle.category as any) || 'Kisah Rahasia',
-      title: newCustomArticle.title.trim(),
-      content: newCustomArticle.content.trim(),
-      source: newCustomArticle.source?.trim() || 'Arsip Kurator Ziarah Nusantara',
-      readTime: newCustomArticle.readTime?.trim() || '3 mnt',
+      title: sanitizePlainText(newCustomArticle.title, 200),
+      content: sanitizeMultilineText(newCustomArticle.content, 5000),
+      source: sanitizePlainText(newCustomArticle.source, 200) || 'Arsip Kurator Ziarah Nusantara',
+      readTime: sanitizePlainText(newCustomArticle.readTime, 40) || '3 mnt',
     };
     setRubrikGate((prev) => ({
       ...prev,
@@ -830,7 +840,21 @@ export const AdminKurator: React.FC = () => {
                             </p>
                           )}
                           {item.mapsUrl && (
-                            <p className="text-xs text-slate-500 mt-0.5 truncate">Maps/Alamat: {item.mapsUrl}</p>
+                            <p className="text-xs text-slate-500 mt-0.5 truncate">
+                              Maps/Alamat:{' '}
+                              {isSafeExternalUrl(item.mapsUrl) ? (
+                                <a
+                                  href={item.mapsUrl.trim()}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-emerald-700 hover:underline font-semibold"
+                                >
+                                  {item.mapsUrl.trim()} ↗
+                                </a>
+                              ) : (
+                                item.mapsUrl
+                              )}
+                            </p>
                           )}
                         </div>
 
@@ -1046,6 +1070,28 @@ export const AdminKurator: React.FC = () => {
                         onChange={(e) => setEditingSite({ ...editingSite, location: { ...editingSite.location!, address: e.target.value } })}
                         className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
                       />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Jadwal Haul Tahunan (Logistik Rombongan)</label>
+                        <input
+                          type="text"
+                          value={editingSite.haulSchedule || ''}
+                          onChange={(e) => setEditingSite({ ...editingSite, haulSchedule: e.target.value })}
+                          placeholder="Contoh: 12 Rabiul Awal / Pertengahan Sya'ban"
+                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Ketentuan Adab Lokal Juru Kunci</label>
+                        <input
+                          type="text"
+                          value={editingSite.localAdab || ''}
+                          onChange={(e) => setEditingSite({ ...editingSite, localAdab: e.target.value })}
+                          placeholder="Contoh: Berpakaian sopan, melepas alas kaki di gapura kedua..."
+                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
+                        />
+                      </div>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">Deskripsi Singkat *</label>

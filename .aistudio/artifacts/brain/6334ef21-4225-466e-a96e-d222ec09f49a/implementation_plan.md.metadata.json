@@ -1,6 +1,6 @@
 {
-  "summary":  "Rencana perbaikan masalah \"Tidak dapat membaca peta situs\" & \"URL tidak ada di Google\" pada Google Search Console untuk https://ziarahnusantara.my.id beserta pembuatan endpoint sitemap baru bebas cache GSC dan panduan langkah di dashboard Search Console.",
-  "updatedAt":  "2026-10-29T04:18:35.482275607Z",
+  "summary":  "Rencana pengembangan strategis Ziarah Nusantara mencakup 5 pilar utama: (1) UX Lapangan & Panduan Doa (High-Contrast Outdoor Mode WCAG AAA, Screen Wake Lock API, Typography Toolbar, Tasbih Digital dengan Haptic Vibration & persistensi localStorage), (2) Peta GIS Interaktif (Custom SVG Pins per kategori, Marker Clustering, Jalur Ziarah Wali Songo Polyline, Filter Radius GPS Terdekat, dan Slide-up Bottom Sheet), (3) Metadata Logistik Lapangan (Jadwal Haul Tahunan & Ketentuan Adab Lokal Juru Kunci), (4) Optimalisasi Offline-First PWA di atas Cloud Firestore, serta (5) Pre-rendering SEO & JSON-LD Schema.org.",
+  "updatedAt":  "2026-10-30T04:15:35.378063251Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

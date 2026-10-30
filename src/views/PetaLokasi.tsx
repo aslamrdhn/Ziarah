@@ -61,17 +61,17 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-2 pb-2 flex-1 flex flex-col">
-      <div className="relative w-full h-[calc(100dvh-9.5rem)] md:h-[calc(100dvh-7rem)] min-h-[460px] flex flex-col">
+    <div className="w-full max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 pt-2 pb-2 flex-1 flex flex-col">
+      <div className="relative w-full h-[calc(100dvh-9rem)] md:h-[calc(100dvh-6.5rem)] min-h-[480px] flex flex-col">
         <InteractiveMap sites={ziarahSites} selectedSite={selectedSite} onSelectSite={handleMapSelect} />
         {selectedSite && (
           <>
             {/* Mobile & Tablet Backdrop Overlay */}
             <div
-              className="md:hidden absolute inset-0 z-[999] bg-stone-950/35 backdrop-blur-xs pointer-events-auto rounded-2xl cursor-pointer"
+              className="md:hidden absolute inset-0 z-[999] bg-stone-950/35 backdrop-blur-xs pointer-events-auto rounded-3xl cursor-pointer"
               onClick={handleClose}
             />
-            <div className="absolute inset-0 md:inset-y-3 md:right-3 md:left-auto z-[1000] w-full md:w-[400px] lg:w-[420px] pointer-events-auto">
+            <div className="absolute inset-x-0 bottom-0 top-12 md:inset-y-3 md:right-3 md:left-auto z-[1000] w-full md:w-[410px] lg:w-[430px] pointer-events-auto">
               <SiteDetails
                 site={selectedSite}
                 onClose={handleClose}

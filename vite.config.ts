@@ -133,7 +133,21 @@ export default defineConfig({
             options: {
               cacheName: 'ziarah-images-cache-v2',
               expiration: {
-                maxEntries: 80,
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/[abc]\.tile\.openstreetmap\.org\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ziarah-osm-tiles-cache-v1',
+              expiration: {
+                maxEntries: 250,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
               },
               cacheableResponse: {

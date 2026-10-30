@@ -53,7 +53,9 @@
         "openingHours": { "type": "string" },
         "karomah": { "type": "array" },
         "doaKhusus": { "type": "array" },
-        "untoldStory": { "type": "string" }
+        "untoldStory": { "type": "string" },
+        "haulSchedule": { "type": "string" },
+        "localAdab": { "type": "string" }
       },
       "required": ["id", "name", "title", "category"]
     },
@@ -102,6 +104,10 @@
         "siteName": { "type": "string", "maxLength": 150 },
         "amount": { "type": "number" },
         "donorName": { "type": "string", "maxLength": 100 },
+        "paymentMethod": { "type": "string", "maxLength": 40 },
+        "senderAccount": { "type": "string", "maxLength": 80 },
+        "proofImageUrl": { "type": "string", "maxLength": 700000 },
+        "referenceCode": { "type": "string", "maxLength": 40 },
         "doaHajat": { "type": "string", "maxLength": 1000 },
         "authorUid": { "type": "string", "maxLength": 128 },
         "status": { "type": "string", "enum": ["confirmed", "verified"] },

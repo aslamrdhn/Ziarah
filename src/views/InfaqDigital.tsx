@@ -21,6 +21,7 @@ import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
 import { CompressedReceiptResult, saveVerifiedDonationRecord } from '../lib/transferProof';
+import { sanitizePlainText, sanitizeMultilineText, sanitizeDonationAmount } from '../lib/sanitize';
 
 interface DonationRecord {
   id: string;
@@ -185,13 +186,14 @@ export const InfaqDigital: React.FC = () => {
     setTimeout(() => setCopiedAccount(null), 2500);
   };
 
-  const currentAmount = customNominal ? parseInt(customNominal, 10) || 0 : nominal;
+  const currentAmount = sanitizeDonationAmount(customNominal ? customNominal : nominal, 1000, 1000000000);
   const targetSiteName = selectedSiteId === 'web-riset'
     ? 'Riset Database & Operasional Web (Domain & VPS)'
     : 'Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)';
   const activeProgramTitle = programs.find(p => p.id === selectedProgram)?.title || programs[0]?.title || 'Riset & Operasional Web';
 
-  const isProofComplete = Boolean(receipt && senderAccount.trim().length >= 3);
+  const cleanSender = sanitizePlainText(senderAccount, 80);
+  const isProofComplete = Boolean(receipt && cleanSender.length >= 3);
 
   const handleBayar = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,30 +204,33 @@ export const InfaqDigital: React.FC = () => {
       setSubmitError('Wajib mengunggah screenshot / foto bukti transfer terlebih dahulu.');
       return;
     }
-    if (senderAccount.trim().length < 3) {
+    if (cleanSender.length < 3) {
       setSubmitError('Wajib mengisi nama pengirim sesuai bukti transfer (minimal 3 karakter).');
       return;
     }
 
     setIsSubmitting(true);
 
-    const finalDonorName = (isAnonim ? 'Hamba Allah' : (donorName.trim() || senderAccount.trim() || 'Hamba Allah')).slice(0, 100);
+    const finalDonorName = isAnonim
+      ? 'Hamba Allah'
+      : sanitizePlainText(donorName, 100) || cleanSender || 'Hamba Allah';
+    const cleanDoaHajat = sanitizeMultilineText(doaHajat, 1000);
     const donationRef = doc(collection(db, 'donations'));
 
     try {
       await setDoc(donationRef, {
         id: donationRef.id,
-        programId: selectedProgram,
-        programTitle: activeProgramTitle,
-        siteId: selectedSiteId,
-        siteName: targetSiteName,
+        programId: sanitizePlainText(selectedProgram, 100),
+        programTitle: sanitizePlainText(activeProgramTitle, 150),
+        siteId: sanitizePlainText(selectedSiteId, 128),
+        siteName: sanitizePlainText(targetSiteName, 150),
         amount: currentAmount,
         donorName: finalDonorName,
         paymentMethod,
-        senderAccount: senderAccount.trim().slice(0, 80),
+        senderAccount: cleanSender,
         proofImageUrl: receipt.dataUrl,
         referenceCode: receipt.referenceCode,
-        doaHajat: doaHajat.trim().slice(0, 1000),
+        doaHajat: cleanDoaHajat,
         authorUid: auth.currentUser?.uid || 'guest',
         status: 'confirmed',
         createdAt: serverTimestamp(),

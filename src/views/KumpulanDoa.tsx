@@ -30,7 +30,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   const [approvedCommunityDoas, setApprovedCommunityDoas] = useState<DoaKaromahItem[]>([]);
   const [lockEnabled, setLockEnabled] = useState<boolean>(true);
   const [freeSampleCount, setFreeSampleCount] = useState<number>(2);
-  const [requireManualVerification, setRequireManualVerification] = useState<boolean>(true);
+  const [requireManualVerification, setRequireManualVerification] = useState<boolean>(false);
   const { isUnlocked: hasDonated } = useVerifiedDonationUnlock(undefined, requireManualVerification);
 
   useEffect(() => {

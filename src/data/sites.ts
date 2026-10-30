@@ -22,6 +22,8 @@ export interface ZiarahSite {
   references?: string[];
   karomah?: string[];
   untoldStory?: string;
+  haulSchedule?: string;
+  localAdab?: string;
   doaKhusus?: {
     title: string;
     text: string;
