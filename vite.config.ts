@@ -29,9 +29,6 @@ export default defineConfig({
             if (id.includes('leaflet') || id.includes('react-leaflet')) {
               return 'vendor-leaflet';
             }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
             if (
               id.includes('react-dom') ||
               id.includes('react-router') ||

@@ -486,6 +486,18 @@ if (fs.existsSync(baseIndexHtmlPath)) {
     }
   }
 
+  // Inject <link rel="modulepreload"> for the main entry script right before </head> to flatten critical request chain
+  const entryScriptMatch = baseHtml.match(/<script\s+type="module"[^>]*src="(\/assets\/index-[^"]+\.js)"[^>]*>/i);
+  if (entryScriptMatch) {
+    const entryJsHref = entryScriptMatch[1];
+    if (!baseHtml.includes(`href="${entryJsHref}" rel="modulepreload"`) && !baseHtml.includes(`rel="modulepreload" crossorigin href="${entryJsHref}"`)) {
+      baseHtml = baseHtml.replace(
+        '</head>',
+        `    <link rel="modulepreload" crossorigin href="${entryJsHref}" />\n  </head>`
+      );
+    }
+  }
+
   for (const entry of allEntries) {
     const routeHtml = renderCustomHtml(baseHtml, entry);
     if (entry.path === '/') {

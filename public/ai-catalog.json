@@ -1,86 +1,54 @@
 {
-  "$schema": "https://schema.org/DataCatalog",
-  "schema_version": "1.0",
-  "version": "1.0.0",
-  "id": "https://ziarahnusantara.my.id/.well-known/ai-catalog.json",
-  "name": "Ziarah Nusantara",
-  "title": "Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara",
-  "description": "Situs resmi Ziarah Nusantara (ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Menyediakan direktori 96 makam Wali Songo, Ulama Nusantara, Habaib & Auliya di 18 provinsi, peta rute ziarah interaktif, adab ziarah, kumpulan doa tahlil & tawassul, serta literasi sejarah Islam Nusantara.",
-  "url": "https://ziarahnusantara.my.id/",
-  "homepage": "https://ziarahnusantara.my.id/",
-  "documentation_url": "https://ziarahnusantara.my.id/llms.txt",
-  "llms_txt": "https://ziarahnusantara.my.id/llms.txt",
-  "llms_full_txt": "https://ziarahnusantara.my.id/llms-full.txt",
-  "sitemap_url": "https://ziarahnusantara.my.id/sitemap.xml",
-  "logo_url": "https://ziarahnusantara.my.id/pwa-512x512.png",
-  "publisher": {
-    "name": "Tim Kurator Arsip Ziarah Nusantara",
-    "url": "https://ziarahnusantara.my.id/kurasi"
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Ziarah Nusantara — Tim Kurator Arsip Ziarah Nusantara"
   },
-  "capabilities": {
-    "agentic_navigation": true,
-    "structured_data": true,
-    "llms_txt": true,
-    "semantic_prerender": true
-  },
-  "endpoints": {
-    "llms": "https://ziarahnusantara.my.id/llms.txt",
-    "llms_full": "https://ziarahnusantara.my.id/llms-full.txt",
-    "ard": "https://ziarahnusantara.my.id/.well-known/ard.json",
-    "ai_catalog": "https://ziarahnusantara.my.id/.well-known/ai-catalog.json",
-    "sitemap": "https://ziarahnusantara.my.id/sitemap.xml",
-    "rss": "https://ziarahnusantara.my.id/rss.xml"
-  },
-  "resources": [
+  "entries": [
     {
-      "id": "direktori-makam",
-      "name": "Arsip & Direktori Makam Waliyullah Nusantara",
-      "type": "directory",
-      "url": "https://ziarahnusantara.my.id/direktori",
-      "description": "Katalog ensiklopedis 96 makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya Nusantara beserta koordinat geospasial dan referensi jurnal ilmiah."
+      "identifier": "urn:air:ziarahnusantara.my.id:docs:llms-summary",
+      "displayName": "Panduan & Ringkasan Arsip Ziarah Nusantara (LLMs.txt)",
+      "type": "text/markdown",
+      "url": "https://ziarahnusantara.my.id/llms.txt",
+      "description": "Dokumentasi ringkas dalam format Markdown untuk agen AI mengenai hukum ziarah kubur, urutan bacaan doa ziarah kubur, tahlil, tawassul, dan indeks direktori 96 makam Waliyullah di 18 provinsi Indonesia.",
+      "representativeQueries": [
+        "Bagaimana urutan bacaan doa ziarah kubur lengkap Arab Latin dan artinya?",
+        "Apa saja daftar 96 lokasi makam Wali Songo dan Ulama Nusantara di Indonesia?",
+        "Apa tujuan dan hukum ziarah kubur dalam Islam menurut hadits?"
+      ]
     },
     {
-      "id": "peta-rute-ziarah",
-      "name": "Peta Rute Geospasial Ziarah Nusantara",
-      "type": "map",
-      "url": "https://ziarahnusantara.my.id/peta",
-      "description": "Peta interaktif titik lokasi makam Waliyullah dan navigasi rute perjalanan peziarah di seluruh Indonesia."
+      "identifier": "urn:air:ziarahnusantara.my.id:docs:llms-full-catalog",
+      "displayName": "Katalog Lengkap 96 Situs Makam Waliyullah Nusantara (LLMs-Full.txt)",
+      "type": "text/markdown",
+      "url": "https://ziarahnusantara.my.id/llms-full.txt",
+      "description": "Katalog ensiklopedis lengkap dalam format Markdown yang memuat profil sejarah, sanad keilmuan, alamat, koordinat geospasial, dan riwayat 96 makam Wali Songo, Ulama, Habaib, dan Auliya Nusantara.",
+      "representativeQueries": [
+        "Dimana alamat lengkap dan koordinat makam Sunan Ampel dan Sunan Gunung Jati?",
+        "Siapa saja tokoh ulama dan habaib yang dimakamkan di Jawa, Sumatera, Kalimantan, dan Sulawesi?",
+        "Bagaimana sejarah dakwah dan sanad keilmuan para Wali Songo?"
+      ]
     },
     {
-      "id": "panduan-adab-ziarah",
-      "name": "Panduan Adab & Tata Cara Ziarah Kubur",
-      "type": "guide",
-      "url": "https://ziarahnusantara.my.id/panduan",
-      "description": "Tuntunan adab, niat, salam, dan tata cara ziarah makam sesuai tradisi ulama Ahlussunnah wal Jamaah."
+      "identifier": "urn:air:ziarahnusantara.my.id:feeds:sitemap-xml",
+      "displayName": "Peta Situs Kanonis Ziarah Nusantara (Sitemap XML)",
+      "type": "application/xml",
+      "url": "https://ziarahnusantara.my.id/sitemap.xml",
+      "description": "Indeks XML seluruh 105 halaman kanonis Ziarah Nusantara meliputi direktori makam, peta rute geospasial, panduan doa ziarah kubur, rubrik sejarah, dan profil 96 situs makam.",
+      "representativeQueries": [
+        "Daftar lengkap URL halaman makam wali di Ziarah Nusantara",
+        "Indeks halaman panduan doa dan direktori makam Nusantara"
+      ]
     },
     {
-      "id": "rubrik-kisah-sejarah",
-      "name": "Rubrik Kisah, Karomah & Naskah Sejarah",
-      "type": "articles",
-      "url": "https://ziarahnusantara.my.id/rubrik",
-      "description": "Artikel sejarah dakwah, sanad keilmuan, dan biografi para Waliyullah Nusantara."
-    },
-    {
-      "id": "kumpulan-doa-tahlil",
-      "name": "Kumpulan Doa Khusus, Tahlil & Tawassul",
-      "type": "liturgy",
-      "url": "https://ziarahnusantara.my.id/doa",
-      "description": "Bacaan salam ziarah, tawassul, Yasin, dan tahlil lengkap teks Arab, transliterasi Latin, dan terjemahan Indonesia."
-    },
-    {
-      "id": "infaq-digital-qris",
-      "name": "Infaq Digital & Pelestarian Arsip Ziarah Nusantara",
-      "type": "service",
-      "url": "https://ziarahnusantara.my.id/infaq",
-      "description": "Layanan infaq dan wakaf digital QRIS resmi Ziarah Nusantara untuk penjagaan arsip digital dan penyebaran riwayat Auliya Nusantara."
-    }
-  ],
-  "tools": [
-    {
-      "name": "search_ziarah_directory",
-      "description": "Mencari lokasi makam Waliyullah berdasarkan nama tokoh, kota, provinsi, atau kategori jaringan dakwah.",
-      "url": "https://ziarahnusantara.my.id/direktori",
-      "method": "GET"
+      "identifier": "urn:air:ziarahnusantara.my.id:feeds:rss-feed",
+      "displayName": "Umpan Sindikasi Arsip & Profil Makam Wali (RSS 2.0)",
+      "type": "application/rss+xml",
+      "url": "https://ziarahnusantara.my.id/rss.xml",
+      "description": "Umpan RSS 2.0 berisi pembaruan artikel sejarah, panduan adab ziarah, dan katalog 96 lokasi makam Waliyullah Nusantara.",
+      "representativeQueries": [
+        "Artikel terbaru rubrik kisah karomah dan sejarah wali Nusantara",
+        "Pembaruan direktori lokasi makam ulama dan habaib di Indonesia"
+      ]
     }
   ]
 }
