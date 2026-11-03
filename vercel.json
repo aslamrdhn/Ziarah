@@ -8,6 +8,15 @@
   "trailingSlash": false,
   "headers": [
     {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Language",
+          "value": "id-ID"
+        }
+      ]
+    },
+    {
       "source": "/assets/(.*)",
       "headers": [
         {

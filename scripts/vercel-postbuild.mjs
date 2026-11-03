@@ -293,27 +293,30 @@ function buildDirectoryLinksHtml() {
     </section>`;
 }
 
-const SR_ONLY_INLINE_STYLE =
-  'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0';
-
 function buildHomepageRootHtml() {
-  return `<main class="sr-only" style="${SR_ONLY_INLINE_STYLE}">
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <header>
-          <h1>Ziarah Kubur &amp; Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab &amp; 96 Lokasi Makam</h1>
-          <p><strong>Ziarah Nusantara (${SITE_ORIGIN})</strong> menyajikan panduan lengkap pengertian, hukum, tujuan, dan urutan bacaan doa ziarah kubur (Arab, Latin, Artinya) beserta direktori 96 situs makam Walisongo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia.</p>
+          <img
+            src="${SITE_ORIGIN}/pwa-512x512.png"
+            alt="Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil &amp; Direktori 96 Makam Wali"
+            width="512"
+            height="512"
+          />
+          <h1>Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali</h1>
+          <p><strong>Hati sedang rindu keteduhan atau hendak berziarah?</strong> <strong>Ziarah Nusantara (${SITE_ORIGIN})</strong> menyajikan panduan lengkap pengertian, hukum, tujuan, adab, dan urutan bacaan doa ziarah kubur (Arab, Latin, Artinya) beserta direktori 96 situs makam Walisongo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia.</p>
         </header>
         <section>
           <h2>Apa Tujuan &amp; Hukum Ziarah Kubur dalam Islam?</h2>
-          <p>Secara bahasa, ziarah berarti berkunjung. Dalam Islam, hukum ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW: <em>&ldquo;Dahulu aku melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu mengingatkan kalian kepada akhirat.&rdquo;</em> (HR. Muslim). Tujuan ziarah kubur meliputi mengingat kematian dan akhirat, mendoakan ampunan bagi ahli kubur, serta meneladani kesalehan dan perjuangan dakwah para Waliyullah.</p>
-          <h2>Menu Utama Ziarah Nusantara</h2>
+          <p>Secara bahasa, ziarah berarti berkunjung. Dalam Islam, hukum ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW: <em>&ldquo;Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada kehidupan akhirat.&rdquo;</em> (HR. Muslim). Tujuan ziarah kubur meliputi mengingat kematian dan akhirat, mendoakan ampunan bagi ahli kubur, serta meneladani kesalehan dan perjuangan dakwah para Waliyullah.</p>
+          <h2>Layanan &amp; Direktori Utama Ziarah Nusantara</h2>
           <ul>
-            <li><a href="${SITE_ORIGIN}/panduan">Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin &amp; Adab Ziarah Wali</a></li>
             <li><a href="${SITE_ORIGIN}/direktori">Direktori 96 Makam Walisongo, Ulama &amp; Habaib di 18 Provinsi</a></li>
+            <li><a href="${SITE_ORIGIN}/panduan">Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin &amp; Adab Ziarah Wali</a></li>
             <li><a href="${SITE_ORIGIN}/peta">Peta Rute Interaktif Makam Waliyullah Nusantara</a></li>
             <li><a href="${SITE_ORIGIN}/doa">Kumpulan Doa Khusus, Tawassul &amp; Tahlil Ziarah</a></li>
-            <li><a href="${SITE_ORIGIN}/rubrik">Rubrik Sejarah, Kisah Karomah &amp; Sanad Keilmuan</a></li>
+            <li><a href="${SITE_ORIGIN}/rubrik">Rubrik Kisah Rahasia, Karomah &amp; Sanad Keilmuan</a></li>
             <li><a href="${SITE_ORIGIN}/kurasi">Standar Kurasi &amp; Referensi Ilmiah</a></li>
-            <li><a href="${SITE_ORIGIN}/infaq">Donasi Digital Pelestarian Arsip Sejarah</a></li>
+            <li><a href="${SITE_ORIGIN}/infaq">Infaq Digital QRIS &amp; Munajat Doa Peziarah</a></li>
           </ul>
         </section>
         ${buildDirectoryLinksHtml()}
@@ -321,9 +324,17 @@ function buildHomepageRootHtml() {
 }
 
 function buildPanduanRootHtml() {
-  return `<main class="sr-only" style="${SR_ONLY_INLINE_STYLE}">
-        <h1>Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin &amp; Adab Ziarah Wali</h1>
-        <p>Panduan lengkap tata cara dan urutan bacaan doa ziarah kubur singkat maupun lengkap untuk ziarah makam orang tua, kerabat, dan makam para Waliyullah (Walisongo &amp; Ulama Nusantara).</p>
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
+        <header>
+          <img
+            src="${SITE_ORIGIN}/pwa-512x512.png"
+            alt="Logo Resmi Ziarah Nusantara — Panduan Bacaan Doa Ziarah Kubur Lengkap"
+            width="512"
+            height="512"
+          />
+          <h1>Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin &amp; Adab Ziarah Wali</h1>
+          <p>Panduan lengkap tata cara dan urutan bacaan doa ziarah kubur singkat maupun lengkap untuk ziarah makam orang tua, kerabat, dan makam para Waliyullah (Walisongo &amp; Ulama Nusantara).</p>
+        </header>
         <h2>Apa Tujuan &amp; Hukum Ziarah Kubur dalam Islam?</h2>
         <p>Dalam syariat Islam, hukum ziarah kubur adalah sunnah (dianjurkan) berdasarkan hadits shahih riwayat Imam Muslim (no. 977): <em>&ldquo;Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah kalian ke kubur, karena sesungguhnya ziarah kubur itu dapat melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada kehidupan akhirat.&rdquo;</em> Tujuan utamanya adalah: (1) Mengingat akhirat (tadzkiratul akhirah), (2) Mendoakan ampunan dan rahmat bagi ahli kubur, serta (3) Meneladani perjuangan dakwah dan kesalehan para Waliyullah.</p>
         <h2>Urutan Bacaan Doa Ziarah Kubur Singkat</h2>
@@ -341,8 +352,14 @@ function buildPanduanRootHtml() {
 }
 
 function buildSiteRootHtml(site) {
-  return `<main class="sr-only" style="${SR_ONLY_INLINE_STYLE}">
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <article>
+          <img
+            src="${SITE_ORIGIN}/pwa-512x512.png"
+            alt="Logo Resmi Ziarah Nusantara — Makam ${escapeXml(site.title)} (${escapeXml(site.city)}, ${escapeXml(site.province)})"
+            width="512"
+            height="512"
+          />
           <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori ${escapeXml(site.province)}</a> &rsaquo; ${escapeXml(site.title)}</p>
           <h1>Makam ${escapeXml(site.title)} (${escapeXml(site.name)}) — ${escapeXml(site.city)}, ${escapeXml(site.province)}</h1>
           <p><strong>Kategori:</strong> ${escapeXml(site.category)} ${site.era ? `| <strong>Era:</strong> ${escapeXml(site.era)}` : ''}</p>
@@ -372,7 +389,7 @@ const allEntries = [
     loc: `${SITE_ORIGIN}/situs/${encodeURIComponent(s.slug)}`,
     changefreq: 'weekly',
     priority: '0.8',
-    title: `Makam ${s.title} (${s.city}, ${s.province}) — Rute, Sejarah & Doa Ziarah | Ziarah Nusantara`,
+    title: `Makam ${s.title} (${s.city}, ${s.province}) — Rute,Kisah Karomah & Doa Ziarah | Ziarah Nusantara`,
     description: `${s.description} Lokasi: ${s.address}, ${s.city}, ${s.province}. Lengkap dengan peta rute, riwayat karomah, dan doa tawassul.`,
     path: `/situs/${s.slug}`,
     legacyPath: `/makam/${s.id}`,
@@ -410,9 +427,9 @@ const rssLines = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
   '  <channel>',
-  '    <title>Ziarah Kubur &amp; Makam Wali Nusantara — Ziarah Nusantara</title>',
+  '    <title>Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali</title>',
   `    <link>${SITE_ORIGIN}/</link>`,
-  '    <description>Panduan lengkap doa ziarah kubur (Arab, Latin, Artinya), tahlil, tawassul, serta direktori 96 lokasi makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia.</description>',
+  '    <description>Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil &amp; Tawassul, serta peta rute &amp; kisah karomah 96 makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia.</description>',
   '    <language>id-ID</language>',
   `    <atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml" />`,
   ...allEntries.map(
@@ -448,6 +465,18 @@ function renderCustomHtml(baseHtml, entry) {
       `<link rel="canonical" id="canonical-link" href="${escapeXml(entry.loc)}" />`
     )
     .replace(
+      /<link rel="alternate" hreflang="id-ID" id="hreflang-id" href="[^"]*"\s*\/?>/i,
+      `<link rel="alternate" hreflang="id-ID" id="hreflang-id" href="${escapeXml(entry.loc)}" />`
+    )
+    .replace(
+      /<link rel="alternate" hreflang="id" id="hreflang-id-short" href="[^"]*"\s*\/?>/i,
+      `<link rel="alternate" hreflang="id" id="hreflang-id-short" href="${escapeXml(entry.loc)}" />`
+    )
+    .replace(
+      /<link rel="alternate" hreflang="x-default" id="hreflang-default" href="[^"]*"\s*\/?>/i,
+      `<link rel="alternate" hreflang="x-default" id="hreflang-default" href="${escapeXml(entry.loc)}" />`
+    )
+    .replace(
       /<meta property="og:title" id="og-title" content="[^"]*"\s*\/?>/i,
       `<meta property="og:title" id="og-title" content="${escapeXml(entry.title)}" />`
     )
@@ -458,6 +487,14 @@ function renderCustomHtml(baseHtml, entry) {
     .replace(
       /<meta property="og:url" id="og-url" content="[^"]*"\s*\/?>/i,
       `<meta property="og:url" id="og-url" content="${escapeXml(entry.loc)}" />`
+    )
+    .replace(
+      /<meta name="twitter:title" id="twitter-title" content="[^"]*"\s*\/?>/i,
+      `<meta name="twitter:title" id="twitter-title" content="${escapeXml(entry.title)}" />`
+    )
+    .replace(
+      /<meta name="twitter:description" id="twitter-description" content="[^"]*"\s*\/?>/i,
+      `<meta name="twitter:description" id="twitter-description" content="${escapeXml(entry.description)}" />`
     );
 
   if (entry.bodyHtml) {

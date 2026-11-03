@@ -96,36 +96,36 @@ export default function App() {
 
     const routeSeoMap: Record<string, { title: string; desc: string }> = {
       '/': {
-        title: 'Ziarah Kubur & Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab & 96 Lokasi Makam | Ziarah Nusantara',
-        desc: 'Panduan lengkap pengertian, hukum, tujuan, adab, dan bacaan doa ziarah kubur (Arab, Latin, Artinya), susunan Yasin, Tahlil & Tawassul, serta direktori 96 lokasi makam Walisongo, Ulama & Habaib di 18 provinsi Indonesia.',
+        title: 'Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil & Jejak Batin 96 Makam Wali',
+        desc: 'Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil & Tawassul, serta peta rute & kisah karomah 96 makam Walisongo, Ulama & Habaib di 18 provinsi Indonesia.',
       },
       '/direktori': {
         title: 'Direktori 96 Makam Walisongo, Ulama & Habaib di 18 Provinsi — Ziarah Nusantara',
-        desc: 'Indeks lengkap 96 lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia beserta alamat, koordinat peta rute, sejarah, dan bacaan doa tawassul.',
+        desc: 'Jejak spiritual 96 lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia lengkap dengan alamat, peta rute GPS, kisah karomah, dan bacaan doa tawassul.',
       },
       '/peta': {
         title: 'Peta Rute Ziarah Makam Wali Songo & Ulama Nusantara — Ziarah Nusantara',
         desc: 'Peta interaktif titik lokasi GPS dan navigasi rute perjalanan ziarah ke 96 makam Waliyullah serta ulama besar di seluruh kepulauan Indonesia.',
       },
       '/panduan': {
-        title: 'Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin & Adab Ziarah Wali',
-        desc: 'Urutan bacaan doa ziarah kubur singkat dan lengkap (Arab, Latin, Artinya), salam ahli kubur, Qasidah Salamullah Ya Sadah, Tawassul, Yasin, Tahlil, serta tujuan & hukum ziarah kubur dalam Islam.',
+        title: 'Panduan Ziarah Kubur Lengkap: Urutan Doa (Arab, Latin, Artinya), Tahlil, Yasin & Adab | Ziarah Nusantara',
+        desc: 'Tuntunan lengkap adab & urutan bacaan doa ziarah kubur orang tua dan makam Wali (Arab, Latin, Artinya), Salam Ahli Kubur, Qasidah Salamullah Ya Sadah, Tawassul, Yasin & Tahlil sesuai sunnah Ahlussunnah wal Jamaah.',
       },
       '/rubrik': {
-        title: 'Rubrik Sejarah, Kisah Karomah & Sanad Keilmuan Wali — Ziarah Nusantara',
-        desc: 'Kajian mendalam biografi, sanad keilmuan, sejarah dakwah, dan keteladanan para Waliyullah Nusantara berbasis naskah babad dan jurnal akademik.',
+        title: 'Rubrik Sejarah, Kisah Karomah & Wasiat Batin Para Wali — Ziarah Nusantara',
+        desc: 'Kisah nyata keteladanan, wasiat batin, sanad keilmuan, dan sejarah dakwah para Waliyullah Nusantara berbasis naskah babad dan jurnal akademik.',
       },
       '/doa': {
         title: 'Kumpulan Doa Khusus Ziarah Kubur, Tahlil & Tawassul Lengkap — Ziarah Nusantara',
         desc: 'Bacaan salam ziarah kubur, susunan tawassul khusus para Waliyullah, Surah Yasin, dan tahlil lengkap teks Arab, transliterasi Latin, serta terjemahan Bahasa Indonesia.',
       },
       '/infaq': {
-        title: 'Donasi Digital & Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
-        desc: 'Layanan donasi dan wakaf digital QRIS resmi Ziarah Nusantara untuk mendukung riset literasi sejarah dan pelestarian situs makam Waliyullah.',
+        title: 'Infaq & Amal Jariyah Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
+        desc: 'Layanan infaq dan wakaf literasi digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori 96 makam Waliyullah tetap bebas akses.',
       },
       '/donasi': {
-        title: 'Donasi Digital & Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
-        desc: 'Layanan donasi dan wakaf digital QRIS resmi Ziarah Nusantara untuk mendukung riset literasi sejarah dan pelestarian situs makam Waliyullah.',
+        title: 'Infaq & Amal Jariyah Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
+        desc: 'Layanan infaq dan wakaf literasi digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori 96 makam Waliyullah tetap bebas akses.',
       },
       '/kurasi': {
         title: 'Standar Kurasi & Metodologi Referensi Sejarah — Ziarah Nusantara',
@@ -154,6 +154,15 @@ export default function App() {
 
       const canonicalEl = document.getElementById('canonical-link') as HTMLLinkElement | null;
       if (canonicalEl) canonicalEl.href = canonicalUrl;
+
+      const hreflangIdEl = document.getElementById('hreflang-id') as HTMLLinkElement | null;
+      if (hreflangIdEl) hreflangIdEl.href = canonicalUrl;
+
+      const hreflangIdShortEl = document.getElementById('hreflang-id-short') as HTMLLinkElement | null;
+      if (hreflangIdShortEl) hreflangIdShortEl.href = canonicalUrl;
+
+      const hreflangDefaultEl = document.getElementById('hreflang-default') as HTMLLinkElement | null;
+      if (hreflangDefaultEl) hreflangDefaultEl.href = canonicalUrl;
 
       const ogTitleEl = document.getElementById('og-title') as HTMLMetaElement | null;
       if (ogTitleEl) ogTitleEl.content = activeTitle;
@@ -193,12 +202,14 @@ export default function App() {
               width: 512,
               height: 512,
             },
+            image: { '@id': `${baseOrigin}/#logo` },
           },
           {
             '@type': 'WebSite',
             '@id': `${baseOrigin}/#website`,
             url: `${baseOrigin}/`,
             name: 'Ziarah Nusantara',
+            alternateName: ['Ziarah Kubur Nusantara', 'Direktori Makam Wali Nusantara', 'ziarahnusantara.my.id'],
             description: activeDesc,
             inLanguage: 'id-ID',
             publisher: { '@id': `${baseOrigin}/#organization` },
@@ -211,6 +222,8 @@ export default function App() {
             description: activeDesc,
             inLanguage: 'id-ID',
             isPartOf: { '@id': `${baseOrigin}/#website` },
+            primaryImageOfPage: { '@id': `${baseOrigin}/#logo` },
+            thumbnailUrl: fullImageUrl,
           },
         ];
 
@@ -236,25 +249,34 @@ export default function App() {
           });
         }
 
-        if (cleanPath === '/panduan') {
+        if (cleanPath === '/' || cleanPath === '/panduan') {
           graphNodes.push({
             '@type': 'FAQPage',
             '@id': `${canonicalUrl}#faq`,
+            inLanguage: 'id-ID',
             mainEntity: [
               {
                 '@type': 'Question',
                 name: 'Apa Tujuan & Hukum Ziarah Kubur dalam Islam?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Hukum ziarah kubur dalam Islam adalah sunnah (dianjurkan) berdasarkan hadits riwayat Imam Muslim. Tujuannya adalah mengingatkan diri kepada kematian dan akhirat, mendoakan ampunan bagi ahli kubur, serta meneladani kesalehan dan perjuangan dakwah para Waliyullah.',
+                  text: 'Hukum ziarah kubur dalam Islam adalah sunnah (dianjurkan) berdasarkan hadits riwayat Imam Muslim. Tujuannya adalah melembutkan hati yang penat, mengingatkan diri kepada kematian dan akhirat, mendoakan ampunan bagi orang tua serta ahli kubur, dan meneladani perjuangan dakwah para Waliyullah.',
                 },
               },
               {
                 '@type': 'Question',
-                name: 'Bagaimana Urutan Bacaan Doa Ziarah Kubur Singkat?',
+                name: 'Bagaimana Urutan Bacaan Doa Ziarah Kubur Singkat dan Lengkap?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Urutan bacaan doa ziarah kubur singkat: (1) Berwudhu dan meluruskan niat, (2) Mengucapkan salam ahli kubur (Assalamu alaikum ahlad-diyaar...), (3) Membaca Istighfar 3x, (4) Membaca Al-Fatihah & Tawassul, (5) Membaca Surah Yasin, Al-Ikhlas 3x, Al-Falaq, An-Nas, dan Ayat Kursi, (6) Dzikir Tahlil (Laa ilaaha illallaah), dan (7) Membaca doa khusus ahli kubur.',
+                  text: 'Urutan bacaan doa ziarah kubur: (1) Berwudhu dan meluruskan niat, (2) Mengucapkan salam ahli kubur (Assalamu alaikum ahlad-diyaar minal mu-miniina wal muslimiin...), (3) Membaca Istighfar 3x, (4) Membaca Al-Fatihah & Tawassul, (5) Membaca Surah Yasin, Al-Ikhlas 3x, Al-Falaq, An-Nas, dan Ayat Kursi, (6) Dzikir Tahlil (Laa ilaaha illallaah), dan (7) Membaca doa khusus ahli kubur.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Dimana Saja Lokasi 96 Makam Wali Songo dan Ulama di Ziarah Nusantara?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Ziarah Nusantara mendokumentasikan 96 lokasi makam keramat di 18 provinsi Indonesia, meliputi 9 makam Wali Songo di Jawa Timur, Jawa Tengah, dan Jawa Barat, serta 87 makam Ulama Nusantara, Habaib, Sultan, dan Auliya dari Aceh, Sumatera, Banten, DKI Jakarta, Kalimantan, Sulawesi, Bali, NTB, hingga Maluku Utara lengkap dengan koordinat GPS.',
                 },
               },
             ],

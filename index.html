@@ -1,16 +1,38 @@
 <!doctype html>
-<html lang="id">
+<html lang="id" xml:lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta http-equiv="content-language" content="id-ID" />
+    <meta name="language" content="Indonesian" />
+    <meta name="geo.region" content="ID" />
+    <meta name="geo.placename" content="Indonesia" />
 
-    <!-- Critical Zero-FOUC Guard: Instantly hides .sr-only SEO skeleton before external CSS loads -->
+    <!-- Critical Zero-FOUC & Full-Dimension Prerender Shell Guard -->
     <style id="critical-fouc-guard">
       html, body {
         background-color: #FAF8F5;
         color: #1C1917;
         margin: 0;
         padding: 0;
+      }
+      @keyframes znSeoReveal {
+        to { opacity: 1; }
+      }
+      .zn-prerender-shell {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: -1;
+        opacity: 0;
+        animation: znSeoReveal 0.15s ease 0.45s forwards;
       }
       .sr-only {
         position: absolute !important;
@@ -31,20 +53,18 @@
     <meta name="publisher" content="Tim Kurator Arsip Ziarah Nusantara" />
     <meta name="creator" content="Tim Kurator Arsip Ziarah Nusantara" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Ziarah Nusantara" />
 
-    <!-- Google Search Favicon & Multi-Size Brand Profile Icons -->
+    <!-- Clean Canonical Google-Favicon & Brand Profile Icons -->
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="any" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" sizes="48x48 96x96 144x144 192x192 512x512" />
-    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml" />
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png" />
-    <link rel="shortcut icon" href="/favicon-48x48.png" type="image/png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
     <!-- Agentic Browsing & LLM Discovery Links -->
@@ -53,19 +73,24 @@
     <link rel="ard" type="application/json" href="https://ziarahnusantara.my.id/.well-known/ard.json" />
     <link rel="ai-catalog" type="application/json" href="https://ziarahnusantara.my.id/.well-known/ai-catalog.json" />
 
-    <title>Ziarah Kubur &amp; Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab &amp; 96 Lokasi Makam | Ziarah Nusantara</title>
-    <meta name="description" content="Panduan lengkap pengertian, hukum, tujuan, adab, dan bacaan doa ziarah kubur (Arab, Latin, Artinya), susunan Yasin, Tahlil &amp; Tawassul, serta direktori 96 lokasi makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia." />
-    <meta name="keywords" content="ziarah, ziarah kubur, doa ziarah kubur, tata cara ziarah kubur, hukum ziarah kubur, Ziarah Nusantara, makam Wali Songo, direktori makam ulama Nusantara, peta ziarah wali, tahlil, tawassul" />
+    <!-- Canonical & Indonesian Hreflang Signals -->
+    <title>Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali</title>
+    <meta name="description" content="Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil &amp; Tawassul, serta peta rute &amp; kisah karomah 96 makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia." />
+    <meta name="keywords" content="ziarah, ziarah kubur, doa ziarah kubur, tata cara ziarah kubur, adab ziarah kubur, hukum ziarah kubur, Ziarah Nusantara, makam Wali Songo, direktori makam ulama Nusantara, peta ziarah wali, tahlil, tawassul" />
     <link rel="canonical" id="canonical-link" href="https://ziarahnusantara.my.id/" />
+    <link rel="alternate" hreflang="id-ID" id="hreflang-id" href="https://ziarahnusantara.my.id/" />
+    <link rel="alternate" hreflang="id" id="hreflang-id-short" href="https://ziarahnusantara.my.id/" />
+    <link rel="alternate" hreflang="x-default" id="hreflang-default" href="https://ziarahnusantara.my.id/" />
 
-    <!-- OpenGraph / Social & Google Discover -->
-    <meta property="og:title" id="og-title" content="Ziarah Kubur &amp; Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab &amp; 96 Lokasi Makam | Ziarah Nusantara" />
-    <meta property="og:description" id="og-description" content="Panduan lengkap pengertian, hukum, tujuan, adab, dan bacaan doa ziarah kubur (Arab, Latin, Artinya), susunan Yasin, Tahlil &amp; Tawassul, serta direktori 96 lokasi makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia." />
+    <!-- OpenGraph / Social & Google Search Brand Image -->
+    <meta property="og:title" id="og-title" content="Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali" />
+    <meta property="og:description" id="og-description" content="Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil &amp; Tawassul, serta peta rute &amp; kisah karomah 96 makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia." />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Ziarah Nusantara" />
     <meta property="og:locale" content="id_ID" />
     <meta property="og:url" id="og-url" content="https://ziarahnusantara.my.id/" />
     <meta property="og:image" id="og-image" content="https://ziarahnusantara.my.id/pwa-512x512.png" />
+    <meta property="og:image:secure_url" content="https://ziarahnusantara.my.id/pwa-512x512.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="512" />
     <meta property="og:image:height" content="512" />
@@ -73,11 +98,11 @@
 
     <!-- Twitter / X Cards -->
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" id="twitter-title" content="Ziarah Kubur &amp; Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab &amp; 96 Lokasi Makam | Ziarah Nusantara" />
-    <meta name="twitter:description" id="twitter-description" content="Panduan lengkap pengertian, hukum, tujuan, adab, dan bacaan doa ziarah kubur (Arab, Latin, Artinya), susunan Yasin, Tahlil &amp; Tawassul, serta direktori 96 lokasi makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia." />
+    <meta name="twitter:title" id="twitter-title" content="Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali" />
+    <meta name="twitter:description" id="twitter-description" content="Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil &amp; Tawassul, serta peta rute &amp; kisah karomah 96 makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia." />
     <meta name="twitter:image" id="twitter-image" content="https://ziarahnusantara.my.id/pwa-512x512.png" />
 
-    <!-- Schema.org Structured Data (@graph: Organization, WebSite, WebApplication, ItemList) -->
+    <!-- Schema.org Structured Data (@graph: Organization, WebSite, WebPage, FAQPage, BreadcrumbList, ItemList) -->
     <script type="application/ld+json" id="schema-jsonld">
       {
         "@context": "https://schema.org",
@@ -88,15 +113,15 @@
             "name": "Ziarah Nusantara",
             "legalName": "Tim Kurator Arsip Ziarah Nusantara",
             "alternateName": [
-              "Tim Kurator Arsip Ziarah Nusantara",
+              "Ziarah Nusantara",
               "ziarahnusantara.my.id",
-              "ziarah nusantara.my.id",
-              "Arsip & Direktori Makam Wali Nusantara"
+              "Tim Kurator Arsip Ziarah Nusantara",
+              "Direktori & Panduan Ziarah Makam Wali Nusantara"
             ],
             "url": "https://ziarahnusantara.my.id/",
-            "description": "Tim Kurator Arsip Ziarah Nusantara adalah pengelola resmi platform Ziarah Nusantara (ziarahnusantara.my.id), pusat direktori digital, pemetaan geospasial, literasi sejarah akademik, dan panduan adab ziarah makam para Waliyullah serta Ulama di seluruh kepulauan Nusantara.",
+            "description": "Ziarah Nusantara adalah pusat panduan doa ziarah kubur (Arab, Latin, Artinya), susunan Yasin, Tahlil & Tawassul, serta direktori geospasial dan kisah keteladanan 96 makam Walisongo, Ulama Nusantara, dan Habaib di 18 provinsi Indonesia.",
             "foundingLocation": {
-              "@type": "Place",
+              "@type": "Country",
               "name": "Indonesia"
             },
             "logo": {
@@ -118,33 +143,74 @@
             "url": "https://ziarahnusantara.my.id/",
             "name": "Ziarah Nusantara",
             "alternateName": [
-              "Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara",
-              "ziarahnusantara.my.id",
-              "ziarah nusantara.my.id",
-              "Direktori Makam Waliyullah & Ulama Nusantara"
+              "Ziarah Nusantara — Panduan Ziarah Kubur & Direktori 96 Makam Wali",
+              "ziarahnusantara.my.id"
             ],
-            "description": "Situs resmi Ziarah Nusantara (ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Menyajikan direktori makam Wali Songo, ulama Nusantara, kesultanan Islam, peta rute ziarah interaktif, bacaan tahlil & tawassul, serta rubrik sejarah Islam Nusantara berbasis referensi jurnal dan naskah babad.",
+            "description": "Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil & Tawassul, serta peta rute & kisah karomah 96 makam Walisongo, Ulama & Habaib di 18 provinsi Indonesia.",
             "inLanguage": "id-ID",
             "publisher": {
               "@id": "https://ziarahnusantara.my.id/#organization"
             }
           },
           {
-            "@type": "WebApplication",
-            "@id": "https://ziarahnusantara.my.id/#webapp",
-            "name": "Ziarah Nusantara",
+            "@type": "WebPage",
+            "@id": "https://ziarahnusantara.my.id/#webpage",
             "url": "https://ziarahnusantara.my.id/",
-            "applicationCategory": "ReferenceApplication",
-            "operatingSystem": "All",
+            "name": "Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil & Jejak Batin 96 Makam Wali",
+            "description": "Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil & Tawassul, serta peta rute & kisah karomah 96 makam Walisongo, Ulama & Habaib di 18 provinsi Indonesia.",
             "inLanguage": "id-ID",
-            "image": "https://ziarahnusantara.my.id/pwa-512x512.png",
-            "author": {
+            "isPartOf": {
+              "@id": "https://ziarahnusantara.my.id/#website"
+            },
+            "about": {
               "@id": "https://ziarahnusantara.my.id/#organization"
             },
-            "publisher": {
-              "@id": "https://ziarahnusantara.my.id/#organization"
-            },
-            "description": "Platform direktori makam Waliyullah, peta navigasi ziarah, adab & bacaan doa tahlil/tawassul, serta literasi sejarah Islam Nusantara yang dikelola oleh Tim Kurator Arsip Ziarah Nusantara."
+            "primaryImageOfPage": {
+              "@id": "https://ziarahnusantara.my.id/#logo"
+            }
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "https://ziarahnusantara.my.id/#breadcrumb",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Ziarah Nusantara",
+                "item": "https://ziarahnusantara.my.id/"
+              }
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://ziarahnusantara.my.id/#faq",
+            "inLanguage": "id-ID",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Apa Tujuan dan Hukum Ziarah Kubur dalam Islam?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Dalam syariat Islam, hukum ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW dalam HR. Muslim: 'Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada akhirat.' Tujuannya adalah mengingat kematian dan akhirat, mendoakan ampunan bagi ahli kubur, serta meneladani akhlak dan perjuangan dakwah para Waliyullah."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Bagaimana Urutan Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, dan Artinya)?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Urutan doa ziarah kubur sesuai tuntunan ulama Ahlussunnah wal Jamaah meliputi: (1) Berwudhu dan meluruskan niat ziarah karena Allah SWT, (2) Mengucapkan salam ahli kubur (Assalamu'alaikum ahlad-diyaari minal mu'miniina wal muslimiin...), (3) Membaca Istighfar 3x dan Tawassul Al-Fatihah kepada Rasulullah SAW, para Waliyullah, dan ahli kubur, (4) Membaca Surah Yasin, Al-Ikhlas 3x, Al-Falaq, An-Nas, dan Ayat Kursi, (5) Membaca dzikir Tahlil (Laa ilaaha illallaah) dan shalawat, serta (6) Menutup dengan Doa Arwah (Allahummaghfir lahum warhamhum wa 'aafihim wa'fu 'anhum)."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Di Mana Saja Lokasi 96 Makam Wali Songo, Ulama, dan Habaib di Ziarah Nusantara?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Ziarah Nusantara mendokumentasikan 96 lokasi makam Waliyullah di 18 provinsi Indonesia lengkap dengan titik koordinat GPS, jadwal haul, kisah karomah, dan sanad keilmuan—mulai dari 9 makam Wali Songo di Jawa Timur, Jawa Tengah, dan Jawa Barat (Sunan Gresik, Sunan Ampel, Sunan Bonang, Sunan Drajat, Sunan Giri, Sunan Kalijaga, Sunan Kudus, Sunan Muria, Sunan Gunung Jati) hingga makam ulama besar dan habaib di Aceh, Sumatera, Banten, DKI Jakarta, Yogyakarta, Kalimantan, Sulawesi, Bali, NTB, dan Maluku Utara."
+                }
+              }
+            ]
           },
           {
             "@type": "ItemList",
@@ -154,43 +220,43 @@
               {
                 "@type": "SiteNavigationElement",
                 "position": 1,
-                "name": "Arsip & Direktori Makam Waliyullah Nusantara",
-                "description": "Katalog ensiklopedis makam Wali Songo, Ulama Nusantara, dan Tokoh Kerajaan Islam dari Aceh hingga Maluku beserta koordinat dan rujukan jurnal ilmiah.",
+                "name": "Direktori 96 Makam Walisongo, Ulama & Habaib di 18 Provinsi",
+                "description": "Katalog ensiklopedis makam Wali Songo, Ulama Nusantara, dan Habaib beserta filter suasana hati, kisah karomah, dan koordinat rute.",
                 "url": "https://ziarahnusantara.my.id/direktori"
               },
               {
                 "@type": "SiteNavigationElement",
                 "position": 2,
+                "name": "Panduan Doa Ziarah Kubur Lengkap (Arab, Latin & Artinya)",
+                "description": "Urutan bacaan salam ziarah kubur, Qasidah Salamullah Ya Sadah, Tawassul, Surah Yasin, Tahlil, dan adab ziarah.",
+                "url": "https://ziarahnusantara.my.id/panduan"
+              },
+              {
+                "@type": "SiteNavigationElement",
+                "position": 3,
                 "name": "Peta Rute Geospasial Ziarah Nusantara",
                 "description": "Peta interaktif lokasi makam Waliyullah dan navigasi rute peziarah di seluruh Indonesia.",
                 "url": "https://ziarahnusantara.my.id/peta"
               },
               {
                 "@type": "SiteNavigationElement",
-                "position": 3,
-                "name": "Panduan Adab & Tata Cara Ziarah Kubur",
-                "description": "Tuntunan adab ziarah sesuai sunnah dan tradisi ulama Ahlussunnah wal Jamaah.",
-                "url": "https://ziarahnusantara.my.id/panduan"
+                "position": 4,
+                "name": "Kumpulan Doa Khusus, Tahlil & Tawassul",
+                "description": "Bacaan salam ziarah, rangkaian tawassul khusus tiap wali, dan tahlil lengkap.",
+                "url": "https://ziarahnusantara.my.id/doa"
               },
               {
                 "@type": "SiteNavigationElement",
-                "position": 4,
+                "position": 5,
                 "name": "Rubrik Kisah, Karomah & Naskah Sejarah",
                 "description": "Artikel mendalam mengenai biografi, sanad keilmuan, dan jejak dakwah para Waliyullah Nusantara.",
                 "url": "https://ziarahnusantara.my.id/rubrik"
               },
               {
                 "@type": "SiteNavigationElement",
-                "position": 5,
-                "name": "Kumpulan Doa Khusus, Tahlil & Tawassul",
-                "description": "Bacaan salam ziarah, rangkaian tawassul, tahlil lengkap teks Arab, transliterasi Latin, dan terjemahan bahasa Indonesia.",
-                "url": "https://ziarahnusantara.my.id/doa"
-              },
-              {
-                "@type": "SiteNavigationElement",
                 "position": 6,
-                "name": "Donasi Digital & Pelestarian Arsip Ziarah Nusantara",
-                "description": "Layanan donasi dan wakaf digital QRIS resmi Ziarah Nusantara untuk digitalisasi arsip sejarah dan pemeliharaan situs makam.",
+                "name": "Infaq Digital & Munajat Doa Peziarah",
+                "description": "Layanan infaq amal jariyah QRIS resmi dan ruang titip doa bersama peziarah untuk penjagaan arsip digital Auliya Nusantara.",
                 "url": "https://ziarahnusantara.my.id/infaq"
               }
             ]
@@ -225,28 +291,42 @@
   <body class="font-sans antialiased text-stone-900 bg-[#FAF8F5] selection:bg-stone-300 selection:text-stone-950">
     <div id="root">
       <!--SEO_ROOT_START-->
-      <main
-        class="sr-only"
-        style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0"
-      >
-        <h1>Ziarah Kubur &amp; Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab &amp; 96 Lokasi Makam</h1>
-        <p>
-          <strong>Ziarah Nusantara (ziarahnusantara.my.id)</strong> menyajikan panduan lengkap pengertian, hukum, tujuan, adab, dan urutan bacaan doa ziarah kubur (Arab, Latin, Artinya), susunan Yasin, Tahlil &amp; Tawassul, serta direktori 96 lokasi makam Walisongo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia.
-        </p>
-        <h2>Apa Tujuan &amp; Hukum Ziarah Kubur dalam Islam?</h2>
-        <p>
-          Dalam syariat Islam, hukum ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW: &ldquo;Dahulu aku melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu mengingatkan kalian kepada akhirat.&rdquo; (HR. Muslim).
-        </p>
-        <h2>Fitur &amp; Direktori Utama Ziarah Nusantara</h2>
-        <ul>
-          <li><a href="https://ziarahnusantara.my.id/panduan">Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin &amp; Adab Ziarah Wali</a></li>
-          <li><a href="https://ziarahnusantara.my.id/direktori">Direktori 96 Makam Walisongo, Ulama &amp; Habaib di 18 Provinsi</a></li>
-          <li><a href="https://ziarahnusantara.my.id/peta">Peta Rute Geospasial Ziarah Nusantara</a></li>
-          <li><a href="https://ziarahnusantara.my.id/doa">Kumpulan Doa Khusus, Tahlil &amp; Tawassul</a></li>
-          <li><a href="https://ziarahnusantara.my.id/rubrik">Rubrik Kisah, Karomah &amp; Referensi Sejarah</a></li>
-          <li><a href="https://ziarahnusantara.my.id/kurasi">Standar Kurasi &amp; Referensi Ilmiah</a></li>
-          <li><a href="https://ziarahnusantara.my.id/infaq">Donasi Digital QRIS Ziarah Nusantara</a></li>
-        </ul>
+      <main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
+        <header>
+          <img
+            src="https://ziarahnusantara.my.id/pwa-512x512.png"
+            alt="Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil &amp; Direktori 96 Makam Wali"
+            width="512"
+            height="512"
+          />
+          <h1>Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali</h1>
+          <p>
+            <strong>Hati sedang rindu keteduhan atau hendak berziarah?</strong> <strong>Ziarah Nusantara (ziarahnusantara.my.id)</strong> menghadirkan panduan lengkap pengertian, hukum, tujuan, adab, dan urutan bacaan doa ziarah kubur (teks Arab, Latin, dan artinya), susunan Surah Yasin, Tahlil &amp; Tawassul, serta direktori 96 lokasi makam Walisongo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia.
+          </p>
+        </header>
+        <section>
+          <h2>Apa Tujuan &amp; Hukum Ziarah Kubur dalam Islam?</h2>
+          <p>
+            Secara bahasa, <strong>ziarah</strong> berarti berkunjung. Dalam syariat Islam, hukum ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW dalam Hadits Riwayat Muslim: &ldquo;Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada kehidupan akhirat.&rdquo;
+          </p>
+          <h2>Urutan Bacaan Doa Ziarah Kubur Singkat &amp; Lengkap</h2>
+          <ol>
+            <li><strong>Berwudhu &amp; Meluruskan Niat:</strong> Memasuki area makam dengan adab yang santun dan berniat ziarah semata-mata karena Allah SWT.</li>
+            <li><strong>Mengucapkan Salam Ahli Kubur:</strong> <em>Assalaamu&apos;alaikum ahlad-diyaari minal mu&apos;miniina wal muslimiin, wa innaa insyaa Allaahu bikum laahiquun, nas&apos;alullaaha lanaa wa lakumul &apos;aafiyah.</em></li>
+            <li><strong>Membaca Istighfar &amp; Tawassul Al-Fatihah:</strong> Mengirimkan hadiah bacaan Surah Al-Fatihah kepada Rasulullah SAW, para sahabat, Waliyullah, ulama, orang tua, dan seluruh ahli kubur kaum muslimin.</li>
+            <li><strong>Membaca Surah Yasin, Tahlil &amp; Doa Arwah:</strong> Membaca Surah Yasin, Al-Ikhlas (3x), Al-Falaq, An-Nas, Ayat Kursi, dzikir <em>Laa ilaaha illallaah</em>, dan Doa Arwah.</li>
+          </ol>
+          <h2>Layanan &amp; Direktori Utama Ziarah Nusantara</h2>
+          <ul>
+            <li><a href="https://ziarahnusantara.my.id/direktori">Direktori 96 Makam Walisongo, Ulama &amp; Habaib di 18 Provinsi Indonesia</a></li>
+            <li><a href="https://ziarahnusantara.my.id/panduan">Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin &amp; Adab Ziarah Wali</a></li>
+            <li><a href="https://ziarahnusantara.my.id/peta">Peta Rute Geospasial Ziarah Nusantara</a></li>
+            <li><a href="https://ziarahnusantara.my.id/doa">Kumpulan Doa Khusus, Tahlil &amp; Tawassul</a></li>
+            <li><a href="https://ziarahnusantara.my.id/rubrik">Rubrik Kisah, Karomah &amp; Referensi Sejarah</a></li>
+            <li><a href="https://ziarahnusantara.my.id/kurasi">Standar Kurasi &amp; Referensi Ilmiah</a></li>
+            <li><a href="https://ziarahnusantara.my.id/infaq">Infaq Digital QRIS &amp; Munajat Doa Peziarah</a></li>
+          </ul>
+        </section>
       </main>
       <!--SEO_ROOT_END-->
     </div>
