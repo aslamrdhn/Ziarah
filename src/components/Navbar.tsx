@@ -180,25 +180,26 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
     }
   };
 
-  // Desktop navigation items
+  // Unified navigation items across Desktop, Mobile Web & Installed PWA
   const desktopNavItems = [
     { id: '/', label: 'Eksplor Direktori', shortLabel: 'Eksplor', icon: Compass },
-    { id: '/peta', label: 'Peta Rute', shortLabel: 'Peta', icon: MapIcon },
-    { id: '/panduan', label: 'Panduan Doa', shortLabel: 'Panduan', icon: BookOpen },
-    { id: '/rubrik', label: 'Rubrik Sejarah', shortLabel: 'Rubrik', icon: ScrollText },
-    { id: '/doa', label: 'Doa Khusus', shortLabel: 'Doa', icon: Bookmark },
+    { id: '/peta', label: 'Peta Rute', shortLabel: 'Peta Rute', icon: MapIcon },
+    { id: '/panduan', label: 'Panduan Doa', shortLabel: 'Panduan Doa', icon: BookOpen },
+    { id: '/rubrik', label: 'Rubrik Sejarah', shortLabel: 'Rubrik Sejarah', icon: ScrollText },
+    { id: '/doa', label: 'Doa Khusus', shortLabel: 'Doa Khusus', icon: Bookmark },
+    { id: '/donasi', label: 'Donasi Arsip', shortLabel: 'Donasi', icon: HeartHandshake },
   ];
 
   const isNavActive = (id: string) => {
     if (id === '/') return currentPath === '/' || currentPath === '/direktori';
     if (id === '/peta') return currentPath === '/peta' || currentPath.startsWith('/makam') || currentPath.startsWith('/situs');
-    if (id === '/infaq') return currentPath === '/infaq' || currentPath === '/donasi';
+    if (id === '/infaq' || id === '/donasi') return currentPath === '/infaq' || currentPath === '/donasi';
     return currentPath === id;
   };
 
   return (
     <>
-      {/* Top Navbar: Clean 3-Zone Editorial Contract (Zero Clutter) */}
+      {/* Top Navbar: Clean 3-Zone Single-Row Editorial Contract (Zero Clutter) */}
       <nav
         aria-label="Navigasi Utama"
         className="w-full h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6 px-4 sm:px-6 lg:px-8"
@@ -217,15 +218,15 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
               {APP_BRAND.name}
             </span>
             {APP_BRAND.tagline && (
-              <span className="hidden xl:block text-[10px] font-medium tracking-wider uppercase text-stone-500 leading-tight truncate mt-0.5">
+              <span className="hidden xl:block text-[10px] font-medium tracking-wider uppercase text-stone-600 leading-tight truncate mt-0.5">
                 {APP_BRAND.tagline}
               </span>
             )}
           </div>
         </Link>
 
-        {/* Zone 2: Clean Editorial Text Navigation Links (Desktop & Tablet) */}
-        <div className="hidden md:flex items-center justify-center gap-4 lg:gap-6 text-xs lg:text-sm font-medium tracking-tight text-stone-500">
+        {/* Zone 2: Clean Editorial Text Navigation Links (Desktop & Tablet — div:nth-of-type(1)) */}
+        <div className="hidden md:flex items-center justify-center gap-3.5 lg:gap-5 text-xs lg:text-sm font-medium tracking-tight text-stone-600">
           {desktopNavItems.map((item) => {
             const active = isNavActive(item.id);
             return (
@@ -233,21 +234,21 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                 key={item.id}
                 to={item.id}
                 aria-current={active ? 'page' : undefined}
-                className={`relative py-1 whitespace-nowrap shrink-0 transition-colors duration-150 ${
-                  active ? 'text-stone-900 font-semibold' : 'text-stone-500 hover:text-stone-900'
+                className={`relative py-1.5 whitespace-nowrap shrink-0 transition-colors duration-150 ${
+                  active ? 'text-stone-900 font-semibold' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 <span className="lg:hidden">{item.shortLabel}</span>
                 <span className="hidden lg:inline">{item.label}</span>
                 {active && (
-                  <span className="absolute left-0 right-0 -bottom-0.5 h-0.5 bg-emerald-700 rounded-full" />
+                  <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-emerald-700 rounded-full" />
                 )}
               </Link>
             );
           })}
         </div>
 
-        {/* Zone 3: Single Desktop CTA + Secondary Menu Icon (Consolidates Donasi, PWA Install, Rubrik, Account) */}
+        {/* Zone 3: CTA + Secondary Menu Icon */}
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
@@ -266,7 +267,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
               aria-expanded={dropdownOpen}
               aria-haspopup="menu"
               aria-label={user ? `Menu Akun ${user.displayName || ''}` : 'Menu Sekunder, Donasi & Pengaturan'}
-              className={`p-2 rounded-full transition-all flex items-center border cursor-pointer ${
+              className={`min-w-[38px] min-h-[38px] p-2 rounded-full transition-all flex items-center justify-center border cursor-pointer ${
                 user
                   ? 'text-emerald-900 bg-white border-emerald-300 shadow-xs'
                   : 'text-stone-700 bg-white border-stone-200/80 hover:text-stone-900 hover:border-stone-300 shadow-2xs'
@@ -298,7 +299,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                   {user && (
                     <div className="px-3 py-2.5 mb-1 bg-stone-50 rounded-xl border border-stone-200/70">
                       <p className="text-xs font-semibold text-stone-900 truncate">{user.displayName}</p>
-                      <p className="text-[11px] text-stone-500 truncate">{user.email}</p>
+                      <p className="text-[11px] text-stone-600 truncate">{user.email}</p>
                     </div>
                   )}
 
@@ -309,7 +310,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                       onClick={() => setDropdownOpen(false)}
                       className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900 rounded-xl flex items-center transition-colors"
                     >
-                      <ScrollText className="w-4 h-4 mr-2.5 text-stone-500" aria-hidden="true" />
+                      <ScrollText className="w-4 h-4 mr-2.5 text-stone-600" aria-hidden="true" />
                       <span>Rubrik &amp; Manuskrip Sejarah</span>
                     </Link>
 
@@ -319,7 +320,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                       onClick={() => setDropdownOpen(false)}
                       className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900 rounded-xl flex items-center transition-colors"
                     >
-                      <Bookmark className="w-4 h-4 mr-2.5 text-stone-500" aria-hidden="true" />
+                      <Bookmark className="w-4 h-4 mr-2.5 text-stone-600" aria-hidden="true" />
                       <span>Kumpulan Doa Khusus</span>
                     </Link>
 
@@ -339,7 +340,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                       onClick={() => setDropdownOpen(false)}
                       className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900 rounded-xl flex items-center transition-colors"
                     >
-                      <ShieldCheck className="w-4 h-4 mr-2.5 text-stone-500" aria-hidden="true" />
+                      <ShieldCheck className="w-4 h-4 mr-2.5 text-stone-600" aria-hidden="true" />
                       <span>Standar Kurasi &amp; Referensi</span>
                     </Link>
 
@@ -420,9 +421,9 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                           window.open(window.location.href, '_blank');
                           setDropdownOpen(false);
                         }}
-                        className="w-full text-left px-3 py-1.5 text-xs text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-xl flex items-center transition-colors cursor-pointer"
+                        className="w-full text-left px-3 py-1.5 text-xs text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl flex items-center transition-colors cursor-pointer"
                       >
-                        <ExternalLink className="w-3.5 h-3.5 mr-2.5 text-stone-400" aria-hidden="true" />
+                        <ExternalLink className="w-3.5 h-3.5 mr-2.5 text-stone-500" aria-hidden="true" />
                         <span>Buka di Tab Baru</span>
                       </button>
                     )}
@@ -434,21 +435,21 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
         </div>
       </nav>
 
-      {/* Rule 4: Floating Pill Dock for Mobile (Max 4 Menus: Eksplor, Peta, Panduan Doa, Kontribusi) */}
+      {/* Unified Floating Pill Dock for Mobile (nav:nth-of-type(1) > div:nth-of-type(1)) */}
       {typeof document !== 'undefined' &&
         createPortal(
           <nav
             aria-label="Navigasi Utama Mobile"
-            className="fixed bottom-5 inset-x-0 mx-auto w-fit z-[2500] md:hidden px-3 pointer-events-none"
+            className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] inset-x-0 mx-auto w-fit max-w-[calc(100vw-1rem)] z-[2500] md:hidden px-2 pointer-events-none"
           >
-            <div className="flex items-center gap-1 px-2 py-1.5 rounded-full backdrop-blur-xl bg-white/85 shadow-lg border border-stone-200/60 pointer-events-auto">
+            <div className="flex items-center gap-1 px-2 py-1.5 rounded-full backdrop-blur-xl bg-white/95 shadow-lg border border-stone-200/80 pointer-events-auto overflow-x-auto no-scrollbar max-w-full">
               <Link
                 to="/"
                 aria-current={isNavActive('/') ? 'page' : undefined}
-                className={`px-3.5 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap ${
+                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
                   isNavActive('/')
                     ? 'bg-stone-900 text-white shadow-xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    : 'text-stone-700 hover:text-stone-900'
                 }`}
               >
                 <Compass className="w-3.5 h-3.5" aria-hidden="true" />
@@ -458,10 +459,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
               <Link
                 to="/peta"
                 aria-current={isNavActive('/peta') ? 'page' : undefined}
-                className={`px-3.5 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap ${
+                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
                   isNavActive('/peta')
                     ? 'bg-stone-900 text-white shadow-xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    : 'text-stone-700 hover:text-stone-900'
                 }`}
               >
                 <MapIcon className="w-3.5 h-3.5" aria-hidden="true" />
@@ -471,20 +472,59 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
               <Link
                 to="/panduan"
                 aria-current={isNavActive('/panduan') ? 'page' : undefined}
-                className={`px-3.5 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap ${
+                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
                   isNavActive('/panduan')
                     ? 'bg-stone-900 text-white shadow-xs'
-                    : 'text-stone-600 hover:text-stone-900'
+                    : 'text-stone-700 hover:text-stone-900'
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Panduan Doa</span>
+                <span>Panduan</span>
+              </Link>
+
+              <Link
+                to="/rubrik"
+                aria-current={isNavActive('/rubrik') ? 'page' : undefined}
+                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+                  isNavActive('/rubrik')
+                    ? 'bg-stone-900 text-white shadow-xs'
+                    : 'text-stone-700 hover:text-stone-900'
+                }`}
+              >
+                <ScrollText className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Rubrik</span>
+              </Link>
+
+              <Link
+                to="/doa"
+                aria-current={isNavActive('/doa') ? 'page' : undefined}
+                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+                  isNavActive('/doa')
+                    ? 'bg-stone-900 text-white shadow-xs'
+                    : 'text-stone-700 hover:text-stone-900'
+                }`}
+              >
+                <Bookmark className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Doa</span>
+              </Link>
+
+              <Link
+                to="/donasi"
+                aria-current={isNavActive('/donasi') ? 'page' : undefined}
+                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+                  isNavActive('/donasi')
+                    ? 'bg-stone-900 text-white shadow-xs'
+                    : 'text-stone-700 hover:text-stone-900'
+                }`}
+              >
+                <HeartHandshake className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+                <span>Donasi</span>
               </Link>
 
               <button
                 type="button"
                 onClick={onOpenKontribusi}
-                className="px-3.5 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 text-stone-600 hover:text-stone-900 transition-all cursor-pointer whitespace-nowrap"
+                className="px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 text-stone-700 hover:text-stone-900 transition-all cursor-pointer whitespace-nowrap shrink-0"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
                 <span>Kontribusi</span>

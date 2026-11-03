@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 
 const SITE_ORIGIN = 'https://ziarahnusantara.my.id';
 const cwd = process.cwd();
@@ -380,6 +381,22 @@ if (fs.existsSync(baseIndexHtmlPath)) {
       const legacyDir = path.join(rootDist, entry.legacyPath.replace(/^\/+/, ''));
       fs.mkdirSync(legacyDir, { recursive: true });
       fs.writeFileSync(path.join(legacyDir, 'index.html'), routeHtml, 'utf8');
+    }
+  }
+
+  // Sync the updated dist/index.html MD5 revision hash inside dist/sw.js so Workbox precache stays 100% valid
+  const swPath = path.join(rootDist, 'sw.js');
+  if (fs.existsSync(swPath)) {
+    const updatedIndexHtml = fs.readFileSync(baseIndexHtmlPath);
+    const newRevision = crypto.createHash('md5').update(updatedIndexHtml).digest('hex');
+    const swContent = fs.readFileSync(swPath, 'utf8');
+    const updatedSw = swContent.replace(
+      /(\{url:"index\.html",revision:")([a-f0-9]+)("\})/i,
+      `$1${newRevision}$3`
+    );
+    if (updatedSw !== swContent) {
+      fs.writeFileSync(swPath, updatedSw, 'utf8');
+      console.log('[postbuild] Synced dist/sw.js precache revision for index.html:', newRevision);
     }
   }
 }

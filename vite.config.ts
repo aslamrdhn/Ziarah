@@ -29,9 +29,6 @@ export default defineConfig({
             if (id.includes('leaflet') || id.includes('react-leaflet')) {
               return 'vendor-leaflet';
             }
-            if (id.includes('motion') || id.includes('framer-motion')) {
-              return 'vendor-motion';
-            }
             if (id.includes('lucide-react')) {
               return 'vendor-icons';
             }
@@ -61,9 +58,6 @@ export default defineConfig({
         'apple-touch-icon.png',
         'icon.svg',
         'robots.txt',
-        'sitemap.xml',
-        'sitemap.txt',
-        'rss.xml',
         'llms.txt',
         'llms-full.txt',
         'ai-catalog.json',
@@ -75,8 +69,9 @@ export default defineConfig({
         description:
           'Situs resmi Ziarah Nusantara (ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Direktori & peta interaktif makam Waliyullah Nusantara.',
         theme_color: '#0D3B32',
-        background_color: '#F9F8F4',
+        background_color: '#FAF8F5',
         display: 'standalone',
+        orientation: 'portrait-primary',
         start_url: '/',
         scope: '/',
         icons: [
@@ -113,10 +108,21 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,txt,json}'],
-        globIgnores: ['**/assets/aistudio/**', '**/makam/**/index.html'],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globIgnores: [
+          '**/assets/aistudio/**',
+          '**/makam/**/index.html',
+          '**/situs/**/index.html',
+          '**/sitemap*.xml',
+          '**/sitemap.txt',
+          '**/rss.xml',
+        ],
+        navigateFallback: '/index.html',
         navigateFallbackDenylist: [
-          /^\/sitemap\.xml$/,
+          /^\/sitemap.*\.xml$/,
           /^\/sitemap\.txt$/,
           /^\/rss\.xml$/,
           /^\/robots\.txt$/,
@@ -131,9 +137,9 @@ export default defineConfig({
             urlPattern: /^https:\/\/(upload\.wikimedia\.org|wsrv\.nl|images\.unsplash\.com)\/.*/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'ziarah-images-cache-v2',
+              cacheName: 'ziarah-images-cache-v3',
               expiration: {
-                maxEntries: 100,
+                maxEntries: 120,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
               },
               cacheableResponse: {
@@ -145,7 +151,7 @@ export default defineConfig({
             urlPattern: /^https:\/\/[abc]\.tile\.openstreetmap\.org\/.*/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'ziarah-osm-tiles-cache-v1',
+              cacheName: 'ziarah-osm-tiles-cache-v2',
               expiration: {
                 maxEntries: 250,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days

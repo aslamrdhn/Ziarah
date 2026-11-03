@@ -4,7 +4,7 @@ import React from 'react';
  * Optimizes external Wikimedia / Unsplash image URLs using wsrv.nl CDN proxy
  * to deliver properly sized WebP images with 1-year immutable cache headers.
  */
-export function optimizeSiteImageUrl(url: string | undefined, width = 640, quality = 76): string {
+export function optimizeSiteImageUrl(url: string | undefined, width = 600, quality = 75): string {
   if (!url) return '/pwa-512x512.png';
   const trimmed = url.trim();
   if (
@@ -34,6 +34,17 @@ export function optimizeSiteImageUrl(url: string | undefined, width = 640, quali
   return `https://wsrv.nl/?url=${encodeURIComponent(trimmed)}&w=${width}&q=${quality}&output=webp&maxage=1y`;
 }
 
+export function getSiteImageSrcSet(url: string | undefined, quality = 75): string | undefined {
+  if (!url) return undefined;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('/') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+    return undefined;
+  }
+  const w400 = optimizeSiteImageUrl(trimmed, 400, quality);
+  const w600 = optimizeSiteImageUrl(trimmed, 600, quality);
+  return `${w400} 400w, ${w600} 600w`;
+}
+
 /**
  * Automatic fallback to raw original URL if CDN proxy is unreachable.
  */
@@ -44,6 +55,8 @@ export function handleOptimizedImageError(
   const img = e.currentTarget;
   if (originalUrl && img.src !== originalUrl && !img.dataset.fallbackApplied) {
     img.dataset.fallbackApplied = 'true';
+    img.removeAttribute('srcset');
     img.src = originalUrl;
   }
 }
+

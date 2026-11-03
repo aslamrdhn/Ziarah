@@ -2,7 +2,7 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <meta name="theme-color" content="#0D3B32" />
     <meta name="application-name" content="Ziarah Nusantara" />
@@ -177,10 +177,18 @@
       }
     </script>
 
-    <!-- Non-Render-Blocking Google Fonts & Image CDN Preconnect -->
+    <!-- Non-Render-Blocking Google Fonts & Image CDN Preconnect + LCP Image Preload -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://wsrv.nl" crossorigin />
+    <link
+      rel="preload"
+      as="image"
+      href="https://wsrv.nl/?url=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fc%2Fca%2FMakam_Maulana_Malik_Ibrahim_Tomb_Complex.jpg&w=600&q=75&output=webp&maxage=1y"
+      imagesrcset="https://wsrv.nl/?url=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fc%2Fca%2FMakam_Maulana_Malik_Ibrahim_Tomb_Complex.jpg&w=400&q=75&output=webp&maxage=1y 400w, https://wsrv.nl/?url=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fc%2Fca%2FMakam_Maulana_Malik_Ibrahim_Tomb_Complex.jpg&w=600&q=75&output=webp&maxage=1y 600w"
+      imagesizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 360px"
+      fetchpriority="high"
+    />
     <link
       rel="preload"
       as="style"

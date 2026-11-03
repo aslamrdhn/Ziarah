@@ -13,7 +13,7 @@ const KumpulanDoa = lazy(() => import('./views/KumpulanDoa').then((m) => ({ defa
 const RubrikKisah = lazy(() => import('./views/RubrikKisah').then((m) => ({ default: m.RubrikKisah })));
 const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })));
 
-import { ZiarahSite, ziarahSites } from './data/sites';
+import type { ZiarahSite } from './data/sites';
 import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { SiteProvider } from './context/SiteContext';
@@ -118,140 +118,155 @@ export default function App() {
       },
     };
 
-    let activeTitle = routeSeoMap[cleanPath]?.title || routeSeoMap['/'].title;
-    let activeDesc = routeSeoMap[cleanPath]?.desc || routeSeoMap['/'].desc;
-    let canonicalUrl = fullUrl;
-    let matchedSite: ZiarahSite | null = null;
+    let cancelled = false;
 
-    if (cleanPath.startsWith('/situs/') || cleanPath.startsWith('/makam/')) {
-      const rawParam = cleanPath.replace(/^\/(situs|makam)\//, '');
-      matchedSite = findSiteByParam(ziarahSites, rawParam);
+    const applySeoMetadata = (matchedSite: ZiarahSite | null) => {
+      if (cancelled) return;
+      let activeTitle = routeSeoMap[cleanPath]?.title || routeSeoMap['/'].title;
+      let activeDesc = routeSeoMap[cleanPath]?.desc || routeSeoMap['/'].desc;
+      let canonicalUrl = fullUrl;
+
       if (matchedSite) {
         activeTitle = `Makam ${matchedSite.title} (${matchedSite.location.city}, ${matchedSite.location.province}) — Rute, Sejarah & Doa Ziarah | Ziarah Nusantara`;
         activeDesc = `${matchedSite.description} Lokasi: ${matchedSite.location.address}, ${matchedSite.location.city}, ${matchedSite.location.province}. Lengkap dengan peta rute, riwayat karomah, dan doa tawassul.`;
         canonicalUrl = `${baseOrigin}${getSitePath(matchedSite)}`;
       }
-    }
 
-    document.title = activeTitle;
+      document.title = activeTitle;
 
-    const descEl = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
-    if (descEl) descEl.content = activeDesc;
+      const descEl = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+      if (descEl) descEl.content = activeDesc;
 
-    const canonicalEl = document.getElementById('canonical-link') as HTMLLinkElement | null;
-    if (canonicalEl) canonicalEl.href = canonicalUrl;
+      const canonicalEl = document.getElementById('canonical-link') as HTMLLinkElement | null;
+      if (canonicalEl) canonicalEl.href = canonicalUrl;
 
-    const ogTitleEl = document.getElementById('og-title') as HTMLMetaElement | null;
-    if (ogTitleEl) ogTitleEl.content = activeTitle;
+      const ogTitleEl = document.getElementById('og-title') as HTMLMetaElement | null;
+      if (ogTitleEl) ogTitleEl.content = activeTitle;
 
-    const ogDescEl = document.getElementById('og-description') as HTMLMetaElement | null;
-    if (ogDescEl) ogDescEl.content = activeDesc;
+      const ogDescEl = document.getElementById('og-description') as HTMLMetaElement | null;
+      if (ogDescEl) ogDescEl.content = activeDesc;
 
-    const ogUrlEl = document.getElementById('og-url') as HTMLMetaElement | null;
-    if (ogUrlEl) ogUrlEl.content = canonicalUrl;
+      const ogUrlEl = document.getElementById('og-url') as HTMLMetaElement | null;
+      if (ogUrlEl) ogUrlEl.content = canonicalUrl;
 
-    const ogImgEl = document.getElementById('og-image') as HTMLMetaElement | null;
-    if (ogImgEl) ogImgEl.content = fullImageUrl;
+      const ogImgEl = document.getElementById('og-image') as HTMLMetaElement | null;
+      if (ogImgEl) ogImgEl.content = fullImageUrl;
 
-    const twitterTitleEl = document.getElementById('twitter-title') as HTMLMetaElement | null;
-    if (twitterTitleEl) twitterTitleEl.content = activeTitle;
+      const twitterTitleEl = document.getElementById('twitter-title') as HTMLMetaElement | null;
+      if (twitterTitleEl) twitterTitleEl.content = activeTitle;
 
-    const twitterDescEl = document.getElementById('twitter-description') as HTMLMetaElement | null;
-    if (twitterDescEl) twitterDescEl.content = activeDesc;
+      const twitterDescEl = document.getElementById('twitter-description') as HTMLMetaElement | null;
+      if (twitterDescEl) twitterDescEl.content = activeDesc;
 
-    const twitterImgEl = document.getElementById('twitter-image') as HTMLMetaElement | null;
-    if (twitterImgEl) twitterImgEl.content = fullImageUrl;
+      const twitterImgEl = document.getElementById('twitter-image') as HTMLMetaElement | null;
+      if (twitterImgEl) twitterImgEl.content = fullImageUrl;
 
-    const schemaEl = document.getElementById('schema-jsonld');
-    if (schemaEl) {
-      const graphNodes: Record<string, any>[] = [
-        {
-          '@type': 'Organization',
-          '@id': `${baseOrigin}/#organization`,
-          name: 'Ziarah Nusantara',
-          legalName: 'Tim Kurator Arsip Ziarah Nusantara',
-          url: `${baseOrigin}/`,
-          logo: {
-            '@type': 'ImageObject',
-            '@id': `${baseOrigin}/#logo`,
-            url: fullImageUrl,
-            contentUrl: fullImageUrl,
-            width: 512,
-            height: 512,
+      const schemaEl = document.getElementById('schema-jsonld');
+      if (schemaEl) {
+        const graphNodes: Record<string, any>[] = [
+          {
+            '@type': 'Organization',
+            '@id': `${baseOrigin}/#organization`,
+            name: 'Ziarah Nusantara',
+            legalName: 'Tim Kurator Arsip Ziarah Nusantara',
+            url: `${baseOrigin}/`,
+            logo: {
+              '@type': 'ImageObject',
+              '@id': `${baseOrigin}/#logo`,
+              url: fullImageUrl,
+              contentUrl: fullImageUrl,
+              width: 512,
+              height: 512,
+            },
           },
-        },
-        {
-          '@type': 'WebSite',
-          '@id': `${baseOrigin}/#website`,
-          url: `${baseOrigin}/`,
-          name: 'Ziarah Nusantara',
-          description: activeDesc,
-          inLanguage: 'id-ID',
-          publisher: { '@id': `${baseOrigin}/#organization` },
-        },
-        {
-          '@type': 'WebPage',
-          '@id': `${canonicalUrl}#webpage`,
-          url: canonicalUrl,
-          name: activeTitle,
-          description: activeDesc,
-          inLanguage: 'id-ID',
-          isPartOf: { '@id': `${baseOrigin}/#website` },
-        },
-      ];
+          {
+            '@type': 'WebSite',
+            '@id': `${baseOrigin}/#website`,
+            url: `${baseOrigin}/`,
+            name: 'Ziarah Nusantara',
+            description: activeDesc,
+            inLanguage: 'id-ID',
+            publisher: { '@id': `${baseOrigin}/#organization` },
+          },
+          {
+            '@type': 'WebPage',
+            '@id': `${canonicalUrl}#webpage`,
+            url: canonicalUrl,
+            name: activeTitle,
+            description: activeDesc,
+            inLanguage: 'id-ID',
+            isPartOf: { '@id': `${baseOrigin}/#website` },
+          },
+        ];
 
-      if (matchedSite) {
-        graphNodes.push({
-          '@type': 'TouristAttraction',
-          '@id': `${canonicalUrl}#place`,
-          name: `Makam ${matchedSite.title} (${matchedSite.name})`,
-          description: matchedSite.description,
-          url: canonicalUrl,
-          address: {
-            '@type': 'PostalAddress',
-            streetAddress: matchedSite.location.address,
-            addressLocality: matchedSite.location.city,
-            addressRegion: matchedSite.location.province,
-            addressCountry: 'ID',
-          },
-          geo: {
-            '@type': 'GeoCoordinates',
-            latitude: matchedSite.location.lat,
-            longitude: matchedSite.location.lng,
-          },
+        if (matchedSite) {
+          graphNodes.push({
+            '@type': 'TouristAttraction',
+            '@id': `${canonicalUrl}#place`,
+            name: `Makam ${matchedSite.title} (${matchedSite.name})`,
+            description: matchedSite.description,
+            url: canonicalUrl,
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: matchedSite.location.address,
+              addressLocality: matchedSite.location.city,
+              addressRegion: matchedSite.location.province,
+              addressCountry: 'ID',
+            },
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: matchedSite.location.lat,
+              longitude: matchedSite.location.lng,
+            },
+          });
+        }
+
+        if (cleanPath === '/panduan') {
+          graphNodes.push({
+            '@type': 'FAQPage',
+            '@id': `${canonicalUrl}#faq`,
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: 'Apa Tujuan & Hukum Ziarah Kubur dalam Islam?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Hukum ziarah kubur dalam Islam adalah sunnah (dianjurkan) berdasarkan hadits riwayat Imam Muslim. Tujuannya adalah mengingatkan diri kepada kematian dan akhirat, mendoakan ampunan bagi ahli kubur, serta meneladani kesalehan dan perjuangan dakwah para Waliyullah.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Bagaimana Urutan Bacaan Doa Ziarah Kubur Singkat?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Urutan bacaan doa ziarah kubur singkat: (1) Berwudhu dan meluruskan niat, (2) Mengucapkan salam ahli kubur (Assalamu alaikum ahlad-diyaar...), (3) Membaca Istighfar 3x, (4) Membaca Al-Fatihah & Tawassul, (5) Membaca Surah Yasin, Al-Ikhlas 3x, Al-Falaq, An-Nas, dan Ayat Kursi, (6) Dzikir Tahlil (Laa ilaaha illallaah), dan (7) Membaca doa khusus ahli kubur.',
+                },
+              },
+            ],
+          });
+        }
+
+        schemaEl.textContent = JSON.stringify({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
         });
       }
+    };
 
-      if (cleanPath === '/panduan') {
-        graphNodes.push({
-          '@type': 'FAQPage',
-          '@id': `${canonicalUrl}#faq`,
-          mainEntity: [
-            {
-              '@type': 'Question',
-              name: 'Apa Tujuan & Hukum Ziarah Kubur dalam Islam?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Hukum ziarah kubur dalam Islam adalah sunnah (dianjurkan) berdasarkan hadits riwayat Imam Muslim. Tujuannya adalah mengingatkan diri kepada kematian dan akhirat, mendoakan ampunan bagi ahli kubur, serta meneladani kesalehan dan perjuangan dakwah para Waliyullah.',
-              },
-            },
-            {
-              '@type': 'Question',
-              name: 'Bagaimana Urutan Bacaan Doa Ziarah Kubur Singkat?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Urutan bacaan doa ziarah kubur singkat: (1) Berwudhu dan meluruskan niat, (2) Mengucapkan salam ahli kubur (Assalamu alaikum ahlad-diyaar...), (3) Membaca Istighfar 3x, (4) Membaca Al-Fatihah & Tawassul, (5) Membaca Surah Yasin, Al-Ikhlas 3x, Al-Falaq, An-Nas, dan Ayat Kursi, (6) Dzikir Tahlil (Laa ilaaha illallaah), dan (7) Membaca doa khusus ahli kubur.',
-              },
-            },
-          ],
-        });
-      }
-
-      schemaEl.textContent = JSON.stringify({
-        '@context': 'https://schema.org',
-        '@graph': graphNodes,
-      });
+    if (cleanPath.startsWith('/situs/') || cleanPath.startsWith('/makam/')) {
+      const rawParam = cleanPath.replace(/^\/(situs|makam)\//, '');
+      import('./data/sites')
+        .then(({ ziarahSites }) => {
+          applySeoMetadata(findSiteByParam(ziarahSites, rawParam));
+        })
+        .catch(() => applySeoMetadata(null));
+    } else {
+      applySeoMetadata(null);
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [location.pathname, customDomainOrigin]);
 
   // Load from local storage initially
@@ -391,7 +406,7 @@ export default function App() {
     <SiteProvider>
       <div className="flex flex-col min-h-screen w-full bg-[#FAF8F5] font-sans text-stone-900 selection:bg-emerald-900/15 selection:text-stone-950 relative antialiased">
         {/* Editorial Glass Header (backdrop-blur applied on ::before so fixed descendants are never trapped) */}
-        <header className="fixed top-0 left-0 right-0 z-[2000] border-b border-stone-200/70 flex justify-center before:content-[''] before:absolute before:inset-0 before:bg-[#FAF8F5]/90 before:backdrop-blur-md before:-z-10 before:pointer-events-none">
+        <header className="fixed top-0 left-0 right-0 z-[2000] pt-[env(safe-area-inset-top)] border-b border-stone-200/70 flex justify-center before:content-[''] before:absolute before:inset-0 before:bg-[#FAF8F5]/90 before:backdrop-blur-md before:-z-10 before:pointer-events-none">
           <div className="w-full max-w-6xl relative z-10">
             <Navbar onOpenKontribusi={() => setIsKontribusiOpen(true)} />
           </div>

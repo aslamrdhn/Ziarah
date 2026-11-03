@@ -11,13 +11,17 @@ import {
   Sparkles,
   Film,
 } from 'lucide-react';
-import { ZiarahSite } from '../data/sites';
+import type { ZiarahSite } from '../data/sites';
+import { ALL_PROVINCES, TOTAL_SITE_COUNT } from '../data/initialSites';
 import { useSites } from '../context/SiteContext';
-import { HeroCinemaShowcase } from '../components/HeroCinemaShowcase';
 import { Link } from 'react-router-dom';
-import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
+import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
 import { getSitePath } from '../lib/siteSlugs';
 import { extractShortEra } from '../lib/siteLogistics';
+
+const HeroCinemaShowcase = lazy(() =>
+  import('../components/HeroCinemaShowcase').then((m) => ({ default: m.HeroCinemaShowcase }))
+);
 
 const InteractiveHeritageCanvas = lazy(() =>
   import('../components/InteractiveHeritageCanvas').then((m) => ({ default: m.InteractiveHeritageCanvas }))
@@ -50,10 +54,16 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
     []
   );
 
-  const provinces = useMemo(
-    () => ['Semua Provinsi', ...Array.from(new Set(ziarahSites.map((s: ZiarahSite) => s.location.province)))].sort(),
-    [ziarahSites]
-  );
+  const provinces = useMemo(() => {
+    const merged = new Set<string>(ALL_PROVINCES);
+    for (const s of ziarahSites) {
+      if (s.location?.province) merged.add(s.location.province);
+    }
+    const list = Array.from(merged).filter((p) => p !== 'Semua Provinsi').sort();
+    return ['Semua Provinsi', ...list];
+  }, [ziarahSites]);
+
+  const totalCatalogCount = Math.max(TOTAL_SITE_COUNT, ziarahSites.length);
 
   const filteredSites = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -85,7 +95,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-12 text-stone-500">
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-stone-600">
         <div className="w-8 h-8 border-2 border-stone-200 border-t-emerald-700 rounded-full animate-spin mb-4" />
         <p className="text-sm font-serif italic">Memuat arsip &amp; direktori makam Nusantara...</p>
       </div>
@@ -100,16 +110,16 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             ===================================================================== */}
         <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/5 text-emerald-800 text-xs font-medium tracking-wide">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/8 text-emerald-900 text-xs font-medium tracking-wide">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-800" aria-hidden="true" />
               <span>
-                Arsip &amp; Direktori Jejak Spiritual · {ziarahSites.length} Situs di {provinces.length - 1} Provinsi
+                Arsip &amp; Direktori Jejak Spiritual · {totalCatalogCount} Situs di {provinces.length - 1} Provinsi
               </span>
             </div>
             <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight text-stone-900 leading-[1.15]">
               Telusuri Warisan Sejarah &amp; Ziarah Nusantara.
             </h1>
-            <p className="text-stone-500 text-sm sm:text-base leading-relaxed tracking-tight max-w-xl">
+            <p className="text-stone-600 text-sm sm:text-base leading-relaxed tracking-tight max-w-xl">
               Dokumentasi terkurasi makam Wali Songo, ulama pesantren, dan habaib di kepulauan Indonesia—lengkap dengan
               pemetaan rute, riwayat sanad, jadwal haul, serta tuntunan doa lapangan.
             </p>
@@ -137,7 +147,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
               className={`px-3.5 py-2.5 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition cursor-pointer border ${
                 showVisualShowcase
                   ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
-                  : 'bg-white text-stone-600 border-stone-200/70 hover:border-stone-400'
+                  : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
               }`}
             >
               <Film className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
@@ -150,7 +160,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
         {showVisualShowcase && (
           <div className="bg-white rounded-3xl p-4 sm:p-6 border border-stone-200/70 shadow-xs space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-medium text-stone-500 tracking-tight">
+              <span className="text-xs font-medium text-stone-600 tracking-tight">
                 Eksplorasi Visual Jaringan Dakwah Nusantara
               </span>
               <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-full border border-stone-200/70">
@@ -158,7 +168,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                   type="button"
                   onClick={() => setHeroMediaMode('video')}
                   className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer ${
-                    heroMediaMode === 'video' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900'
+                    heroMediaMode === 'video' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'
                   }`}
                 >
                   <Film className="w-3.5 h-3.5" aria-hidden="true" />
@@ -168,7 +178,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                   type="button"
                   onClick={() => setHeroMediaMode('constellation')}
                   className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer ${
-                    heroMediaMode === 'constellation' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900'
+                    heroMediaMode === 'constellation' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'
                   }`}
                 >
                   <Compass className="w-3.5 h-3.5" aria-hidden="true" />
@@ -177,28 +187,28 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
               </div>
             </div>
 
-            {heroMediaMode === 'video' ? (
-              <HeroCinemaShowcase
-                onSelectCategory={(cat) => {
-                  setSelectedCategory(cat);
-                }}
-              />
-            ) : (
-              <Suspense
-                fallback={
-                  <div className="h-[340px] rounded-2xl bg-stone-900 flex items-center justify-center text-stone-200 text-xs">
-                    Memuat Peta Konstelasi...
-                  </div>
-                }
-              >
+            <Suspense
+              fallback={
+                <div className="h-[340px] rounded-2xl bg-stone-900 flex items-center justify-center text-stone-200 text-xs">
+                  Memuat Visualisasi...
+                </div>
+              }
+            >
+              {heroMediaMode === 'video' ? (
+                <HeroCinemaShowcase
+                  onSelectCategory={(cat) => {
+                    setSelectedCategory(cat);
+                  }}
+                />
+              ) : (
                 <InteractiveHeritageCanvas
                   activeCategory={selectedCategory}
                   onSelectCategory={(cat) => {
                     setSelectedCategory(cat);
                   }}
                 />
-              </Suspense>
-            )}
+              )}
+            </Suspense>
           </div>
         )}
 
@@ -215,7 +225,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
               Cari nama tokoh, makam, atau kota
             </label>
             <Search
-              className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+              className="w-4 h-4 text-stone-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
               aria-hidden="true"
             />
             <input
@@ -224,14 +234,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
               placeholder="Cari nama tokoh, makam, atau kota..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-10 py-3 bg-white rounded-2xl border border-stone-200/80 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:border-emerald-700 transition shadow-2xs"
+              className="w-full pl-11 pr-10 py-3 bg-white rounded-2xl border border-stone-200/80 text-sm text-stone-900 placeholder-stone-500 focus:outline-none focus:border-emerald-700 transition shadow-2xs"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
                 aria-label="Hapus pencarian"
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 cursor-pointer"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-800 cursor-pointer"
               >
                 <X className="w-4 h-4" aria-hidden="true" />
               </button>
@@ -251,7 +261,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                   className={`px-4 py-2 rounded-full text-xs font-medium tracking-tight whitespace-nowrap transition cursor-pointer ${
                     isSelected
                       ? 'bg-stone-900 text-white shadow-2xs'
-                      : 'bg-white text-stone-600 border border-stone-200/70 hover:border-stone-400 hover:text-stone-900'
+                      : 'bg-white text-stone-700 border border-stone-200/80 hover:border-stone-400 hover:text-stone-900'
                   }`}
                 >
                   {cat.label}
@@ -272,7 +282,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                 className={`appearance-none pl-3.5 pr-8 py-2 rounded-full text-xs font-medium tracking-tight cursor-pointer transition border focus:outline-none focus:border-emerald-700 ${
                   selectedProvince !== 'Semua Provinsi'
                     ? 'bg-emerald-700 text-white border-emerald-700'
-                    : 'bg-white text-stone-600 border-stone-200/70 hover:border-stone-400'
+                    : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
                 }`}
               >
                 {provinces.map((prov) => (
@@ -283,7 +293,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
               </select>
               <Filter
                 className={`w-3 h-3 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${
-                  selectedProvince !== 'Semua Provinsi' ? 'text-white' : 'text-stone-400'
+                  selectedProvince !== 'Semua Provinsi' ? 'text-white' : 'text-stone-500'
                 }`}
                 aria-hidden="true"
               />
@@ -292,10 +302,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
         </div>
 
         {/* Subtle Results Status Row */}
-        <div className="flex items-center justify-between text-xs text-stone-500 px-1">
+        <div className="flex items-center justify-between text-xs text-stone-600 px-1">
           <p>
             Menampilkan <strong className="font-semibold text-stone-900">{displayedSites.length}</strong> dari{' '}
-            <strong className="font-semibold text-stone-900">{filteredSites.length}</strong> situs
+            <strong className="font-semibold text-stone-900">
+              {isFiltered ? filteredSites.length : totalCatalogCount}
+            </strong>{' '}
+            situs
             {selectedCategory !== 'Semua' && <span> · {selectedCategory}</span>}
             {selectedProvince !== 'Semua Provinsi' && <span> · {selectedProvince}</span>}
           </p>
@@ -308,7 +321,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                 setSelectedProvince('Semua Provinsi');
                 setVisibleCount(INITIAL_VISIBLE_SITES);
               }}
-              className="text-xs font-medium text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer"
+              className="text-xs font-medium text-emerald-800 hover:text-emerald-900 hover:underline cursor-pointer"
             >
               Reset Filter
             </button>
@@ -319,11 +332,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             3. CLEAN CARD GRID (Aturan Maksimal 3 Elemen — Anatomi Kartu ala Airbnb)
             ===================================================================== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-          {displayedSites.map((site) => {
-            const optimizedThumb = optimizeSiteImageUrl(site.imageUrl, 600, 76);
+          {displayedSites.map((site, index) => {
+            const optimizedThumb = optimizeSiteImageUrl(site.imageUrl, 600, 75);
+            const thumbSrcSet = getSiteImageSrcSet(site.imageUrl, 75);
             const siteUrl = getSitePath(site);
             const shortEra = extractShortEra(site.era);
             const badgeLabel = site.category === 'Walisongo' ? 'Wali Songo' : site.category;
+            const isLcpCandidate = index === 0;
+            const isAboveFold = index < 2;
 
             return (
               <article key={site.id} className="group">
@@ -337,37 +353,40 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                   <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-stone-200 border border-stone-200/60 shadow-2xs">
                     <img
                       src={optimizedThumb}
+                      srcSet={thumbSrcSet}
+                      sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 360px"
                       onError={(e) => handleOptimizedImageError(e, site.imageUrl)}
                       alt={`Makam ${site.title} (${site.name}) — ${site.location.city}, ${site.location.province}`}
                       width={600}
                       height={450}
-                      loading="lazy"
-                      decoding="async"
+                      loading={isAboveFold ? 'eager' : 'lazy'}
+                      fetchPriority={isLcpCandidate ? 'high' : 'auto'}
+                      decoding={isLcpCandidate ? 'sync' : 'async'}
                       referrerPolicy="no-referrer"
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
-                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-medium bg-stone-900/60 text-white backdrop-blur-md">
+                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-medium bg-stone-900/75 text-white backdrop-blur-md">
                       {badgeLabel}
                     </span>
                   </div>
 
                   {/* 2 & 3. Kota/Provinsi + Era Singkat & Nama Tokoh/Situs (Tanpa Tombol Berlapis) */}
                   <div className="space-y-1 px-1">
-                    <div className="flex items-center justify-between gap-2 text-xs text-stone-500">
+                    <div className="flex items-center justify-between gap-2 text-xs text-stone-600">
                       <span className="inline-flex items-center gap-1 truncate">
                         <MapPin className="w-3.5 h-3.5 text-emerald-700 shrink-0" aria-hidden="true" />
                         <span className="truncate">
                           {site.location.city}, {site.location.province}
                         </span>
                       </span>
-                      <span className="shrink-0 text-stone-400">{shortEra}</span>
+                      <span className="shrink-0 text-stone-600">{shortEra}</span>
                     </div>
 
                     <h2 className="font-serif text-lg font-semibold tracking-tight text-stone-900 group-hover:text-emerald-800 transition line-clamp-1">
                       Makam {site.title}
                     </h2>
 
-                    <p className="text-xs text-stone-500 line-clamp-1">{site.name}</p>
+                    <p className="text-xs text-stone-600 line-clamp-1">{site.name}</p>
                   </div>
                 </Link>
               </article>
