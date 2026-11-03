@@ -3,7 +3,7 @@ import { ZiarahSite } from '../data/sites';
 import { X, MapPin, Navigation, Info, Clock, CheckCircle2, Heart, Sparkles, BookOpen, Bookmark, BookmarkCheck, QrCode, MessageSquare, Send, Unlock, ScrollText, Trash2, Loader2, Calendar, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransactionModal } from './TransactionModal';
-import { auth, db, handleFirestoreError, OperationType, isUserAdmin } from '../lib/firebase';
+import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useVerifiedDonationUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
@@ -95,6 +95,8 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
   const handleAddStory = async () => {
     const cleanText = sanitizeMultilineText(newStory, 1000);
     if (!site || cleanText.length < 3 || isSendingStory) return;
+    const cooldown = checkAndRecordSubmissionCooldown('story', 15);
+    if (!cooldown.allowed) return;
     setIsSendingStory(true);
     const storyRef = doc(collection(db, 'stories'));
     const cleanName = sanitizePlainText(authorName, 100) || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';

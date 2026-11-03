@@ -2,12 +2,16 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import type { ZiarahSite } from '../data/sites';
 import { initialSites } from '../data/initialSites';
 
+const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v1';
+const CLOUD_SITES_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes TTL
+
 interface SiteContextType {
   sites: ZiarahSite[];
   isLoading: boolean;
   isSeededInCloud: boolean;
   cloudSiteCount: number;
   ensureFullSitesLoaded: () => Promise<ZiarahSite[]>;
+  refreshCloudSites: (forceNetwork?: boolean) => Promise<void>;
 }
 
 const SiteContext = createContext<SiteContextType>({
@@ -16,9 +20,60 @@ const SiteContext = createContext<SiteContextType>({
   isSeededInCloud: false,
   cloudSiteCount: 0,
   ensureFullSitesLoaded: async () => initialSites,
+  refreshCloudSites: async () => {},
 });
 
 export const useSites = () => useContext(SiteContext);
+
+function mergeLocalAndCloudSites(loadedLocalSites: ZiarahSite[], fetchedSites: ZiarahSite[]): ZiarahSite[] {
+  const localMap = new Map<string, ZiarahSite>();
+  loadedLocalSites.forEach((s) => localMap.set(s.id, s));
+
+  const mergedMap = new Map<string, ZiarahSite>();
+  loadedLocalSites.forEach((s) => mergedMap.set(s.id, s));
+
+  const legacyPlaceholder =
+    'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80';
+
+  fetchedSites.forEach((cloudSite) => {
+    const baseLocal = localMap.get(cloudSite.id);
+    if (baseLocal) {
+      const effectiveImageUrl =
+        cloudSite.imageUrl &&
+        cloudSite.imageUrl.trim() !== '' &&
+        cloudSite.imageUrl.trim() !== legacyPlaceholder
+          ? cloudSite.imageUrl.trim()
+          : baseLocal.imageUrl;
+
+      mergedMap.set(cloudSite.id, {
+        ...baseLocal,
+        ...cloudSite,
+        imageUrl: effectiveImageUrl,
+        imageSource: cloudSite.imageSource || baseLocal.imageSource,
+        era: cloudSite.era || baseLocal.era,
+        sanad: cloudSite.sanad || baseLocal.sanad,
+        karya: cloudSite.karya && cloudSite.karya.length > 0 ? cloudSite.karya : baseLocal.karya,
+        references:
+          cloudSite.references && cloudSite.references.length > 0
+            ? cloudSite.references
+            : baseLocal.references,
+        karomah:
+          cloudSite.karomah && cloudSite.karomah.length > 0 ? cloudSite.karomah : baseLocal.karomah,
+        doaKhusus:
+          cloudSite.doaKhusus && cloudSite.doaKhusus.length > 0
+            ? cloudSite.doaKhusus
+            : baseLocal.doaKhusus,
+        untoldStory: cloudSite.untoldStory || baseLocal.untoldStory,
+        haulSchedule: cloudSite.haulSchedule || baseLocal.haulSchedule,
+        localAdab: cloudSite.localAdab || baseLocal.localAdab,
+      });
+    } else {
+      mergedMap.set(cloudSite.id, cloudSite);
+    }
+  });
+
+  return Array.from(mergedMap.values());
+}
 
 export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sites, setSites] = useState<ZiarahSite[]>(initialSites);
@@ -28,7 +83,6 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fullLocalSitesRef = useRef<ZiarahSite[]>(initialSites);
   const hasLoadedLocalRef = useRef(false);
   const hasConnectedCloudRef = useRef(false);
-  const unsubscribeRef = useRef<(() => void) | null>(null);
 
   const ensureFullSitesLoaded = useCallback(async (): Promise<ZiarahSite[]> => {
     if (hasLoadedLocalRef.current) {
@@ -46,91 +100,70 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const connectCloudSites = useCallback(async () => {
-    if (hasConnectedCloudRef.current) return;
-    hasConnectedCloudRef.current = true;
+  const refreshCloudSites = useCallback(async (forceNetwork = false) => {
     try {
-      const [loadedLocalSites, { db }, { collection, onSnapshot }] = await Promise.all([
-        ensureFullSitesLoaded(),
+      const loadedLocalSites = await ensureFullSitesLoaded();
+
+      // Check local TTL cache first for public visitors to save Firestore read quota (F-05)
+      if (!forceNetwork && typeof window !== 'undefined') {
+        try {
+          const cachedRaw = localStorage.getItem(CLOUD_SITES_CACHE_KEY);
+          if (cachedRaw) {
+            const parsed = JSON.parse(cachedRaw) as { ts: number; data: ZiarahSite[] };
+            if (parsed && Array.isArray(parsed.data) && Date.now() - parsed.ts < CLOUD_SITES_CACHE_TTL_MS) {
+              if (parsed.data.length > 0) {
+                setSites(mergeLocalAndCloudSites(loadedLocalSites, parsed.data));
+                setIsSeededInCloud(true);
+                setCloudSiteCount(parsed.data.length);
+                setIsLoading(false);
+                return;
+              }
+            }
+          }
+        } catch {
+          // Ignore cache parse error and proceed to Firestore getDocs
+        }
+      }
+
+      const [{ db }, { collection, getDocs }] = await Promise.all([
         import('../lib/firebase'),
         import('firebase/firestore'),
       ]);
 
-      unsubscribeRef.current = onSnapshot(
-        collection(db, 'sites'),
-        (snapshot) => {
-          if (!snapshot.empty) {
-            const fetchedSites = snapshot.docs.map((docSnap) => docSnap.data() as ZiarahSite);
-            const localMap = new Map<string, ZiarahSite>();
-            loadedLocalSites.forEach((s) => localMap.set(s.id, s));
-
-            const mergedMap = new Map<string, ZiarahSite>();
-            loadedLocalSites.forEach((s) => mergedMap.set(s.id, s));
-
-            fetchedSites.forEach((cloudSite) => {
-              const baseLocal = localMap.get(cloudSite.id);
-              if (baseLocal) {
-                const legacyPlaceholder =
-                  'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80';
-                const effectiveImageUrl =
-                  cloudSite.imageUrl &&
-                  cloudSite.imageUrl.trim() !== '' &&
-                  cloudSite.imageUrl.trim() !== legacyPlaceholder
-                    ? cloudSite.imageUrl.trim()
-                    : baseLocal.imageUrl;
-
-                mergedMap.set(cloudSite.id, {
-                  ...baseLocal,
-                  ...cloudSite,
-                  imageUrl: effectiveImageUrl,
-                  imageSource: cloudSite.imageSource || baseLocal.imageSource,
-                  era: cloudSite.era || baseLocal.era,
-                  sanad: cloudSite.sanad || baseLocal.sanad,
-                  karya: cloudSite.karya && cloudSite.karya.length > 0 ? cloudSite.karya : baseLocal.karya,
-                  references:
-                    cloudSite.references && cloudSite.references.length > 0
-                      ? cloudSite.references
-                      : baseLocal.references,
-                  karomah:
-                    cloudSite.karomah && cloudSite.karomah.length > 0 ? cloudSite.karomah : baseLocal.karomah,
-                  doaKhusus:
-                    cloudSite.doaKhusus && cloudSite.doaKhusus.length > 0
-                      ? cloudSite.doaKhusus
-                      : baseLocal.doaKhusus,
-                  untoldStory: cloudSite.untoldStory || baseLocal.untoldStory,
-                  haulSchedule: cloudSite.haulSchedule || baseLocal.haulSchedule,
-                  localAdab: cloudSite.localAdab || baseLocal.localAdab,
-                });
-              } else {
-                mergedMap.set(cloudSite.id, cloudSite);
-              }
-            });
-
-            setSites(Array.from(mergedMap.values()));
-            setIsSeededInCloud(true);
-            setCloudSiteCount(fetchedSites.length);
-          } else {
-            setSites(loadedLocalSites);
-            setIsSeededInCloud(false);
-            setCloudSiteCount(0);
-          }
-          setIsLoading(false);
-        },
-        () => {
-          setSites(loadedLocalSites);
-          setIsSeededInCloud(false);
-          setIsLoading(false);
+      const snapshot = await getDocs(collection(db, 'sites'));
+      if (!snapshot.empty) {
+        const fetchedSites = snapshot.docs.map((docSnap) => docSnap.data() as ZiarahSite);
+        setSites(mergeLocalAndCloudSites(loadedLocalSites, fetchedSites));
+        setIsSeededInCloud(true);
+        setCloudSiteCount(fetchedSites.length);
+        try {
+          localStorage.setItem(
+            CLOUD_SITES_CACHE_KEY,
+            JSON.stringify({ ts: Date.now(), data: fetchedSites })
+          );
+        } catch {
+          // Ignore storage quota warning
         }
-      );
+      } else {
+        setSites(loadedLocalSites);
+        setIsSeededInCloud(false);
+        setCloudSiteCount(0);
+      }
+      setIsLoading(false);
     } catch {
       setIsLoading(false);
     }
   }, [ensureFullSitesLoaded]);
 
+  const connectCloudSites = useCallback(async () => {
+    if (hasConnectedCloudRef.current) return;
+    hasConnectedCloudRef.current = true;
+    await refreshCloudSites(false);
+  }, [refreshCloudSites]);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // If user lands directly on a deep route (/peta, /situs/*, /makam/*, /admin), load full catalog right away
     const path = window.location.pathname;
     if (path !== '/' && path !== '/direktori') {
       ensureFullSitesLoaded();
@@ -139,7 +172,6 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       connectCloudSites();
     }
 
-    // On homepage/directory, defer loading 210 KB sites catalog & 420 KB Firebase SDK until first user interaction
     const onFirstInteraction = () => {
       cleanupListeners();
       ensureFullSitesLoaded();
@@ -157,15 +189,19 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       cleanupListeners();
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
     };
   }, [ensureFullSitesLoaded, connectCloudSites]);
 
   return (
     <SiteContext.Provider
-      value={{ sites, isLoading, isSeededInCloud, cloudSiteCount, ensureFullSitesLoaded }}
+      value={{
+        sites,
+        isLoading,
+        isSeededInCloud,
+        cloudSiteCount,
+        ensureFullSitesLoaded,
+        refreshCloudSites,
+      }}
     >
       {children}
     </SiteContext.Provider>

@@ -169,10 +169,10 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /^https:\/\/[abc]\.tile\.openstreetmap\.org\/.*/i,
+            urlPattern: /^https:\/\/(?:[abc]\.tile\.openstreetmap\.org|[abcd]\.basemaps\.cartocdn\.com)\/.*/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'ziarah-osm-tiles-cache-v2',
+              cacheName: 'ziarah-map-tiles-cache-v3',
               expiration: {
                 maxEntries: 250,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days

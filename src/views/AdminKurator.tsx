@@ -2,19 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Database, 
-  UploadCloud, 
   LogIn, 
   ExternalLink, 
   Loader2, 
   AlertCircle,
   CheckCircle2,
-  XCircle,
   Trash2,
   Plus,
-  Edit3,
   Inbox,
   HeartHandshake,
-  MapPin,
   Save,
   ArrowUp,
   ArrowDown,
@@ -33,32 +29,19 @@ import { ziarahSites as localSites, ZiarahSite } from '../data/sites';
 import { DEFAULT_INFAQ_PROGRAMS, InfaqProgramItem } from './InfaqDigital';
 import { DEFAULT_RUBRIK_GATE_SETTINGS, RubrikGateSettings, RubrikItem } from './RubrikKisah';
 import { useSites } from '../context/SiteContext';
-import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin } from '../lib/firebase';
+import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, User } from 'firebase/auth';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
-import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl, isSafeExternalUrl } from '../lib/sanitize';
-
-interface ContributionItem {
-  id: string;
-  type: 'baru' | 'karomah' | 'doa';
-  contributorName: string;
-  contributorContact?: string;
-  targetName: string;
-  category?: string;
-  city?: string;
-  province?: string;
-  mapsUrl?: string;
-  content: string;
-  translation?: string;
-  status: 'pending' | 'approved' | 'rejected';
-  authorUid?: string;
-  createdAtMs: number;
-}
+import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl } from '../lib/sanitize';
+import { ContributionItem, DonationAdminItem } from './admin/AdminTypes';
+import { ContributionQueueSection } from './admin/ContributionQueueSection';
+import { SiteDirectoryAdminSection } from './admin/SiteDirectoryAdminSection';
+import { DonationVerificationModal } from './admin/DonationVerificationModal';
 
 export const AdminKurator: React.FC = () => {
-  const { sites, isSeededInCloud, cloudSiteCount } = useSites();
+  const { sites, isSeededInCloud, cloudSiteCount, refreshCloudSites } = useSites();
   const [activeTab, setActiveTab] = useState<'kontribusi' | 'makam' | 'rubrik' | 'infaq'>('kontribusi');
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedMessage, setSeedMessage] = useState('');
@@ -159,11 +142,16 @@ export const AdminKurator: React.FC = () => {
       })
       .catch(() => {});
 
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (isUserAdmin(currentUser)) {
         setIsAdmin(true);
         setLoginError(null);
+        await ensureAdminUidRegistered(currentUser);
+      } else if (currentUser) {
+        const isUidAdmin = await ensureAdminUidRegistered(currentUser);
+        setIsAdmin(isUidAdmin);
+        if (isUidAdmin) setLoginError(null);
       } else {
         setIsAdmin(false);
       }
@@ -178,10 +166,6 @@ export const AdminKurator: React.FC = () => {
 
     return () => unsubscribe();
   }, []);
-
-  useEffect(() => {
-    setIsAdmin(isUserAdmin(user));
-  }, [user]);
 
   // Subscribe to contributions & donations & settings when Admin is logged in
   useEffect(() => {
@@ -303,6 +287,7 @@ export const AdminKurator: React.FC = () => {
       for (const site of localSites) {
         await setDoc(doc(db, 'sites', site.id), site);
       }
+      await refreshCloudSites(true);
       setSeedMessage('Berhasil mensinkronisasi ' + localSites.length + ' data makam ke Firestore.');
     } catch (e: any) {
       setSeedMessage('Gagal: ' + e.message);
@@ -346,6 +331,7 @@ export const AdminKurator: React.FC = () => {
           }
         };
         await setDoc(doc(db, 'sites', slug), newSite, { merge: true });
+        await refreshCloudSites(true);
       }
 
       await updateDoc(doc(db, 'contributions', item.id), {
@@ -427,6 +413,7 @@ export const AdminKurator: React.FC = () => {
 
     try {
       await setDoc(doc(db, 'sites', slug), payload, { merge: true });
+      await refreshCloudSites(true);
       setSiteStatusMsg(`Berhasil menyimpan data "${payload.name}" ke Firestore.`);
       setIsSiteFormOpen(false);
     } catch (error: any) {
@@ -443,6 +430,7 @@ export const AdminKurator: React.FC = () => {
     if (!isAdmin) return;
     try {
       await deleteDoc(doc(db, 'sites', siteId));
+      await refreshCloudSites(true);
       setSiteStatusMsg(`Data makam (${siteId}) dihapus dari Cloud Firestore.`);
     } catch (error: any) {
       setSiteStatusMsg(`Gagal menghapus: ${error.message}`);
@@ -600,6 +588,9 @@ export const AdminKurator: React.FC = () => {
   const handleDeleteDonation = async (id: string) => {
     if (!isAdmin) return;
     try {
+      try {
+        await deleteDoc(doc(db, 'donations', id, 'private', 'proof'));
+      } catch {}
       await deleteDoc(doc(db, 'donations', id));
       if (previewProofDonation?.id === id) {
         setPreviewProofDonation(null);
@@ -785,413 +776,53 @@ export const AdminKurator: React.FC = () => {
           <div className="space-y-6">
             {/* TAB 1: ANTREAN KONTRIBUSI KOMUNITAS */}
             {activeTab === 'kontribusi' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-base sm:text-lg font-bold text-slate-900">Antrean Usulan & Kontribusi Peziarah</h2>
-                    <p className="text-xs text-slate-500">Setujui usulan makam baru, naskah rubrik karomah, atau doa khusus dari pengguna.</p>
-                  </div>
-                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                    Total: {contributions.length} Usulan
-                  </span>
-                </div>
-
-                {contributions.length === 0 ? (
-                  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-10 text-center">
-                    <Inbox className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                    <p className="text-sm font-bold text-slate-700">Belum Ada Usulan Masuk</p>
-                    <p className="text-xs text-slate-500 mt-1">Setiap usulan yang dikirim pengguna melalui tombol "Kontribusi" akan tampil secara real-time di sini.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {contributions.map((item) => (
-                      <div key={item.id} className="bg-slate-50/70 border border-slate-200 rounded-2xl p-5 flex flex-col gap-3">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-lg border ${
-                              item.type === 'baru'
-                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                : item.type === 'karomah'
-                                  ? 'bg-amber-50 text-amber-800 border-amber-200'
-                                  : 'bg-sky-50 text-sky-800 border-sky-200'
-                            }`}>
-                              {item.type === 'baru' ? 'Lokasi Makam Baru' : item.type === 'karomah' ? 'Rubrik & Karomah' : 'Doa Khusus'}
-                            </span>
-                            <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-lg border ${
-                              item.status === 'approved'
-                                ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                                : item.status === 'rejected'
-                                  ? 'bg-rose-100 text-rose-900 border-rose-300'
-                                  : 'bg-amber-100 text-amber-900 border-amber-300'
-                            }`}>
-                              {item.status === 'approved' ? 'Disetujui' : item.status === 'rejected' ? 'Ditolak' : 'Menunggu Kurasi'}
-                            </span>
-                          </div>
-                          <span className="text-xs text-slate-500">
-                            Pengusul: <strong className="text-slate-800">{item.contributorName}</strong> {item.contributorContact ? `(${item.contributorContact})` : ''}
-                          </span>
-                        </div>
-
-                        <div>
-                          <h3 className="text-sm sm:text-base font-bold text-slate-900">{item.targetName}</h3>
-                          {(item.city || item.province) && (
-                            <p className="text-xs text-emerald-700 font-medium flex items-center mt-0.5">
-                              <MapPin className="w-3.5 h-3.5 mr-1" /> {item.city}{item.province ? `, ${item.province}` : ''} ({item.category})
-                            </p>
-                          )}
-                          {item.mapsUrl && (
-                            <p className="text-xs text-slate-500 mt-0.5 truncate">
-                              Maps/Alamat:{' '}
-                              {isSafeExternalUrl(item.mapsUrl) ? (
-                                <a
-                                  href={item.mapsUrl.trim()}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-emerald-700 hover:underline font-semibold"
-                                >
-                                  {item.mapsUrl.trim()} ↗
-                                </a>
-                              ) : (
-                                item.mapsUrl
-                              )}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line">
-                          {item.content}
-                          {item.translation && (
-                            <p className="mt-2 pt-2 border-t border-slate-100 text-xs text-slate-500 italic">
-                              Arti / Fadhilah: {item.translation}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
-                          {item.status !== 'approved' && (
-                            <button
-                              onClick={() => handleApproveContribution(item)}
-                              disabled={processingId === item.id}
-                              className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center transition-colors cursor-pointer disabled:opacity-50"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                              Setujui & Publikasikan
-                            </button>
-                          )}
-                          {item.status !== 'rejected' && (
-                            <button
-                              onClick={() => handleRejectContribution(item)}
-                              disabled={processingId === item.id}
-                              className="px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold rounded-xl flex items-center transition-colors cursor-pointer disabled:opacity-50"
-                            >
-                              <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                              Tolak
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleDeleteContribution(item.id)}
-                            disabled={processingId === item.id}
-                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
-                            title="Hapus permanen"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ContributionQueueSection
+                contributions={contributions}
+                processingId={processingId}
+                onApprove={handleApproveContribution}
+                onReject={handleRejectContribution}
+                onDelete={handleDeleteContribution}
+              />
             )}
 
             {/* TAB 2: MANAJEMEN DIREKTORI MAKAM */}
             {activeTab === 'makam' && (
-              <div className="space-y-6">
-                {/* Sinkronisasi Cloud */}
-                <div className="border rounded-2xl p-5 bg-emerald-50/50 border-emerald-200 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                    <UploadCloud className="w-24 h-24 text-emerald-950" />
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-                    <div>
-                      <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-white text-emerald-800 border border-emerald-200 mb-2">
-                        Status Cloud: {isSeededInCloud ? `Tersinkronisasi (${cloudSiteCount} Makam di Firestore)` : 'Menggunakan Fallback Lokal (Belum Di-seed)'}
-                      </span>
-                      <h3 className="font-bold text-slate-900 text-base">Sinkronisasi Data Bawaan ke Firestore</h3>
-                      <p className="text-xs text-slate-600 mt-0.5">
-                        Salin seluruh {localSites.length} data makam utama ke koleksi <code className="bg-white px-1 rounded">sites</code> di Cloud Firestore Anda.
-                      </p>
-                    </div>
-                    <button 
-                      onClick={handleSeedDatabase} 
-                      disabled={isSeeding}
-                      className="py-2.5 px-5 bg-emerald-700 hover:bg-emerald-800 disabled:bg-emerald-300 text-white font-bold rounded-xl text-xs transition-all shrink-0 cursor-pointer shadow-xs"
-                    >
-                      {isSeeding ? 'Memproses...' : `Sinkronkan ${localSites.length} Makam Bawaan`}
-                    </button>
-                  </div>
-                  {seedMessage && (
-                    <p className={`mt-3 text-xs font-semibold relative z-10 ${seedMessage.includes('Gagal') ? 'text-rose-600' : 'text-emerald-800'}`}>
-                      {seedMessage}
-                    </p>
-                  )}
-                </div>
-
-                {/* Header & Tombol Tambah Makam */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-base">Kelola Daftar Makam ({sites.length})</h3>
-                    <p className="text-xs text-slate-500">Tambah makam baru atau perbarui informasi makam yang sudah ada.</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setEditingSite({
-                        id: '',
-                        name: '',
-                        title: '',
-                        category: 'Ulama Nusantara',
-                        description: '',
-                        history: '',
-                        imageUrl: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80',
-                        openingHours: 'Buka 24 Jam',
-                        facilities: ['Masjid / Musholla', 'Area Parkir', 'Tempat Wudhu'],
-                        location: { lat: -6.9, lng: 110.4, address: '', city: '', province: '' }
-                      });
-                      setIsSiteFormOpen(!isSiteFormOpen);
-                    }}
-                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center cursor-pointer transition-colors"
-                  >
-                    <Plus className="w-4 h-4 mr-1.5" />
-                    Tambah Makam Baru
-                  </button>
-                </div>
-
-                {siteStatusMsg && (
-                  <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold rounded-xl">
-                    {siteStatusMsg}
-                  </div>
-                )}
-
-                {/* Form Tambah / Edit Makam */}
-                {isSiteFormOpen && (
-                  <form onSubmit={handleSaveSite} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
-                    <h4 className="font-bold text-slate-900 text-sm">Formulir Data Makam</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Nama Tokoh / Wali *</label>
-                        <input
-                          required
-                          type="text"
-                          value={editingSite.name || ''}
-                          onChange={(e) => setEditingSite({ ...editingSite, name: e.target.value })}
-                          placeholder="Contoh: Syekh Nawawi Al-Bantani"
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Judul Lengkap Makam *</label>
-                        <input
-                          required
-                          type="text"
-                          value={editingSite.title || ''}
-                          onChange={(e) => setEditingSite({ ...editingSite, title: e.target.value })}
-                          placeholder="Contoh: Makam Syekh Nawawi Al-Bantani"
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Kategori</label>
-                        <select
-                          value={editingSite.category || 'Ulama Nusantara'}
-                          onChange={(e) => setEditingSite({ ...editingSite, category: e.target.value as any })}
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                        >
-                          <option value="Walisongo">Walisongo</option>
-                          <option value="Ulama Nusantara">Ulama Nusantara</option>
-                          <option value="Habaib">Habaib</option>
-                          <option value="Auliya Nusantara">Auliya Nusantara</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">URL Foto Makam</label>
-                        <input
-                          type="text"
-                          value={editingSite.imageUrl || ''}
-                          onChange={(e) => setEditingSite({ ...editingSite, imageUrl: e.target.value })}
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Kota / Kabupaten *</label>
-                        <input
-                          required
-                          type="text"
-                          value={editingSite.location?.city || ''}
-                          onChange={(e) => setEditingSite({ ...editingSite, location: { ...editingSite.location!, city: e.target.value } })}
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Provinsi *</label>
-                        <input
-                          required
-                          type="text"
-                          value={editingSite.location?.province || ''}
-                          onChange={(e) => setEditingSite({ ...editingSite, location: { ...editingSite.location!, province: e.target.value } })}
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Latitude (Koordinat)</label>
-                        <input
-                          type="number"
-                          step="any"
-                          value={editingSite.location?.lat ?? -6.9}
-                          onChange={(e) => setEditingSite({ ...editingSite, location: { ...editingSite.location!, lat: parseFloat(e.target.value) } })}
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Longitude (Koordinat)</label>
-                        <input
-                          type="number"
-                          step="any"
-                          value={editingSite.location?.lng ?? 110.4}
-                          onChange={(e) => setEditingSite({ ...editingSite, location: { ...editingSite.location!, lng: parseFloat(e.target.value) } })}
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Alamat Lengkap</label>
-                      <input
-                        type="text"
-                        value={editingSite.location?.address || ''}
-                        onChange={(e) => setEditingSite({ ...editingSite, location: { ...editingSite.location!, address: e.target.value } })}
-                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Jadwal Haul Tahunan (Logistik Rombongan)</label>
-                        <input
-                          type="text"
-                          value={editingSite.haulSchedule || ''}
-                          onChange={(e) => setEditingSite({ ...editingSite, haulSchedule: e.target.value })}
-                          placeholder="Contoh: 12 Rabiul Awal / Pertengahan Sya'ban"
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Ketentuan Adab Lokal Juru Kunci</label>
-                        <input
-                          type="text"
-                          value={editingSite.localAdab || ''}
-                          onChange={(e) => setEditingSite({ ...editingSite, localAdab: e.target.value })}
-                          placeholder="Contoh: Berpakaian sopan, melepas alas kaki di gapura kedua..."
-                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Deskripsi Singkat *</label>
-                      <textarea
-                        required
-                        rows={2}
-                        value={editingSite.description || ''}
-                        onChange={(e) => setEditingSite({ ...editingSite, description: e.target.value })}
-                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Sejarah Lengkap</label>
-                      <textarea
-                        rows={3}
-                        value={editingSite.history || ''}
-                        onChange={(e) => setEditingSite({ ...editingSite, history: e.target.value })}
-                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Kisah Rahasia / Untold Story (Tampil di Rubrik)</label>
-                      <textarea
-                        rows={3}
-                        placeholder="Tuliskan kisah rahasia atau manuskrip khusus tokoh ini..."
-                        value={editingSite.untoldStory || ''}
-                        onChange={(e) => setEditingSite({ ...editingSite, untoldStory: e.target.value })}
-                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Daftar Hikmah & Karomah (Pisahkan setiap karomah dengan baris baru / Enter)</label>
-                      <textarea
-                        rows={3}
-                        placeholder="Satu baris untuk satu kisah karomah..."
-                        value={(editingSite.karomah || []).join('\n')}
-                        onChange={(e) =>
-                          setEditingSite({
-                            ...editingSite,
-                            karomah: e.target.value
-                              .split('\n')
-                              .map((s) => s.trim())
-                              .filter(Boolean),
-                          })
-                        }
-                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs"
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setIsSiteFormOpen(false)}
-                        className="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl cursor-pointer"
-                      >
-                        Batal
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isSavingSite}
-                        className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl cursor-pointer"
-                      >
-                        {isSavingSite ? 'Menyimpan...' : 'Simpan ke Firestore'}
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                {/* Daftar Ringkas Makam */}
-                <div className="max-h-96 overflow-y-auto border border-slate-200 rounded-2xl divide-y divide-slate-100">
-                  {sites.map((s) => (
-                    <div key={s.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50">
-                      <div className="min-w-0 pr-3">
-                        <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{s.name}</p>
-                        <p className="text-[11px] text-slate-500">{s.location.city}, {s.location.province} • {s.category}</p>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          onClick={() => {
-                            setEditingSite(s);
-                            setIsSiteFormOpen(true);
-                          }}
-                          className="p-2 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
-                          title="Edit Makam, Kisah Rahasia & Karomah"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        {isSeededInCloud && (
-                          <button
-                            onClick={() => handleDeleteSite(s.id)}
-                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                            title="Hapus dari Firestore"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <SiteDirectoryAdminSection
+                sites={sites}
+                localSitesCount={localSites.length}
+                isSeededInCloud={isSeededInCloud}
+                cloudSiteCount={cloudSiteCount}
+                isSeeding={isSeeding}
+                seedMessage={seedMessage}
+                isSiteFormOpen={isSiteFormOpen}
+                editingSite={editingSite}
+                isSavingSite={isSavingSite}
+                siteStatusMsg={siteStatusMsg}
+                onSeedDatabase={handleSeedDatabase}
+                onToggleNewSiteForm={() => {
+                  setEditingSite({
+                    id: '',
+                    name: '',
+                    title: '',
+                    category: 'Ulama Nusantara',
+                    description: '',
+                    history: '',
+                    imageUrl: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80',
+                    openingHours: 'Buka 24 Jam',
+                    facilities: ['Masjid / Musholla', 'Area Parkir', 'Tempat Wudhu'],
+                    location: { lat: -6.9, lng: 110.4, address: '', city: '', province: '' },
+                  });
+                  setIsSiteFormOpen(!isSiteFormOpen);
+                }}
+                onChangeEditingSite={setEditingSite}
+                onSaveSite={handleSaveSite}
+                onCancelSiteForm={() => setIsSiteFormOpen(false)}
+                onSelectEditSite={(s) => {
+                  setEditingSite(s);
+                  setIsSiteFormOpen(true);
+                }}
+                onDeleteSite={handleDeleteSite}
+              />
             )}
 
             {/* TAB 3: KELOLA RUBRIK, CONTOH GRATIS & KUNCI DONASI */}
@@ -1980,8 +1611,10 @@ export const AdminKurator: React.FC = () => {
                     <p className="text-xs text-slate-500 italic">Belum ada data konfirmasi donasi di database.</p>
                   ) : (
                     <div className="max-h-[480px] overflow-y-auto border border-slate-200 rounded-2xl divide-y divide-slate-100 bg-white">
-                      {donations.map((d) => {
-                        const hasProof = typeof d.proofImageUrl === 'string' && d.proofImageUrl.startsWith('data:image/');
+                      {donations.map((d: DonationAdminItem) => {
+                        const hasProof =
+                          d.hasProof === true ||
+                          (typeof d.proofImageUrl === 'string' && d.proofImageUrl.startsWith('data:image/'));
                         const isVerified = d.status === 'verified';
                         return (
                           <div key={d.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50">
@@ -1990,15 +1623,19 @@ export const AdminKurator: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => setPreviewProofDonation(d)}
-                                  className="w-14 h-14 rounded-xl overflow-hidden border-2 border-emerald-300 bg-slate-100 shrink-0 relative group cursor-pointer"
-                                  title="Klik untuk memperbesar Bukti Transfer"
+                                  className="w-14 h-14 rounded-xl overflow-hidden border-2 border-emerald-300 bg-emerald-50 shrink-0 relative group cursor-pointer flex flex-col items-center justify-center text-emerald-800"
+                                  title="Klik untuk memeriksa Bukti Transfer Privat"
                                 >
-                                  <img
-                                    src={d.proofImageUrl}
-                                    alt="Bukti Transfer"
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                                  />
-                                  <span className="absolute inset-x-0 bottom-0 bg-slate-950/70 text-white text-[9px] font-bold text-center py-0.5">
+                                  {typeof d.proofImageUrl === 'string' && d.proofImageUrl.startsWith('data:image/') ? (
+                                    <img
+                                      src={d.proofImageUrl}
+                                      alt="Bukti Transfer"
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                    />
+                                  ) : (
+                                    <ShieldCheck className="w-5 h-5 text-emerald-700 mb-2" />
+                                  )}
+                                  <span className="absolute inset-x-0 bottom-0 bg-slate-950/75 text-white text-[9px] font-bold text-center py-0.5">
                                     Lihat Struk
                                   </span>
                                 </button>
@@ -2012,7 +1649,7 @@ export const AdminKurator: React.FC = () => {
                                   <p className="text-xs font-bold text-slate-900">
                                     {d.donorName}
                                   </p>
-                                  <span className="text-xs font-black text-emerald-700">
+                                  <span className="text-xs font-black font-mono tabular-nums text-emerald-700">
                                     Rp {Number(d.amount || 0).toLocaleString('id-ID')}
                                   </span>
                                   {d.referenceCode && (
@@ -2027,11 +1664,11 @@ export const AdminKurator: React.FC = () => {
                                         ? 'bg-sky-50 text-sky-900 border border-sky-200'
                                         : 'bg-amber-50 text-amber-900 border border-amber-200'
                                   }`}>
-                                    {isVerified ? '✓ Bukti Terverifikasi' : hasProof ? 'Bukti Terlampir' : 'Data Lama (Akses Terkunci)'}
+                                    {isVerified ? '✓ Bukti Terverifikasi' : hasProof ? 'Bukti Terlampir (Privat)' : 'Data Lama (Akses Terkunci)'}
                                   </span>
                                 </div>
                                 <p className="text-[11px] text-slate-600 mt-0.5">
-                                  <strong>Metode:</strong> {d.paymentMethod || 'Manual'} • <strong>Pengirim:</strong> {d.senderAccount || d.donorName}
+                                  <strong>Metode:</strong> {d.paymentMethod || 'QRIS'} • <strong>Pengirim:</strong> {d.senderAccount || d.donorName}
                                 </p>
                                 <p className="text-[11px] text-slate-500">{d.programTitle} • {d.siteName}</p>
                                 {d.doaHajat && <p className="text-[11px] text-slate-600 italic mt-0.5">&ldquo;{d.doaHajat}&rdquo;</p>}
@@ -2081,97 +1718,12 @@ export const AdminKurator: React.FC = () => {
 
       </motion.div>
 
-      {/* Lightbox Modal Pemeriksaan Bukti Transfer */}
-      {previewProofDonation && (
-        <div
-          className="fixed inset-0 z-[3000] bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4"
-          onClick={() => setPreviewProofDonation(null)}
-        >
-          <div
-            className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-4 sm:p-5 bg-slate-900 text-white flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-800 text-emerald-200">
-                  Ref: #{previewProofDonation.referenceCode || previewProofDonation.id?.slice(0, 8)}
-                </span>
-                <h4 className="text-sm sm:text-base font-bold mt-1">
-                  Bukti Transfer — {previewProofDonation.donorName}
-                </h4>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPreviewProofDonation(null)}
-                className="p-2 text-white/70 hover:text-white rounded-full cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
-              <div className="bg-slate-100 rounded-2xl p-2 border border-slate-200 flex items-center justify-center max-h-[52vh] overflow-auto">
-                <img
-                  src={previewProofDonation.proofImageUrl}
-                  alt="Screenshot Bukti Transfer"
-                  className="max-w-full max-h-[48vh] object-contain rounded-xl"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Nominal Donasi</span>
-                  <span className="font-black text-emerald-800 text-sm">
-                    Rp {Number(previewProofDonation.amount || 0).toLocaleString('id-ID')}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Metode &amp; Pengirim</span>
-                  <span className="font-bold text-slate-900">
-                    {previewProofDonation.paymentMethod || 'QRIS'} — {previewProofDonation.senderAccount || previewProofDonation.donorName}
-                  </span>
-                </div>
-                <div className="col-span-2">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Program &amp; Tujuan</span>
-                  <span className="font-semibold text-slate-700">
-                    {previewProofDonation.programTitle} ({previewProofDonation.siteName})
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between gap-2.5 pt-1">
-                <button
-                  type="button"
-                  onClick={() => handleDeleteDonation(previewProofDonation.id)}
-                  className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Tolak &amp; Cabut Akses</span>
-                </button>
-                <div className="flex items-center gap-2">
-                  {previewProofDonation.status !== 'verified' && (
-                    <button
-                      type="button"
-                      onClick={() => handleVerifyDonation(previewProofDonation.id)}
-                      className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Verifikasi Sah</span>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setPreviewProofDonation(null)}
-                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
-                  >
-                    Tutup
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <DonationVerificationModal
+        donation={previewProofDonation}
+        onClose={() => setPreviewProofDonation(null)}
+        onVerify={handleVerifyDonation}
+        onDelete={handleDeleteDonation}
+      />
     </div>
   );
 };

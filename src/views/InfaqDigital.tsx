@@ -15,12 +15,12 @@ import {
   Lock,
   AlertCircle
 } from 'lucide-react';
-import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
-import { CompressedReceiptResult, saveVerifiedDonationRecord } from '../lib/transferProof';
+import { CompressedReceiptResult, saveVerifiedDonationRecord, submitDonationWithPrivateProof } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeDonationAmount } from '../lib/sanitize';
 
 interface DonationRecord {
@@ -209,17 +209,21 @@ export const InfaqDigital: React.FC = () => {
       return;
     }
 
+    const cooldown = checkAndRecordSubmissionCooldown('donation', 15);
+    if (!cooldown.allowed) {
+      setSubmitError(`Mohon tunggu ${cooldown.remainingSeconds} detik sebelum mengirim konfirmasi donasi berikutnya.`);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const finalDonorName = isAnonim
       ? 'Hamba Allah'
       : sanitizePlainText(donorName, 100) || cleanSender || 'Hamba Allah';
     const cleanDoaHajat = sanitizeMultilineText(doaHajat, 1000);
-    const donationRef = doc(collection(db, 'donations'));
 
     try {
-      await setDoc(donationRef, {
-        id: donationRef.id,
+      const donationId = await submitDonationWithPrivateProof({
         programId: sanitizePlainText(selectedProgram, 100),
         programTitle: sanitizePlainText(activeProgramTitle, 150),
         siteId: sanitizePlainText(selectedSiteId, 128),
@@ -228,14 +232,10 @@ export const InfaqDigital: React.FC = () => {
         donorName: finalDonorName,
         paymentMethod,
         senderAccount: cleanSender,
-        proofImageUrl: receipt.dataUrl,
-        referenceCode: receipt.referenceCode,
+        receipt,
         doaHajat: cleanDoaHajat,
-        authorUid: auth.currentUser?.uid || 'guest',
-        status: 'confirmed',
-        createdAt: serverTimestamp(),
       });
-      saveVerifiedDonationRecord(donationRef.id, selectedSiteId);
+      saveVerifiedDonationRecord(donationId, selectedSiteId);
       setLastSubmittedReceipt(receipt);
       setIsSuccessModal(true);
       setDoaHajat('');
@@ -245,7 +245,7 @@ export const InfaqDigital: React.FC = () => {
       console.error('Error recording infaq in Firestore:', error);
       setSubmitError('Gagal mengunggah bukti transfer ke database. Periksa koneksi internet Anda dan coba kembali.');
       try {
-        handleFirestoreError(error, OperationType.CREATE, `donations/${donationRef.id}`);
+        handleFirestoreError(error, OperationType.CREATE, 'donations');
       } catch {
         // Structured log emitted
       }

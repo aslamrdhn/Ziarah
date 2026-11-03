@@ -161,7 +161,98 @@ const staticRoutes = [
   },
 ];
 
-const sites = extractSitesFromSource();
+function parseFirestoreStringField(fields, key, fallback = '') {
+  const val = fields?.[key]?.stringValue;
+  return typeof val === 'string' && val.trim() ? val.trim() : fallback;
+}
+
+async function fetchCloudSitesForSeo(localSites) {
+  const configPath = path.resolve(cwd, 'firebase-applet-config.json');
+  if (!fs.existsSync(configPath) || typeof fetch !== 'function') {
+    return localSites;
+  }
+
+  try {
+    const rawConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const projectId = rawConfig.projectId;
+    const dbId = rawConfig.firestoreDatabaseId || '(default)';
+    const apiKey = rawConfig.apiKey;
+    if (!projectId) return localSites;
+
+    const url = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(
+      projectId
+    )}/databases/${encodeURIComponent(dbId)}/documents/sites?pageSize=300${
+      apiKey ? `&key=${encodeURIComponent(apiKey)}` : ''
+    }`;
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+
+    if (!res.ok) {
+      return localSites;
+    }
+
+    const json = await res.json();
+    const docs = Array.isArray(json?.documents) ? json.documents : [];
+    if (docs.length === 0) return localSites;
+
+    const mergedMap = new Map();
+    for (const s of localSites) {
+      mergedMap.set(s.id, s);
+    }
+
+    let addedCloudCount = 0;
+    for (const docItem of docs) {
+      const f = docItem.fields || {};
+      const docNameParts = String(docItem.name || '').split('/');
+      const docId = parseFirestoreStringField(f, 'id', docNameParts[docNameParts.length - 1]);
+      if (!docId) continue;
+
+      const locFields = f.location?.mapValue?.fields || {};
+      const base = mergedMap.get(docId);
+      const name = parseFirestoreStringField(f, 'name', base?.name || docId);
+      const title = parseFirestoreStringField(f, 'title', base?.title || `Makam ${name}`);
+      const category = parseFirestoreStringField(f, 'category', base?.category || 'Waliyullah Nusantara');
+      const description = parseFirestoreStringField(f, 'description', base?.description || '');
+      const history = parseFirestoreStringField(f, 'history', base?.history || description);
+      const address = parseFirestoreStringField(locFields, 'address', base?.address || '');
+      const city = parseFirestoreStringField(locFields, 'city', base?.city || 'Nusantara');
+      const province = parseFirestoreStringField(locFields, 'province', base?.province || 'Indonesia');
+      const era = parseFirestoreStringField(f, 'era', base?.era || '');
+      const sanad = parseFirestoreStringField(f, 'sanad', base?.sanad || '');
+      const slug = getSiteSlug(title, city, docId);
+
+      if (!base) addedCloudCount++;
+      mergedMap.set(docId, {
+        id: docId,
+        slug,
+        name,
+        title,
+        category,
+        description,
+        history,
+        address,
+        city,
+        province,
+        era,
+        sanad,
+      });
+    }
+
+    console.log(
+      `[postbuild] Synced ${docs.length} cloud sites from Firestore REST API (${addedCloudCount} net-new cloud sites merged).`
+    );
+    return Array.from(mergedMap.values());
+  } catch (err) {
+    console.log('[postbuild] Using local sites catalog fallback (Firestore REST sync skipped):', err?.message || 'offline');
+    return localSites;
+  }
+}
+
+const localExtractedSites = extractSitesFromSource();
+const sites = await fetchCloudSitesForSeo(localExtractedSites);
 
 function buildDirectoryLinksHtml() {
   const provinces = Array.from(new Set(sites.map((s) => s.province))).sort();

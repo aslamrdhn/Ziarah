@@ -3,12 +3,12 @@ import { X, CheckCircle2, ScrollText, HeartHandshake, Loader2, Copy, MessageSqua
 import { motion } from 'motion/react';
 import { ZiarahSite } from '../data/sites';
 import { Link } from 'react-router-dom';
-import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { QrisPaymentCard } from './QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from './TransferProofUploadField';
-import { CompressedReceiptResult, saveVerifiedDonationRecord } from '../lib/transferProof';
+import { CompressedReceiptResult, saveVerifiedDonationRecord, submitDonationWithPrivateProof } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
 
 interface TransactionModalProps {
@@ -99,12 +99,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       return;
     }
 
+    const cooldown = checkAndRecordSubmissionCooldown('donation', 15);
+    if (!cooldown.allowed) {
+      setSubmitError(`Mohon tunggu ${cooldown.remainingSeconds} detik sebelum mengirim konfirmasi berikutnya.`);
+      return;
+    }
+
     setIsSaving(true);
-    const donationRef = doc(collection(db, 'donations'));
 
     try {
-      await setDoc(donationRef, {
-        id: donationRef.id,
+      const donationId = await submitDonationWithPrivateProof({
         programId: type === 'infaq' ? 'pemeliharaan' : 'rubrik-manuskrip',
         programTitle: type === 'infaq' ? 'Pemeliharaan & Revitalisasi Makam' : 'Apresiasi Literasi & Manuskrip Rubrik',
         siteId: sanitizePlainText(site.id, 128),
@@ -113,18 +117,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         donorName,
         paymentMethod,
         senderAccount: cleanSender,
-        proofImageUrl: receipt.dataUrl,
-        referenceCode: receipt.referenceCode,
+        receipt,
         doaHajat: sanitizePlainText(
           type === 'infaq' ? `Donasi pemeliharaan untuk ${site.name}` : `Apresiasi pembukaan manuskrip ${site.name}`,
           1000
         ),
-        authorUid: auth.currentUser?.uid || 'guest',
-        status: 'confirmed',
-        createdAt: serverTimestamp(),
       });
 
-      saveVerifiedDonationRecord(donationRef.id, site.id);
+      saveVerifiedDonationRecord(donationId, site.id);
       setIsSaving(false);
       setIsSuccess(true);
       if (onSuccess) onSuccess();
@@ -132,7 +132,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       console.error('Error recording transaction in Firestore:', error);
       setSubmitError('Gagal mengunggah bukti transfer ke server. Periksa koneksi internet Anda dan coba kembali.');
       try {
-        handleFirestoreError(error, OperationType.CREATE, `donations/${donationRef.id}`);
+        handleFirestoreError(error, OperationType.CREATE, 'donations');
       } catch {
         // Logged structured error
       }

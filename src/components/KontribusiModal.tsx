@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl } from '../lib/sanitize';
 
@@ -77,6 +77,12 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
     }
     if (cleanContent.length < 5) {
       setErrorMsg('Mohon tuliskan keterangan sejarah, kisah, atau teks doa minimal 5 karakter.');
+      return;
+    }
+
+    const cooldown = checkAndRecordSubmissionCooldown('contribution', 20);
+    if (!cooldown.allowed) {
+      setErrorMsg(`Mohon tunggu ${cooldown.remainingSeconds} detik sebelum mengirim usulan berikutnya.`);
       return;
     }
 

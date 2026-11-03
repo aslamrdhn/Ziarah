@@ -24,12 +24,12 @@ import {
 } from 'lucide-react';
 import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
-import { auth, db, handleFirestoreError, OperationType, isUserAdmin } from '../lib/firebase';
-import { collection, query, where, onSnapshot, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
+import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
-import { CompressedReceiptResult, saveVerifiedDonationRecord, useVerifiedDonationUnlock } from '../lib/transferProof';
+import { CompressedReceiptResult, saveVerifiedDonationRecord, submitDonationWithPrivateProof, useVerifiedDonationUnlock } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
 
 export interface RubrikItem {
@@ -330,15 +330,19 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       return;
     }
 
+    const cooldown = checkAndRecordSubmissionCooldown('donation', 15);
+    if (!cooldown.allowed) {
+      setSubmitError(`Mohon tunggu ${cooldown.remainingSeconds} detik sebelum mengirim konfirmasi berikutnya.`);
+      return;
+    }
+
     setIsSubmittingDonation(true);
     const cleanSender = sanitizePlainText(senderAccount, 80);
     const finalDonor = cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
     const cleanAmount = sanitizeDonationAmount(selectedNominal, 1000, 1000000000) || 25000;
-    const donationRef = doc(collection(db, 'donations'));
 
     try {
-      await setDoc(donationRef, {
-        id: donationRef.id,
+      const donationId = await submitDonationWithPrivateProof({
         programId: 'riset-web',
         programTitle: 'Riset Sejarah, Perluasan Database & Operasional Web (Pembuka Rubrik)',
         siteId: sanitizePlainText(unlockModalArticle?.siteId, 80) || 'web-riset',
@@ -347,24 +351,20 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         donorName: finalDonor,
         paymentMethod,
         senderAccount: cleanSender || finalDonor,
-        proofImageUrl: receipt.dataUrl,
-        referenceCode: receipt.referenceCode,
+        receipt,
         doaHajat: sanitizePlainText(
           `Donasi Riset & Pembukaan Arsip Rubrik (${unlockModalArticle?.title || 'Khazanah Nusantara'})`,
           1000
         ),
-        authorUid: auth.currentUser?.uid || 'guest',
-        status: 'confirmed',
-        createdAt: serverTimestamp(),
       });
 
-      saveVerifiedDonationRecord(donationRef.id, unlockModalArticle?.siteId);
+      saveVerifiedDonationRecord(donationId, unlockModalArticle?.siteId);
       setIsSubmittingDonation(false);
       setUnlockSuccessState(true);
     } catch (error) {
       setSubmitError('Gagal mengunggah bukti transfer ke database. Periksa koneksi internet Anda dan coba kembali.');
       try {
-        handleFirestoreError(error, OperationType.CREATE, `donations/${donationRef.id}`);
+        handleFirestoreError(error, OperationType.CREATE, 'donations');
       } catch {}
       setIsSubmittingDonation(false);
     }

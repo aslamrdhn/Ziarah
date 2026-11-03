@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from './firebase';
+import { collection, doc, getDoc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
+import { auth, db } from './firebase';
 
 export const RUBRIK_DONATION_ID_KEY = 'zn_verified_rubrik_donation_id';
 export const SITE_DONATION_MAP_KEY = 'zn_verified_site_donation_map';
@@ -12,6 +12,28 @@ export interface CompressedReceiptResult {
   fileName: string;
   sizeKb: number;
   referenceCode: string;
+}
+
+export interface SubmitDonationPayload {
+  programId: string;
+  programTitle: string;
+  siteId: string;
+  siteName: string;
+  amount: number;
+  donorName: string;
+  paymentMethod: 'QRIS' | 'Transfer Bank' | string;
+  senderAccount: string;
+  receipt: CompressedReceiptResult;
+  doaHajat: string;
+}
+
+export interface PrivateProofData {
+  donationId: string;
+  senderAccount: string;
+  proofImageUrl: string;
+  referenceCode: string;
+  fileName?: string;
+  sizeKb?: number;
 }
 
 export function generateReceiptReferenceCode(): string {
@@ -119,6 +141,80 @@ export async function validateAndCompressReceipt(file: File): Promise<Compressed
     sizeKb,
     referenceCode: generateReceiptReferenceCode(),
   };
+}
+
+/**
+ * Stores lightweight public donation metadata in `/donations/{id}` (~1 KB)
+ * and isolates the compressed Base64 transfer receipt in `/donations/{id}/private/proof` (F-02, F-04).
+ */
+export async function submitDonationWithPrivateProof(payload: SubmitDonationPayload): Promise<string> {
+  const donationRef = doc(collection(db, 'donations'));
+  const donationId = donationRef.id;
+  const authorUid = auth.currentUser?.uid || 'guest';
+
+  await setDoc(donationRef, {
+    id: donationId,
+    programId: payload.programId,
+    programTitle: payload.programTitle,
+    siteId: payload.siteId,
+    siteName: payload.siteName,
+    amount: payload.amount,
+    donorName: payload.donorName,
+    paymentMethod: payload.paymentMethod,
+    hasProof: true,
+    referenceCode: payload.receipt.referenceCode,
+    doaHajat: payload.doaHajat,
+    authorUid,
+    status: 'confirmed',
+    createdAt: serverTimestamp(),
+  });
+
+  const proofRef = doc(db, 'donations', donationId, 'private', 'proof');
+  await setDoc(proofRef, {
+    donationId,
+    senderAccount: payload.senderAccount,
+    proofImageUrl: payload.receipt.dataUrl,
+    referenceCode: payload.receipt.referenceCode,
+    fileName: (payload.receipt.fileName || 'receipt.jpg').slice(0, 150),
+    sizeKb: payload.receipt.sizeKb,
+    authorUid,
+    createdAt: serverTimestamp(),
+  });
+
+  return donationId;
+}
+
+/**
+ * Fetches the private receipt document `/donations/{id}/private/proof` on demand for Admin Curators,
+ * with fallback to legacy parent document fields for older records.
+ */
+export async function fetchDonationPrivateProof(donationDoc: Record<string, any>): Promise<PrivateProofData | null> {
+  if (!donationDoc || !donationDoc.id) return null;
+  if (typeof donationDoc.proofImageUrl === 'string' && donationDoc.proofImageUrl.startsWith('data:image/')) {
+    return {
+      donationId: donationDoc.id,
+      senderAccount: donationDoc.senderAccount || donationDoc.donorName || 'Hamba Allah',
+      proofImageUrl: donationDoc.proofImageUrl,
+      referenceCode: donationDoc.referenceCode || donationDoc.id.slice(0, 8).toUpperCase(),
+    };
+  }
+  try {
+    const snap = await getDoc(doc(db, 'donations', donationDoc.id, 'private', 'proof'));
+    if (snap.exists()) {
+      const data = snap.data();
+      return {
+        donationId: donationDoc.id,
+        senderAccount: data.senderAccount || donationDoc.donorName || 'Hamba Allah',
+        proofImageUrl: data.proofImageUrl || '',
+        referenceCode: data.referenceCode || donationDoc.referenceCode || donationDoc.id.slice(0, 8).toUpperCase(),
+        fileName: data.fileName,
+        sizeKb: data.sizeKb,
+      };
+    }
+  } catch (err) {
+    console.warn('Failed to fetch private proof subcollection:', err);
+  }
+  return null;
 }
 
 export function saveVerifiedDonationRecord(donationId: string, siteId?: string): void {
@@ -249,14 +345,15 @@ export function useVerifiedDonationUnlock(
         }
 
         const data = snap.data();
-        const hasValidProofImage =
-          typeof data.proofImageUrl === 'string' &&
-          data.proofImageUrl.startsWith('data:image/') &&
-          data.proofImageUrl.length > 500;
+        const hasValidProof =
+          data.hasProof === true ||
+          (typeof data.proofImageUrl === 'string' &&
+            data.proofImageUrl.startsWith('data:image/') &&
+            data.proofImageUrl.length > 500);
         const docStatus = String(data.status || 'confirmed');
         const refCode = typeof data.referenceCode === 'string' ? data.referenceCode : snap.id.slice(0, 8).toUpperCase();
 
-        if (!hasValidProofImage || docStatus === 'rejected') {
+        if (!hasValidProof || docStatus === 'rejected') {
           setUnlockState({
             isUnlocked: false,
             isPendingAdmin: false,

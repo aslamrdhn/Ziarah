@@ -95,7 +95,7 @@
     },
     "InfaqDonation": {
       "title": "Infaq Donation",
-      "description": "Recorded infaq pledge and prayer (doa hajat) from pilgrims.",
+      "description": "Recorded infaq pledge and prayer (doa hajat) from pilgrims (lightweight public metadata without raw receipt image).",
       "type": "object",
       "properties": {
         "programId": { "type": "string", "maxLength": 100 },
@@ -105,15 +105,42 @@
         "amount": { "type": "number" },
         "donorName": { "type": "string", "maxLength": 100 },
         "paymentMethod": { "type": "string", "maxLength": 40 },
-        "senderAccount": { "type": "string", "maxLength": 80 },
-        "proofImageUrl": { "type": "string", "maxLength": 700000 },
+        "hasProof": { "type": "boolean" },
         "referenceCode": { "type": "string", "maxLength": 40 },
         "doaHajat": { "type": "string", "maxLength": 1000 },
         "authorUid": { "type": "string", "maxLength": 128 },
-        "status": { "type": "string", "enum": ["confirmed", "verified"] },
+        "status": { "type": "string", "enum": ["confirmed", "verified", "rejected"] },
         "createdAt": { "type": "string" }
       },
-      "required": ["programId", "amount", "donorName", "status"]
+      "required": ["programId", "amount", "donorName", "hasProof", "status"]
+    },
+    "InfaqDonationProof": {
+      "title": "Private Infaq Donation Proof",
+      "description": "Private subcollection document storing compressed transfer receipt image and sender bank account name, readable only by Admin Curators.",
+      "type": "object",
+      "properties": {
+        "donationId": { "type": "string", "maxLength": 128 },
+        "senderAccount": { "type": "string", "maxLength": 100 },
+        "proofImageUrl": { "type": "string", "maxLength": 500000 },
+        "referenceCode": { "type": "string", "maxLength": 40 },
+        "fileName": { "type": "string", "maxLength": 160 },
+        "sizeKb": { "type": "number" },
+        "authorUid": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["donationId", "senderAccount", "proofImageUrl"]
+    },
+    "AdminRecord": {
+      "title": "Curator Admin Record",
+      "description": "Stores verified Admin Curator UIDs for role-based access control.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 160 },
+        "role": { "type": "string", "enum": ["admin", "superadmin"] },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
     },
     "AppSettings": {
       "title": "Application Settings",
@@ -138,6 +165,10 @@
     }
   },
   "firestore": {
+    "admins/{adminUid}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Verified curator admin UIDs."
+    },
     "users/{userId}": {
       "schema": { "$ref": "#/entities/UserProfile" },
       "description": "User profiles and synced preferences."
@@ -156,7 +187,11 @@
     },
     "donations/{donationId}": {
       "schema": { "$ref": "#/entities/InfaqDonation" },
-      "description": "Public infaq logs and donor prayers."
+      "description": "Public lightweight infaq logs and donor prayers."
+    },
+    "donations/{donationId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/InfaqDonationProof" },
+      "description": "Private transfer receipt proof accessible only to Admin Curators."
     },
     "settings/{settingId}": {
       "schema": { "$ref": "#/entities/AppSettings" },

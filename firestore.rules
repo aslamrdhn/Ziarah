@@ -25,10 +25,16 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function isBootstrapOwner() {
+      return isSignedIn() &&
+        request.auth.token.email == 'aslamramadhan08@gmail.com' &&
+        request.auth.token.email_verified == true;
+    }
+
     function isAdmin() {
       return isSignedIn() && (
-        (request.auth.token.email == 'aslamramadhan08@gmail.com' && request.auth.token.email_verified == true) ||
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        isBootstrapOwner()
       );
     }
 
@@ -50,13 +56,25 @@ service cloud.firestore {
       return data.programId is string && data.programId.size() >= 1 && data.programId.size() <= 100 &&
         data.amount is number && data.amount >= 5000 && data.amount <= 1000000000 &&
         data.donorName is string && data.donorName.size() >= 1 && data.donorName.size() <= 100 &&
-        data.proofImageUrl is string && data.proofImageUrl.size() >= 500 && data.proofImageUrl.size() <= 500000 &&
+        data.hasProof == true &&
+        !('proofImageUrl' in data) &&
         data.status in ['confirmed', 'verified', 'rejected'];
     }
 
+    function isValidDonationProof(data) {
+      return data.donationId is string && data.donationId.size() >= 1 && data.donationId.size() <= 128 &&
+        data.senderAccount is string && data.senderAccount.size() >= 2 && data.senderAccount.size() <= 100 &&
+        data.proofImageUrl is string && data.proofImageUrl.size() >= 500 && data.proofImageUrl.size() <= 500000;
+    }
+
     match /admins/{adminUid} {
-      allow get: if isSignedIn() && request.auth.uid == adminUid;
-      allow write: if isAdmin();
+      allow get: if isSignedIn() && (request.auth.uid == adminUid || isAdmin());
+      allow list: if isAdmin();
+      allow create, update: if isValidId(adminUid) && (
+        isAdmin() ||
+        (request.auth.uid == adminUid && isBootstrapOwner())
+      );
+      allow delete: if isAdmin() && isValidId(adminUid);
     }
 
     match /users/{userId} {
@@ -87,9 +105,16 @@ service cloud.firestore {
 
     match /donations/{donationId} {
       allow read: if true;
-      allow create: if isValidId(donationId) && isValidDonation(incoming());
+      allow create: if isValidId(donationId) && isValidDonation(incoming()) && incoming().status == 'confirmed';
       allow update: if isAdmin() && isValidId(donationId);
       allow delete: if isAdmin() && isValidId(donationId);
+
+      match /private/{docId} {
+        allow get: if isAdmin() || (isSignedIn() && existing().authorUid == request.auth.uid);
+        allow list: if isAdmin();
+        allow create: if isValidId(donationId) && docId == 'proof' && isValidDonationProof(incoming()) && incoming().donationId == donationId;
+        allow update, delete: if isAdmin() && isValidId(donationId);
+      }
     }
 
     match /settings/{settingId} {
