@@ -33,7 +33,7 @@ export default function App() {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [customDomainOrigin, setCustomDomainOrigin] = useState<string>('https://ziarahnusantara.my.id');
 
-  // Load custom domain setting from local cache immediately, then defer Firestore fetch
+  // Load custom domain setting from local cache immediately, then defer Firestore fetch until user interaction
   useEffect(() => {
     try {
       const cached = localStorage.getItem('ziarah_local_settings_cache');
@@ -48,7 +48,11 @@ export default function App() {
       }
     } catch {}
 
-    const timer = window.setTimeout(async () => {
+    let fetched = false;
+    const fetchSettings = async () => {
+      if (fetched) return;
+      fetched = true;
+      cleanup();
       try {
         const [{ db }, { doc, getDoc }] = await Promise.all([
           import('./lib/firebase'),
@@ -66,9 +70,15 @@ export default function App() {
           }
         }
       } catch {}
-    }, 2500);
+    };
 
-    return () => window.clearTimeout(timer);
+    const events: (keyof WindowEventMap)[] = ['pointerdown', 'touchstart', 'keydown', 'scroll'];
+    const cleanup = () => {
+      events.forEach((evt) => window.removeEventListener(evt, fetchSettings));
+    };
+    events.forEach((evt) => window.addEventListener(evt, fetchSettings, { once: true, passive: true }));
+
+    return cleanup;
   }, []);
 
   // Dynamically sync canonical URL, OpenGraph URL/image, and Schema.org @graph on route/domain change
@@ -284,11 +294,16 @@ export default function App() {
     setIsDataLoaded(true);
   }, []);
 
-  // Sync with Firestore when auth state changes (deferred slightly to avoid blocking initial paint)
+  // Sync with Firestore when auth state changes (deferred until first user interaction)
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
     let cancelled = false;
-    const timer = window.setTimeout(async () => {
+    let initialized = false;
+
+    const initAuth = async () => {
+      if (initialized || cancelled) return;
+      initialized = true;
+      cleanup();
       try {
         const [{ auth, db, handleFirestoreError, OperationType }, { onAuthStateChanged }, { doc, getDoc, setDoc, serverTimestamp }] =
           await Promise.all([
@@ -334,11 +349,21 @@ export default function App() {
           }
         });
       } catch {}
-    }, 1500);
+    };
+
+    const events: (keyof WindowEventMap)[] = ['pointerdown', 'touchstart', 'keydown', 'scroll'];
+    const cleanup = () => {
+      events.forEach((evt) => window.removeEventListener(evt, initAuth));
+    };
+    events.forEach((evt) => window.addEventListener(evt, initAuth, { once: true, passive: true }));
+
+    if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/kurator')) {
+      initAuth();
+    }
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timer);
+      cleanup();
       if (unsubscribe) unsubscribe();
     };
   }, []);

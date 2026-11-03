@@ -362,16 +362,66 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
     [previewSite]
   );
 
+  const routePillsRef = React.useRef<HTMLDivElement | null>(null);
+  const dragStateRef = React.useRef<{ isDown: boolean; startX: number; scrollLeft: number; moved: boolean }>({
+    isDown: false,
+    startX: 0,
+    scrollLeft: 0,
+    moved: false,
+  });
+
+  const handlePillMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = routePillsRef.current;
+    if (!el) return;
+    dragStateRef.current = {
+      isDown: true,
+      startX: e.pageX - el.offsetLeft,
+      scrollLeft: el.scrollLeft,
+      moved: false,
+    };
+  };
+
+  const handlePillMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = routePillsRef.current;
+    if (!el || !dragStateRef.current.isDown) return;
+    const x = e.pageX - el.offsetLeft;
+    const walk = x - dragStateRef.current.startX;
+    if (Math.abs(walk) > 5) {
+      dragStateRef.current.moved = true;
+      el.scrollLeft = dragStateRef.current.scrollLeft - walk;
+    }
+  };
+
+  const handlePillMouseUpOrLeave = () => {
+    dragStateRef.current.isDown = false;
+  };
+
+  const handlePillWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const el = routePillsRef.current;
+    if (!el) return;
+    if (el.scrollWidth > el.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      el.scrollLeft += e.deltaY;
+    }
+  };
+
   return (
     <div className="flex-1 w-full relative z-0 rounded-3xl overflow-hidden border border-stone-200/80 shadow-xs h-full flex flex-col bg-[#FAF8F5]">
       {/* =====================================================================
           FLOATING TOP GIS PILL CONTROLS (Jalur Wali Songo & Radius GPS)
           ===================================================================== */}
-      <div className="absolute top-3 left-3 right-3 z-[900] pointer-events-none flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar pointer-events-auto">
+      <div className="absolute top-3 inset-x-3 z-[900] pointer-events-none flex flex-col items-center gap-2">
+        <div className="w-full max-w-full flex flex-wrap items-center justify-center gap-2 pointer-events-none">
           {/* Curated Wali Songo Route Selector Pills */}
-          <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-md p-1.5 rounded-full border border-stone-200/80 shadow-sm">
-            <span className="inline-flex items-center gap-1 pl-2.5 pr-1 text-[11px] font-semibold text-stone-700 whitespace-nowrap">
+          <div
+            ref={routePillsRef}
+            onMouseDown={handlePillMouseDown}
+            onMouseMove={handlePillMouseMove}
+            onMouseUp={handlePillMouseUpOrLeave}
+            onMouseLeave={handlePillMouseUpOrLeave}
+            onWheel={handlePillWheel}
+            className="max-w-full flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-stone-200/80 shadow-sm overflow-x-auto no-scrollbar touch-pan-x pointer-events-auto mx-auto cursor-grab active:cursor-grabbing select-none"
+          >
+            <span className="inline-flex items-center gap-1 pl-2.5 pr-1 text-[11px] font-semibold text-stone-700 whitespace-nowrap shrink-0">
               <RouteIcon className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
               <span className="hidden sm:inline">Jalur Ziarah:</span>
             </span>
@@ -382,10 +432,11 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
                   key={route.id}
                   type="button"
                   onClick={() => {
+                    if (dragStateRef.current.moved) return;
                     setActiveRouteId(route.id);
                     if (route.id !== 'off') setRadiusKm('all');
                   }}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium tracking-tight whitespace-nowrap transition cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium tracking-tight whitespace-nowrap shrink-0 transition cursor-pointer ${
                     active
                       ? 'bg-stone-900 text-white shadow-2xs'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
@@ -398,11 +449,11 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
           </div>
 
           {/* GPS Radius Filter Pills */}
-          <div className="flex items-center gap-1 bg-white/90 backdrop-blur-md p-1.5 rounded-full border border-stone-200/80 shadow-sm shrink-0">
+          <div className="max-w-full flex items-center gap-1 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-stone-200/80 shadow-sm overflow-x-auto no-scrollbar touch-pan-x pointer-events-auto mx-auto shrink-0">
             <button
               type="button"
               onClick={() => handleRequestGps()}
-              className="px-2.5 py-1.5 rounded-full text-xs font-medium text-emerald-800 hover:bg-emerald-50 inline-flex items-center gap-1 transition cursor-pointer whitespace-nowrap"
+              className="px-2.5 py-1.5 rounded-full text-xs font-medium text-emerald-800 hover:bg-emerald-50 inline-flex items-center gap-1 transition cursor-pointer whitespace-nowrap shrink-0"
               title="Deteksi Posisi GPS Saya"
             >
               <LocateFixed className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} aria-hidden="true" />
@@ -416,7 +467,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
                   key={String(r)}
                   type="button"
                   onClick={() => handleSelectRadius(r)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap shrink-0 transition cursor-pointer ${
                     active
                       ? 'bg-emerald-700 text-white'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
@@ -431,7 +482,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
 
         {/* Active Route Summary Banner */}
         {activeRouteObj.id !== 'off' && (
-          <div className="self-start bg-stone-900/90 text-white backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 shadow-md text-xs flex items-center gap-2.5 pointer-events-auto max-w-xl">
+          <div className="mx-auto bg-stone-900/90 text-white backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 shadow-md text-xs flex items-center gap-2.5 pointer-events-auto max-w-xl">
             <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-[10px] font-bold uppercase tracking-wider shrink-0">
               {activeRouteSites.length} Titik
             </span>

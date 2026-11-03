@@ -49,18 +49,11 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'script-defer',
+      injectRegister: null,
       includeAssets: [
-        'favicon.ico',
         'favicon.svg',
-        'favicon-48x48.png',
-        'favicon-96x96.png',
-        'apple-touch-icon.png',
         'icon.svg',
         'robots.txt',
-        'llms.txt',
-        'llms-full.txt',
-        'ai-catalog.json',
       ],
       manifest: {
         id: '/',
@@ -111,7 +104,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globPatterns: ['index.html', 'manifest.webmanifest', 'favicon.svg', 'icon.svg'],
         globIgnores: [
           '**/assets/aistudio/**',
           '**/makam/**/index.html',
@@ -133,6 +126,34 @@ export default defineConfig({
           /^\/favicon\..*/,
         ],
         runtimeCaching: [
+          {
+            urlPattern: /\/assets\/.*\.(?:js|css|woff2?)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ziarah-hashed-assets-v1',
+              expiration: {
+                maxEntries: 80,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 Year
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /\/(?:pwa-|favicon-|apple-touch-icon).*\.(?:png|ico|svg)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ziarah-brand-icons-v1',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 90, // 90 Days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
           {
             urlPattern: /^https:\/\/(upload\.wikimedia\.org|wsrv\.nl|images\.unsplash\.com)\/.*/i,
             handler: 'CacheFirst',

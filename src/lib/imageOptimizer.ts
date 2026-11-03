@@ -1,17 +1,16 @@
 import React from 'react';
 
 /**
- * Optimizes external Wikimedia / Unsplash image URLs using wsrv.nl CDN proxy
- * to deliver properly sized WebP images with 1-year immutable cache headers.
+ * Converts Wikimedia Commons & Unsplash URLs to their official native resized thumbnail URLs
+ * so images load fast without relying on blocked/rate-limited third-party proxies.
  */
-export function optimizeSiteImageUrl(url: string | undefined, width = 600, quality = 75): string {
+export function optimizeSiteImageUrl(url: string | undefined, width = 500, quality = 75): string {
   if (!url) return '/pwa-512x512.png';
   const trimmed = url.trim();
   if (
     trimmed.startsWith('/') ||
     trimmed.startsWith('data:') ||
-    trimmed.startsWith('blob:') ||
-    trimmed.includes('wsrv.nl')
+    trimmed.startsWith('blob:')
   ) {
     return trimmed;
   }
@@ -30,8 +29,21 @@ export function optimizeSiteImageUrl(url: string | undefined, width = 600, quali
     }
   }
 
-  // Route Wikimedia and other external images through wsrv.nl WebP + 1y CDN cache
-  return `https://wsrv.nl/?url=${encodeURIComponent(trimmed)}&w=${width}&q=${quality}&output=webp&maxage=1y`;
+  // Native Wikimedia Commons / Wikipedia thumbnail CDN:
+  // https://upload.wikimedia.org/wikipedia/commons/c/ca/File.jpg
+  // -> https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/File.jpg/500px-File.jpg
+  const wikiMatch = trimmed.match(
+    /^https?:\/\/upload\.wikimedia\.org\/wikipedia\/(commons|id|en)\/([0-9a-f])\/([0-9a-f]{2})\/([^/?#]+)$/i
+  );
+  if (wikiMatch) {
+    const [, repo, h1, h2, filename] = wikiMatch;
+    if (!/\.(svg|gif|tif|tiff)$/i.test(filename)) {
+      const bucketWidth = width <= 380 ? 330 : width <= 600 ? 500 : 800;
+      return `https://upload.wikimedia.org/wikipedia/${repo}/thumb/${h1}/${h2}/${filename}/${bucketWidth}px-${filename}`;
+    }
+  }
+
+  return trimmed;
 }
 
 export function getSiteImageSrcSet(url: string | undefined, quality = 75): string | undefined {
@@ -40,23 +52,36 @@ export function getSiteImageSrcSet(url: string | undefined, quality = 75): strin
   if (trimmed.startsWith('/') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
     return undefined;
   }
-  const w400 = optimizeSiteImageUrl(trimmed, 400, quality);
-  const w600 = optimizeSiteImageUrl(trimmed, 600, quality);
-  return `${w400} 400w, ${w600} 600w`;
+  const w330 = optimizeSiteImageUrl(trimmed, 330, quality);
+  const w500 = optimizeSiteImageUrl(trimmed, 500, quality);
+  if (w330 === w500) return undefined;
+  return `${w330} 330w, ${w500} 500w`;
 }
 
 /**
- * Automatic fallback to raw original URL if CDN proxy is unreachable.
+ * Two-stage fallback:
+ * 1) If resized thumbnail URL returns 404 (e.g., original Wikimedia image is smaller than 500px),
+ *    immediately load the original URL so the real photo always appears.
+ * 2) Only if the original URL itself is unreachable, fall back to the app icon.
  */
 export function handleOptimizedImageError(
   e: React.SyntheticEvent<HTMLImageElement, Event>,
-  originalUrl: string | undefined
+  originalUrl?: string
 ) {
   const img = e.currentTarget;
-  if (originalUrl && img.src !== originalUrl && !img.dataset.fallbackApplied) {
-    img.dataset.fallbackApplied = 'true';
-    img.removeAttribute('srcset');
+  img.removeAttribute('srcset');
+
+  if (originalUrl && !img.dataset.fallbackOriginal && img.src !== originalUrl) {
+    img.dataset.fallbackOriginal = 'true';
     img.src = originalUrl;
+    return;
+  }
+
+  if (!img.dataset.fallbackFinal) {
+    img.dataset.fallbackFinal = 'true';
+    img.src = '/pwa-512x512.png';
   }
 }
+
+
 

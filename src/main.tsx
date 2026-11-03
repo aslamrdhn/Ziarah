@@ -48,24 +48,25 @@ class RootErrorBoundary extends React.Component<
   }
 }
 
-// Ensure installed PWAs and returning browsers immediately activate new Service Worker updates
+// Defer Service Worker registration until first user interaction or 15s idle so initial LCP/FCP bandwidth is 100% unblocked
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
+  let swRegistered = false;
+  const registerAppServiceWorker = () => {
+    if (swRegistered) return;
+    swRegistered = true;
+    events.forEach((evt) => window.removeEventListener(evt, registerAppServiceWorker));
     navigator.serviceWorker
-      .getRegistrations()
-      .then((registrations) => {
-        for (const registration of registrations) {
-          registration.update().catch(() => {});
-        }
+      .register('/sw.js', { scope: '/' })
+      .then((reg) => {
+        reg.update().catch(() => {});
       })
       .catch(() => {});
-  });
+  };
 
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    refreshing = true;
-    window.location.reload();
+  const events: (keyof WindowEventMap)[] = ['pointerdown', 'touchstart', 'keydown', 'scroll'];
+  events.forEach((evt) => window.addEventListener(evt, registerAppServiceWorker, { once: true, passive: true }));
+  window.addEventListener('load', () => {
+    window.setTimeout(registerAppServiceWorker, 15000);
   });
 }
 

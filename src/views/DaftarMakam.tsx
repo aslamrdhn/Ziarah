@@ -34,7 +34,7 @@ interface DaftarMakamProps {
 const INITIAL_VISIBLE_SITES = 12;
 
 export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSite }) => {
-  const { sites: ziarahSites, isLoading } = useSites();
+  const { sites: ziarahSites, isLoading, ensureFullSitesLoaded } = useSites();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
@@ -197,6 +197,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
               {heroMediaMode === 'video' ? (
                 <HeroCinemaShowcase
                   onSelectCategory={(cat) => {
+                    ensureFullSitesLoaded();
                     setSelectedCategory(cat);
                   }}
                 />
@@ -204,6 +205,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                 <InteractiveHeritageCanvas
                   activeCategory={selectedCategory}
                   onSelectCategory={(cat) => {
+                    ensureFullSitesLoaded();
                     setSelectedCategory(cat);
                   }}
                 />
@@ -233,7 +235,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
               type="search"
               placeholder="Cari nama tokoh, makam, atau kota..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => {
+                ensureFullSitesLoaded();
+              }}
+              onChange={(e) => {
+                ensureFullSitesLoaded();
+                setSearchQuery(e.target.value);
+              }}
               className="w-full pl-11 pr-10 py-3 bg-white rounded-2xl border border-stone-200/80 text-sm text-stone-900 placeholder-stone-500 focus:outline-none focus:border-emerald-700 transition shadow-2xs"
             />
             {searchQuery && (
@@ -257,7 +265,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                   key={cat.id}
                   type="button"
                   aria-pressed={isSelected}
-                  onClick={() => setSelectedCategory(cat.id)}
+                  onClick={() => {
+                    ensureFullSitesLoaded();
+                    setSelectedCategory(cat.id);
+                  }}
                   className={`px-4 py-2 rounded-full text-xs font-medium tracking-tight whitespace-nowrap transition cursor-pointer ${
                     isSelected
                       ? 'bg-stone-900 text-white shadow-2xs'
@@ -278,7 +289,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                 id="province-filter-select"
                 aria-label="Filter berdasarkan provinsi"
                 value={selectedProvince}
-                onChange={(e) => setSelectedProvince(e.target.value)}
+                onFocus={() => {
+                  ensureFullSitesLoaded();
+                }}
+                onChange={(e) => {
+                  ensureFullSitesLoaded();
+                  setSelectedProvince(e.target.value);
+                }}
                 className={`appearance-none pl-3.5 pr-8 py-2 rounded-full text-xs font-medium tracking-tight cursor-pointer transition border focus:outline-none focus:border-emerald-700 ${
                   selectedProvince !== 'Semua Provinsi'
                     ? 'bg-emerald-700 text-white border-emerald-700'
@@ -333,13 +350,12 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             ===================================================================== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
           {displayedSites.map((site, index) => {
-            const optimizedThumb = optimizeSiteImageUrl(site.imageUrl, 600, 75);
-            const thumbSrcSet = getSiteImageSrcSet(site.imageUrl, 75);
+            const optimizedThumb = optimizeSiteImageUrl(site.imageUrl, 480, 68);
+            const thumbSrcSet = getSiteImageSrcSet(site.imageUrl, 68);
             const siteUrl = getSitePath(site);
             const shortEra = extractShortEra(site.era);
             const badgeLabel = site.category === 'Walisongo' ? 'Wali Songo' : site.category;
             const isLcpCandidate = index === 0;
-            const isAboveFold = index < 2;
 
             return (
               <article key={site.id} className="group">
@@ -357,9 +373,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                       sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 360px"
                       onError={(e) => handleOptimizedImageError(e, site.imageUrl)}
                       alt={`Makam ${site.title} (${site.name}) — ${site.location.city}, ${site.location.province}`}
-                      width={600}
-                      height={450}
-                      loading={isAboveFold ? 'eager' : 'lazy'}
+                      width={480}
+                      height={360}
+                      loading={isLcpCandidate ? 'eager' : 'lazy'}
                       fetchPriority={isLcpCandidate ? 'high' : 'auto'}
                       decoding={isLcpCandidate ? 'sync' : 'async'}
                       referrerPolicy="no-referrer"
@@ -419,29 +435,35 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
         </div>
 
         {/* Progressive Load More Controls */}
-        {!isFiltered && visibleCount < filteredSites.length && (
+        {!isFiltered && visibleCount < totalCatalogCount && (
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               type="button"
-              onClick={() => setVisibleCount((prev) => Math.min(filteredSites.length, prev + 12))}
+              onClick={async () => {
+                const all = await ensureFullSitesLoaded();
+                setVisibleCount((prev) => Math.min(all.length, prev + 12));
+              }}
               className="px-6 py-3 bg-stone-900 hover:bg-emerald-800 text-white rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-2 transition cursor-pointer shadow-xs"
             >
-              <span>Tampilkan Lebih Banyak (+{Math.min(12, filteredSites.length - visibleCount)} Situs)</span>
+              <span>Tampilkan Lebih Banyak (+{Math.min(12, totalCatalogCount - visibleCount)} Situs)</span>
               <ArrowDown className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
             <button
               type="button"
-              onClick={() => setVisibleCount(filteredSites.length)}
+              onClick={async () => {
+                const all = await ensureFullSitesLoaded();
+                setVisibleCount(all.length);
+              }}
               className="px-5 py-3 bg-white hover:border-stone-400 text-stone-700 border border-stone-200/80 rounded-full text-xs font-medium tracking-tight transition cursor-pointer"
             >
-              Buka Seluruh {filteredSites.length} Situs
+              Buka Seluruh {totalCatalogCount} Situs
             </button>
           </div>
         )}
       </div>
 
       {/* =====================================================================
-          CRAWLABLE SEO & 96-SITE DIRECTORY INDEX (SR-ONLY)
+          CRAWLABLE SEO SUMMARY (SR-ONLY)
           ===================================================================== */}
       <section aria-label="Pengertian, Hukum, dan Tata Cara Ziarah Kubur dalam Islam" className="sr-only">
         <div>
@@ -454,37 +476,6 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
           </p>
           <Link to="/panduan">Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin &amp; Artinya)</Link>
           <Link to="/doa">Kumpulan Tawassul &amp; Tahlil</Link>
-        </div>
-      </section>
-
-      <section
-        id="indeks-lengkap-96-situs"
-        aria-label="Indeks Direktori Lengkap 96 Situs Makam Waliyullah di 18 Provinsi"
-        className="sr-only"
-      >
-        <h2>
-          Daftar Lengkap {ziarahSites.length} Makam Waliyullah, Walisongo, Ulama &amp; Habaib per Provinsi
-        </h2>
-        <div>
-          {provinces
-            .filter((prov) => prov !== 'Semua Provinsi')
-            .map((prov) => {
-              const provSites = ziarahSites.filter((s) => s.location.province === prov);
-              return (
-                <div key={prov}>
-                  <h3>{prov}</h3>
-                  <ul>
-                    {provSites.map((site) => (
-                      <li key={site.id}>
-                        <Link to={getSitePath(site)} onClick={() => onSelectSite(site)}>
-                          <span>{site.title}</span> ({site.location.city})
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
         </div>
       </section>
     </section>
