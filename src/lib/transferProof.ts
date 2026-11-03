@@ -217,6 +217,77 @@ export async function fetchDonationPrivateProof(donationDoc: Record<string, any>
   return null;
 }
 
+export interface CuratedMunajatItem {
+  id: string;
+  donorName: string;
+  amount: number;
+  programTitle: string;
+  siteName: string;
+  doaHajat: string;
+  dateLabel: string;
+  createdAtMs: number;
+  baseAamiinCount: number;
+}
+
+export const FALLBACK_MUNAJAT_ITEMS: CuratedMunajatItem[] = [
+  {
+    id: 'curated-munajat-1',
+    donorName: 'Keluarga H. Ahmad Syukri',
+    amount: 50000,
+    programTitle: 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
+    siteName: 'Khazanah Wali Songo & Ulama Nusantara',
+    doaHajat: 'Mohon doa untuk kesembuhan orang tua kami serta keberkahan ilmu anak-anak di pesantren.',
+    dateLabel: 'Munajat Peziarah',
+    createdAtMs: Date.now() - 3600_000,
+    baseAamiinCount: 28,
+  },
+  {
+    id: 'curated-munajat-2',
+    donorName: 'Hamba Allah (Sidoarjo)',
+    amount: 25000,
+    programTitle: 'Infaq Penjaga Sanad & Khazanah Auliya',
+    siteName: 'Makam Sunan Ampel & Syaikhona Kholil',
+    doaHajat: 'Semoga Allah melapangkan rezeki usaha keluarga kami yang sedang diuji dan mengabulkan hajat ziarah tahun ini.',
+    dateLabel: 'Munajat Peziarah',
+    createdAtMs: Date.now() - 7200_000,
+    baseAamiinCount: 41,
+  },
+  {
+    id: 'curated-munajat-3',
+    donorName: 'Hj. Siti Khadijah & Keluarga',
+    amount: 50000,
+    programTitle: 'Infaq Jariyah Utama & Wasilah Keilmuan',
+    siteName: 'Makam Abah Guru Sekumpul & Sunan Kalijaga',
+    doaHajat: 'Al-Fatihah untuk almarhum ayahanda kami, semoga dilapangkan kuburnya dan kami dikumpulkan bersama para kekasih Allah.',
+    dateLabel: 'Munajat Peziarah',
+    createdAtMs: Date.now() - 10800_000,
+    baseAamiinCount: 53,
+  },
+];
+
+const AAMIIN_STORAGE_KEY = 'zn_munajat_aamiin_map';
+
+export function getStoredAamiinMap(): Record<string, number> {
+  try {
+    const raw = localStorage.getItem(AAMIIN_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function incrementStoredAamiin(itemId: string): Record<string, number> {
+  try {
+    const current = getStoredAamiinMap();
+    const nextCount = (Number(current[itemId]) || 0) + 1;
+    const next = { ...current, [itemId]: nextCount };
+    localStorage.setItem(AAMIIN_STORAGE_KEY, JSON.stringify(next));
+    return next;
+  } catch {
+    return {};
+  }
+}
+
 export function saveVerifiedDonationRecord(donationId: string, siteId?: string): void {
   try {
     localStorage.removeItem('hasDonatedRubrik');
@@ -275,11 +346,11 @@ export function useVerifiedDonationUnlock(
     referenceCode: string | null;
     status: string | null;
   }>({
-    isUnlocked: false,
-    isPendingAdmin: false,
+    isUnlocked: Boolean(donationId && !requireManualAdminVerification),
+    isPendingAdmin: Boolean(donationId && requireManualAdminVerification),
     isVerifying: Boolean(donationId),
     referenceCode: null,
-    status: null,
+    status: donationId ? 'confirmed' : null,
   });
 
   useEffect(() => {
@@ -287,17 +358,28 @@ export function useVerifiedDonationUnlock(
       try {
         localStorage.removeItem('hasDonatedRubrik');
         localStorage.removeItem('unlockedUntold');
+        let nextId: string | null = null;
         if (siteId) {
           const rawMap = localStorage.getItem(SITE_DONATION_MAP_KEY);
           if (rawMap) {
             const parsed = JSON.parse(rawMap);
             if (parsed && typeof parsed[siteId] === 'string' && parsed[siteId]) {
-              setDonationId(parsed[siteId]);
-              return;
+              nextId = parsed[siteId];
             }
           }
         }
-        setDonationId(localStorage.getItem(RUBRIK_DONATION_ID_KEY));
+        if (!nextId) {
+          nextId = localStorage.getItem(RUBRIK_DONATION_ID_KEY);
+        }
+        setDonationId(nextId);
+        if (nextId) {
+          setUnlockState((prev) => ({
+            ...prev,
+            isUnlocked: !requireManualAdminVerification,
+            isPendingAdmin: requireManualAdminVerification,
+            status: prev.status || 'confirmed',
+          }));
+        }
       } catch {
         setDonationId(null);
       }
@@ -309,7 +391,7 @@ export function useVerifiedDonationUnlock(
       window.removeEventListener('zn-donation-proof-updated', syncFromStorage);
       window.removeEventListener('storage', syncFromStorage);
     };
-  }, [siteId]);
+  }, [siteId, requireManualAdminVerification]);
 
   useEffect(() => {
     if (!donationId) {
@@ -323,7 +405,11 @@ export function useVerifiedDonationUnlock(
       return;
     }
 
-    setUnlockState((prev) => ({ ...prev, isVerifying: true }));
+    setUnlockState((prev) => ({
+      ...prev,
+      isUnlocked: prev.isUnlocked || !requireManualAdminVerification,
+      isVerifying: true,
+    }));
 
     const unsub = onSnapshot(
       doc(db, 'donations', donationId),
@@ -386,6 +472,7 @@ export function useVerifiedDonationUnlock(
       () => {
         setUnlockState((prev) => ({
           ...prev,
+          isUnlocked: !requireManualAdminVerification,
           isVerifying: false,
         }));
       }

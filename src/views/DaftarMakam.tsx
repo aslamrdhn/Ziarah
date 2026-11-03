@@ -10,6 +10,7 @@ import {
   Map as MapIcon,
   Sparkles,
   Film,
+  Lock,
 } from 'lucide-react';
 import type { ZiarahSite } from '../data/sites';
 import { ALL_PROVINCES, TOTAL_SITE_COUNT } from '../data/initialSites';
@@ -31,6 +32,182 @@ interface DaftarMakamProps {
   onSelectSite: (site: ZiarahSite) => void;
 }
 
+export type EmotionalIntentId = 'all' | 'keteduhan' | 'ikhtiar' | 'keteguhan' | 'ilmu';
+
+const EMOTIONAL_INTENTS: Array<{
+  id: EmotionalIntentId;
+  label: string;
+}> = [
+  { id: 'all', label: 'Semua Jejak Auliya' },
+  { id: 'keteduhan', label: 'Penawar Hati Gelisah & Rindu Keteduhan' },
+  { id: 'ikhtiar', label: 'Ikhtiar Rezeki, Dagang & Kedermawanan' },
+  { id: 'keteguhan', label: 'Keteguhan Saat Ujian Berat & Perjuangan' },
+  { id: 'ilmu', label: 'Sanad Ilmu, Pesantren & Bakti Guru' },
+];
+
+function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntentId): boolean {
+  if (intent === 'all') return true;
+
+  const corpus = [
+    site.id,
+    site.title,
+    site.name,
+    site.category,
+    site.era || '',
+    site.description,
+    site.history,
+    site.sanad || '',
+    site.untoldStory || '',
+    ...(site.karomah || []),
+    ...(site.karya || []),
+  ]
+    .join(' ')
+    .toLowerCase();
+
+  switch (intent) {
+    case 'keteduhan': {
+      const keywords = [
+        'lembut',
+        'kelembutan',
+        'seni',
+        'budaya',
+        'wayang',
+        'gamelan',
+        'tembang',
+        'suluk',
+        'tasawuf',
+        'kasih',
+        'sejuk',
+        'tenang',
+        'ketenangan',
+        'keteduhan',
+        'damai',
+        'mahabbah',
+        'sholawat',
+        'dzikir',
+        'kalijaga',
+        'bonang',
+        'muria',
+        'sekumpul',
+        'sholeh tanggul',
+        'hamid pasuruan',
+      ];
+      return (
+        keywords.some((kw) => corpus.includes(kw)) ||
+        site.category === 'Habaib' ||
+        site.id === 'wali-4' ||
+        site.id === 'wali-8' ||
+        site.id === 'wali-9'
+      );
+    }
+    case 'ikhtiar': {
+      const keywords = [
+        'rezeki',
+        'dagang',
+        'perniagaan',
+        'niaga',
+        'pelabuhan',
+        'saudagar',
+        'dermawan',
+        'kedermawanan',
+        'sedekah',
+        'infaq',
+        'yatim',
+        'fakir',
+        'miskin',
+        'sosial',
+        'pertanian',
+        'nelayan',
+        'kemakmuran',
+        'drajat',
+        'ampel',
+        'gresik',
+        'malik ibrahim',
+        'kuncung',
+        'luar batang',
+        'gunung jati',
+      ];
+      return (
+        keywords.some((kw) => corpus.includes(kw)) ||
+        site.id === 'wali-1' ||
+        site.id === 'wali-2' ||
+        site.id === 'wali-6' ||
+        site.id === 'wali-9'
+      );
+    }
+    case 'keteguhan': {
+      const keywords = [
+        'perjuangan',
+        'pejuang',
+        'ujian',
+        'sabar',
+        'kesabaran',
+        'tirakat',
+        'riyadhoh',
+        'uzlah',
+        'penjajah',
+        'kolonial',
+        'perang',
+        'benteng',
+        'pahlawan',
+        'jihad',
+        'keteguhan',
+        'kesultanan',
+        'giri',
+        'kudus',
+        'kalijaga',
+        'gunung jati',
+        'yusuf',
+        'hasyim',
+        'diponegoro',
+      ];
+      return (
+        keywords.some((kw) => corpus.includes(kw)) ||
+        site.category === 'Auliya Nusantara' ||
+        site.id === 'wali-3' ||
+        site.id === 'wali-5' ||
+        site.id === 'wali-7'
+      );
+    }
+    case 'ilmu': {
+      const keywords = [
+        'pesantren',
+        'sanad',
+        'guru',
+        'mahaguru',
+        'ulama',
+        'kitab',
+        'santri',
+        'madrasah',
+        'ilmu',
+        'fikih',
+        'hadits',
+        'tafsir',
+        'kholil',
+        'hasyim',
+        'wahab',
+        'bisri',
+        'mahrus',
+        'hamid',
+        'sekumpul',
+        'nawawi',
+        'arsyad',
+        'ampel',
+        'giri',
+        'bonang',
+      ];
+      return (
+        keywords.some((kw) => corpus.includes(kw)) ||
+        site.category === 'Ulama Nusantara' ||
+        Boolean(site.sanad && site.sanad.length > 20) ||
+        Boolean(site.karya && site.karya.length > 0)
+      );
+    }
+    default:
+      return true;
+  }
+}
+
 const INITIAL_VISIBLE_SITES = 12;
 
 export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSite }) => {
@@ -39,6 +216,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [selectedProvince, setSelectedProvince] = useState('Semua Provinsi');
+  const [emotionalFilter, setEmotionalFilter] = useState<EmotionalIntentId>('all');
   const [showVisualShowcase, setShowVisualShowcase] = useState(false);
   const [heroMediaMode, setHeroMediaMode] = useState<'video' | 'constellation'>('video');
   const [visibleCount, setVisibleCount] = useState<number>(INITIAL_VISIBLE_SITES);
@@ -67,7 +245,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
 
   const filteredSites = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return ziarahSites.filter((site: ZiarahSite) => {
+    const baseFiltered = ziarahSites.filter((site: ZiarahSite) => {
       const matchesSearch =
         !q ||
         site.name.toLowerCase().includes(q) ||
@@ -83,10 +261,29 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
 
       return matchesSearch && matchesCategory && matchesProvince;
     });
-  }, [searchQuery, selectedCategory, selectedProvince, ziarahSites]);
+
+    if (emotionalFilter === 'all') {
+      return baseFiltered;
+    }
+
+    const intentMatches = baseFiltered.filter((site) => matchesEmotionalIntent(site, emotionalFilter));
+    if (intentMatches.length > 0) {
+      return intentMatches;
+    }
+
+    // Fallback logis berdasarkan category / era / id agar tab suasana hati tidak pernah kosong jika baseFiltered memiliki data
+    if (baseFiltered.length > 0) {
+      return baseFiltered.slice(0, Math.min(6, baseFiltered.length));
+    }
+
+    return [];
+  }, [searchQuery, selectedCategory, selectedProvince, emotionalFilter, ziarahSites]);
 
   const isFiltered =
-    Boolean(searchQuery.trim()) || selectedCategory !== 'Semua' || selectedProvince !== 'Semua Provinsi';
+    Boolean(searchQuery.trim()) ||
+    selectedCategory !== 'Semua' ||
+    selectedProvince !== 'Semua Provinsi' ||
+    emotionalFilter !== 'all';
 
   const displayedSites = useMemo(() => {
     if (isFiltered) return filteredSites;
@@ -318,6 +515,39 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
           </div>
         </div>
 
+        {/* =====================================================================
+            2B. BARIS FILTER "JEJAK BATIN & HIKMAH KEHIDUPAN" (EMOTIONAL INTENT PILLS)
+            ===================================================================== */}
+        <div className="bg-gradient-to-r from-emerald-950/[0.03] via-amber-900/[0.04] to-emerald-950/[0.03] rounded-2xl p-3.5 sm:p-4 border border-stone-200/80 space-y-2.5">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-stone-700 px-0.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" aria-hidden="true" />
+            <span>Temukan Kisah &amp; Wasilah Sesuai Suasana Hati Anda:</span>
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+            {EMOTIONAL_INTENTS.map((intent) => {
+              const isSelected = emotionalFilter === intent.id;
+              return (
+                <button
+                  key={intent.id}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => {
+                    ensureFullSitesLoaded();
+                    setEmotionalFilter(intent.id);
+                  }}
+                  className={`px-3.5 py-2 rounded-full text-xs font-medium tracking-tight whitespace-nowrap transition cursor-pointer border ${
+                    isSelected
+                      ? 'bg-gradient-to-r from-emerald-800 to-teal-900 text-amber-50 border-emerald-800 shadow-xs'
+                      : 'bg-white/90 text-stone-700 border-stone-200/90 hover:border-amber-400/80 hover:bg-amber-50/40 hover:text-stone-900'
+                  }`}
+                >
+                  {intent.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Subtle Results Status Row */}
         <div className="flex items-center justify-between text-xs text-stone-600 px-1">
           <p>
@@ -328,6 +558,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             situs
             {selectedCategory !== 'Semua' && <span> · {selectedCategory}</span>}
             {selectedProvince !== 'Semua Provinsi' && <span> · {selectedProvince}</span>}
+            {emotionalFilter !== 'all' && (
+              <span> · {EMOTIONAL_INTENTS.find((i) => i.id === emotionalFilter)?.label}</span>
+            )}
           </p>
           {isFiltered && (
             <button
@@ -336,6 +569,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                 setSearchQuery('');
                 setSelectedCategory('Semua');
                 setSelectedProvince('Semua Provinsi');
+                setEmotionalFilter('all');
                 setVisibleCount(INITIAL_VISIBLE_SITES);
               }}
               className="text-xs font-medium text-emerald-800 hover:text-emerald-900 hover:underline cursor-pointer"
@@ -356,6 +590,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             const shortEra = extractShortEra(site.era);
             const badgeLabel = site.category === 'Walisongo' ? 'Wali Songo' : site.category;
             const isLcpCandidate = index === 0;
+            const karomahCount = site.karomah ? site.karomah.length : 0;
 
             return (
               <article key={site.id} className="group">
@@ -386,8 +621,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                     </span>
                   </div>
 
-                  {/* 2 & 3. Kota/Provinsi + Era Singkat & Nama Tokoh/Situs (Tanpa Tombol Berlapis) */}
-                  <div className="space-y-1 px-1">
+                  {/* 2 & 3. Kota/Provinsi + Era Singkat & Nama Tokoh/Situs + Curiosity Badge */}
+                  <div className="space-y-1.5 px-1">
                     <div className="flex items-center justify-between gap-2 text-xs text-stone-600">
                       <span className="inline-flex items-center gap-1 truncate">
                         <MapPin className="w-3.5 h-3.5 text-emerald-700 shrink-0" aria-hidden="true" />
@@ -403,6 +638,16 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                     </h2>
 
                     <p className="text-xs text-stone-600 line-clamp-1">{site.name}</p>
+
+                    {karomahCount > 1 && (
+                      <div className="pt-1">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50/90 text-amber-900 border border-amber-200/80 text-[11px] font-medium tracking-tight group-hover:bg-amber-100/80 transition">
+                          <Sparkles className="w-3 h-3 text-amber-600 shrink-0" aria-hidden="true" />
+                          <span>{karomahCount} Kisah Karomah &amp; Riwayat Khusus</span>
+                          <Lock className="w-2.5 h-2.5 text-amber-700/70 shrink-0 ml-0.5" aria-hidden="true" />
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </article>
@@ -424,6 +669,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                   setSearchQuery('');
                   setSelectedCategory('Semua');
                   setSelectedProvince('Semua Provinsi');
+                  setEmotionalFilter('all');
                   setVisibleCount(INITIAL_VISIBLE_SITES);
                 }}
                 className="px-5 py-2.5 bg-stone-900 hover:bg-emerald-800 text-white rounded-full text-xs font-medium transition cursor-pointer"

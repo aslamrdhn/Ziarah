@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ZiarahSite } from '../data/sites';
-import { X, MapPin, Navigation, Info, Clock, CheckCircle2, Heart, Sparkles, BookOpen, Bookmark, BookmarkCheck, QrCode, MessageSquare, Send, Unlock, ScrollText, Trash2, Loader2, Calendar, ShieldCheck } from 'lucide-react';
+import { X, MapPin, Navigation, Info, Clock, CheckCircle2, Heart, Sparkles, BookOpen, Bookmark, BookmarkCheck, QrCode, MessageSquare, Send, Unlock, ScrollText, Trash2, Loader2, Calendar, ShieldCheck, Share2, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransactionModal } from './TransactionModal';
 import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
@@ -9,6 +9,78 @@ import { useVerifiedDonationUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
 import { getSiteLogistics } from '../lib/siteLogistics';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
+import { getSiteSlug } from '../lib/siteSlugs';
+
+export function getEmotionalCliffhanger(text: string): { preview: string; remainder: string } {
+  const raw = (text || '').trim();
+  if (!raw) {
+    return {
+      preview: '',
+      remainder: 'Lanjutan riwayat karomah, riyadhoh malam, dan wasiat batin beliau tersimpan dalam lembaran Khazanah Khusus.',
+    };
+  }
+
+  const moreMarker = '<!--more-->';
+  const markerIdx = raw.indexOf(moreMarker);
+  if (markerIdx !== -1) {
+    const previewPart = raw.slice(0, markerIdx).trim().replace(/[,.!?;:]+$/, '');
+    const remainderPart = raw.slice(markerIdx + moreMarker.length).trim();
+    return {
+      preview: `${previewPart}... `,
+      remainder:
+        remainderPart ||
+        'Saat itulah terjadi peristiwa batin yang membuat para murid dan saksi mata tertegun dalam keheningan malam penuh keberkahan.',
+    };
+  }
+
+  let targetLen: number;
+  if (raw.length > 180) {
+    const ratioLen = Math.round(raw.length * 0.6);
+    targetLen = Math.max(140, Math.min(280, ratioLen));
+  } else {
+    targetLen = Math.max(75, Math.round(raw.length * 0.6));
+  }
+
+  const searchWindowStart = Math.max(50, targetLen - 35);
+  const searchWindowEnd = Math.min(raw.length - 15, targetLen + 35);
+  const windowSlice = raw.slice(searchWindowStart, searchWindowEnd);
+
+  let cutIndex = Math.min(targetLen, raw.length);
+  const punctuationMatch = windowSlice.match(/[,;:]\s/);
+  if (punctuationMatch && punctuationMatch.index !== undefined) {
+    cutIndex = searchWindowStart + punctuationMatch.index + 1;
+  } else {
+    const spaceAfter = raw.indexOf(' ', targetLen);
+    const spaceBefore = raw.lastIndexOf(' ', targetLen);
+    if (spaceAfter !== -1 && spaceAfter - targetLen <= 22) {
+      cutIndex = spaceAfter;
+    } else if (spaceBefore > 45) {
+      cutIndex = spaceBefore;
+    }
+  }
+
+  const previewClean = raw.slice(0, cutIndex).trim().replace(/[,.!?;:]+$/, '');
+  const restClean = raw.slice(cutIndex).trim();
+  const fallbackContinuation =
+    'Namun apa yang disaksikan oleh para santri dan juru kunci setelah peristiwa malam itu justru menyimpan rahasia keteladanan batin yang jarang diketahui khalayak ramai.';
+
+  return {
+    preview: `${previewClean}... `,
+    remainder: restClean.length > 45 ? restClean : `${restClean} ${fallbackContinuation}`.trim(),
+  };
+}
+
+function buildWhatsAppCliffhangerUrl(site: ZiarahSite, rawStoryText: string): string {
+  const { preview } = getEmotionalCliffhanger(rawStoryText);
+  const cuplikanCliffhanger = preview.replace(/\.\.\.\s*$/, '').trim();
+  const locationLabel =
+    typeof site.location === 'string'
+      ? site.location
+      : [site.location?.city, site.location?.province].filter(Boolean).join(', ');
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ziarahnusantara.my.id';
+  const shareText = `Merinding membaca cuplikan kisah & karomah *${site.name}* (${locationLabel}):\n\n"${cuplikanCliffhanger}..."\n\nBaca kelanjutan kisah rahasia & panduan ziarahnya di sini:\n${origin}/situs/${getSiteSlug(site)}`;
+  return `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+}
 
 interface SiteDetailsProps {
   site: ZiarahSite | null;
@@ -436,38 +508,82 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                   </div>
                   {!isSiteUnlocked && (
                     <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                      1 Contoh Terbuka
+                      1 Kisah Pembuka
                     </span>
                   )}
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3.5">
                   {site.karomah!.map((item, idx) => {
                     const kId = `${site.id}-karomah-${idx}`;
                     const isSavedKaromah = savedDoas.includes(kId);
                     const isItemUnlocked = isSiteUnlocked || idx === 0;
+                    const cliffhanger = getEmotionalCliffhanger(item);
+                    const waShareUrl = buildWhatsAppCliffhangerUrl(site, item);
+
                     return (
-                      <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex items-start group relative pr-10 hover:border-emerald-300 transition-all">
+                      <div key={idx} className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-xs flex items-start group relative hover:border-emerald-300 transition-all">
                         <div className="w-6 h-6 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0 mr-3 mt-0.5 border border-amber-200">
                           {idx + 1}
                         </div>
                         {isItemUnlocked ? (
-                          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed pr-2">{item}</p>
+                          <div className="flex-1 pr-7">
+                            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                              {item.replace('<!--more-->', ' ')}
+                            </p>
+                            <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                              <a
+                                href={waShareUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/80 hover:bg-emerald-100/80 px-3 py-1.5 rounded-xl border border-emerald-200/80 transition-colors"
+                              >
+                                <Share2 className="w-3.5 h-3.5 mr-1.5 text-emerald-700" />
+                                Bagikan Cuplikan ke WhatsApp
+                              </a>
+                            </div>
+                          </div>
                         ) : (
                           <div className="flex-1">
-                            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pr-2">
-                              <span>{item.slice(0, 42)}... </span>
-                              <span className="blur-[4px] select-none opacity-60">
-                                Naskah lanjutan karomah ini terkunci dan hanya dapat diakses setelah menyelesaikan donasi riset serta mengunggah bukti transfer.
-                              </span>
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => setTransactionType('untold')}
-                              className="mt-2 inline-flex items-center text-[11px] font-bold text-amber-800 hover:text-amber-950 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 cursor-pointer"
-                            >
-                              <Unlock className="w-3 h-3 mr-1" />
-                              Donasi & Kirim Bukti Transfer untuk Membuka
-                            </button>
+                            <div className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                              <span>{cliffhanger.preview}</span>
+                              <div className="mt-1.5 p-2.5 rounded-xl bg-gradient-to-b from-transparent via-amber-50/40 to-stone-100/70">
+                                <span className="blur-[4px] select-none opacity-60 block text-slate-600">
+                                  {cliffhanger.remainder}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Kartu Gembok Menyentuh Hati */}
+                            <div className="mt-3.5 p-4 rounded-2xl bg-gradient-to-b from-amber-50/70 via-stone-50 to-white border border-amber-200/90 shadow-2xs space-y-2.5">
+                              <div className="flex items-center gap-2 text-amber-900">
+                                <Unlock className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                                <h4 className="text-xs sm:text-sm font-serif font-bold tracking-tight">
+                                  Lembaran Rahasia &amp; Wasiat Batin Terkunci
+                                </h4>
+                              </div>
+                              <p className="text-[11px] sm:text-xs text-stone-600 leading-relaxed">
+                                Kisah di balik layar, riyadhoh malam, dan pesan wasiat beliau pada bagian ini disimpan dalam Khazanah Khusus. Niatkan infaq jariyah sekali saja untuk membuka seluruh kisah rahasia, karomah, dan manuskrip di semua makam Nusantara pada perangkat Anda.
+                              </p>
+                              <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setTransactionType('untold')}
+                                  className="inline-flex items-center justify-center text-xs font-bold text-white bg-gradient-to-r from-amber-700 to-emerald-800 hover:from-amber-800 hover:to-emerald-900 px-3.5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
+                                >
+                                  <Unlock className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                                  Buka Seluruh Kisah Rahasia &amp; Niatkan Infaq
+                                </button>
+                                <a
+                                  href={waShareUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center justify-center text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-white hover:bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200 transition-colors"
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5 mr-1.5 text-emerald-700 shrink-0" />
+                                  Bagikan Cuplikan ke WhatsApp
+                                </a>
+                              </div>
+                            </div>
                           </div>
                         )}
                         {onToggleSaveDoa && isItemUnlocked && (
@@ -489,7 +605,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                     onClick={() => setTransactionType('untold')}
                     className="w-full py-2.5 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-xs"
                   >
-                    <Unlock className="w-3.5 h-3.5 mr-2" /> Buka Seluruh Karomah & Kisah Rahasia
+                    <Unlock className="w-3.5 h-3.5 mr-2" /> Buka Seluruh Kisah Rahasia &amp; Niatkan Infaq
                   </button>
                 )}
                 <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
@@ -615,6 +731,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                 <div className="space-y-3 mt-4">
                   {allStories.map(story => {
                     const canDelete = !story.isDefault && (isCurrentUserAdmin || (currentUser && story.authorUid === currentUser.uid));
+                    const storyWaUrl = buildWhatsAppCliffhangerUrl(site, story.text);
                     return (
                       <div key={story.id} className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs relative">
                         <div className="flex items-center justify-between mb-2">
@@ -640,6 +757,17 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                         <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pl-9">
                           "{story.text}"
                         </p>
+                        <div className="mt-2.5 pl-9 flex justify-end">
+                          <a
+                            href={storyWaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50/70 hover:bg-emerald-100/80 px-2.5 py-1 rounded-lg border border-emerald-200/70 transition-colors"
+                          >
+                            <Share2 className="w-3 h-3 mr-1.5 text-emerald-700" />
+                            Bagikan Cuplikan ke WhatsApp
+                          </a>
+                        </div>
                       </div>
                     );
                   })}
@@ -661,37 +789,76 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                   )}
                 </div>
                 
-                {isSiteUnlocked ? (
-                  <div className="bg-white p-5 rounded-2xl border border-purple-200 shadow-xs relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-                    <p className="text-slate-700 leading-relaxed relative z-10 text-xs sm:text-sm italic border-l-4 border-purple-400 pl-4">
-                      {site.untoldStory}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs text-center relative overflow-hidden flex flex-col items-center">
-                    <div className="absolute inset-0 bg-white/80 backdrop-blur-xs z-10 flex flex-col items-center justify-center p-6">
-                      <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-700 mb-3 shadow-xs border border-purple-200">
-                        <ScrollText className="w-6 h-6" />
-                      </div>
-                      <h4 className="font-bold text-slate-900 mb-1 text-sm sm:text-base">Kisah Rahasia & Manuskrip Terkunci</h4>
-                      <p className="text-xs text-slate-500 mb-4 max-w-[270px] leading-relaxed">
-                        Naskah khusus ini hanya dapat dibuka setelah Anda berdonasi dan mengunggah bukti transfer yang sah.
+                {(() => {
+                  const untoldCliffhanger = getEmotionalCliffhanger(site.untoldStory || '');
+                  const untoldWaUrl = buildWhatsAppCliffhangerUrl(site, site.untoldStory || site.history);
+
+                  return isSiteUnlocked ? (
+                    <div className="bg-white p-5 rounded-2xl border border-purple-200 shadow-xs relative overflow-hidden space-y-4">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+                      <p className="text-slate-700 leading-relaxed relative z-10 text-xs sm:text-sm italic border-l-4 border-purple-400 pl-4">
+                        {(site.untoldStory || '').replace('<!--more-->', ' ')}
                       </p>
-                      <button 
-                        onClick={() => setTransactionType('untold')}
-                        className="bg-purple-700 hover:bg-purple-800 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center cursor-pointer"
-                      >
-                        <Unlock className="w-4 h-4 mr-2" /> Donasi & Unggah Bukti Transfer
-                      </button>
+                      <div className="pt-2 border-t border-purple-100 flex justify-end relative z-10">
+                        <a
+                          href={untoldWaUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-200 transition-colors"
+                        >
+                          <Share2 className="w-3.5 h-3.5 mr-1.5 text-emerald-700" />
+                          Bagikan Cuplikan ke WhatsApp
+                        </a>
+                      </div>
                     </div>
-                    {/* Non-leaking blurred placeholder text */}
-                    <p className="text-slate-400 leading-relaxed text-xs italic blur-[4px] select-none">
-                      {site.untoldStory ? `${site.untoldStory.slice(0, 50)}... ` : ''}
-                      Arsip manuskrip dan catatan sejarah khusus ini dilindungi sistem verifikasi donasi Ziarah Nusantara. Silakan selesaikan donasi riset dan unggah bukti transfer untuk membaca isi lengkapnya.
-                    </p>
-                  </div>
-                )}
+                  ) : (
+                    <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
+                      {/* Cuplikan Cliffhanger + Sisa Berbayang */}
+                      <div className="text-xs sm:text-sm text-slate-700 leading-relaxed border-l-4 border-purple-300 pl-3.5">
+                        <span className="italic">{untoldCliffhanger.preview}</span>
+                        <div className="mt-2 p-2.5 rounded-xl bg-gradient-to-b from-transparent via-purple-50/40 to-stone-100/80">
+                          <span className="blur-[4px] select-none opacity-60 block text-slate-500 italic">
+                            {untoldCliffhanger.remainder}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Kartu Gembok Menyentuh Hati */}
+                      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-purple-50/70 via-stone-50 to-white border border-purple-200/90 text-left space-y-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center text-purple-700 shrink-0 border border-purple-200">
+                            <ScrollText className="w-4 h-4" />
+                          </div>
+                          <h4 className="font-serif font-bold text-slate-900 text-sm sm:text-base leading-snug">
+                            Lembaran Rahasia &amp; Wasiat Batin Terkunci
+                          </h4>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Kisah di balik layar, riyadhoh malam, dan pesan wasiat beliau pada bagian ini disimpan dalam Khazanah Khusus. Niatkan infaq jariyah sekali saja untuk membuka seluruh kisah rahasia, karomah, dan manuskrip di semua makam Nusantara pada perangkat Anda.
+                        </p>
+                        <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                          <button 
+                            type="button"
+                            onClick={() => setTransactionType('untold')}
+                            className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center cursor-pointer"
+                          >
+                            <Unlock className="w-4 h-4 mr-2 shrink-0" />
+                            Buka Seluruh Kisah Rahasia &amp; Niatkan Infaq
+                          </button>
+                          <a
+                            href={untoldWaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-white hover:bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200 transition-colors"
+                          >
+                            <MessageCircle className="w-4 h-4 mr-1.5 text-emerald-700 shrink-0" />
+                            Bagikan Cuplikan ke WhatsApp
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </motion.div>
             )}
 

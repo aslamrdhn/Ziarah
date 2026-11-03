@@ -4,6 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
+    <!-- Critical Zero-FOUC Guard: Instantly hides .sr-only SEO skeleton before external CSS loads -->
+    <style id="critical-fouc-guard">
+      html, body {
+        background-color: #FAF8F5;
+        color: #1C1917;
+        margin: 0;
+        padding: 0;
+      }
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border-width: 0 !important;
+      }
+    </style>
+
     <meta name="theme-color" content="#0D3B32" />
     <meta name="application-name" content="Ziarah Nusantara" />
     <meta name="author" content="Tim Kurator Arsip Ziarah Nusantara" />
@@ -29,6 +50,7 @@
     <!-- Agentic Browsing & LLM Discovery Links -->
     <link rel="llms-txt" href="https://ziarahnusantara.my.id/llms.txt" />
     <link rel="alternate" type="text/markdown" title="LLMs Documentation" href="https://ziarahnusantara.my.id/llms.txt" />
+    <link rel="ard" type="application/json" href="https://ziarahnusantara.my.id/.well-known/ard.json" />
     <link rel="ai-catalog" type="application/json" href="https://ziarahnusantara.my.id/.well-known/ai-catalog.json" />
 
     <title>Ziarah Kubur &amp; Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab &amp; 96 Lokasi Makam | Ziarah Nusantara</title>
@@ -177,16 +199,14 @@
       }
     </script>
 
-    <!-- Non-Render-Blocking Google Fonts & Image CDN Preconnect + LCP Image Preload -->
+    <!-- Non-Render-Blocking Google Fonts & First-Party LCP Image Preload -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://upload.wikimedia.org" crossorigin />
     <link
       rel="preload"
       as="image"
-      href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Makam_Maulana_Malik_Ibrahim_Tomb_Complex.jpg/500px-Makam_Maulana_Malik_Ibrahim_Tomb_Complex.jpg"
-      imagesrcset="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Makam_Maulana_Malik_Ibrahim_Tomb_Complex.jpg/330px-Makam_Maulana_Malik_Ibrahim_Tomb_Complex.jpg 330w, https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Makam_Maulana_Malik_Ibrahim_Tomb_Complex.jpg/500px-Makam_Maulana_Malik_Ibrahim_Tomb_Complex.jpg 500w"
-      imagesizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 360px"
+      href="/thumbs/wali-1.webp"
+      type="image/webp"
       fetchpriority="high"
     />
     <link
@@ -205,7 +225,10 @@
   <body class="font-sans antialiased text-stone-900 bg-[#FAF8F5] selection:bg-stone-300 selection:text-stone-950">
     <div id="root">
       <!--SEO_ROOT_START-->
-      <main class="sr-only">
+      <main
+        class="sr-only"
+        style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0"
+      >
         <h1>Ziarah Kubur &amp; Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab &amp; 96 Lokasi Makam</h1>
         <p>
           <strong>Ziarah Nusantara (ziarahnusantara.my.id)</strong> menyajikan panduan lengkap pengertian, hukum, tujuan, adab, dan urutan bacaan doa ziarah kubur (Arab, Latin, Artinya), susunan Yasin, Tahlil &amp; Tawassul, serta direktori 96 lokasi makam Walisongo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia.

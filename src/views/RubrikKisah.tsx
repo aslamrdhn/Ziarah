@@ -29,7 +29,16 @@ import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
-import { CompressedReceiptResult, saveVerifiedDonationRecord, submitDonationWithPrivateProof, useVerifiedDonationUnlock } from '../lib/transferProof';
+import {
+  CompressedReceiptResult,
+  CuratedMunajatItem,
+  FALLBACK_MUNAJAT_ITEMS,
+  getStoredAamiinMap,
+  incrementStoredAamiin,
+  saveVerifiedDonationRecord,
+  submitDonationWithPrivateProof,
+  useVerifiedDonationUnlock,
+} from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
 
 export interface RubrikItem {
@@ -58,10 +67,10 @@ export interface RubrikGateSettings {
 export const DEFAULT_RUBRIK_GATE_SETTINGS: RubrikGateSettings = {
   lockEnabled: true,
   freeSampleCount: 2,
-  minDonationAmount: 25000,
+  minDonationAmount: 10000,
   bannerTitle: 'Khazanah Kisah Rahasia, Manuskrip & Hikmah Karomah',
   bannerDescription:
-    'Sebagai contoh kurasi sejarah & sanad, 2 tulisan pilihan dibuka secara gratis untuk Anda baca penuh. Seluruh naskah lainnya dikunci dan hanya dapat dibuka setelah Anda berdonasi serta mengunggah bukti transfer yang sah.',
+    'Sebagai contoh kurasi sejarah & sanad, 2 tulisan pilihan dibuka secara gratis untuk Anda baca penuh. Seluruh naskah lainnya dikunci dalam Khazanah Khusus dan dapat dibuka dengan niat infaq jariyah untuk Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara.',
   pinnedFreeArticleIds: [
     'rubrik-ulama-3-untold',
     'rubrik-sekumpul-adab',
@@ -70,6 +79,27 @@ export const DEFAULT_RUBRIK_GATE_SETTINGS: RubrikGateSettings = {
   customArticles: [],
   requireManualVerification: false,
 };
+
+const RUBRIK_DECOY_PACKAGES = [
+  {
+    amount: 10000,
+    title: 'Infaq Pembuka Khazanah',
+    badge: '',
+    description: 'Membuka akses bacaan kisah ini & membantu dokumentasi jejak ulama',
+  },
+  {
+    amount: 25000,
+    title: 'Infaq Penjaga Sanad',
+    badge: 'Paling Banyak Dipilih',
+    description: 'Membuka SELURUH kisah rahasia, karomah & manuskrip di semua 96+ makam pada perangkat ini',
+  },
+  {
+    amount: 50000,
+    title: 'Infaq Jariyah Utama',
+    badge: 'Keberkahan Utama',
+    description: 'Membuka seluruh khazanah selamanya di perangkat ini + menitipkan hajat di Dinding Munajat Peziarah',
+  },
+] as const;
 
 interface RubrikKisahProps {
   savedArticles?: string[];
@@ -114,6 +144,8 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
   // Unlock modal form state
   const [selectedNominal, setSelectedNominal] = useState<number>(25000);
+  const [customNominalInput, setCustomNominalInput] = useState<string>('');
+  const [prayerIntent, setPrayerIntent] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>('QRIS');
   const [senderAccount, setSenderAccount] = useState<string>('');
   const [receipt, setReceipt] = useState<CompressedReceiptResult | null>(null);
@@ -123,8 +155,16 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   const [copiedBank, setCopiedBank] = useState<boolean>(false);
   const [isSubmittingDonation, setIsSubmittingDonation] = useState<boolean>(false);
 
+  // Recent Munajat & Aamiin ticker state
+  const [recentMunajat, setRecentMunajat] = useState<CuratedMunajatItem[]>(FALLBACK_MUNAJAT_ITEMS);
+  const [aamiinMap, setAamiinMap] = useState<Record<string, number>>(() => getStoredAamiinMap());
+
   const savedArticles = propSavedArticles ?? localSaved;
   const isAdmin = isUserAdmin(auth.currentUser);
+
+  const handleAamiinClick = (itemId: string) => {
+    setAamiinMap(incrementStoredAamiin(itemId));
+  };
 
   const toggleSaveArticle = (id: string) => {
     if (onToggleSaveArticle) {
@@ -138,7 +178,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     }
   };
 
-  // Subscribe to /settings/infaq for dynamic Rubrik gate & bank configuration
+  // Subscribe to /settings/infaq for dynamic Rubrik gate & bank configuration + recent donations for Munajat ticker
   useEffect(() => {
     const unsubSettings = onSnapshot(
       doc(db, 'settings', 'infaq'),
@@ -154,7 +194,9 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
           });
           if (d.rubrikGate) {
             const rg = d.rubrikGate;
-            const minAmt = typeof rg.minDonationAmount === 'number' ? rg.minDonationAmount : DEFAULT_RUBRIK_GATE_SETTINGS.minDonationAmount;
+            const minAmt = typeof rg.minDonationAmount === 'number' && rg.minDonationAmount >= 10000
+              ? rg.minDonationAmount
+              : DEFAULT_RUBRIK_GATE_SETTINGS.minDonationAmount;
             setGateSettings({
               lockEnabled: rg.lockEnabled !== undefined ? Boolean(rg.lockEnabled) : DEFAULT_RUBRIK_GATE_SETTINGS.lockEnabled,
               freeSampleCount: typeof rg.freeSampleCount === 'number' ? rg.freeSampleCount : DEFAULT_RUBRIK_GATE_SETTINGS.freeSampleCount,
@@ -165,13 +207,47 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               customArticles: Array.isArray(rg.customArticles) ? rg.customArticles : [],
               requireManualVerification: Boolean(rg.requireManualVerification),
             });
-            setSelectedNominal(minAmt);
           }
         }
       },
       () => {}
     );
-    return () => unsubSettings();
+
+    const unsubDonations = onSnapshot(
+      collection(db, 'donations'),
+      (snapshot) => {
+        const fetched: CuratedMunajatItem[] = snapshot.docs
+          .map((docSnap, idx) => {
+            const d = docSnap.data();
+            const ts = d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now() - idx * 60000;
+            const dateLabel = d.createdAt?.toDate
+              ? d.createdAt.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+              : 'Baru saja';
+            return {
+              id: docSnap.id,
+              donorName: d.donorName || 'Hamba Allah',
+              amount: Number(d.amount) || 25000,
+              programTitle: d.programTitle || 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
+              siteName: d.siteName || 'Khazanah Auliya Nusantara',
+              doaHajat: d.doaHajat || 'Semoga menjadi amal jariyah dan wasilah keberkahan keluarga.',
+              dateLabel,
+              createdAtMs: ts,
+              baseAamiinCount: 12 + (idx % 19),
+            };
+          })
+          .sort((a, b) => b.createdAtMs - a.createdAtMs);
+
+        setRecentMunajat(fetched.length > 0 ? fetched : FALLBACK_MUNAJAT_ITEMS);
+      },
+      () => {
+        setRecentMunajat(FALLBACK_MUNAJAT_ITEMS);
+      }
+    );
+
+    return () => {
+      unsubSettings();
+      unsubDonations();
+    };
   }, []);
 
   // Load approved community rubrik/karomah contributions from Firestore
@@ -317,6 +393,16 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
   const isProofComplete = Boolean(receipt && senderAccount.trim().length >= 3);
 
+  const activeEffectiveNominal = useMemo(() => {
+    if (customNominalInput.trim()) {
+      const parsed = Number(customNominalInput.replace(/[^0-9]/g, ''));
+      if (Number.isFinite(parsed) && parsed >= 10000) {
+        return Math.min(parsed, 1000000000);
+      }
+    }
+    return selectedNominal;
+  }, [customNominalInput, selectedNominal]);
+
   const handleConfirmUnlockDonation = async () => {
     if (isSubmittingDonation) return;
     setSubmitError(null);
@@ -339,23 +425,27 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     setIsSubmittingDonation(true);
     const cleanSender = sanitizePlainText(senderAccount, 80);
     const finalDonor = cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
-    const cleanAmount = sanitizeDonationAmount(selectedNominal, 1000, 1000000000) || 25000;
+    const cleanAmount = sanitizeDonationAmount(activeEffectiveNominal, 1000, 1000000000) || 25000;
+    const cleanPrayerIntent = sanitizePlainText(prayerIntent, 200);
+    const finalDoaHajat =
+      cleanPrayerIntent ||
+      sanitizePlainText(
+        `Infaq Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara (${unlockModalArticle?.title || 'Khazanah Nusantara'})`,
+        200
+      );
 
     try {
       const donationId = await submitDonationWithPrivateProof({
         programId: 'riset-web',
-        programTitle: 'Riset Sejarah, Perluasan Database & Operasional Web (Pembuka Rubrik)',
+        programTitle: 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
         siteId: sanitizePlainText(unlockModalArticle?.siteId, 80) || 'web-riset',
-        siteName: sanitizePlainText(unlockModalArticle?.siteName, 160) || 'Riset Database & Operasional Web',
+        siteName: sanitizePlainText(unlockModalArticle?.siteName, 160) || 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
         amount: cleanAmount,
         donorName: finalDonor,
         paymentMethod,
         senderAccount: cleanSender || finalDonor,
         receipt,
-        doaHajat: sanitizePlainText(
-          `Donasi Riset & Pembukaan Arsip Rubrik (${unlockModalArticle?.title || 'Khazanah Nusantara'})`,
-          1000
-        ),
+        doaHajat: finalDoaHajat,
       });
 
       saveVerifiedDonationRecord(donationId, unlockModalArticle?.siteId);
@@ -372,13 +462,14 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
   const categories = ['Semua', 'Kisah Rahasia', 'Manuskrip', 'Hikmah & Karomah', 'Tersimpan'];
   const finalDonorForWa = (senderAccount.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
-  const waUnlockMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Donasi Riset & Pembukaan Akses Rubrik:\n\n` +
+  const waUnlockMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq Jariyah & Pembukaan Akses Khazanah:\n\n` +
     `• *Kode Referensi Bukti:* ${receipt?.referenceCode || verifiedRefCode || '-'}\n` +
     `• *Nama Pengirim:* ${finalDonorForWa}\n` +
     `• *Metode Pembayaran:* ${paymentMethod}\n` +
-    `• *Nominal Donasi:* Rp ${selectedNominal.toLocaleString('id-ID')}\n` +
-    `• *Program:* Riset Sejarah, Perluasan Database & Operasional Web\n\n` +
-    `Screenshot bukti transfer telah terunggah di sistem Admin Kurator. Terima kasih.`;
+    `• *Nominal Infaq:* Rp ${activeEffectiveNominal.toLocaleString('id-ID')}\n` +
+    `• *Program:* Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara` +
+    (prayerIntent.trim() ? `\n• *Titip Doa / Hajat:* "${sanitizePlainText(prayerIntent, 200)}"` : '') +
+    `\n\nScreenshot bukti transfer telah terunggah di sistem Admin Kurator. Terima kasih.`;
   const waUnlockUrl = `https://wa.me/6285717378885?text=${encodeURIComponent(waUnlockMessage)}`;
 
   return (
@@ -462,13 +553,13 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               className="px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-2xl transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
             >
               <HeartHandshake className="w-4 h-4 text-emerald-300" />
-              <span>Donasi & Unggah Bukti Transfer</span>
+              <span>Buka Seluruh Kisah Rahasia &amp; Niatkan Infaq</span>
             </button>
             <Link
               to="/infaq"
               className="px-4 py-2 bg-white hover:bg-slate-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold rounded-xl transition-colors text-center"
             >
-              Ke Halaman Donasi Riset →
+              Ke Halaman Infaq &amp; Dinding Munajat →
             </Link>
           </div>
         </div>
@@ -479,7 +570,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             <span>
               {isAdmin
                 ? 'Mode Kurator Aktif: Seluruh arsip Kisah Rahasia, Manuskrip & Karomah terbuka penuh.'
-                : 'Alhamdulillah, bukti transfer Anda terverifikasi. Seluruh arsip Kisah Rahasia, Manuskrip & Karomah telah terbuka.'}
+                : 'Alhamdulillah, bukti infaq Anda terverifikasi. Seluruh arsip Kisah Rahasia, Manuskrip & Karomah telah terbuka.'}
             </span>
           </div>
           {hasDonated && !isAdmin && (
@@ -489,6 +580,60 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
           )}
         </div>
       )}
+
+      {/* Ticker Ringkas: Munajat & Infaq Peziarah Terkini */}
+      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-stone-200/90 shadow-xs mb-6 space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <MessageSquareHeart className="w-4 h-4 text-emerald-700 shrink-0" />
+            <h3 className="text-xs sm:text-sm font-serif font-bold text-slate-900">
+              Munajat &amp; Infaq Peziarah Terkini
+            </h3>
+          </div>
+          <Link to="/infaq" className="text-[11px] font-semibold text-emerald-800 hover:underline">
+            Lihat Dinding Munajat →
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {recentMunajat.slice(0, 3).map((item) => {
+            const totalAamiin = (item.baseAamiinCount || 12) + (aamiinMap[item.id] || 0);
+            const hasClickedAamiin = Boolean(aamiinMap[item.id]);
+            return (
+              <div
+                key={item.id}
+                className="bg-stone-50/80 rounded-2xl p-3.5 border border-stone-200/80 flex flex-col justify-between gap-2.5"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-xs font-bold text-slate-900 truncate">{item.donorName}</span>
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/70 shrink-0">
+                      Rp {item.amount.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 italic line-clamp-2 leading-relaxed">
+                    "{item.doaHajat}"
+                  </p>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-stone-200/60">
+                  <span className="text-[10px] text-stone-400 truncate max-w-[120px]">{item.dateLabel}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleAamiinClick(item.id)}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors cursor-pointer border ${
+                      hasClickedAamiin
+                        ? 'bg-emerald-800 text-white border-emerald-800'
+                        : 'bg-white hover:bg-emerald-50 text-emerald-800 border-emerald-200'
+                    }`}
+                  >
+                    <span>Aamiin 🤲</span>
+                    <span className="text-[10px] opacity-90">({totalAamiin})</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Filter & Search */}
       <div className="bg-white rounded-3xl p-4 sm:p-6 border border-slate-200/90 shadow-xs mb-8 space-y-4">
@@ -538,7 +683,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
           {filteredArticles.map((article, idx) => {
             const isSaved = savedArticles.includes(article.id);
             const isUnlocked = checkIsArticleUnlocked(article, idx);
-            const hookLead = article.content.slice(0, 68);
+            const hookLead = article.content.slice(0, 150);
 
             return (
               <article
@@ -568,7 +713,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       {!isUnlocked && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] bg-amber-50 text-amber-900 border border-amber-200">
                           <Lock className="w-3 h-3 text-amber-700" />
-                          Khusus Donatur
+                          Khazanah Khusus
                         </span>
                       )}
                     </div>
@@ -588,7 +733,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                             ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-2xs' 
                             : 'hover:bg-slate-100 text-slate-400 border-transparent'
                         }`}
-                        title={isSaved ? "Hapus dari simpanan" : "Simpan rubrik (Sinkron Akun)"}
+                        title={isSaved ? "Hapus dari simpanan" : "Simpan rubrik"}
                       >
                         {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
                       </motion.button>
@@ -615,13 +760,13 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                         <span>{hookLead}... </span>
                         <span className="blur-[4px] select-none opacity-65">
-                          Isi lengkap naskah sejarah, sanad, dan hikmah karomah ini terkunci oleh sistem verifikasi donasi. Selesaikan donasi riset dan unggah bukti transfer untuk membuka seluruh arsip.
+                          Kisah di balik layar, riyadhoh malam, dan pesan wasiat beliau pada bagian ini disimpan dalam Khazanah Khusus.
                         </span>
                       </p>
                       <div className="mt-2.5 pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] font-bold text-amber-900">
                         <span className="inline-flex items-center gap-1.5">
                           <Lock className="w-3.5 h-3.5 text-amber-700" />
-                          Terkunci — Wajib Donasi & Bukti Transfer
+                          Lembaran Rahasia &amp; Wasiat Batin Terkunci
                         </span>
                         <span className="text-emerald-800 underline">Buka Akses</span>
                       </div>
@@ -656,7 +801,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
                     >
                       <Lock className="w-3 h-3 text-amber-700" />
-                      <span>Donasi & Bukti Transfer</span>
+                      <span>Buka Khazanah</span>
                     </button>
                   )}
                 </div>
@@ -666,7 +811,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         </div>
       )}
 
-      {/* Modal Buka Akses Rubrik (Donasi / Infaq Riset + Bukti Transfer Wajib) */}
+      {/* Modal Buka Akses Rubrik (3 Paket Infaq Psikologis + Titip Doa + Bukti Transfer) */}
       <AnimatePresence>
         {unlockModalArticle && (
           <div className="fixed inset-0 z-[3000] bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -674,7 +819,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white rounded-3xl max-w-md w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
+              className="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
             >
               <div className="p-5 sm:p-6 bg-gradient-to-r from-emerald-900 via-brand-900 to-teal-950 text-white relative shrink-0">
                 <button
@@ -684,8 +829,8 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                   ✕
                 </button>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-gold-300 text-[11px] font-bold mb-2">
-                  <Lock className="w-3.5 h-3.5" />
-                  <span>Verifikasi Donasi & Bukti Transfer</span>
+                  <HeartHandshake className="w-3.5 h-3.5" />
+                  <span>Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara</span>
                 </div>
                 <h3 className="text-lg font-serif font-black leading-snug">
                   {unlockModalArticle.title}
@@ -706,13 +851,13 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                     </span>
                     <h4 className="font-bold text-slate-900 text-lg mb-1">
                       {gateSettings.requireManualVerification
-                        ? 'Bukti Transfer Terkirim ke Kurator!'
-                        : 'Bukti Transfer Terverifikasi — Naskah Terbuka!'}
+                        ? 'Bukti Infaq Terkirim ke Kurator!'
+                        : 'Alhamdulillah — Seluruh Khazanah Kini Terbuka!'}
                     </h4>
                     <p className="text-xs text-slate-500 mb-4 leading-relaxed">
                       {gateSettings.requireManualVerification
                         ? 'Bukti transfer Anda telah masuk ke antrean Admin Kurator. Silakan klik tombol WhatsApp di bawah untuk mempercepat pembukaan akses.'
-                        : 'Jazakumullahu khairan. Bukti transfer Anda telah tersimpan di database Kurator dan seluruh naskah Rubrik kini dapat Anda baca penuh.'}
+                        : 'Jazakumullahu khairan. Infaq dan munajat Anda telah tercatat, dan seluruh naskah Kisah Rahasia, Karomah & Manuskrip kini terbuka penuh di perangkat ini.'}
                     </p>
 
                     {receipt && (
@@ -724,22 +869,13 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                         />
                         <div className="text-xs min-w-0">
                           <p className="font-bold text-slate-900 truncate">{finalDonorForWa} ({paymentMethod})</p>
-                          <p className="text-emerald-700 font-semibold">Rp {selectedNominal.toLocaleString('id-ID')}</p>
-                          <p className="text-[10px] text-slate-400">Bukti tersimpan di Database Admin</p>
+                          <p className="text-emerald-700 font-semibold">Rp {activeEffectiveNominal.toLocaleString('id-ID')}</p>
+                          <p className="text-[10px] text-slate-400">Tersimpan di Arsip Digital &amp; Dinding Munajat</p>
                         </div>
                       </div>
                     )}
 
                     <div className="space-y-2.5">
-                      <a
-                        href={waUnlockUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <MessageSquareHeart className="w-4 h-4" />
-                        <span>Teruskan Bukti ke WhatsApp Admin (+62 857-1737-8885)</span>
-                      </a>
                       <button
                         type="button"
                         onClick={() => {
@@ -749,48 +885,117 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                             setActiveStoryModal(targetToRead);
                           }
                         }}
-                        className="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer"
+                        className="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
                       >
                         {gateSettings.requireManualVerification ? 'Selesai & Tutup' : 'Baca Naskah Lengkap Sekarang →'}
                       </button>
+                      <a
+                        href={waUnlockUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <MessageSquareHeart className="w-4 h-4" />
+                        <span>Teruskan Bukti ke WhatsApp Admin (+62 857-1737-8885)</span>
+                      </a>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-2xl text-xs text-amber-950 leading-relaxed">
-                      <p className="font-bold mb-1">Ketentuan Membuka Naskah Terkunci:</p>
-                      <p>
-                        Naskah ini tidak dapat dibuka sebelum Anda melakukan <strong>Donasi Riset</strong> (via QRIS atau Transfer Bank) dan <strong>mengunggah screenshot bukti transfer yang sah</strong> pada formulir di bawah ini.
+                    {/* Kutipan Hikmah di atas form konfirmasi infaq */}
+                    <div className="p-3.5 bg-gradient-to-br from-emerald-50/90 via-amber-50/60 to-white border border-emerald-200/80 rounded-2xl text-xs text-emerald-950 leading-relaxed">
+                      <p className="font-serif italic text-slate-800 leading-relaxed">
+                        "Siapa yang membantu menghidupkan kisah dan jejak orang-orang shalih, semoga Allah memudahkan segala hajat dunia dan akhiratnya."
+                      </p>
+                      <p className="text-[11px] text-emerald-800 font-semibold mt-1.5">
+                        ✦ Amal Jariyah: Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara
                       </p>
                     </div>
 
+                    {/* 3 Paket Pilihan Infaq Psikologis (Decoy Pricing) */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-2">
-                        Pilih Nominal Donasi Pembuka Seluruh Arsip:
+                      <label className="block text-xs font-bold text-slate-800 mb-2">
+                        Pilih Paket Infaq Jariyah Pembuka Khazanah:
                       </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {[15000, 25000, 50000, 100000].map((amt) => (
-                          <button
-                            key={amt}
-                            type="button"
-                            onClick={() => setSelectedNominal(amt)}
-                            className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                              selectedNominal === amt
-                                ? 'bg-emerald-800 text-white border-emerald-800 shadow-2xs'
-                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50'
-                            }`}
-                          >
-                            Rp {amt.toLocaleString('id-ID')}
-                          </button>
-                        ))}
+                      <div className="space-y-2.5">
+                        {RUBRIK_DECOY_PACKAGES.map((pkg) => {
+                          const isSelected = !customNominalInput.trim() && selectedNominal === pkg.amount;
+                          const isPopular = pkg.amount === 25000;
+                          return (
+                            <button
+                              key={pkg.amount}
+                              type="button"
+                              onClick={() => {
+                                setSelectedNominal(pkg.amount);
+                                setCustomNominalInput('');
+                              }}
+                              className={`w-full text-left p-3.5 rounded-2xl border transition-all cursor-pointer relative ${
+                                isSelected
+                                  ? 'bg-emerald-50/90 border-emerald-700 ring-2 ring-emerald-600/20 shadow-xs'
+                                  : isPopular
+                                    ? 'bg-amber-50/40 border-amber-300/90 hover:border-emerald-600'
+                                    : 'bg-white border-slate-200 hover:border-emerald-300 hover:bg-slate-50/60'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2 mb-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs sm:text-sm font-serif font-black text-slate-900">
+                                    Rp {pkg.amount.toLocaleString('id-ID')} — "{pkg.title}"
+                                  </span>
+                                  {pkg.badge && (
+                                    <span
+                                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                        isPopular
+                                          ? 'bg-amber-500 text-white shadow-2xs'
+                                          : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                                      }`}
+                                    >
+                                      {pkg.badge}
+                                    </span>
+                                  )}
+                                </div>
+                                <span
+                                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                                    isSelected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-300 bg-white'
+                                  }`}
+                                >
+                                  {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-600 leading-relaxed">{pkg.description}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Input Nominal Sendiri (>= Rp 10.000) */}
+                      <div className="relative mt-2.5">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                          Rp
+                        </span>
+                        <input
+                          type="number"
+                          min={10000}
+                          placeholder="Atau ketik nominal infaq lainnya (minimal Rp 10.000)..."
+                          value={customNominalInput}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCustomNominalInput(val);
+                            const num = Number(val);
+                            if (Number.isFinite(num) && num >= 10000) {
+                              setSelectedNominal(num);
+                            }
+                          }}
+                          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
                       </div>
                     </div>
 
-                    {/* Barcode QRIS Resmi Ziarah Nusantara */}
+                    {/* Barcode QRIS Resmi Ziarah Nusantara (Dinamis mengikuti paket/nominal) */}
                     <QrisPaymentCard
                       qrisPayload={bankDetails.qrisPayload}
                       qrisImageUrl={bankDetails.qrisImageUrl}
-                      selectedAmount={selectedNominal}
+                      selectedAmount={activeEffectiveNominal}
                       compact
                     />
 
@@ -818,6 +1023,21 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                           )}
                         </button>
                       </div>
+                    </div>
+
+                    {/* Kolom Opsional Titip Doa / Hajat Anda */}
+                    <div className="bg-stone-50/90 p-3.5 rounded-2xl border border-stone-200/90 space-y-1.5">
+                      <label className="block text-xs font-bold text-stone-800">
+                        Titip Doa / Hajat Anda <span className="text-stone-400 font-normal">(Opsional, maks. 200 karakter)</span>
+                      </label>
+                      <textarea
+                        rows={2}
+                        maxLength={200}
+                        placeholder="Contoh: Mohon doa untuk kesembuhan orang tua & kelancaran rezeki keluarga..."
+                        value={prayerIntent}
+                        onChange={(e) => setPrayerIntent(e.target.value)}
+                        className="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 resize-none"
+                      />
                     </div>
 
                     {/* Wajib Unggah Bukti Transfer */}
@@ -855,7 +1075,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                         {isSubmittingDonation ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Mengunggah & Memverifikasi Bukti Transfer...</span>
+                            <span>Mengunggah &amp; Membuka Seluruh Khazanah...</span>
                           </>
                         ) : !isProofComplete ? (
                           <>
@@ -865,7 +1085,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                         ) : (
                           <>
                             <CheckCircle2 className="w-4 h-4" />
-                            <span>Kirim Bukti Transfer & Buka Seluruh Naskah</span>
+                            <span>Kirim Bukti Infaq &amp; Buka Seluruh Kisah Rahasia</span>
                           </>
                         )}
                       </button>

@@ -9,7 +9,6 @@ import {
   CheckCircle2, 
   Copy,
   Loader2,
-  Sparkles,
   MessageSquareHeart,
   Database,
   Lock,
@@ -20,8 +19,16 @@ import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
-import { CompressedReceiptResult, saveVerifiedDonationRecord, submitDonationWithPrivateProof } from '../lib/transferProof';
-import { sanitizePlainText, sanitizeMultilineText, sanitizeDonationAmount } from '../lib/sanitize';
+import {
+  CompressedReceiptResult,
+  CuratedMunajatItem,
+  FALLBACK_MUNAJAT_ITEMS,
+  getStoredAamiinMap,
+  incrementStoredAamiin,
+  saveVerifiedDonationRecord,
+  submitDonationWithPrivateProof,
+} from '../lib/transferProof';
+import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
 
 interface DonationRecord {
   id: string;
@@ -32,6 +39,7 @@ interface DonationRecord {
   doaHajat: string;
   dateLabel: string;
   createdAtMs: number;
+  baseAamiinCount?: number;
 }
 
 export interface InfaqProgramItem {
@@ -46,11 +54,11 @@ export interface InfaqProgramItem {
 export const DEFAULT_INFAQ_PROGRAMS: InfaqProgramItem[] = [
   {
     id: 'riset-web',
-    title: 'Riset Sejarah, Perluasan Database & Operasional Web (Domain/VPS)',
-    desc: 'Prioritas utama untuk riset lapangan & verifikasi sanad, memperbanyak database makam ulama Nusantara di situs ini, serta biaya langganan domain, server VPS, dan pemeliharaan web.',
+    title: 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
+    desc: 'Wasilah jariyah untuk pelestarian manuskrip sejarah, verifikasi sanad keilmuan, dokumentasi karomah, serta penyebaran riwayat para Wali dan Ulama Nusantara ke seluruh penjuru.',
     iconName: 'Database',
     color: 'from-emerald-600 to-brand-900',
-    tag: 'Prioritas Utama'
+    tag: 'Wasilah Jariyah Utama'
   }
 ];
 
@@ -84,7 +92,7 @@ const ICON_MAP = {
 export const InfaqDigital: React.FC = () => {
   const [selectedProgram, setSelectedProgram] = useState<string>('riset-web');
   const [selectedSiteId, setSelectedSiteId] = useState<string>('web-riset');
-  const [nominal, setNominal] = useState<number>(50000);
+  const [nominal, setNominal] = useState<number>(25000);
   const [customNominal, setCustomNominal] = useState<string>('');
   const [donorName, setDonorName] = useState<string>('');
   const [isAnonim, setIsAnonim] = useState<boolean>(false);
@@ -101,6 +109,11 @@ export const InfaqDigital: React.FC = () => {
 
   const [infaqSettings, setInfaqSettings] = useState<InfaqSettings>(DEFAULT_INFAQ_SETTINGS);
   const [recentDonations, setRecentDonations] = useState<DonationRecord[]>([]);
+  const [aamiinMap, setAamiinMap] = useState<Record<string, number>>(() => getStoredAamiinMap());
+
+  const handleAamiinClick = (itemId: string) => {
+    setAamiinMap(incrementStoredAamiin(itemId));
+  };
 
   // Pre-fill donor name if logged in
   useEffect(() => {
@@ -119,7 +132,17 @@ export const InfaqDigital: React.FC = () => {
         if (snap.exists()) {
           const data = snap.data();
           const rawPrograms = Array.isArray(data.programs)
-            ? data.programs.filter((p: InfaqProgramItem) => !removedIds.has(p.id))
+            ? data.programs
+                .filter((p: InfaqProgramItem) => !removedIds.has(p.id))
+                .map((p: InfaqProgramItem) =>
+                  p.id === 'riset-web'
+                    ? {
+                        ...p,
+                        title: 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
+                        desc: 'Wasilah jariyah untuk pelestarian manuskrip sejarah, verifikasi sanad keilmuan, dokumentasi karomah, serta penyebaran riwayat para Wali dan Ulama Nusantara ke seluruh penjuru.',
+                      }
+                    : p
+                )
             : [];
           const loadedPrograms = rawPrograms.length > 0
             ? rawPrograms
@@ -145,9 +168,9 @@ export const InfaqDigital: React.FC = () => {
     const unsubDonations = onSnapshot(
       collection(db, 'donations'),
       (snapshot) => {
-        const list: DonationRecord[] = snapshot.docs.map(docSnap => {
+        const list: DonationRecord[] = snapshot.docs.map((docSnap, idx) => {
           const d = docSnap.data();
-          const ts = d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now();
+          const ts = d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now() - idx * 60000;
           const dateLabel = d.createdAt?.toDate
             ? d.createdAt.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
             : 'Baru saja';
@@ -155,11 +178,12 @@ export const InfaqDigital: React.FC = () => {
             id: docSnap.id,
             donorName: d.donorName || 'Hamba Allah',
             amount: Number(d.amount) || 0,
-            programTitle: d.programTitle || 'Donasi Pemeliharaan',
-            siteName: d.siteName || 'Kompleks Makam Nusantara',
-            doaHajat: d.doaHajat || '',
+            programTitle: d.programTitle || 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
+            siteName: d.siteName || 'Khazanah Auliya Nusantara',
+            doaHajat: d.doaHajat || 'Semoga menjadi amal jariyah dan wasilah keberkahan keluarga.',
             dateLabel,
             createdAtMs: ts,
+            baseAamiinCount: 15 + (idx % 23),
           };
         });
         list.sort((a, b) => b.createdAtMs - a.createdAtMs);
@@ -188,9 +212,12 @@ export const InfaqDigital: React.FC = () => {
 
   const currentAmount = sanitizeDonationAmount(customNominal ? customNominal : nominal, 1000, 1000000000);
   const targetSiteName = selectedSiteId === 'web-riset'
-    ? 'Riset Database & Operasional Web (Domain & VPS)'
+    ? 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara'
     : 'Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)';
-  const activeProgramTitle = programs.find(p => p.id === selectedProgram)?.title || programs[0]?.title || 'Riset & Operasional Web';
+  const activeProgramTitle =
+    programs.find(p => p.id === selectedProgram)?.title ||
+    programs[0]?.title ||
+    'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara';
 
   const cleanSender = sanitizePlainText(senderAccount, 80);
   const isProofComplete = Boolean(receipt && cleanSender.length >= 3);
@@ -220,7 +247,7 @@ export const InfaqDigital: React.FC = () => {
     const finalDonorName = isAnonim
       ? 'Hamba Allah'
       : sanitizePlainText(donorName, 100) || cleanSender || 'Hamba Allah';
-    const cleanDoaHajat = sanitizeMultilineText(doaHajat, 1000);
+    const cleanDoaHajat = sanitizePlainText(doaHajat, 200);
 
     try {
       const donationId = await submitDonationWithPrivateProof({
@@ -254,18 +281,26 @@ export const InfaqDigital: React.FC = () => {
     }
   };
 
+  const displayedMunajatList: CuratedMunajatItem[] =
+    recentDonations.length > 0
+      ? recentDonations.map((d, idx) => ({
+          ...d,
+          baseAamiinCount: d.baseAamiinCount ?? 15 + (idx % 23),
+        }))
+      : FALLBACK_MUNAJAT_ITEMS;
+
   const totalTerkumpul = recentDonations.reduce((acc, item) => acc + item.amount, 0);
 
   const finalDonorDisplay = isAnonim ? 'Hamba Allah' : (donorName.trim() || senderAccount.trim() || 'Hamba Allah');
   const activeRefCode = lastSubmittedReceipt?.referenceCode || receipt?.referenceCode || '-';
-  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Donasi di sistem:\n\n` +
+  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq Jariyah di sistem:\n\n` +
     `• *Kode Referensi Bukti:* ${activeRefCode}\n` +
     `• *Nama Pewakif / Pengirim:* ${finalDonorDisplay} (${senderAccount.trim() || '-'})\n` +
     `• *Metode Pembayaran:* ${paymentMethod}\n` +
     `• *Program:* ${activeProgramTitle}\n` +
     `• *Tujuan Alokasi:* ${targetSiteName}\n` +
-    `• *Nominal Donasi:* Rp ${currentAmount.toLocaleString('id-ID')}` +
-    (doaHajat.trim() ? `\n• *Doa / Hajat:* "${doaHajat.trim()}"` : '') +
+    `• *Nominal Infaq:* Rp ${currentAmount.toLocaleString('id-ID')}` +
+    (doaHajat.trim() ? `\n• *Titip Doa / Hajat:* "${sanitizePlainText(doaHajat, 200)}"` : '') +
     `\n\nScreenshot bukti transfer telah terunggah di sistem Admin Kurator. Terima kasih.`;
   const waConfirmUrl = `https://wa.me/6285717378885?text=${encodeURIComponent(waMessage)}`;
 
@@ -282,18 +317,18 @@ export const InfaqDigital: React.FC = () => {
           <div className="max-w-2xl">
             <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-gold-300 text-xs font-semibold mb-4">
               <HeartHandshake className="w-4 h-4" />
-              <span>Sedekah Jariyah & Amal Kebaikan</span>
+              <span>Sedekah Jariyah &amp; Wasilah Kebaikan</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
-              Donasi Digital Makam Aulia Nusantara
+              Infaq Jariyah &amp; Dinding Munajat Peziarah
             </h1>
             <p className="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed">
-              Salurkan sedekah dan donasi secara langsung, transparan, dan tercatat untuk pemeliharaan makam, fasilitas jamaah, dan santunan sosial di berbagai situs ziarah Nusantara.
+              Salurkan infaq jariyah untuk Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara, sekaligus membuka seluruh naskah Kisah Rahasia &amp; Karomah di perangkat Anda.
             </p>
           </div>
           {recentDonations.length > 0 && (
             <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 shrink-0 min-w-[200px]">
-              <p className="text-[11px] uppercase tracking-wider text-emerald-300 font-bold mb-1">Total Donasi Tercatat</p>
+              <p className="text-[11px] uppercase tracking-wider text-emerald-300 font-bold mb-1">Total Infaq Tercatat</p>
               <p className="text-xl sm:text-2xl font-serif font-black text-white">Rp {totalTerkumpul.toLocaleString('id-ID')}</p>
               <p className="text-[11px] text-slate-300 mt-0.5">Dari {recentDonations.length} konfirmasi pewakif</p>
             </div>
@@ -308,7 +343,7 @@ export const InfaqDigital: React.FC = () => {
           <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
             <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-3.5 flex items-center">
               <span className="w-6 h-6 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center mr-2.5">1</span>
-              Pilih Program Kebaikan
+              Pilih Program Amal Jariyah
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {programs.map((p, idx) => {
@@ -368,18 +403,18 @@ export const InfaqDigital: React.FC = () => {
           <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
             <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-3.5 flex items-center">
               <span className="w-6 h-6 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center mr-2.5">2</span>
-              Tujuan Alokasi Donasi
+              Tujuan Alokasi Infaq Jariyah
             </h2>
             <select
               value={selectedSiteId}
               onChange={(e) => setSelectedSiteId(e.target.value)}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 cursor-pointer shadow-inner"
             >
-              <option value="web-riset">💻 Riset Sejarah, Perluasan Database Makam & Operasional Web (Domain & VPS)</option>
+              <option value="web-riset">📜 Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara</option>
               <option value="all">🌐 Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)</option>
             </select>
             <p className="text-[11px] text-slate-400 mt-2">
-              Donasi akan disalurkan sesuai akad pilihan program (tim riset database & server web atau pengurus kompleks makam terkait).
+              Infaq akan disalurkan secara amanah sesuai akad pilihan program untuk pelestarian khazanah sejarah &amp; penyebaran riwayat para Auliya.
             </p>
           </div>
 
@@ -387,7 +422,7 @@ export const InfaqDigital: React.FC = () => {
           <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
             <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-3.5 flex items-center">
               <span className="w-6 h-6 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center mr-2.5">3</span>
-              Pilih Nominal Donasi
+              Pilih Nominal Infaq
             </h2>
             <div className="grid grid-cols-3 gap-2.5 mb-3">
               {quickNominals.map((val) => {
@@ -427,11 +462,11 @@ export const InfaqDigital: React.FC = () => {
             </div>
           </div>
 
-          {/* 4. Data Peziarah / Doa Hajat */}
+          {/* 4. Data Peziarah / Titip Doa & Hajat */}
           <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs space-y-4">
             <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-1 flex items-center">
               <span className="w-6 h-6 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center mr-2.5">4</span>
-              Doa & Hajat (Opsional)
+              Titip Doa / Hajat Anda (Opsional)
             </h2>
             
             <div>
@@ -452,16 +487,18 @@ export const InfaqDigital: React.FC = () => {
                   onChange={(e) => setIsAnonim(e.target.checked)}
                   className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 mr-2"
                 />
-                Donasi sebagai Hamba Allah (Anonim)
+                Infaq sebagai Hamba Allah (Anonim)
               </label>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Doa atau Hajat Khusus (Akan tampil di daftar doa jamaah)</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                Titip Doa / Hajat Anda <span className="text-slate-400 font-normal">(Maks. 200 karakter — tampil di Dinding Munajat Peziarah)</span>
+              </label>
               <textarea
                 rows={2}
-                maxLength={1000}
-                placeholder="Tuliskan doa/hajat untuk Anda, keluarga, atau almarhum/almarhumah..."
+                maxLength={200}
+                placeholder="Contoh: Mohon doa untuk kesembuhan orang tua & kelancaran rezeki keluarga..."
                 value={doaHajat}
                 onChange={(e) => setDoaHajat(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 resize-none"
@@ -472,28 +509,35 @@ export const InfaqDigital: React.FC = () => {
 
         {/* Kolom Kanan: Rincian & Metode Pembayaran */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Ringkasan Donasi */}
+          {/* Ringkasan Infaq */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs sticky top-24">
-            <h3 className="font-bold text-slate-900 text-base mb-4 flex items-center justify-between">
-              <span>Ringkasan Donasi</span>
+            <h3 className="font-bold text-slate-900 text-base mb-3 flex items-center justify-between">
+              <span>Ringkasan Infaq Jariyah</span>
               <span className="text-[11px] px-2.5 py-1 bg-emerald-50 text-emerald-800 font-bold rounded-xl border border-emerald-200/60">Akad Jariyah</span>
             </h3>
 
+            {/* Kutipan Hikmah di atas form konfirmasi infaq */}
+            <div className="mb-4 p-3.5 bg-gradient-to-br from-emerald-50/90 via-amber-50/50 to-white rounded-2xl border border-emerald-200/80 text-xs">
+              <p className="font-serif italic text-slate-800 leading-relaxed">
+                "Siapa yang membantu menghidupkan kisah dan jejak orang-orang shalih, semoga Allah memudahkan segala hajat dunia dan akhiratnya."
+              </p>
+            </div>
+
             <div className="space-y-3 text-xs sm:text-sm pb-4 border-b border-slate-100">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Program</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-slate-500 shrink-0">Program</span>
                 <span className="font-semibold text-slate-900 text-right">
                   {activeProgramTitle}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Alokasi Makam</span>
-                <span className="font-semibold text-emerald-800 text-right max-w-[200px] truncate">
+              <div className="flex justify-between gap-2">
+                <span className="text-slate-500 shrink-0">Alokasi Wasilah</span>
+                <span className="font-semibold text-emerald-800 text-right max-w-[210px] truncate">
                   {targetSiteName}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Nama Pewakif</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-slate-500 shrink-0">Nama Pewakif</span>
                 <span className="font-semibold text-slate-900">
                   {finalDonorDisplay}
                 </span>
@@ -582,7 +626,7 @@ export const InfaqDigital: React.FC = () => {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Mengunggah & Memverifikasi Bukti Transfer...</span>
+                  <span>Mengunggah &amp; Mencatat Munajat...</span>
                 </>
               ) : !isProofComplete ? (
                 <>
@@ -592,7 +636,7 @@ export const InfaqDigital: React.FC = () => {
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Kirim Bukti Transfer & Konfirmasi Donasi</span>
+                  <span>Kirim Bukti Infaq &amp; Buka Seluruh Khazanah</span>
                 </>
               )}
             </motion.button>
@@ -600,7 +644,7 @@ export const InfaqDigital: React.FC = () => {
         </div>
       </div>
 
-      {/* Live Doa & Riwayat Donasi Pewakif (Real-time Firestore) */}
+      {/* Dinding Munajat & Infaq Peziarah Terkini (Real-time Firestore + Fallback Santun) */}
       <div className="mt-12">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center space-x-2.5">
@@ -608,24 +652,20 @@ export const InfaqDigital: React.FC = () => {
               <MessageSquareHeart className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-serif font-black text-slate-900">Doa & Riwayat Pewakif Terbaru</h2>
-              <p className="text-xs text-slate-500">Tersimpan secara real-time di database. Mari aminkan doa saudara kita.</p>
+              <h2 className="text-base sm:text-lg font-serif font-black text-slate-900">Munajat &amp; Infaq Peziarah Terkini</h2>
+              <p className="text-xs text-slate-500">Mari aminkan doa dan hajat saudara seiman kita agar malaikat turut mengaminkan doa yang sama untuk kita.</p>
             </div>
           </div>
           <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-            {recentDonations.length} Donasi Tercatat
+            {displayedMunajatList.length} Munajat Tercatat
           </span>
         </div>
 
-        {recentDonations.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 text-center border border-slate-200/90 shadow-xs">
-            <Sparkles className="w-8 h-8 text-emerald-600 mx-auto mb-2 opacity-60" />
-            <p className="text-xs sm:text-sm font-semibold text-slate-700">Belum ada catatan donasi hari ini</p>
-            <p className="text-xs text-slate-500 mt-1">Jadilah pewakif pertama yang mencatatkan doa dan amal jariyah.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentDonations.slice(0, 9).map((item) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {displayedMunajatList.slice(0, 9).map((item) => {
+            const totalAamiin = (item.baseAamiinCount || 15) + (aamiinMap[item.id] || 0);
+            const hasClickedAamiin = Boolean(aamiinMap[item.id]);
+            return (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 10 }}
@@ -656,14 +696,25 @@ export const InfaqDigital: React.FC = () => {
                     </p>
                   )}
                 </div>
-                <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
-                  <span className="truncate max-w-[180px]">{item.programTitle}</span>
-                  <span className="text-emerald-700 font-bold">آمين يا رب العالمين</span>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                  <span className="truncate max-w-[155px]">{item.programTitle}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleAamiinClick(item.id)}
+                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer border ${
+                      hasClickedAamiin
+                        ? 'bg-emerald-800 text-white border-emerald-800 shadow-2xs'
+                        : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+                    }`}
+                  >
+                    <span>Aamiin 🤲</span>
+                    <span className="text-[10px] opacity-90">({totalAamiin})</span>
+                  </button>
                 </div>
               </motion.div>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
 
       {/* Modal Konfirmasi Sukses */}
@@ -681,7 +732,7 @@ export const InfaqDigital: React.FC = () => {
               </div>
 
               <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 inline-block mb-2">
-                Tersimpan di Database
+                Tersimpan di Arsip &amp; Seluruh Khazanah Terbuka
               </span>
               <h3 className="text-xl font-serif font-black text-slate-900 mb-2">
                 Alhamdulillah, Jazakumullahu Khairan
@@ -689,12 +740,12 @@ export const InfaqDigital: React.FC = () => {
               
               <div className="my-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left text-xs space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Nominal Donasi</span>
+                  <span className="text-slate-500">Nominal Infaq</span>
                   <span className="font-bold text-slate-900">Rp {currentAmount.toLocaleString('id-ID')}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Program</span>
-                  <span className="font-semibold text-slate-900">{activeProgramTitle}</span>
+                <div className="flex justify-between gap-2">
+                  <span className="text-slate-500 shrink-0">Program</span>
+                  <span className="font-semibold text-slate-900 text-right">{activeProgramTitle}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Pewakif</span>
@@ -729,7 +780,7 @@ export const InfaqDigital: React.FC = () => {
                   onClick={() => setIsSuccessModal(false)}
                   className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs sm:text-sm transition-colors cursor-pointer"
                 >
-                  Tutup & Kembali
+                  Tutup &amp; Kembali
                 </button>
               </div>
             </motion.div>

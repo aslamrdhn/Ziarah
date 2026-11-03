@@ -1,5 +1,6 @@
 import React from 'react';
-import { CheckCircle2, Scale, BookOpen, Globe } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CheckCircle2, Scale, BookOpen, Globe, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export const KebijakanKurasi: React.FC = () => {
@@ -109,6 +110,19 @@ export const KebijakanKurasi: React.FC = () => {
         </motion.div>
 
       </div>
+
+      {/* Discreet Curator Access Link */}
+      <div className="mt-10 pt-6 border-t border-stone-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500">
+        <span>Tim Kurator Arsip Ziarah Nusantara — Verifikasi Data &amp; Manuskrip</span>
+        <Link
+          to="/admin"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200/80 text-stone-700 font-medium transition-colors"
+        >
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-800" />
+          <span>Akses Portal Dewan Kurator</span>
+        </Link>
+      </div>
     </div>
   );
 };
+

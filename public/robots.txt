@@ -4,3 +4,5 @@ Allow: /
 Sitemap: https://ziarahnusantara.my.id/sitemap-utama.xml
 Sitemap: https://ziarahnusantara.my.id/sitemap.xml
 Sitemap: https://ziarahnusantara.my.id/sitemap.txt
+LLMs-Txt: https://ziarahnusantara.my.id/llms.txt
+AI-Catalog: https://ziarahnusantara.my.id/.well-known/ard.json

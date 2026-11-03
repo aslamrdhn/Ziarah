@@ -2,10 +2,10 @@
   "$schema": "https://schema.org/DataCatalog",
   "schema_version": "1.0",
   "version": "1.0.0",
-  "id": "https://ziarahnusantara.my.id/ai-catalog.json",
+  "id": "https://ziarahnusantara.my.id/.well-known/ai-catalog.json",
   "name": "Ziarah Nusantara",
   "title": "Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara",
-  "description": "Situs resmi Ziarah Nusantara (ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Menyediakan direktori makam Wali Songo, ulama Nusantara, peta rute ziarah interaktif, adab ziarah, kumpulan doa tahlil & tawassul, serta literasi sejarah Islam Nusantara.",
+  "description": "Situs resmi Ziarah Nusantara (ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Menyediakan direktori 96 makam Wali Songo, Ulama Nusantara, Habaib & Auliya di 18 provinsi, peta rute ziarah interaktif, adab ziarah, kumpulan doa tahlil & tawassul, serta literasi sejarah Islam Nusantara.",
   "url": "https://ziarahnusantara.my.id/",
   "homepage": "https://ziarahnusantara.my.id/",
   "documentation_url": "https://ziarahnusantara.my.id/llms.txt",
@@ -20,7 +20,16 @@
   "capabilities": {
     "agentic_navigation": true,
     "structured_data": true,
-    "llms_txt": true
+    "llms_txt": true,
+    "semantic_prerender": true
+  },
+  "endpoints": {
+    "llms": "https://ziarahnusantara.my.id/llms.txt",
+    "llms_full": "https://ziarahnusantara.my.id/llms-full.txt",
+    "ard": "https://ziarahnusantara.my.id/.well-known/ard.json",
+    "ai_catalog": "https://ziarahnusantara.my.id/.well-known/ai-catalog.json",
+    "sitemap": "https://ziarahnusantara.my.id/sitemap.xml",
+    "rss": "https://ziarahnusantara.my.id/rss.xml"
   },
   "resources": [
     {
@@ -28,7 +37,7 @@
       "name": "Arsip & Direktori Makam Waliyullah Nusantara",
       "type": "directory",
       "url": "https://ziarahnusantara.my.id/direktori",
-      "description": "Katalog ensiklopedis makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya Nusantara beserta koordinat geospasial dan referensi jurnal ilmiah."
+      "description": "Katalog ensiklopedis 96 makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya Nusantara beserta koordinat geospasial dan referensi jurnal ilmiah."
     },
     {
       "id": "peta-rute-ziarah",
@@ -63,7 +72,7 @@
       "name": "Infaq Digital & Pelestarian Arsip Ziarah Nusantara",
       "type": "service",
       "url": "https://ziarahnusantara.my.id/infaq",
-      "description": "Layanan infaq dan wakaf digital QRIS resmi Ziarah Nusantara untuk riset literasi sejarah dan pelestarian situs makam."
+      "description": "Layanan infaq dan wakaf digital QRIS resmi Ziarah Nusantara untuk penjagaan arsip digital dan penyebaran riwayat Auliya Nusantara."
     }
   ],
   "tools": [

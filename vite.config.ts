@@ -121,6 +121,7 @@ export default defineConfig({
           /^\/robots\.txt$/,
           /^\/llms\.txt$/,
           /^\/llms-full\.txt$/,
+          /^\/ard\.json$/,
           /^\/ai-catalog\.json$/,
           /^\/\.well-known\/.*/,
           /^\/favicon\..*/,
@@ -133,6 +134,20 @@ export default defineConfig({
               cacheName: 'ziarah-hashed-assets-v1',
               expiration: {
                 maxEntries: 80,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 Year
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /\/thumbs\/.*\.(?:webp|png|jpg|jpeg)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ziarah-local-thumbs-v1',
+              expiration: {
+                maxEntries: 40,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 Year
               },
               cacheableResponse: {

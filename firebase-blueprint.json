@@ -89,6 +89,7 @@
         "authorName": { "type": "string", "maxLength": 100 },
         "authorUid": { "type": "string", "maxLength": 128 },
         "text": { "type": "string", "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["pending", "approved", "published"] },
         "createdAt": { "type": "string" }
       },
       "required": ["siteId", "authorName", "text"]
@@ -109,7 +110,7 @@
         "referenceCode": { "type": "string", "maxLength": 40 },
         "doaHajat": { "type": "string", "maxLength": 1000 },
         "authorUid": { "type": "string", "maxLength": 128 },
-        "status": { "type": "string", "enum": ["confirmed", "verified", "rejected"] },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "verified", "rejected"] },
         "createdAt": { "type": "string" }
       },
       "required": ["programId", "amount", "donorName", "hasProof", "status"]

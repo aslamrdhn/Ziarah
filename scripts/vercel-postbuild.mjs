@@ -167,30 +167,34 @@ function parseFirestoreStringField(fields, key, fallback = '') {
 }
 
 async function fetchCloudSitesForSeo(localSites) {
-  const configPath = path.resolve(cwd, 'firebase-applet-config.json');
-  if (!fs.existsSync(configPath) || typeof fetch !== 'function') {
-    return localSites;
-  }
-
   try {
+    const configPath = path.resolve(cwd, 'firebase-applet-config.json');
+    if (!fs.existsSync(configPath) || typeof fetch !== 'function') {
+      return localSites;
+    }
+
     const rawConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     const projectId = rawConfig.projectId;
-    const dbId = rawConfig.firestoreDatabaseId || '(default)';
+    const databaseId = rawConfig.firestoreDatabaseId || '(default)';
     const apiKey = rawConfig.apiKey;
     if (!projectId) return localSites;
 
     const url = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(
       projectId
-    )}/databases/${encodeURIComponent(dbId)}/documents/sites?pageSize=300${
+    )}/databases/${encodeURIComponent(databaseId)}/documents/sites?pageSize=300${
       apiKey ? `&key=${encodeURIComponent(apiKey)}` : ''
     }`;
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
+    let res;
+    try {
+      res = await fetch(url, { signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
 
-    if (!res.ok) {
+    if (!res || !res.ok) {
       return localSites;
     }
 
@@ -198,9 +202,11 @@ async function fetchCloudSitesForSeo(localSites) {
     const docs = Array.isArray(json?.documents) ? json.documents : [];
     if (docs.length === 0) return localSites;
 
-    const mergedMap = new Map();
+    const mergedById = new Map();
+    const slugToId = new Map();
     for (const s of localSites) {
-      mergedMap.set(s.id, s);
+      mergedById.set(s.id, s);
+      if (s.slug) slugToId.set(s.slug, s.id);
     }
 
     let addedCloudCount = 0;
@@ -211,23 +217,29 @@ async function fetchCloudSitesForSeo(localSites) {
       if (!docId) continue;
 
       const locFields = f.location?.mapValue?.fields || {};
-      const base = mergedMap.get(docId);
-      const name = parseFirestoreStringField(f, 'name', base?.name || docId);
-      const title = parseFirestoreStringField(f, 'title', base?.title || `Makam ${name}`);
+      const baseById = mergedById.get(docId);
+      const name = parseFirestoreStringField(f, 'name', baseById?.name || docId);
+      const title = parseFirestoreStringField(f, 'title', baseById?.title || `Makam ${name}`);
+      const city = parseFirestoreStringField(locFields, 'city', baseById?.city || 'Nusantara');
+      const slug = getSiteSlug(title, city, docId);
+
+      // Deduplicate by id or slug
+      const existingIdBySlug = slugToId.get(slug);
+      const targetId = baseById ? docId : existingIdBySlug || docId;
+      const base = mergedById.get(targetId);
+
       const category = parseFirestoreStringField(f, 'category', base?.category || 'Waliyullah Nusantara');
       const description = parseFirestoreStringField(f, 'description', base?.description || '');
       const history = parseFirestoreStringField(f, 'history', base?.history || description);
       const address = parseFirestoreStringField(locFields, 'address', base?.address || '');
-      const city = parseFirestoreStringField(locFields, 'city', base?.city || 'Nusantara');
       const province = parseFirestoreStringField(locFields, 'province', base?.province || 'Indonesia');
       const era = parseFirestoreStringField(f, 'era', base?.era || '');
       const sanad = parseFirestoreStringField(f, 'sanad', base?.sanad || '');
-      const slug = getSiteSlug(title, city, docId);
 
       if (!base) addedCloudCount++;
-      mergedMap.set(docId, {
-        id: docId,
-        slug,
+      const mergedEntry = {
+        id: targetId,
+        slug: base?.slug || slug,
         name,
         title,
         category,
@@ -238,13 +250,15 @@ async function fetchCloudSitesForSeo(localSites) {
         province,
         era,
         sanad,
-      });
+      };
+      mergedById.set(targetId, mergedEntry);
+      slugToId.set(mergedEntry.slug, targetId);
     }
 
     console.log(
       `[postbuild] Synced ${docs.length} cloud sites from Firestore REST API (${addedCloudCount} net-new cloud sites merged).`
     );
-    return Array.from(mergedMap.values());
+    return Array.from(mergedById.values());
   } catch (err) {
     console.log('[postbuild] Using local sites catalog fallback (Firestore REST sync skipped):', err?.message || 'offline');
     return localSites;
@@ -279,8 +293,11 @@ function buildDirectoryLinksHtml() {
     </section>`;
 }
 
+const SR_ONLY_INLINE_STYLE =
+  'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0';
+
 function buildHomepageRootHtml() {
-  return `<main class="sr-only">
+  return `<main class="sr-only" style="${SR_ONLY_INLINE_STYLE}">
         <header>
           <h1>Ziarah Kubur &amp; Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab &amp; 96 Lokasi Makam</h1>
           <p><strong>Ziarah Nusantara (${SITE_ORIGIN})</strong> menyajikan panduan lengkap pengertian, hukum, tujuan, dan urutan bacaan doa ziarah kubur (Arab, Latin, Artinya) beserta direktori 96 situs makam Walisongo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia.</p>
@@ -304,7 +321,7 @@ function buildHomepageRootHtml() {
 }
 
 function buildPanduanRootHtml() {
-  return `<main class="sr-only">
+  return `<main class="sr-only" style="${SR_ONLY_INLINE_STYLE}">
         <h1>Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin &amp; Adab Ziarah Wali</h1>
         <p>Panduan lengkap tata cara dan urutan bacaan doa ziarah kubur singkat maupun lengkap untuk ziarah makam orang tua, kerabat, dan makam para Waliyullah (Walisongo &amp; Ulama Nusantara).</p>
         <h2>Apa Tujuan &amp; Hukum Ziarah Kubur dalam Islam?</h2>
@@ -324,7 +341,7 @@ function buildPanduanRootHtml() {
 }
 
 function buildSiteRootHtml(site) {
-  return `<main class="sr-only">
+  return `<main class="sr-only" style="${SR_ONLY_INLINE_STYLE}">
         <article>
           <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori ${escapeXml(site.province)}</a> &rsaquo; ${escapeXml(site.title)}</p>
           <h1>Makam ${escapeXml(site.title)} (${escapeXml(site.name)}) — ${escapeXml(site.city)}, ${escapeXml(site.province)}</h1>

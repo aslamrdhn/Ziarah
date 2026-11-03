@@ -72,11 +72,16 @@ export default function App() {
       } catch {}
     };
 
+    const handleInteraction = (e: Event) => {
+      if (e.type === 'scroll' && window.scrollY < 32) return;
+      fetchSettings();
+    };
+
     const events: (keyof WindowEventMap)[] = ['pointerdown', 'touchstart', 'keydown', 'scroll'];
     const cleanup = () => {
-      events.forEach((evt) => window.removeEventListener(evt, fetchSettings));
+      events.forEach((evt) => window.removeEventListener(evt, handleInteraction));
     };
-    events.forEach((evt) => window.addEventListener(evt, fetchSettings, { once: true, passive: true }));
+    events.forEach((evt) => window.addEventListener(evt, handleInteraction, { passive: true }));
 
     return cleanup;
   }, []);
@@ -294,16 +299,27 @@ export default function App() {
     setIsDataLoaded(true);
   }, []);
 
-  // Sync with Firestore when auth state changes (deferred until first user interaction)
+  // Sync with Firestore when auth state changes (only if stored session exists or on admin routes)
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
     let cancelled = false;
     let initialized = false;
 
+    const hasStoredSession = (): boolean => {
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('firebase:authUser:')) {
+            return true;
+          }
+        }
+      } catch {}
+      return false;
+    };
+
     const initAuth = async () => {
       if (initialized || cancelled) return;
       initialized = true;
-      cleanup();
       try {
         const [{ auth, db, handleFirestoreError, OperationType }, { onAuthStateChanged }, { doc, getDoc, setDoc, serverTimestamp }] =
           await Promise.all([
@@ -351,22 +367,19 @@ export default function App() {
       } catch {}
     };
 
-    const events: (keyof WindowEventMap)[] = ['pointerdown', 'touchstart', 'keydown', 'scroll'];
-    const cleanup = () => {
-      events.forEach((evt) => window.removeEventListener(evt, initAuth));
-    };
-    events.forEach((evt) => window.addEventListener(evt, initAuth, { once: true, passive: true }));
-
-    if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/kurator')) {
+    if (
+      location.pathname.startsWith('/admin') ||
+      location.pathname.startsWith('/kurator') ||
+      hasStoredSession()
+    ) {
       initAuth();
     }
 
     return () => {
       cancelled = true;
-      cleanup();
       if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [location.pathname]);
 
   // Sync state changes to local storage & Firestore
   useEffect(() => {
@@ -552,6 +565,13 @@ export default function App() {
               </Link>
               <Link to="/kurasi" className="hover:text-emerald-950">
                 Standar Kurasi
+              </Link>
+              <Link
+                to="/admin"
+                className="text-stone-500 hover:text-stone-900 font-normal transition-colors"
+                title="Portal Internal Dewan Kurator"
+              >
+                Portal Kurator
               </Link>
             </div>
           </div>

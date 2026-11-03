@@ -172,7 +172,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       connectCloudSites();
     }
 
-    const onFirstInteraction = () => {
+    const onFirstInteraction = (e: Event) => {
+      if (e.type === 'scroll' && window.scrollY < 32) return;
       cleanupListeners();
       ensureFullSitesLoaded();
       window.setTimeout(() => {
@@ -185,7 +186,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       events.forEach((evt) => window.removeEventListener(evt, onFirstInteraction));
     };
 
-    events.forEach((evt) => window.addEventListener(evt, onFirstInteraction, { once: true, passive: true }));
+    events.forEach((evt) => window.addEventListener(evt, onFirstInteraction, { passive: true }));
 
     return () => {
       cleanupListeners();
