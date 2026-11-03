@@ -31,7 +31,7 @@ import { DEFAULT_RUBRIK_GATE_SETTINGS, RubrikGateSettings, RubrikItem } from './
 import { useSites } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
-import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, User } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, browserPopupRedirectResolver, User } from 'firebase/auth';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl } from '../lib/sanitize';
@@ -120,7 +120,12 @@ export const AdminKurator: React.FC = () => {
     if (errorCode === 'auth/popup-blocked') {
       return 'Jendela Pop-up diblokir oleh browser Anda. Silakan klik tombol "Masuk Tanpa Pop-up (Redirect)" di bawah (tidak memerlukan pop-up), atau klik ikon Pop-up Diblokir di pojok kanan address bar browser lalu pilih "Selalu izinkan pop-up".';
     }
-    if (errorCode === 'auth/popup-closed-by-user' || errorCode === 'auth/cancelled-popup-request') {
+    if (errorCode === 'auth/popup-closed-by-user') {
+      return isInIframe
+        ? 'Jendela Pop-up Google tertutup sebelum verifikasi selesai (umum terjadi di dalam preview iframe). Silakan klik tombol "Buka di Tab Baru" di bawah agar login Google berjalan lancar, atau coba klik "Masuk via Pop-up Google" kembali.'
+        : 'Jendela Pop-up Google tertutup sebelum proses login selesai. Pastikan Anda memilih akun Google hingga jendela menutup otomatis, atau gunakan tombol "Masuk Tanpa Pop-up (Redirect)".';
+    }
+    if (errorCode === 'auth/cancelled-popup-request') {
       return null;
     }
     return error?.message || 'Gagal masuk via Google. Silakan gunakan tombol Masuk Tanpa Pop-up (Redirect).';
@@ -196,7 +201,7 @@ export const AdminKurator: React.FC = () => {
         list.sort((a, b) => b.createdAtMs - a.createdAtMs);
         setContributions(list);
       },
-      (err) => console.error('Error loading contributions:', err)
+      (err) => handleFirestoreError(err, OperationType.LIST, 'contributions')
     );
 
     const unsubDonations = onSnapshot(
@@ -205,7 +210,7 @@ export const AdminKurator: React.FC = () => {
         const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         setDonations(list);
       },
-      (err) => console.error('Error loading donations:', err)
+      (err) => handleFirestoreError(err, OperationType.LIST, 'donations')
     );
 
     getDoc(doc(db, 'settings', 'infaq'))
@@ -248,9 +253,8 @@ export const AdminKurator: React.FC = () => {
     setIsLoggingIn(true);
     setLoginError(null);
     try {
-      await signInWithPopup(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
     } catch (error: any) {
-      console.error('Error signing in with Google', error);
       const msg = formatLoginError(error);
       if (msg) setLoginError(msg);
     } finally {
@@ -263,9 +267,8 @@ export const AdminKurator: React.FC = () => {
     setIsLoggingIn(true);
     setLoginError(null);
     try {
-      await signInWithRedirect(auth, googleProvider);
+      await signInWithRedirect(auth, googleProvider, browserPopupRedirectResolver);
     } catch (error: any) {
-      console.error('Error redirect sign in with Google', error);
       const msg = formatLoginError(error);
       if (msg) setLoginError(msg);
       setIsLoggingIn(false);
@@ -338,10 +341,7 @@ export const AdminKurator: React.FC = () => {
         status: 'approved',
       });
     } catch (error) {
-      console.error('Failed to approve contribution:', error);
-      try {
-        handleFirestoreError(error, OperationType.UPDATE, `contributions/${item.id}`);
-      } catch {}
+      handleFirestoreError(error, OperationType.UPDATE, `contributions/${item.id}`);
     } finally {
       setProcessingId(null);
     }
@@ -355,7 +355,7 @@ export const AdminKurator: React.FC = () => {
         status: 'rejected',
       });
     } catch (error) {
-      console.error('Failed to reject contribution:', error);
+      handleFirestoreError(error, OperationType.UPDATE, `contributions/${item.id}`);
     } finally {
       setProcessingId(null);
     }
@@ -367,7 +367,7 @@ export const AdminKurator: React.FC = () => {
     try {
       await deleteDoc(doc(db, 'contributions', id));
     } catch (error) {
-      console.error('Failed to delete contribution:', error);
+      handleFirestoreError(error, OperationType.DELETE, `contributions/${id}`);
     } finally {
       setProcessingId(null);
     }
@@ -581,7 +581,7 @@ export const AdminKurator: React.FC = () => {
         setPreviewProofDonation((prev: any) => prev ? { ...prev, status: 'verified' } : null);
       }
     } catch (error) {
-      console.error('Error verifying donation:', error);
+      handleFirestoreError(error, OperationType.UPDATE, `donations/${id}`);
     }
   };
 
@@ -596,7 +596,7 @@ export const AdminKurator: React.FC = () => {
         setPreviewProofDonation(null);
       }
     } catch (error) {
-      console.error('Error deleting donation:', error);
+      handleFirestoreError(error, OperationType.DELETE, `donations/${id}`);
     }
   };
 
@@ -721,21 +721,10 @@ export const AdminKurator: React.FC = () => {
                 </button>
               ) : (
                 <>
-                  {!isInIframe && (
-                    <button
-                      disabled={isLoggingIn}
-                      onClick={handleRedirectLogin}
-                      className="py-2.5 px-5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl flex items-center transition-all shadow-xs disabled:opacity-50 cursor-pointer"
-                    >
-                      <LogIn className="w-3.5 h-3.5 mr-2" />
-                      <span>Masuk Akun Kurator (Redirect Tanpa Pop-up)</span>
-                    </button>
-                  )}
-
                   <button
                     disabled={isLoggingIn}
                     onClick={handleLogin}
-                    className="py-2.5 px-5 bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 text-xs font-bold rounded-xl flex items-center transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+                    className="py-2.5 px-5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl flex items-center transition-all shadow-xs disabled:opacity-50 cursor-pointer"
                   >
                     {isLoggingIn ? (
                       <>
@@ -744,11 +733,22 @@ export const AdminKurator: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <LogIn className="w-3.5 h-3.5 mr-2 text-emerald-800" />
+                        <LogIn className="w-3.5 h-3.5 mr-2" />
                         <span>Masuk via Pop-up Google</span>
                       </>
                     )}
                   </button>
+
+                  {!isInIframe && (
+                    <button
+                      disabled={isLoggingIn}
+                      onClick={handleRedirectLogin}
+                      className="py-2.5 px-5 bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 text-xs font-bold rounded-xl flex items-center transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+                    >
+                      <LogIn className="w-3.5 h-3.5 mr-2 text-emerald-800" />
+                      <span>Masuk Tanpa Pop-up (Redirect)</span>
+                    </button>
+                  )}
 
                   {isInIframe && (
                     <a
