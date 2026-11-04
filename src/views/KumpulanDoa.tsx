@@ -302,12 +302,12 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                     </>
                   ) : unlocked ? (
                     <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                      {item.text}
+                      {item.text.replace(/<!--more-->/g, ' ')}
                     </p>
                   ) : (
                     <div className="space-y-3">
                       <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                        <span>{item.text.slice(0, 50)}... </span>
+                        <span>{item.text.replace(/<!--more-->/g, ' ').slice(0, 50)}... </span>
                         <span className="blur-[4px] select-none opacity-65">
                           Kisah karomah lanjutan dibuka khusus bagi pengunjung yang telah melakukan donasi riset database dan terverifikasi oleh kurator.
                         </span>
@@ -330,6 +330,31 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
             })}
           </div>
         )}
+
+        <div className="mt-8 rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-emerald-950 via-stone-900 to-emerald-950 text-white border border-emerald-800/40 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-2 max-w-2xl">
+            <h3 className="font-serif text-lg sm:text-xl font-bold text-amber-100 leading-snug">
+              Tahukah Anda Ujian Batin Seberat Apa yang Melahirkan Munajat Para Wali Ini?
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-200 leading-relaxed">
+              Di balik setiap wirid yang diwariskan para Auliya Nusantara, tersimpan kisah malam-malam penuh air mata, kesempitan hidup, dan pertolongan Allah yang datang tepat di detik terakhir. Selami naskah lengkapnya di Khazanah Khusus.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
+            <Link
+              to="/rubrik"
+              className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold text-center transition shadow-xs"
+            >
+              Selami Kisah Rahasia di Balik Doa
+            </Link>
+            <Link
+              to="/infaq"
+              className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-bold text-center transition"
+            >
+              Titip Hajat di Dinding Munajat
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

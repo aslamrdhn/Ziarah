@@ -21,7 +21,6 @@ import {
   ExternalLink,
   LocateFixed,
 } from 'lucide-react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import 'leaflet/dist/leaflet.css';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
 import {
@@ -88,12 +87,11 @@ function ZoomListener({ onZoomChange }: { onZoomChange: (zoom: number) => void }
   return null;
 }
 
+const MAP_PIN_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>';
+
 const cachedUserIcon = L.divIcon({
-  html: renderToStaticMarkup(
-    <div className="flex items-center justify-center w-7 h-7 bg-emerald-700 rounded-full border-2 border-white shadow-lg">
-      <div className="w-2.5 h-2.5 bg-white rounded-full" />
-    </div>
-  ),
+  html: '<div class="flex items-center justify-center w-7 h-7 bg-emerald-700 rounded-full border-2 border-white shadow-lg"><div class="w-2.5 h-2.5 bg-white rounded-full"></div></div>',
   className: 'custom-user-icon',
   iconSize: [28, 28],
   iconAnchor: [14, 14],
@@ -121,19 +119,12 @@ const getCustomPinIcon = (
     bgClass = 'bg-stone-950 text-amber-300 border-amber-400 scale-125 shadow-xl';
   }
 
-  const iconMarkup = renderToStaticMarkup(
-    <div className="relative flex items-center justify-center">
-      <div
-        className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md border-2 transition-transform cursor-pointer ${bgClass}`}
-      >
-        {sequenceIndex !== undefined ? (
-          <span className="text-xs font-bold font-mono">{sequenceIndex}</span>
-        ) : (
-          <MapPin className="w-4 h-4" />
-        )}
-      </div>
-    </div>
-  );
+  const innerContent =
+    sequenceIndex !== undefined
+      ? `<span class="text-xs font-bold font-mono">${sequenceIndex}</span>`
+      : MAP_PIN_SVG;
+
+  const iconMarkup = `<div class="relative flex items-center justify-center"><div class="flex items-center justify-center w-8 h-8 rounded-full shadow-md border-2 transition-transform cursor-pointer ${bgClass}">${innerContent}</div></div>`;
 
   const created = L.divIcon({
     html: iconMarkup,
@@ -152,13 +143,7 @@ const getClusterIcon = (count: number): L.DivIcon => {
   if (existing) return existing;
 
   const sizeClass = count >= 15 ? 'w-11 h-11 text-xs' : 'w-9 h-9 text-xs';
-  const html = renderToStaticMarkup(
-    <div
-      className={`flex items-center justify-center ${sizeClass} rounded-full bg-stone-900/90 text-white font-bold border-2 border-white shadow-lg backdrop-blur-xs cursor-pointer`}
-    >
-      <span>{count}</span>
-    </div>
-  );
+  const html = `<div class="flex items-center justify-center ${sizeClass} rounded-full bg-stone-900/95 text-white font-bold border-2 border-white shadow-lg cursor-pointer"><span>${count}</span></div>`;
 
   const created = L.divIcon({
     html,
@@ -642,6 +627,21 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
             </div>
           )}
 
+          {/* Emotional Cliffhanger Quote Box (Tahap 7) */}
+          <div className="mt-2.5 pl-3 pr-2.5 py-2 rounded-xl bg-amber-50/50 border-l-2 border-amber-600 text-[11px] text-stone-700 italic line-clamp-2 leading-relaxed">
+            &ldquo;
+            {(
+              previewSite.untoldStory ||
+              (Array.isArray(previewSite.karomah) ? previewSite.karomah[0] : previewSite.karomah) ||
+              previewSite.description ||
+              ''
+            )
+              .replace(/<!--more-->/g, ' ')
+              .trim()
+              .slice(0, 100)}
+            ... [Kisah Lanjutan Terkunci]&rdquo;
+          </div>
+
           {/* Thumb-Friendly Quick Actions */}
           <div className="mt-3.5 grid grid-cols-2 gap-2.5">
             <a
@@ -661,7 +661,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
               className="py-2.5 px-3 rounded-xl bg-stone-900 hover:bg-emerald-800 text-white text-xs font-medium inline-flex items-center justify-center gap-1.5 transition cursor-pointer shadow-xs"
             >
               <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Detail &amp; Doa</span>
+              <span>Selami Kisah &amp; Doa</span>
             </button>
           </div>
         </div>

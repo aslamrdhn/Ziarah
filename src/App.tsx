@@ -73,11 +73,14 @@ export default function App() {
     };
 
     const handleInteraction = (e: Event) => {
-      if (e.type === 'scroll' && window.scrollY < 32) return;
-      fetchSettings();
+      if (e.type === 'scroll' && window.scrollY < 48) return;
+      cleanup();
+      window.setTimeout(() => {
+        fetchSettings();
+      }, 1800);
     };
 
-    const events: (keyof WindowEventMap)[] = ['pointerdown', 'touchstart', 'keydown', 'scroll'];
+    const events: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'scroll'];
     const cleanup = () => {
       events.forEach((evt) => window.removeEventListener(evt, handleInteraction));
     };
@@ -89,6 +92,7 @@ export default function App() {
   // Dynamically sync canonical URL, OpenGraph URL/image, and Schema.org @graph on route/domain change
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    window.scrollTo({ top: 0, behavior: 'auto' });
     const baseOrigin = customDomainOrigin || window.location.origin;
     const cleanPath = location.pathname === '/' ? '/' : location.pathname;
     const fullUrl = `${baseOrigin}${cleanPath}`;

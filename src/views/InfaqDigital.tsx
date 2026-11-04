@@ -15,7 +15,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
-import { collection, doc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, limit } from 'firebase/firestore';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
@@ -166,7 +166,7 @@ export const InfaqDigital: React.FC = () => {
     );
 
     const unsubDonations = onSnapshot(
-      collection(db, 'donations'),
+      query(collection(db, 'donations'), limit(30)),
       (snapshot) => {
         const list: DonationRecord[] = snapshot.docs.map((docSnap, idx) => {
           const d = docSnap.data();

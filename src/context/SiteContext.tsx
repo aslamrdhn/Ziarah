@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo, startTransition } from 'react';
 import type { ZiarahSite } from '../data/sites';
 import { initialSites } from '../data/initialSites';
 
@@ -24,6 +24,17 @@ const SiteContext = createContext<SiteContextType>({
 });
 
 export const useSites = () => useContext(SiteContext);
+
+function scheduleIdleTask(cb: () => void, timeoutMs = 1500): number {
+  if (typeof window === 'undefined') return 0;
+  const win = window as Window & {
+    requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+  };
+  if (typeof win.requestIdleCallback === 'function') {
+    return win.requestIdleCallback(cb, { timeout: timeoutMs });
+  }
+  return window.setTimeout(cb, 250);
+}
 
 function mergeLocalAndCloudSites(loadedLocalSites: ZiarahSite[], fetchedSites: ZiarahSite[]): ZiarahSite[] {
   const localMap = new Map<string, ZiarahSite>();
@@ -92,7 +103,9 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { ziarahSites } = await import('../data/sites');
       fullLocalSitesRef.current = ziarahSites;
-      setSites((prev) => (prev.length <= initialSites.length ? ziarahSites : prev));
+      startTransition(() => {
+        setSites((prev) => (prev.length <= initialSites.length ? ziarahSites : prev));
+      });
       return ziarahSites;
     } catch {
       hasLoadedLocalRef.current = false;
@@ -112,10 +125,13 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const parsed = JSON.parse(cachedRaw) as { ts: number; data: ZiarahSite[] };
             if (parsed && Array.isArray(parsed.data) && Date.now() - parsed.ts < CLOUD_SITES_CACHE_TTL_MS) {
               if (parsed.data.length > 0) {
-                setSites(mergeLocalAndCloudSites(loadedLocalSites, parsed.data));
-                setIsSeededInCloud(true);
-                setCloudSiteCount(parsed.data.length);
-                setIsLoading(false);
+                const mergedCached = mergeLocalAndCloudSites(loadedLocalSites, parsed.data);
+                startTransition(() => {
+                  setSites(mergedCached);
+                  setIsSeededInCloud(true);
+                  setCloudSiteCount(parsed.data.length);
+                  setIsLoading(false);
+                });
                 return;
               }
             }
@@ -133,9 +149,13 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const snapshot = await getDocs(collection(db, 'sites'));
       if (!snapshot.empty) {
         const fetchedSites = snapshot.docs.map((docSnap) => docSnap.data() as ZiarahSite);
-        setSites(mergeLocalAndCloudSites(loadedLocalSites, fetchedSites));
-        setIsSeededInCloud(true);
-        setCloudSiteCount(fetchedSites.length);
+        const mergedCloud = mergeLocalAndCloudSites(loadedLocalSites, fetchedSites);
+        startTransition(() => {
+          setSites(mergedCloud);
+          setIsSeededInCloud(true);
+          setCloudSiteCount(fetchedSites.length);
+          setIsLoading(false);
+        });
         try {
           localStorage.setItem(
             CLOUD_SITES_CACHE_KEY,
@@ -145,11 +165,12 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Ignore storage quota warning
         }
       } else {
-        setSites(loadedLocalSites);
-        setIsSeededInCloud(false);
-        setCloudSiteCount(0);
+        startTransition(() => {
+          setIsSeededInCloud(false);
+          setCloudSiteCount(0);
+          setIsLoading(false);
+        });
       }
-      setIsLoading(false);
     } catch {
       setIsLoading(false);
     }
@@ -172,41 +193,48 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       connectCloudSites();
     }
 
+    let cloudTimerId: number | undefined;
     const onFirstInteraction = (e: Event) => {
-      if (e.type === 'scroll' && window.scrollY < 32) return;
+      if (e.type === 'scroll' && window.scrollY < 48) return;
       cleanupListeners();
-      ensureFullSitesLoaded();
-      window.setTimeout(() => {
-        connectCloudSites();
-      }, 1200);
+      scheduleIdleTask(() => {
+        ensureFullSitesLoaded();
+      }, 800);
+      cloudTimerId = window.setTimeout(() => {
+        scheduleIdleTask(() => {
+          connectCloudSites();
+        }, 2500);
+      }, 2200);
     };
 
-    const events: (keyof WindowEventMap)[] = ['pointerdown', 'touchstart', 'keydown', 'wheel', 'scroll'];
+    const events: (keyof WindowEventMap)[] = ['pointerdown', 'keydown'];
     const cleanupListeners = () => {
       events.forEach((evt) => window.removeEventListener(evt, onFirstInteraction));
+      window.removeEventListener('scroll', onFirstInteraction);
     };
 
     events.forEach((evt) => window.addEventListener(evt, onFirstInteraction, { passive: true }));
+    window.addEventListener('scroll', onFirstInteraction, { passive: true });
 
     return () => {
       cleanupListeners();
+      if (cloudTimerId !== undefined) window.clearTimeout(cloudTimerId);
     };
   }, [ensureFullSitesLoaded, connectCloudSites]);
 
-  return (
-    <SiteContext.Provider
-      value={{
-        sites,
-        isLoading,
-        isSeededInCloud,
-        cloudSiteCount,
-        ensureFullSitesLoaded,
-        refreshCloudSites,
-      }}
-    >
-      {children}
-    </SiteContext.Provider>
+  const contextValue = useMemo<SiteContextType>(
+    () => ({
+      sites,
+      isLoading,
+      isSeededInCloud,
+      cloudSiteCount,
+      ensureFullSitesLoaded,
+      refreshCloudSites,
+    }),
+    [sites, isLoading, isSeededInCloud, cloudSiteCount, ensureFullSitesLoaded, refreshCloudSites]
   );
+
+  return <SiteContext.Provider value={contextValue}>{children}</SiteContext.Provider>;
 };
 
 

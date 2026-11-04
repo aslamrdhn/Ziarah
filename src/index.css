@@ -33,7 +33,12 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
+}
+
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 340px;
 }
 
 body {

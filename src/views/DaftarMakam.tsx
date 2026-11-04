@@ -1,4 +1,4 @@
-import React, { useState, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useMemo, useDeferredValue, lazy, Suspense } from 'react';
 import {
   Search,
   MapPin,
@@ -221,6 +221,12 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
   const [heroMediaMode, setHeroMediaMode] = useState<'video' | 'constellation'>('video');
   const [visibleCount, setVisibleCount] = useState<number>(INITIAL_VISIBLE_SITES);
 
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+  const sites = ziarahSites;
+  const isJumatMomentum = [4, 5].includes(new Date().getDay());
+  const featuredHaulSite =
+    sites.find((s) => Boolean(s.haulSchedule && (s.untoldStory || s.karomah))) || sites[0];
+
   const categories = useMemo(
     () => [
       { id: 'Semua', label: 'Semua Situs' },
@@ -243,19 +249,47 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
 
   const totalCatalogCount = Math.max(TOTAL_SITE_COUNT, ziarahSites.length);
 
+  // Precompute search corpus and emotional intent flags once per site array change
+  const siteSearchIndexMap = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        searchCorpus: string;
+        intents: Record<Exclude<EmotionalIntentId, 'all'>, boolean>;
+      }
+    >();
+    for (const site of ziarahSites) {
+      const searchCorpus = [
+        site.name,
+        site.title,
+        site.location.city,
+        site.location.province,
+        site.description,
+        site.history,
+        site.sanad || '',
+        site.era || '',
+      ]
+        .join(' ')
+        .toLowerCase();
+
+      map.set(site.id, {
+        searchCorpus,
+        intents: {
+          keteduhan: matchesEmotionalIntent(site, 'keteduhan'),
+          ikhtiar: matchesEmotionalIntent(site, 'ikhtiar'),
+          keteguhan: matchesEmotionalIntent(site, 'keteguhan'),
+          ilmu: matchesEmotionalIntent(site, 'ilmu'),
+        },
+      });
+    }
+    return map;
+  }, [ziarahSites]);
+
   const filteredSites = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
+    const q = deferredSearchQuery.toLowerCase().trim();
     const baseFiltered = ziarahSites.filter((site: ZiarahSite) => {
-      const matchesSearch =
-        !q ||
-        site.name.toLowerCase().includes(q) ||
-        site.title.toLowerCase().includes(q) ||
-        site.location.city.toLowerCase().includes(q) ||
-        site.location.province.toLowerCase().includes(q) ||
-        site.description.toLowerCase().includes(q) ||
-        site.history.toLowerCase().includes(q) ||
-        (site.sanad && site.sanad.toLowerCase().includes(q)) ||
-        (site.era && site.era.toLowerCase().includes(q));
+      const indexed = siteSearchIndexMap.get(site.id);
+      const matchesSearch = !q || (indexed ? indexed.searchCorpus.includes(q) : true);
       const matchesCategory = selectedCategory === 'Semua' || site.category === selectedCategory;
       const matchesProvince = selectedProvince === 'Semua Provinsi' || site.location.province === selectedProvince;
 
@@ -266,7 +300,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
       return baseFiltered;
     }
 
-    const intentMatches = baseFiltered.filter((site) => matchesEmotionalIntent(site, emotionalFilter));
+    const intentMatches = baseFiltered.filter((site) => {
+      const indexed = siteSearchIndexMap.get(site.id);
+      return indexed ? indexed.intents[emotionalFilter] : matchesEmotionalIntent(site, emotionalFilter);
+    });
     if (intentMatches.length > 0) {
       return intentMatches;
     }
@@ -277,7 +314,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
     }
 
     return [];
-  }, [searchQuery, selectedCategory, selectedProvince, emotionalFilter, ziarahSites]);
+  }, [deferredSearchQuery, selectedCategory, selectedProvince, emotionalFilter, ziarahSites, siteSearchIndexMap]);
 
   const isFiltered =
     Boolean(searchQuery.trim()) ||
@@ -409,6 +446,84 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             </Suspense>
           </div>
         )}
+
+        {/* Banner Reflektif Panggilan Rindu / Momentum Jumat & Haul (Tahap 7) */}
+        {isJumatMomentum ? (
+          <div className="rounded-3xl p-5 sm:p-6 bg-gradient-to-r from-emerald-950 via-stone-900 to-emerald-950 text-white border border-emerald-800/40 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-1.5 max-w-2xl">
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/15 text-amber-200 border border-amber-300/30 text-[11px] font-semibold tracking-wide">
+                <Sparkles className="w-3 h-3" aria-hidden="true" />
+                <span>Malam &amp; Hari Jumat Mubarak · Pintu Langit Terbuka</span>
+              </span>
+              <h2 className="font-serif text-base sm:text-lg font-semibold text-white leading-snug">
+                Ada Rindu yang Hanya Sampai Lewat Fatihah, dan Ada Beban Hati yang Luruh Saat Mengingat Kisah Para Kekasih-Nya.
+              </h2>
+              <p className="text-xs text-stone-300 leading-relaxed">
+                Temukan penawar kegelisahan batin lewat wasiat rahasia para Auliya, atau titipkan nama almarhum orang tua &amp; hajat keluarga Anda agar diaminkan bersama.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <Link
+                to="/rubrik"
+                className="px-3.5 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-semibold transition shadow-2xs"
+              >
+                Buka Kisah Pengobat Hati
+              </Link>
+              <Link
+                to="/infaq"
+                className="px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-semibold transition"
+              >
+                Titip Nama &amp; Hajat
+              </Link>
+              <Link
+                to="/bacaan"
+                className="px-3.5 py-2 rounded-full bg-emerald-900/70 hover:bg-emerald-800 text-emerald-100 border border-emerald-600/40 text-xs font-semibold transition"
+              >
+                Baca Yasin &amp; Tahlil
+              </Link>
+            </div>
+          </div>
+        ) : featuredHaulSite ? (
+          <div className="rounded-3xl p-5 sm:p-6 bg-gradient-to-r from-amber-50/80 via-white to-emerald-50/60 border border-amber-200/80 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-1.5 max-w-2xl">
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/5 text-emerald-800 border border-emerald-800/15 text-[11px] font-semibold tracking-wide">
+                <Sparkles className="w-3 h-3 text-amber-600" aria-hidden="true" />
+                <span>Panggilan Rindu &amp; Jejak Haul · {featuredHaulSite.haulSchedule || 'Waliyullah Nusantara'}</span>
+              </span>
+              <h2 className="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-snug">
+                Mengenang {featuredHaulSite.title}: Rahasia Batin Apa yang Membuat Beliau Tegar Saat Seluruh Pintu Dunia Terasa Tertutup?
+              </h2>
+              <p className="text-xs text-stone-600 leading-relaxed italic">
+                &ldquo;
+                {(
+                  featuredHaulSite.untoldStory ||
+                  (Array.isArray(featuredHaulSite.karomah) ? featuredHaulSite.karomah[0] : featuredHaulSite.karomah) ||
+                  featuredHaulSite.description ||
+                  ''
+                )
+                  .replace(/<!--more-->/g, ' ')
+                  .trim()
+                  .slice(0, 130)}
+                ...&rdquo;
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => onSelectSite(featuredHaulSite)}
+                className="px-4 py-2.5 rounded-full bg-stone-900 hover:bg-emerald-800 text-white text-xs font-semibold transition cursor-pointer shadow-2xs"
+              >
+                Buka Wasiat &amp; Kisah Beliau
+              </button>
+              <Link
+                to="/infaq"
+                className="px-4 py-2.5 rounded-full bg-white hover:border-stone-400 text-stone-800 border border-stone-200/90 text-xs font-semibold transition"
+              >
+                Titip Doa di Dinding Munajat
+              </Link>
+            </div>
+          </div>
+        ) : null}
 
         {/* =====================================================================
             2. MINIMALIST SEARCH & HORIZONTAL PILL FILTERS
@@ -592,7 +707,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             const karomahCount = site.karomah ? site.karomah.length : 0;
 
             return (
-              <article key={site.id} className="group">
+              <article key={site.id} className="group content-auto">
                 <Link
                   to={siteUrl}
                   onClick={() => onSelectSite(site)}
@@ -615,7 +730,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                       referrerPolicy="no-referrer"
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
-                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-medium bg-stone-900/75 text-white backdrop-blur-md">
+                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-medium bg-stone-900/90 text-white">
                       {badgeLabel}
                     </span>
                   </div>

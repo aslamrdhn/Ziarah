@@ -204,6 +204,24 @@ export const BacaanZiarah: React.FC = () => {
   const [wakeLockActive, setWakeLockActive] = useState<boolean>(false);
   const [wakeLockSupported, setWakeLockSupported] = useState<boolean>(false);
 
+  const [tawassulIntent, setTawassulIntent] = useState<string>(() => {
+    try {
+      return localStorage.getItem('zn_tawassul_intent_v1') || '';
+    } catch {
+      return '';
+    }
+  });
+
+  const handleTawassulIntentChange = (val: string) => {
+    const clean = val.slice(0, 120);
+    setTawassulIntent(clean);
+    try {
+      localStorage.setItem('zn_tawassul_intent_v1', clean);
+    } catch {
+      // ignore storage error
+    }
+  };
+
   // Persist to localStorage whenever state changes
   useEffect(() => {
     try {
@@ -693,6 +711,54 @@ export const BacaanZiarah: React.FC = () => {
         {/* =====================================================================
             3. NASKH MODERN READING CANVAS (Generous Line Height leading-[2.8])
             ===================================================================== */}
+        <div
+          className={`rounded-3xl p-5 sm:p-7 transition ${
+            outdoorMode
+              ? 'bg-white border-2 border-black shadow-none'
+              : 'bg-gradient-to-br from-emerald-950/[0.03] via-white to-amber-900/[0.04] border border-stone-200/80 shadow-xs'
+          }`}
+        >
+          <div className="max-w-3xl space-y-3">
+            <span
+              className={`inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider ${
+                outdoorMode ? 'text-black' : 'text-emerald-800'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Hadirkan Hati &amp; Kerinduan Sebelum Membaca</span>
+            </span>
+            <h2
+              className={`font-serif text-lg sm:text-xl font-semibold tracking-tight ${
+                outdoorMode ? 'text-black font-bold' : 'text-stone-900'
+              }`}
+            >
+              Untuk Siapa Al-Fatihah, Yasin &amp; Doa Anda Hari Ini?
+            </h2>
+            <input
+              type="text"
+              value={tawassulIntent}
+              onChange={(e) => handleTawassulIntentChange(e.target.value)}
+              placeholder="Ketik nama almarhum/almarhumah orang tua atau hajat terdalam Anda..."
+              className={`w-full px-4 py-3 rounded-2xl text-xs sm:text-sm transition focus:outline-none ${
+                outdoorMode
+                  ? 'bg-stone-50 border-2 border-black text-black placeholder-stone-600 font-medium'
+                  : 'bg-white border border-stone-200/90 text-stone-900 placeholder-stone-400 focus:border-emerald-700 shadow-2xs'
+              }`}
+            />
+            {tawassulIntent.trim() && (
+              <div
+                className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed italic border ${
+                  outdoorMode
+                    ? 'bg-stone-100 border-black text-black font-semibold'
+                    : 'bg-emerald-950/[0.03] border-emerald-800/20 text-stone-700'
+                }`}
+              >
+                Khususon ilaa ruuhi / hajat: &laquo; <strong className="font-semibold not-italic">{tawassulIntent}</strong> &raquo; &mdash; Semoga Allah lapangkan kuburnya dengan cahaya kasih-Nya, terima setiap tetes rindu dalam doa ini, dan bukakan jalan keluar bagi setiap beban yang menyesakkan dada. Al-Fatihah...
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="space-y-6">
           {displayedSections.map((section) => {
             const isCopied = copiedId === section.id;
@@ -804,6 +870,78 @@ export const BacaanZiarah: React.FC = () => {
               </article>
             );
           })}
+        </div>
+
+        <div
+          className={`rounded-3xl p-6 sm:p-8 transition ${
+            outdoorMode
+              ? 'bg-white border-2 border-black shadow-none'
+              : 'bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900 text-white border border-emerald-800/40 shadow-md'
+          }`}
+        >
+          <div className="max-w-3xl space-y-3.5">
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide ${
+                outdoorMode
+                  ? 'bg-black text-white'
+                  : 'bg-amber-400/15 text-amber-200 border border-amber-300/30'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Jangan Biarkan Rindu &amp; Munajat Ini Berhenti di Layar Anda</span>
+            </span>
+            <h2
+              className={`font-serif text-xl sm:text-2xl font-bold tracking-tight leading-snug ${
+                outdoorMode ? 'text-black' : 'text-white'
+              }`}
+            >
+              Abadikan Nama Beliau di Dinding Munajat &amp; Selami Wasiat Rahasia Para Kekasih Allah
+            </h2>
+            <p
+              className={`text-xs sm:text-sm leading-relaxed ${
+                outdoorMode ? 'text-stone-900 font-medium' : 'text-stone-200'
+              }`}
+            >
+              Setiap huruf yang baru saja Anda lantunkan adalah bukti cinta yang tak terputus oleh kematian. Titipkan nama almarhum/almarhumah beserta hajat Anda di Dinding Munajat agar terus diaminkan oleh saudara seiman setiap malam, sekaligus membuka lembaran kisah tirakat &amp; rahasia batin para Wali yang menenangkan jiwa.
+            </p>
+            <div className="pt-2 flex flex-wrap items-center gap-2.5">
+              <Link
+                to="/infaq"
+                className={`px-4 py-2.5 rounded-2xl text-xs font-semibold transition inline-flex items-center gap-1.5 ${
+                  outdoorMode
+                    ? 'bg-black text-white hover:bg-stone-800'
+                    : 'bg-amber-400 hover:bg-amber-300 text-stone-950 shadow-xs'
+                }`}
+              >
+                <span>Titipkan Nama &amp; Hajat di Dinding Munajat</span>
+              </Link>
+              <Link
+                to="/rubrik"
+                className={`px-4 py-2.5 rounded-2xl text-xs font-semibold transition inline-flex items-center gap-1.5 border ${
+                  outdoorMode
+                    ? 'bg-white text-black border-black hover:bg-stone-100'
+                    : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+                }`}
+              >
+                <span>Buka Kisah Rahasia &amp; Air Mata Munajat Para Wali</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ziarahnusantara.my.id';
+                  const shareText = `Mari kirimkan Al-Fatihah, Yasin & Tahlil untuk orang-orang tercinta yang telah mendahului kita lewat panduan ziarah bebas iklan ini (lengkap dengan kisah batin para Wali):\n\n${origin}/bacaan`;
+                  window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank', 'noopener,noreferrer');
+                }}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-semibold transition inline-flex items-center gap-1.5 border cursor-pointer ${
+                  outdoorMode
+                    ? 'bg-stone-100 text-black border-black hover:bg-stone-200'
+                    : 'bg-emerald-900/60 hover:bg-emerald-800/80 text-emerald-100 border-emerald-600/40'
+                }`}
+              >
+                <span>Kirim Tuntunan Doa Ini ke Keluarga</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

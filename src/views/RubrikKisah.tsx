@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useDeferredValue } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ScrollText, 
@@ -20,12 +20,13 @@ import {
   Loader2,
   BookOpenCheck,
   AlertCircle,
-  ShieldCheck
+  ShieldCheck,
+  ArrowDown
 } from 'lucide-react';
 import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
 import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
-import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, limit } from 'firebase/firestore';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
@@ -114,7 +115,9 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 }) => {
   const { sites } = useSites();
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
+  const [visibleCount, setVisibleCount] = useState<number>(12);
   const [localSaved, setLocalSaved] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('savedRubrik') || '[]');
@@ -214,7 +217,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     );
 
     const unsubDonations = onSnapshot(
-      collection(db, 'donations'),
+      query(collection(db, 'donations'), limit(25)),
       (snapshot) => {
         const fetched: CuratedMunajatItem[] = snapshot.docs
           .map((docSnap, idx) => {
@@ -348,20 +351,28 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   }, [sites, approvedCommunityRubrik, gateSettings.customArticles]);
 
   const filteredArticles = useMemo(() => {
+    const q = deferredSearchQuery.toLowerCase().trim();
     return articles.filter(item => {
       const matchCat = selectedCategory === 'Semua' 
         ? true 
         : selectedCategory === 'Tersimpan' 
           ? savedArticles.includes(item.id) 
           : item.category === selectedCategory;
-      const matchQuery = !searchQuery 
-        || item.title.toLowerCase().includes(searchQuery.toLowerCase())
-        || item.content.toLowerCase().includes(searchQuery.toLowerCase())
-        || item.siteName.toLowerCase().includes(searchQuery.toLowerCase())
-        || item.location.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchQuery = !q 
+        || item.title.toLowerCase().includes(q)
+        || item.content.toLowerCase().includes(q)
+        || item.siteName.toLowerCase().includes(q)
+        || item.location.toLowerCase().includes(q);
       return matchCat && matchQuery;
     });
-  }, [articles, selectedCategory, searchQuery, savedArticles]);
+  }, [articles, selectedCategory, deferredSearchQuery, savedArticles]);
+
+  const displayedArticles = useMemo(() => {
+    if (deferredSearchQuery.trim() || selectedCategory !== 'Semua') {
+      return filteredArticles.slice(0, Math.max(visibleCount, 24));
+    }
+    return filteredArticles.slice(0, visibleCount);
+  }, [filteredArticles, deferredSearchQuery, selectedCategory, visibleCount]);
 
   // Determine which articles are free samples vs locked
   // By default: the first `freeSampleCount` (e.g., 2) articles in the filtered view OR any article in `pinnedFreeArticleIds` are unlocked!
@@ -679,136 +690,154 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
           <p className="text-xs text-slate-500">Silakan sesuaikan kata kunci pencarian atau kategori filter.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-          {filteredArticles.map((article, idx) => {
-            const isSaved = savedArticles.includes(article.id);
-            const isUnlocked = checkIsArticleUnlocked(article, idx);
-            const hookLead = article.content.slice(0, 150);
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+            {displayedArticles.map((article, idx) => {
+              const isSaved = savedArticles.includes(article.id);
+              const isUnlocked = checkIsArticleUnlocked(article, idx);
+              const cleanContent = article.content.replace(/<!--more-->/g, ' ');
+              const hookLead = article.content.includes('<!--more-->')
+                ? article.content.split('<!--more-->')[0].trim()
+                : cleanContent.slice(0, 150);
 
-            return (
-              <article
-                key={article.id}
-                onClick={() => {
-                  if (!isUnlocked) {
-                    openUnlockModalFor(article);
-                  }
-                }}
-                className={`bg-white rounded-3xl p-6 border transition-all duration-200 flex flex-col justify-between group relative overflow-hidden ${
-                  isUnlocked
-                    ? 'border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300'
-                    : 'border-amber-200/80 shadow-xs hover:shadow-md hover:border-amber-400 cursor-pointer'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3 text-xs gap-2">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-                        {article.category}
-                      </span>
-                      {isUnlocked && gateSettings.lockEnabled && !isAllUnlocked && (
-                        <span className="px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] bg-emerald-800 text-white shadow-2xs">
-                          Contoh Bacaan Gratis
+              return (
+                <article
+                  key={article.id}
+                  onClick={() => {
+                    if (!isUnlocked) {
+                      openUnlockModalFor(article);
+                    }
+                  }}
+                  className={`content-auto bg-white rounded-3xl p-6 border transition-all duration-200 flex flex-col justify-between group relative overflow-hidden ${
+                    isUnlocked
+                      ? 'border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300'
+                      : 'border-amber-200/80 shadow-xs hover:shadow-md hover:border-amber-400 cursor-pointer'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3 text-xs gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200/60">
+                          {article.category}
                         </span>
-                      )}
-                      {!isUnlocked && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] bg-amber-50 text-amber-900 border border-amber-200">
-                          <Lock className="w-3 h-3 text-amber-700" />
-                          Khazanah Khusus
+                        {isUnlocked && gateSettings.lockEnabled && !isAllUnlocked && (
+                          <span className="px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] bg-emerald-800 text-white shadow-2xs">
+                            Contoh Bacaan Gratis
+                          </span>
+                        )}
+                        {!isUnlocked && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] bg-amber-50 text-amber-900 border border-amber-200">
+                            <Lock className="w-3 h-3 text-amber-700" />
+                            Khazanah Khusus
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center text-slate-400 space-x-2 shrink-0">
+                        <span className="flex items-center text-[11px] text-slate-500 font-medium">
+                          <Clock className="w-3 h-3 mr-1" /> {article.readTime}
                         </span>
-                      )}
-                    </div>
-                    <div className="flex items-center text-slate-400 space-x-2 shrink-0">
-                      <span className="flex items-center text-[11px] text-slate-500 font-medium">
-                        <Clock className="w-3 h-3 mr-1" /> {article.readTime}
-                      </span>
-                      <motion.button
-                        whileTap={{ scale: 1.35 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleSaveArticle(article.id);
-                        }}
-                        className={`p-1.5 rounded-xl border transition-colors cursor-pointer ${
-                          isSaved 
-                            ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-2xs' 
-                            : 'hover:bg-slate-100 text-slate-400 border-transparent'
-                        }`}
-                        title={isSaved ? "Hapus dari simpanan" : "Simpan rubrik"}
-                      >
-                        {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                      </motion.button>
-                    </div>
-                  </div>
-
-                  <h2 className="text-base sm:text-lg font-serif font-bold text-slate-900 group-hover:text-emerald-700 transition-colors mb-2 leading-snug">
-                    {article.title}
-                  </h2>
-
-                  <div className="flex items-center text-xs text-emerald-700 font-semibold mb-3">
-                    <Compass className="w-3.5 h-3.5 mr-1 text-emerald-600 shrink-0" />
-                    <span className="truncate">{article.siteName}</span>
-                    <span className="mx-1.5 text-slate-300 shrink-0">•</span>
-                    <span className="text-slate-500 font-normal truncate">{article.location}</span>
-                  </div>
-
-                  {isUnlocked ? (
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3 mb-4">
-                      {article.content}
-                    </p>
-                  ) : (
-                    <div className="relative mb-4 rounded-2xl bg-slate-50/70 p-3 border border-slate-100 overflow-hidden">
-                      <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                        <span>{hookLead}... </span>
-                        <span className="blur-[4px] select-none opacity-65">
-                          Kisah di balik layar, riyadhoh malam, dan pesan wasiat beliau pada bagian ini disimpan dalam Khazanah Khusus.
-                        </span>
-                      </p>
-                      <div className="mt-2.5 pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] font-bold text-amber-900">
-                        <span className="inline-flex items-center gap-1.5">
-                          <Lock className="w-3.5 h-3.5 text-amber-700" />
-                          Lembaran Rahasia &amp; Wasiat Batin Terkunci
-                        </span>
-                        <span className="text-emerald-800 underline">Buka Akses</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSaveArticle(article.id);
+                          }}
+                          className={`p-1.5 rounded-xl border transition-colors cursor-pointer ${
+                            isSaved 
+                              ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-2xs' 
+                              : 'hover:bg-slate-100 text-slate-400 border-transparent'
+                          }`}
+                          title={isSaved ? "Hapus dari simpanan" : "Simpan rubrik"}
+                        >
+                          {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+                        </button>
                       </div>
                     </div>
-                  )}
-                </div>
 
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-2">
-                  <span className="text-[11px] text-slate-400 italic truncate max-w-[190px]">
-                    Sumber: {article.source}
-                  </span>
-                  {isUnlocked ? (
-                    <motion.button
-                      whileHover={{ x: 2 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveStoryModal(article);
-                      }}
-                      className="inline-flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-900 transition-colors cursor-pointer"
-                    >
-                      Baca Selengkapnya
-                      <ChevronRight className="w-4 h-4 ml-0.5" />
-                    </motion.button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openUnlockModalFor(article);
-                      }}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
-                    >
-                      <Lock className="w-3 h-3 text-amber-700" />
-                      <span>Buka Khazanah</span>
-                    </button>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                    <h2 className="text-base sm:text-lg font-serif font-bold text-slate-900 group-hover:text-emerald-700 transition-colors mb-2 leading-snug">
+                      {article.title}
+                    </h2>
+
+                    <div className="flex items-center text-xs text-emerald-700 font-semibold mb-3">
+                      <Compass className="w-3.5 h-3.5 mr-1 text-emerald-600 shrink-0" />
+                      <span className="truncate">{article.siteName}</span>
+                      <span className="mx-1.5 text-slate-300 shrink-0">•</span>
+                      <span className="text-slate-500 font-normal truncate">{article.location}</span>
+                    </div>
+
+                    {isUnlocked ? (
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3 mb-4">
+                        {cleanContent}
+                      </p>
+                    ) : (
+                      <div className="relative mb-4 rounded-2xl bg-slate-50/70 p-3 border border-slate-100 overflow-hidden">
+                        <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                          <span>{hookLead}... </span>
+                          <span className="blur-[4px] select-none opacity-65">
+                            Kisah di balik layar, riyadhoh malam, dan pesan wasiat beliau pada bagian ini disimpan dalam Khazanah Khusus.
+                          </span>
+                        </p>
+                        <div className="mt-2.5 pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] font-bold text-amber-900">
+                          <span className="inline-flex items-center gap-1.5">
+                            <Lock className="w-3.5 h-3.5 text-amber-700" />
+                            Lembaran Rahasia &amp; Wasiat Batin Terkunci
+                          </span>
+                          <span className="text-emerald-800 underline">Buka Akses</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-2">
+                    <span className="text-[11px] text-slate-400 italic truncate max-w-[190px]">
+                      Sumber: {article.source}
+                    </span>
+                    {isUnlocked ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveStoryModal(article);
+                        }}
+                        className="inline-flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-900 transition-colors cursor-pointer"
+                      >
+                        Baca Selengkapnya
+                        <ChevronRight className="w-4 h-4 ml-0.5" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openUnlockModalFor(article);
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        <Lock className="w-3 h-3 text-amber-700" />
+                        <span>Buka Khazanah</span>
+                      </button>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          {displayedArticles.length < filteredArticles.length && (
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((prev) => prev + 16)}
+                className="px-6 py-3 bg-emerald-900 hover:bg-emerald-950 text-white rounded-full text-xs font-bold inline-flex items-center gap-2 transition cursor-pointer shadow-xs"
+              >
+                <span>
+                  Tampilkan Lebih Banyak (+{Math.min(16, filteredArticles.length - displayedArticles.length)} Naskah)
+                </span>
+                <ArrowDown className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Modal Buka Akses Rubrik (3 Paket Infaq Psikologis + Titip Doa + Bukti Transfer) */}
@@ -1138,7 +1167,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                 </div>
 
                 <div className="text-slate-700 text-sm sm:text-base leading-relaxed space-y-4 border-l-2 border-emerald-400 pl-4 italic">
-                  <p>{activeStoryModal.content}</p>
+                  <p>{activeStoryModal.content.replace(/<!--more-->/g, ' ')}</p>
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 text-xs text-slate-500">

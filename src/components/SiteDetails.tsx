@@ -528,7 +528,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                         {isItemUnlocked ? (
                           <div className="flex-1 pr-7">
                             <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                              {item.replace('<!--more-->', ' ')}
+                              {item.replace(/<!--more-->/g, '')}
                             </p>
                             <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
                               <a
@@ -797,7 +797,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({ site, onClo
                     <div className="bg-white p-5 rounded-2xl border border-purple-200 shadow-xs relative overflow-hidden space-y-4">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
                       <p className="text-slate-700 leading-relaxed relative z-10 text-xs sm:text-sm italic border-l-4 border-purple-400 pl-4">
-                        {(site.untoldStory || '').replace('<!--more-->', ' ')}
+                        {(site.untoldStory || '').replace(/<!--more-->/g, '')}
                       </p>
                       <div className="pt-2 border-t border-purple-100 flex justify-end relative z-10">
                         <a
