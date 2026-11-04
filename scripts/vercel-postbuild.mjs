@@ -438,7 +438,7 @@ const sitemapIndexLines = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
   '  <sitemap>',
-  `    <loc>${SITE_ORIGIN}/sitemap-utama.xml</loc>`,
+  `    <loc>${SITE_ORIGIN}/sitemap.xml</loc>`,
   '  </sitemap>',
   '</sitemapindex>',
   '',
@@ -448,7 +448,7 @@ const sitemapIndexContent = sitemapIndexLines.join('\n');
 // 2. Generate plain-text sitemap.txt
 const sitemapTxtContent = allEntries.map((entry) => entry.loc).join('\n') + '\n';
 
-// 3. Generate RSS 2.0 feed (rss.xml)
+// 3. Generate RSS 2.0 feed (rss.xml) — also supported by Google Search Console as a Sitemap
 const rssLines = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
@@ -472,6 +472,7 @@ const rssXmlContent = rssLines.join('\n');
 for (const targetFolder of [rootPublic, rootDist]) {
   if (fs.existsSync(targetFolder)) {
     fs.writeFileSync(path.join(targetFolder, 'sitemap.xml'), sitemapXmlContent, 'utf8');
+    fs.writeFileSync(path.join(targetFolder, 'peta-situs.xml'), sitemapXmlContent, 'utf8');
     fs.writeFileSync(path.join(targetFolder, 'sitemap-utama.xml'), sitemapXmlContent, 'utf8');
     fs.writeFileSync(path.join(targetFolder, 'sitemap_index.xml'), sitemapIndexContent, 'utf8');
     fs.writeFileSync(path.join(targetFolder, 'sitemap.txt'), sitemapTxtContent, 'utf8');
