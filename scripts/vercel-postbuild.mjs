@@ -91,9 +91,9 @@ const staticRoutes = [
     path: '/',
     priority: '1.0',
     changefreq: 'daily',
-    title: 'Ziarah Kubur & Makam Wali Nusantara — Doa Ziarah, Tahlil, Adab & 96 Lokasi Makam | Ziarah Nusantara',
+    title: 'Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil & Jejak Batin 96 Makam Wali',
     description:
-      'Panduan lengkap pengertian, hukum, tujuan, adab, dan bacaan doa ziarah kubur (Arab, Latin, Artinya), susunan Yasin, Tahlil & Tawassul, serta direktori 96 lokasi makam Walisongo, Ulama & Habaib di 18 provinsi Indonesia.',
+      'Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil & Tawassul, serta peta rute & kisah karomah 96 makam Walisongo, Ulama & Habaib di 18 provinsi Indonesia.',
   },
   {
     path: '/direktori',
@@ -101,7 +101,7 @@ const staticRoutes = [
     changefreq: 'daily',
     title: 'Direktori 96 Makam Walisongo, Ulama & Habaib di 18 Provinsi — Ziarah Nusantara',
     description:
-      'Indeks lengkap 96 lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia beserta alamat, koordinat peta rute, sejarah, dan bacaan doa tawassul.',
+      'Jejak spiritual 96 lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia lengkap dengan alamat, peta rute GPS, kisah karomah, dan bacaan doa tawassul.',
   },
   {
     path: '/peta',
@@ -115,17 +115,17 @@ const staticRoutes = [
     path: '/panduan',
     priority: '0.9',
     changefreq: 'weekly',
-    title: 'Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin & Adab Ziarah Wali',
+    title: 'Panduan Ziarah Kubur Lengkap: Urutan Doa (Arab, Latin, Artinya), Tahlil, Yasin & Adab | Ziarah Nusantara',
     description:
-      'Urutan bacaan doa ziarah kubur singkat dan lengkap (Arab, Latin, Artinya), salam ahli kubur, Qasidah Salamullah Ya Sadah, Tawassul, Yasin, Tahlil, serta tujuan & hukum ziarah kubur dalam Islam.',
+      'Tuntunan lengkap adab & urutan bacaan doa ziarah kubur orang tua dan makam Wali (Arab, Latin, Artinya), Salam Ahli Kubur, Qasidah Salamullah Ya Sadah, Tawassul, Yasin & Tahlil sesuai sunnah Ahlussunnah wal Jamaah.',
   },
   {
     path: '/rubrik',
     priority: '0.8',
     changefreq: 'weekly',
-    title: 'Rubrik Sejarah, Kisah Karomah & Sanad Keilmuan Wali — Ziarah Nusantara',
+    title: 'Rubrik Sejarah, Kisah Karomah & Wasiat Batin Para Wali — Ziarah Nusantara',
     description:
-      'Kajian mendalam biografi, sanad keilmuan, sejarah dakwah, dan keteladanan para Waliyullah Nusantara berbasis naskah babad dan jurnal akademik.',
+      'Kisah nyata keteladanan, wasiat batin, sanad keilmuan, dan sejarah dakwah para Waliyullah Nusantara berbasis naskah babad dan jurnal akademik.',
   },
   {
     path: '/doa',
@@ -139,17 +139,17 @@ const staticRoutes = [
     path: '/donasi',
     priority: '0.8',
     changefreq: 'monthly',
-    title: 'Donasi Digital & Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
+    title: 'Infaq & Amal Jariyah Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
     description:
-      'Layanan donasi dan wakaf digital QRIS resmi Ziarah Nusantara untuk mendukung riset literasi sejarah dan pelestarian situs makam Waliyullah.',
+      'Layanan infaq dan wakaf literasi digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori 96 makam Waliyullah tetap bebas akses.',
   },
   {
     path: '/infaq',
     priority: '0.7',
     changefreq: 'monthly',
-    title: 'Donasi Digital & Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
+    title: 'Infaq & Amal Jariyah Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
     description:
-      'Layanan donasi dan wakaf digital QRIS resmi Ziarah Nusantara untuk mendukung riset literasi sejarah dan pelestarian situs makam Waliyullah.',
+      'Layanan infaq dan wakaf literasi digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori 96 makam Waliyullah tetap bebas akses.',
   },
   {
     path: '/kurasi',
@@ -272,18 +272,19 @@ function buildDirectoryLinksHtml() {
   const provinces = Array.from(new Set(sites.map((s) => s.province))).sort();
   return `
     <section aria-label="Indeks Direktori Lengkap 96 Makam Waliyullah di 18 Provinsi">
-      <h2>Daftar Lengkap ${sites.length} Makam Waliyullah, Walisongo, Ulama &amp; Habaib di ${provinces.length} Provinsi</h2>
+      <h2>Daftar Lengkap ${sites.length} Lokasi Ziarah Makam Waliyullah, Walisongo, Ulama, dan Habaib di ${provinces.length} Provinsi Indonesia</h2>
+      <p>Berikut adalah indeks direktori situs pemakaman para Waliyullah, ulama pesantren, dan habaib yang tersebar di berbagai wilayah kepulauan Nusantara beserta tautan menuju halaman peta rute dan riwayat sejarah masing-masing tokoh:</p>
       ${provinces
         .map((prov) => {
           const provSites = sites.filter((s) => s.province === prov);
           return `
             <div>
-              <h3>${escapeXml(prov)} (${provSites.length} Makam)</h3>
+              <h3>Daftar Lokasi Ziarah Makam Wali di Provinsi ${escapeXml(prov)} (${provSites.length} Situs)</h3>
               <ul>
                 ${provSites
                   .map(
                     (s) =>
-                      `<li><a href="${SITE_ORIGIN}/situs/${escapeXml(s.slug)}">Makam ${escapeXml(s.title)} (${escapeXml(s.name)}) — ${escapeXml(s.city)}, ${escapeXml(s.province)}</a></li>`
+                      `<li><a href="${SITE_ORIGIN}/situs/${escapeXml(s.slug)}">Panduan Rute dan Sejarah Makam ${escapeXml(s.title)} di Kota ${escapeXml(s.city)}, Provinsi ${escapeXml(s.province)}</a></li>`
                   )
                   .join('\n                ')}
               </ul>
@@ -303,22 +304,44 @@ function buildHomepageRootHtml() {
             height="512"
           />
           <h1>Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali</h1>
-          <p><strong>Hati sedang rindu keteduhan atau hendak berziarah?</strong> <strong>Ziarah Nusantara (${SITE_ORIGIN})</strong> menyajikan panduan lengkap pengertian, hukum, tujuan, adab, dan urutan bacaan doa ziarah kubur (Arab, Latin, Artinya) beserta direktori 96 situs makam Walisongo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia.</p>
+          <p><strong>Hati sedang rindu keteduhan atau hendak berziarah?</strong> Temukan urutan doa ziarah kubur lengkap (teks Arab, Latin, dan artinya), bacaan Yasin, Tahlil, dan Tawassul, serta peta rute perjalanan dan kisah karomah 96 makam Walisongo, Ulama Nusantara, dan Habaib di 18 provinsi Indonesia.</p>
         </header>
         <section>
-          <h2>Apa Tujuan &amp; Hukum Ziarah Kubur dalam Islam?</h2>
-          <p>Secara bahasa, ziarah berarti berkunjung. Dalam Islam, hukum ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW: <em>&ldquo;Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada kehidupan akhirat.&rdquo;</em> (HR. Muslim). Tujuan ziarah kubur meliputi mengingat kematian dan akhirat, mendoakan ampunan bagi ahli kubur, serta meneladani kesalehan dan perjuangan dakwah para Waliyullah.</p>
-          <h2>Layanan &amp; Direktori Utama Ziarah Nusantara</h2>
+          <h2>Apa Tujuan dan Hukum Ziarah Kubur dalam Islam?</h2>
+          <p>Secara bahasa, kata <strong>ziarah</strong> berarti berkunjung atau menengok. Dalam syariat Islam, hukum melaksanakan ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW dalam Hadits Riwayat Muslim: <em>&ldquo;Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu dapat melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada kehidupan akhirat.&rdquo;</em> Tujuan utama berziarah adalah melembutkan hati yang sedang penat oleh urusan dunia, mengingatkan diri akan kematian dan hari akhirat, mendoakan ampunan bagi orang tua serta kaum muslimin yang telah wafat, dan meneladani kesalehan maupun perjuangan dakwah para Waliyullah.</p>
+          <h2>Bagaimana Urutan Bacaan Doa Ziarah Kubur Singkat dan Lengkap?</h2>
+          <ol>
+            <li><strong>Berwudhu dan Meluruskan Niat:</strong> Memasuki kawasan pemakaman dengan pakaian yang sopan, menjaga ketenangan, dan meluruskan niat berziarah semata-mata mengharap ridha Allah SWT.</li>
+            <li><strong>Mengucapkan Salam kepada Ahli Kubur:</strong> Menghadap ke arah makam sambil mengucapkan salam penghormatan dan mendoakan keselamatan bagi seluruh penghuni makam kaum mukminin dan muslimin.</li>
+            <li><strong>Membaca Istighfar dan Tawassul Al-Fatihah:</strong> Membaca istighfar tiga kali kemudian menghadiahkan pahala bacaan Surah Al-Fatihah kepada Nabi Muhammad SAW, para sahabat, para Waliyullah, ulama, orang tua, serta ahli kubur yang diziarahi.</li>
+            <li><strong>Membaca Surah Yasin, Tahlil, dan Doa Arwah:</strong> Melantunkan Surah Yasin, Surah Al-Ikhlas tiga kali, Surah Al-Falaq, Surah An-Nas, Ayat Kursi, kalimat dzikir tahlil, shalawat Nabi, lalu menutup dengan doa permohonan ampunan dan rahmat bagi ahli kubur.</li>
+          </ol>
+          <h2>Layanan dan Direktori Utama Ziarah Nusantara</h2>
           <ul>
-            <li><a href="${SITE_ORIGIN}/direktori">Direktori 96 Makam Walisongo, Ulama &amp; Habaib di 18 Provinsi</a></li>
-            <li><a href="${SITE_ORIGIN}/panduan">Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin &amp; Adab Ziarah Wali</a></li>
-            <li><a href="${SITE_ORIGIN}/peta">Peta Rute Interaktif Makam Waliyullah Nusantara</a></li>
-            <li><a href="${SITE_ORIGIN}/doa">Kumpulan Doa Khusus, Tawassul &amp; Tahlil Ziarah</a></li>
-            <li><a href="${SITE_ORIGIN}/rubrik">Rubrik Kisah Rahasia, Karomah &amp; Sanad Keilmuan</a></li>
-            <li><a href="${SITE_ORIGIN}/kurasi">Standar Kurasi &amp; Referensi Ilmiah</a></li>
-            <li><a href="${SITE_ORIGIN}/infaq">Infaq Digital QRIS &amp; Munajat Doa Peziarah</a></li>
+            <li><a href="${SITE_ORIGIN}/direktori">Direktori 96 Makam Walisongo, Ulama, dan Habaib di 18 Provinsi Indonesia</a></li>
+            <li><a href="${SITE_ORIGIN}/panduan">Panduan Doa Ziarah Kubur Lengkap (Arab, Latin, dan Artinya) beserta Tahlil dan Adab Ziarah</a></li>
+            <li><a href="${SITE_ORIGIN}/peta">Peta Rute Perjalanan Ziarah Wali Songo dan Ulama Nusantara</a></li>
+            <li><a href="${SITE_ORIGIN}/doa">Kumpulan Doa Khusus Ziarah Kubur, Tahlil, dan Tawassul</a></li>
+            <li><a href="${SITE_ORIGIN}/rubrik">Rubrik Sejarah, Kisah Karomah, dan Wasiat Batin Para Wali</a></li>
+            <li><a href="${SITE_ORIGIN}/kurasi">Standar Kurasi dan Metodologi Referensi Sejarah</a></li>
+            <li><a href="${SITE_ORIGIN}/infaq">Infaq Digital dan Ruang Munajat Doa Peziarah</a></li>
           </ul>
         </section>
+      </main>`;
+}
+
+function buildDirektoriRootHtml() {
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
+        <header>
+          <img
+            src="${SITE_ORIGIN}/pwa-512x512.png"
+            alt="Logo Resmi Ziarah Nusantara — Direktori 96 Makam Walisongo, Ulama &amp; Habaib di 18 Provinsi"
+            width="512"
+            height="512"
+          />
+          <h1>Direktori 96 Makam Walisongo, Ulama &amp; Habaib di 18 Provinsi — Ziarah Nusantara</h1>
+          <p>Jejak spiritual 96 lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia lengkap dengan alamat, peta rute perjalanan, kisah karomah, dan bacaan doa tawassul.</p>
+        </header>
         ${buildDirectoryLinksHtml()}
       </main>`;
 }
@@ -332,22 +355,21 @@ function buildPanduanRootHtml() {
             width="512"
             height="512"
           />
-          <h1>Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin, Artinya) — Tahlil, Yasin &amp; Adab Ziarah Wali</h1>
-          <p>Panduan lengkap tata cara dan urutan bacaan doa ziarah kubur singkat maupun lengkap untuk ziarah makam orang tua, kerabat, dan makam para Waliyullah (Walisongo &amp; Ulama Nusantara).</p>
+          <h1>Panduan Ziarah Kubur Lengkap: Urutan Doa (Arab, Latin, Artinya), Tahlil, Yasin &amp; Adab</h1>
+          <p>Tuntunan lengkap adab, tata cara, dan urutan bacaan doa ziarah kubur singkat maupun lengkap untuk berziarah ke makam orang tua, kerabat, serta makam para Waliyullah (Wali Songo dan Ulama Nusantara) sesuai tradisi Ahlussunnah wal Jamaah.</p>
         </header>
-        <h2>Apa Tujuan &amp; Hukum Ziarah Kubur dalam Islam?</h2>
-        <p>Dalam syariat Islam, hukum ziarah kubur adalah sunnah (dianjurkan) berdasarkan hadits shahih riwayat Imam Muslim (no. 977): <em>&ldquo;Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah kalian ke kubur, karena sesungguhnya ziarah kubur itu dapat melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada kehidupan akhirat.&rdquo;</em> Tujuan utamanya adalah: (1) Mengingat akhirat (tadzkiratul akhirah), (2) Mendoakan ampunan dan rahmat bagi ahli kubur, serta (3) Meneladani perjuangan dakwah dan kesalehan para Waliyullah.</p>
-        <h2>Urutan Bacaan Doa Ziarah Kubur Singkat</h2>
+        <h2>Apa Tujuan dan Hukum Ziarah Kubur dalam Islam?</h2>
+        <p>Dalam syariat Islam, hukum ziarah kubur adalah sunnah (dianjurkan) berdasarkan hadits shahih riwayat Imam Muslim: <em>&ldquo;Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah kalian ke kubur, karena sesungguhnya ziarah kubur itu dapat melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada kehidupan akhirat.&rdquo;</em> Tujuan utamanya adalah mengingatkan diri kepada hari akhirat, mendoakan ampunan dan rahmat bagi ahli kubur, serta meneladani perjuangan dakwah dan kesalehan para Waliyullah.</p>
+        <h2>Urutan Tata Cara dan Bacaan Doa Ziarah Kubur</h2>
         <ol>
-          <li><strong>Berwudhu &amp; Meluruskan Niat:</strong> Memasuki area makam dengan sopan dan berniat ziarah karena Allah SWT.</li>
-          <li><strong>Mengucapkan Salam Ahli Kubur:</strong> <em>Assalaamu'alaikum ahlad-diyaari minal mu'miniina wal muslimiin, wa innaa insyaa Allaahu bikum laahiquun, nas'alullaaha lanaa wa lakumul 'aafiyah.</em></li>
-          <li><strong>Salam Masuk Makam Waliyullah:</strong> <em>Salaamullaahi yaa saadah, minar-Rahmaani yaghshaakum, 'ibaadallaahi ji'naakum, qashadnaakum thalabnaakum...</em></li>
-          <li><strong>Membaca Istighfar (3x) &amp; Tawassul Al-Fatihah:</strong> <em>Ilaa hadhratin nabiyyil musthafaa Muhammadin SAW... al-faatihah. Tsumma ilaa ruuhi al-waliyyi / ahlil qubuur... al-faatihah.</em></li>
-          <li><strong>Membaca Surah Yasin &amp; Surat Pendek:</strong> Membaca Surah Yasin, Surah Al-Ikhlas (3x), Al-Falaq (1x), An-Nas (1x), Al-Fatihah, dan Ayat Kursi.</li>
-          <li><strong>Membaca Dzikir Tahlil &amp; Tasbih:</strong> <em>Laa ilaaha illallaah</em> (33x/100x), shalawat Nabi, dan <em>Subhaanallaahi wa bihamdihi subhaanallaahil 'azhiim</em> (33x).</li>
-          <li><strong>Membaca Doa Ziarah Kubur (Doa Arwah):</strong> <em>Allaahummaghfir lahum warhamhum wa 'aafihim wa'fu 'anhum... Rabbanaa aatinaa fid-dunyaa hasanatan wa fil aakhirati hasanatan wa qinaa 'adzaaban naar.</em></li>
+          <li><strong>Berwudhu dan Meluruskan Niat:</strong> Memasuki kawasan pemakaman dengan sopan, melepas alas kaki bila diperlukan, dan berniat ziarah semata-mata karena Allah SWT.</li>
+          <li><strong>Mengucapkan Salam Ahli Kubur:</strong> Mengucapkan salam penghormatan kepada penghuni makam kaum mukminin dan muslimin seraya mendoakan keselamatan bagi mereka dan bagi peziarah.</li>
+          <li><strong>Membaca Salam Khusus Makam Waliyullah:</strong> Melantunkan bait salam penghormatan ketika memasuki area makam para Auliya dan ulama besar.</li>
+          <li><strong>Membaca Istighfar dan Tawassul Al-Fatihah:</strong> Membaca istighfar tiga kali lalu mengirimkan hadiah bacaan Surah Al-Fatihah kepada Nabi Muhammad SAW, keluarga dan sahabat beliau, para Waliyullah, serta ahli kubur yang diziarahi.</li>
+          <li><strong>Membaca Surah Yasin dan Surat Pendek:</strong> Membaca Surah Yasin, Surah Al-Ikhlas tiga kali, Surah Al-Falaq, Surah An-Nas, Surah Al-Fatihah, dan Ayat Kursi.</li>
+          <li><strong>Membaca Dzikir Tahlil dan Tasbih:</strong> Melantunkan kalimat tauhid tahlil, tasbih, tahmid, dan shalawat kepada Nabi Muhammad SAW dengan khusyuk.</li>
+          <li><strong>Membaca Doa Ziarah Kubur (Doa Arwah):</strong> Menutup rangkaian ziarah dengan memohonkan ampunan, kelapangan kubur, dan rahmat Allah SWT bagi almarhum maupun almarhumah.</li>
         </ol>
-        ${buildDirectoryLinksHtml()}
       </main>`;
 }
 
@@ -360,17 +382,16 @@ function buildSiteRootHtml(site) {
             width="512"
             height="512"
           />
-          <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori ${escapeXml(site.province)}</a> &rsaquo; ${escapeXml(site.title)}</p>
+          <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori Provinsi ${escapeXml(site.province)}</a> &rsaquo; Makam ${escapeXml(site.title)}</p>
           <h1>Makam ${escapeXml(site.title)} (${escapeXml(site.name)}) — ${escapeXml(site.city)}, ${escapeXml(site.province)}</h1>
-          <p><strong>Kategori:</strong> ${escapeXml(site.category)} ${site.era ? `| <strong>Era:</strong> ${escapeXml(site.era)}` : ''}</p>
-          <p><strong>Alamat Lokasi:</strong> ${escapeXml(site.address)}, ${escapeXml(site.city)}, Provinsi ${escapeXml(site.province)}</p>
-          <h2>Profil &amp; Sejarah ${escapeXml(site.title)}</h2>
+          <p><strong>Kategori Tokoh:</strong> ${escapeXml(site.category)} ${site.era ? `| <strong>Periode Sejarah:</strong> ${escapeXml(site.era)}` : ''}</p>
+          <p><strong>Alamat Lokasi Pemakaman:</strong> ${escapeXml(site.address)}, Kota/Kabupaten ${escapeXml(site.city)}, Provinsi ${escapeXml(site.province)}, Indonesia.</p>
+          <h2>Profil, Riwayat Dakwah, dan Sejarah ${escapeXml(site.title)}</h2>
           <p>${escapeXml(site.description)}</p>
           <p>${escapeXml(site.history)}</p>
-          ${site.sanad ? `<h2>Sanad Keilmuan &amp; Jaringan Dakwah</h2><p>${escapeXml(site.sanad)}</p>` : ''}
-          <p><a href="${SITE_ORIGIN}/panduan">Baca Panduan Doa Ziarah Kubur Lengkap (Arab, Latin &amp; Artinya)</a> | <a href="${SITE_ORIGIN}/peta">Buka Peta Rute Interaktif</a></p>
+          ${site.sanad ? `<h2>Sanad Keilmuan dan Jaringan Dakwah</h2><p>${escapeXml(site.sanad)}</p>` : ''}
+          <p><a href="${SITE_ORIGIN}/panduan">Baca Panduan Doa Ziarah Kubur Lengkap (Arab, Latin, dan Artinya)</a> | <a href="${SITE_ORIGIN}/peta">Buka Peta Rute Perjalanan Ziarah</a></p>
         </article>
-        ${buildDirectoryLinksHtml()}
       </main>`;
 }
 
@@ -383,13 +404,18 @@ const allEntries = [
     title: r.title,
     description: r.description,
     path: r.path,
-    bodyHtml: r.path === '/panduan' ? buildPanduanRootHtml() : buildHomepageRootHtml(),
+    bodyHtml:
+      r.path === '/panduan'
+        ? buildPanduanRootHtml()
+        : r.path === '/direktori'
+          ? buildDirektoriRootHtml()
+          : buildHomepageRootHtml(),
   })),
   ...sites.map((s) => ({
     loc: `${SITE_ORIGIN}/situs/${encodeURIComponent(s.slug)}`,
     changefreq: 'weekly',
     priority: '0.8',
-    title: `Makam ${s.title} (${s.city}, ${s.province}) — Rute,Kisah Karomah & Doa Ziarah | Ziarah Nusantara`,
+    title: `Makam ${s.title} (${s.city}, ${s.province}) — Rute, Kisah Karomah & Doa Ziarah | Ziarah Nusantara`,
     description: `${s.description} Lokasi: ${s.address}, ${s.city}, ${s.province}. Lengkap dengan peta rute, riwayat karomah, dan doa tawassul.`,
     path: `/situs/${s.slug}`,
     legacyPath: `/makam/${s.id}`,
@@ -510,18 +536,6 @@ function renderCustomHtml(baseHtml, entry) {
 const baseIndexHtmlPath = path.join(rootDist, 'index.html');
 if (fs.existsSync(baseIndexHtmlPath)) {
   let baseHtml = fs.readFileSync(baseIndexHtmlPath, 'utf8');
-
-  // Inline main CSS bundle into <head> to eliminate render-blocking CSS network roundtrip (150ms savings on 4G)
-  const cssLinkMatch = baseHtml.match(/<link\s+rel="stylesheet"[^>]*href="\/assets\/(index-[^"]+\.css)"[^>]*>/i);
-  if (cssLinkMatch) {
-    const cssFileName = cssLinkMatch[1];
-    const cssFilePath = path.join(rootDist, 'assets', cssFileName);
-    if (fs.existsSync(cssFilePath)) {
-      const cssContent = fs.readFileSync(cssFilePath, 'utf8');
-      baseHtml = baseHtml.replace(cssLinkMatch[0], `<style id="inline-app-css">${cssContent}</style>`);
-      console.log('[postbuild] Inlined critical stylesheet into HTML:', cssFileName);
-    }
-  }
 
   // Inject <link rel="modulepreload"> for the main entry script right before </head> to flatten critical request chain
   const entryScriptMatch = baseHtml.match(/<script\s+type="module"[^>]*src="(\/assets\/index-[^"]+\.js)"[^>]*>/i);

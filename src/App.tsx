@@ -209,7 +209,7 @@ export default function App() {
             '@id': `${baseOrigin}/#website`,
             url: `${baseOrigin}/`,
             name: 'Ziarah Nusantara',
-            alternateName: ['Ziarah Kubur Nusantara', 'Direktori Makam Wali Nusantara', 'ziarahnusantara.my.id'],
+            alternateName: ['Ziarah Kubur Nusantara', 'Direktori Makam Wali Nusantara'],
             description: activeDesc,
             inLanguage: 'id-ID',
             publisher: { '@id': `${baseOrigin}/#organization` },
@@ -257,10 +257,10 @@ export default function App() {
             mainEntity: [
               {
                 '@type': 'Question',
-                name: 'Apa Tujuan & Hukum Ziarah Kubur dalam Islam?',
+                name: 'Apa Tujuan dan Hukum Ziarah Kubur dalam Islam?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Hukum ziarah kubur dalam Islam adalah sunnah (dianjurkan) berdasarkan hadits riwayat Imam Muslim. Tujuannya adalah melembutkan hati yang penat, mengingatkan diri kepada kematian dan akhirat, mendoakan ampunan bagi orang tua serta ahli kubur, dan meneladani perjuangan dakwah para Waliyullah.',
+                  text: 'Dalam syariat Islam, hukum ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW dalam Hadits Riwayat Muslim. Tujuannya adalah melembutkan hati yang sedang penat oleh kesibukan dunia, mengingatkan diri kepada kematian dan akhirat, mendoakan ampunan bagi orang tua serta ahli kubur, dan meneladani perjuangan dakwah para Waliyullah.',
                 },
               },
               {
@@ -268,15 +268,15 @@ export default function App() {
                 name: 'Bagaimana Urutan Bacaan Doa Ziarah Kubur Singkat dan Lengkap?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Urutan bacaan doa ziarah kubur: (1) Berwudhu dan meluruskan niat, (2) Mengucapkan salam ahli kubur (Assalamu alaikum ahlad-diyaar minal mu-miniina wal muslimiin...), (3) Membaca Istighfar 3x, (4) Membaca Al-Fatihah & Tawassul, (5) Membaca Surah Yasin, Al-Ikhlas 3x, Al-Falaq, An-Nas, dan Ayat Kursi, (6) Dzikir Tahlil (Laa ilaaha illallaah), dan (7) Membaca doa khusus ahli kubur.',
+                  text: 'Urutan tata cara dan bacaan doa ziarah kubur sesuai tuntunan ulama Ahlussunnah wal Jamaah meliputi: (1) Berwudhu dan meluruskan niat ziarah karena Allah SWT, (2) Mengucapkan salam penghormatan kepada ahli kubur, (3) Membaca istighfar tiga kali dan menghadiahkan bacaan Surah Al-Fatihah kepada Rasulullah SAW, para Waliyullah, orang tua, dan ahli kubur, (4) Membaca Surah Yasin, Surah Al-Ikhlas tiga kali, Surah Al-Falaq, Surah An-Nas, dan Ayat Kursi, (5) Melantunkan kalimat dzikir tahlil serta shalawat Nabi, lalu (6) Menutup dengan doa permohonan ampunan dan rahmat bagi ahli kubur.',
                 },
               },
               {
                 '@type': 'Question',
-                name: 'Dimana Saja Lokasi 96 Makam Wali Songo dan Ulama di Ziarah Nusantara?',
+                name: 'Di Mana Saja Lokasi 96 Makam Wali Songo dan Ulama di Ziarah Nusantara?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Ziarah Nusantara mendokumentasikan 96 lokasi makam keramat di 18 provinsi Indonesia, meliputi 9 makam Wali Songo di Jawa Timur, Jawa Tengah, dan Jawa Barat, serta 87 makam Ulama Nusantara, Habaib, Sultan, dan Auliya dari Aceh, Sumatera, Banten, DKI Jakarta, Kalimantan, Sulawesi, Bali, NTB, hingga Maluku Utara lengkap dengan koordinat GPS.',
+                  text: 'Ziarah Nusantara mendokumentasikan 96 lokasi makam Waliyullah di 18 provinsi Indonesia lengkap dengan titik koordinat peta rute perjalanan, jadwal haul, kisah karomah, dan sanad keilmuan—mulai dari sembilan makam Wali Songo di Jawa Timur, Jawa Tengah, dan Jawa Barat hingga makam ulama besar dan habaib di Aceh, Sumatera, Banten, DKI Jakarta, Yogyakarta, Kalimantan, Sulawesi, Bali, Nusa Tenggara Barat, dan Maluku Utara.',
                 },
               },
             ],
@@ -553,7 +553,7 @@ export default function App() {
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <img
-                src="/favicon.svg"
+                src="/pwa-192x192.png"
                 alt="Logo Resmi Ziarah Nusantara"
                 width={32}
                 height={32}
@@ -562,12 +562,12 @@ export default function App() {
               />
               <div>
                 <p className="font-serif font-bold text-stone-950 text-sm">
-                  Ziarah Nusantara — Jejak Spiritual Para Waliyullah Nusantara
+                  Ziarah Nusantara — Panduan Ziarah Kubur &amp; Direktori Makam Wali Nusantara
                 </p>
                 <p className="text-stone-700">
                   Dikelola secara resmi oleh <strong>Tim Kurator Arsip Ziarah Nusantara</strong> •{' '}
                   <a href="https://ziarahnusantara.my.id" className="underline hover:text-stone-950">
-                    ziarahnusantara.my.id
+                    Portal Resmi Ziarah Nusantara
                   </a>
                 </p>
               </div>

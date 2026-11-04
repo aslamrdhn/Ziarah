@@ -310,15 +310,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/8 text-emerald-900 text-xs font-medium tracking-wide">
               <Sparkles className="w-3.5 h-3.5 text-emerald-800" aria-hidden="true" />
               <span>
-                Arsip &amp; Direktori Jejak Spiritual · {totalCatalogCount} Situs di {provinces.length - 1} Provinsi
+                Panduan Ziarah Kubur &amp; Direktori Jejak Batin · {totalCatalogCount} Makam Wali di {provinces.length - 1} Provinsi
               </span>
             </div>
             <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight text-stone-900 leading-[1.15]">
-              Telusuri Warisan Sejarah &amp; Ziarah Nusantara.
+              Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin {totalCatalogCount} Makam Wali
             </h1>
             <p className="text-stone-600 text-sm sm:text-base leading-relaxed tracking-tight max-w-xl">
-              Dokumentasi terkurasi makam Wali Songo, ulama pesantren, dan habaib di kepulauan Indonesia—lengkap dengan
-              pemetaan rute, riwayat sanad, jadwal haul, serta tuntunan doa lapangan.
+              Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, dan artinya), bacaan Yasin, Tahlil, dan Tawassul, serta peta rute perjalanan dan kisah karomah {totalCatalogCount} makam Wali Songo, ulama pesantren, dan habaib di seluruh Indonesia.
             </p>
           </div>
 
@@ -709,21 +708,91 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
       </div>
 
       {/* =====================================================================
-          CRAWLABLE SEO SUMMARY (SR-ONLY)
+          4. VISIBLE INDONESIAN EDITORIAL GUIDE & FAQ (100% Crawlable by Google WRS & CLD3)
           ===================================================================== */}
-      <section aria-label="Pengertian, Hukum, dan Tata Cara Ziarah Kubur dalam Islam" className="sr-only">
-        <div>
-          <h2>Pengertian, Hukum, &amp; Tujuan Ziarah Kubur dalam Islam</h2>
-          <p>
-            Secara bahasa, <strong>ziarah</strong> (زيارة) berarti berkunjung atau menengok. Dalam syariat Islam,{' '}
-            <strong>ziarah kubur</strong> adalah amalan sunnah mendatangi makam kaum muslimin, orang tua, ulama, dan
-            para Waliyullah untuk mendoakan ampunan serta rahmat bagi ahli kubur sekaligus mengingatkan diri akan
-            kehidupan akhirat.
-          </p>
-          <Link to="/panduan">Bacaan Doa Ziarah Kubur Lengkap (Arab, Latin &amp; Artinya)</Link>
-          <Link to="/doa">Kumpulan Tawassul &amp; Tahlil</Link>
+      <article
+        lang="id"
+        aria-label="Panduan Lengkap Pengertian, Hukum, Adab, dan Urutan Bacaan Doa Ziarah Kubur dalam Islam"
+        className="max-w-6xl mx-auto mt-14 pt-10 border-t border-stone-200/80 space-y-8 text-stone-800"
+      >
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-2xs space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-4 border-b border-stone-100">
+            <img
+              src="/pwa-512x512.png"
+              alt="Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil & Direktori 96 Makam Wali"
+              width={64}
+              height={64}
+              className="w-14 h-14 rounded-2xl border border-stone-200/80 shrink-0 object-cover"
+            />
+            <div className="space-y-1">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
+                Ensiklopedia &amp; Tuntunan Resmi Peziarah Indonesia
+              </span>
+              <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
+                Panduan Pengertian, Hukum, Adab, dan Urutan Doa Ziarah Kubur Sesuai Sunnah
+              </h2>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm leading-relaxed text-stone-700">
+            <div className="space-y-2">
+              <h3 className="font-serif font-semibold text-base text-stone-900">
+                Apa Tujuan dan Hukum Ziarah Kubur dalam Islam?
+              </h3>
+              <p>
+                Secara bahasa, kata <strong>ziarah</strong> berarti berkunjung atau menengok. Dalam syariat Islam, hukum melaksanakan ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW dalam Hadits Riwayat Muslim: <em>&ldquo;Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu dapat melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada kehidupan akhirat.&rdquo;</em>
+              </p>
+              <p>
+                Tujuan utama berziarah adalah melembutkan hati yang sedang penat oleh kesibukan dunia, mengingatkan diri akan kematian dan hari akhirat, mendoakan ampunan bagi orang tua serta kaum muslimin yang telah wafat, dan meneladani perjuangan dakwah para Waliyullah.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-serif font-semibold text-base text-stone-900">
+                Bagaimana Urutan Bacaan Doa Ziarah Kubur Singkat dan Lengkap?
+              </h3>
+              <p>
+                Urutan tata cara dan bacaan doa ziarah kubur sesuai tuntunan ulama Ahlussunnah wal Jamaah meliputi enam tahapan utama yang mudah diamalkan oleh setiap peziarah:
+              </p>
+              <ol className="list-decimal pl-4 space-y-1 text-xs sm:text-sm text-stone-700">
+                <li>Berwudhu dan meluruskan niat ziarah semata-mata mengharap ridha Allah SWT.</li>
+                <li>Mengucapkan salam penghormatan kepada ahli kubur ketika memasuki gerbang pemakaman.</li>
+                <li>Membaca istighfar tiga kali dan menghadiahkan bacaan Surah Al-Fatihah (tawassul) kepada Rasulullah SAW, para Waliyullah, orang tua, dan ahli kubur.</li>
+                <li>Membaca Surah Yasin, Surah Al-Ikhlas tiga kali, Surah Al-Falaq, Surah An-Nas, dan Ayat Kursi.</li>
+                <li>Melantunkan kalimat dzikir tahlil serta shalawat Nabi dengan khusyuk dan tenang.</li>
+                <li>Menutup rangkaian ziarah dengan doa permohonan ampunan dan rahmat bagi ahli kubur.</li>
+              </ol>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-serif font-semibold text-base text-stone-900">
+                Di Mana Saja Lokasi 96 Makam Wali Songo dan Ulama di Ziarah Nusantara?
+              </h3>
+              <p>
+                <strong>Ziarah Nusantara</strong> mendokumentasikan 96 lokasi makam Waliyullah di 18 provinsi Indonesia lengkap dengan titik koordinat peta rute perjalanan, jadwal haul, kisah karomah, dan sanad keilmuan.
+              </p>
+              <p>
+                Direktori ini mencakup sembilan makam <strong>Wali Songo</strong> di Jawa Timur, Jawa Tengah, dan Jawa Barat (Sunan Gresik, Sunan Ampel, Sunan Bonang, Sunan Drajat, Sunan Giri, Sunan Kalijaga, Sunan Kudus, Sunan Muria, dan Sunan Gunung Jati) hingga makam ulama besar, raja kesultanan Islam, dan habaib di Aceh, Sumatera, Banten, DKI Jakarta, Yogyakarta, Kalimantan, Sulawesi, Bali, Nusa Tenggara Barat, dan Maluku Utara.
+              </p>
+              <div className="pt-2 flex flex-wrap gap-2">
+                <Link
+                  to="/panduan"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline"
+                >
+                  <span>Baca Teks Lengkap Doa Ziarah Kubur</span>
+                </Link>
+                <span className="text-stone-300">•</span>
+                <Link
+                  to="/doa"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline"
+                >
+                  <span>Buka Susunan Tahlil &amp; Tawassul</span>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
+      </article>
     </section>
   );
 });
