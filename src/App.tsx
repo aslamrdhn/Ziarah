@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Navbar } from './components/Navbar';
 import { DaftarMakam } from './views/DaftarMakam';
 
@@ -648,6 +649,7 @@ export default function App() {
             <KontribusiModal isOpen={isKontribusiOpen} onClose={() => setIsKontribusiOpen(false)} />
           </Suspense>
         )}
+        <SpeedInsights />
       </div>
     </SiteProvider>
   );
