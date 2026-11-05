@@ -8,13 +8,13 @@ import {
 } from '../qris';
 
 describe('QRIS EMVCo Dynamic Payload & CRC-16/CCITT-FALSE', () => {
-  it('validates official Ziarah Nusantara static QRIS payload CRC-16 checksum (8587)', () => {
+  it('validates official Ziarah Nusantara static QRIS payload CRC-16 checksum (0F4A)', () => {
     const info = parseQrisMerchantInfo(OFFICIAL_QRIS_STATIC_PAYLOAD);
     expect(info.isValidCrc).toBe(true);
-    expect(info.crc).toBe('8587');
+    expect(info.crc).toBe('0F4A');
     expect(info.merchantName).toBe('Ziarah Nusantara, Organis');
-    expect(info.merchantCity).toBe('Bekasi');
-    expect(info.postalCode).toBe('17415');
+    expect(info.merchantCity).toBe('Jakarta Selatan');
+    expect(info.postalCode).toBe('12610');
     expect(info.nmid).toBe('ID1026625971761');
   });
 

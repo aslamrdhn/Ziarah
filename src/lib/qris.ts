@@ -1,5 +1,17 @@
 export const OFFICIAL_QRIS_STATIC_PAYLOAD =
-  '00020101021226570011ID.DANA.WWW011893600915003643613302090364361330303UMI51440014ID.CO.QRIS.WWW0215ID10266259717610303UMI520483985303360540420005802ID5925Ziarah Nusantara, Organis6006Bekasi610517415621960150011ID.DANA.WWW63048587';
+  '00020101021126570011ID.DANA.WWW011893600915303643613302090364361330303UMI51440014ID.CO.QRIS.WWW0215ID10266259717610303UMI5204839853033605802ID5925Ziarah Nusantara, Organis6015Jakarta Selatan61051261063040F4A';
+
+const LEGACY_QRIS_PAYLOADS = new Set([
+  '00020101021226570011ID.DANA.WWW011893600915003643613302090364361330303UMI51440014ID.CO.QRIS.WWW0215ID10266259717610303UMI520483985303360540420005802ID5925Ziarah Nusantara, Organis6006Bekasi610517415621960150011ID.DANA.WWW63048587',
+]);
+
+export function resolveOfficialQrisPayload(rawPayload?: string): string {
+  const trimmed = (rawPayload || '').trim();
+  if (!trimmed || !trimmed.startsWith('000201') || LEGACY_QRIS_PAYLOADS.has(trimmed)) {
+    return OFFICIAL_QRIS_STATIC_PAYLOAD;
+  }
+  return trimmed;
+}
 
 export interface QrisMerchantInfo {
   merchantName: string;
@@ -53,7 +65,7 @@ export function parseEmvTags(payload: string): Map<string, string> {
  * Extracts human-readable merchant metadata and validates the CRC-16 checksum.
  */
 export function parseQrisMerchantInfo(rawPayload: string = OFFICIAL_QRIS_STATIC_PAYLOAD): QrisMerchantInfo {
-  const clean = (rawPayload || OFFICIAL_QRIS_STATIC_PAYLOAD).trim();
+  const clean = resolveOfficialQrisPayload(rawPayload);
   const tags = parseEmvTags(clean);
   const tag26 = parseEmvTags(tags.get('26') || '');
   const tag51 = parseEmvTags(tags.get('51') || '');
@@ -67,14 +79,14 @@ export function parseQrisMerchantInfo(rawPayload: string = OFFICIAL_QRIS_STATIC_
 
   return {
     merchantName: tags.get('59') || 'Ziarah Nusantara, Organis',
-    merchantCity: tags.get('60') || 'Bekasi',
-    postalCode: tags.get('61') || '17415',
+    merchantCity: tags.get('60') || 'Jakarta Selatan',
+    postalCode: tags.get('61') || '12610',
     nmid: tag51.get('02') || 'ID1026625971761',
     acquirer: tag26.get('00') || 'ID.DANA.WWW',
-    mpan: tag26.get('01') || '936009150036436133',
+    mpan: tag26.get('01') || '936009153036436133',
     mcc: tags.get('52') || '8398',
     defaultAmount: parsedAmt && !isNaN(parsedAmt) ? parsedAmt : undefined,
-    crc: providedCrc || '8587',
+    crc: providedCrc || '0F4A',
     isValidCrc: Boolean(providedCrc && providedCrc === expectedCrc),
   };
 }
@@ -86,7 +98,7 @@ export function buildQrisPayload(
   basePayload: string = OFFICIAL_QRIS_STATIC_PAYLOAD,
   options: { useSelectedAmount?: boolean; amount?: number } = {}
 ): string {
-  const clean = (basePayload || OFFICIAL_QRIS_STATIC_PAYLOAD).trim();
+  const clean = resolveOfficialQrisPayload(basePayload);
   if (!options.useSelectedAmount || !options.amount || options.amount <= 0) {
     return clean;
   }

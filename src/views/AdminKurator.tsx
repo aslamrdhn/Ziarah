@@ -32,7 +32,7 @@ import { useSites } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, browserPopupRedirectResolver, User } from 'firebase/auth';
-import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
+import { OFFICIAL_QRIS_STATIC_PAYLOAD, resolveOfficialQrisPayload } from '../lib/qris';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl } from '../lib/sanitize';
 import { ContributionItem, DonationAdminItem } from './admin/AdminTypes';
@@ -221,7 +221,7 @@ export const AdminKurator: React.FC = () => {
           if (d.accountNumber) setAccountNumber(d.accountNumber);
           if (d.accountHolder) setAccountHolder(d.accountHolder);
           if (d.qrisImageUrl !== undefined) setQrisImageUrl(d.qrisImageUrl);
-          if (d.qrisPayload) setQrisPayload(d.qrisPayload);
+          if (d.qrisPayload) setQrisPayload(resolveOfficialQrisPayload(d.qrisPayload));
           if (d.customDomain !== undefined) setCustomDomain(d.customDomain);
           if (Array.isArray(d.programs) && d.programs.length > 0) {
             setInfaqPrograms(d.programs);

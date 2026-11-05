@@ -4,6 +4,7 @@ import { QrCode, Download, Copy, Check, Maximize2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   OFFICIAL_QRIS_STATIC_PAYLOAD,
+  resolveOfficialQrisPayload,
   parseQrisMerchantInfo,
   buildQrisPayload,
 } from '../lib/qris';
@@ -26,10 +27,7 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
   const [copiedPayload, setCopiedPayload] = useState(false);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
 
-  const effectiveBasePayload =
-    qrisPayload && qrisPayload.trim().startsWith('000201')
-      ? qrisPayload.trim()
-      : OFFICIAL_QRIS_STATIC_PAYLOAD;
+  const effectiveBasePayload = resolveOfficialQrisPayload(qrisPayload);
 
   const activePayload = buildQrisPayload(effectiveBasePayload, {
     useSelectedAmount: qrMode === 'dynamic_amount',
