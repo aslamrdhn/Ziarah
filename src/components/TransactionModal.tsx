@@ -190,13 +190,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
               <span className="inline-block text-[10px] font-bold font-mono uppercase tracking-wider bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 mb-2">
                 Kode Referensi Bukti: #{receipt?.referenceCode}
               </span>
-              <h3 className="font-bold text-slate-900 text-lg mb-1">
-                {type === 'infaq' ? 'Bukti Donasi Berhasil Terkirim!' : 'Bukti Terverifikasi — Akses Rubrik Terbuka!'}
+              <h3 className="font-serif text-slate-900 text-lg mb-1.5">
+                Alhamdulillah, Lembaran Khazanah Telah Terbuka
               </h3>
-              <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-                {type === 'infaq' 
-                  ? 'Jazakumullahu khairan katsiran. Bukti transfer Anda telah tersimpan di database Admin Kurator.' 
-                  : 'Terima kasih atas donasi riset Anda. Naskah manuskrip dan kisah karomah khusus kini telah terbuka untuk Anda.'}
+              <p className="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
+                Alhamdulillah, terima kasih atas infaq jariyah Anda. Seluruh lembaran Khazanah &amp; Wasiat Rahasia kini telah terbuka penuh di perangkat Anda.
               </p>
 
               {receipt && (

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useDeferredValue, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useDeferredValue, lazy, Suspense } from 'react';
 import {
   Search,
   X,
@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
 import { getSitePath } from '../lib/siteSlugs';
 import { extractShortEra } from '../lib/siteLogistics';
+import { SiteDetails } from '../components/SiteDetails';
 
 const HeroCinemaShowcase = lazy(() =>
   import('../components/HeroCinemaShowcase').then((m) => ({ default: m.HeroCinemaShowcase }))
@@ -27,6 +28,11 @@ const InteractiveHeritageCanvas = lazy(() =>
 
 interface DaftarMakamProps {
   onSelectSite: (site: ZiarahSite) => void;
+  savedSiteIds?: string[];
+  handleToggleSave?: (id: string) => void;
+  savedDoas?: string[];
+  onToggleSaveDoa?: (id: string) => void;
+  onOpenKontribusi?: () => void;
 }
 
 export type EmotionalIntentId = 'all' | 'keteduhan' | 'ikhtiar' | 'keteguhan' | 'ilmu';
@@ -207,7 +213,14 @@ function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntentId): bo
 
 const INITIAL_VISIBLE_SITES = 12;
 
-export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSite }) => {
+export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
+  onSelectSite,
+  savedSiteIds = [],
+  handleToggleSave,
+  savedDoas = [],
+  onToggleSaveDoa,
+  onOpenKontribusi,
+}) => {
   const { sites: ziarahSites, isLoading, ensureFullSitesLoaded } = useSites();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -217,6 +230,40 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
   const [showVisualShowcase, setShowVisualShowcase] = useState(false);
   const [heroMediaMode, setHeroMediaMode] = useState<'video' | 'constellation'>('video');
   const [visibleCount, setVisibleCount] = useState<number>(INITIAL_VISIBLE_SITES);
+  const [activeSiteModal, setActiveSiteModal] = useState<ZiarahSite | null>(null);
+  const [originPathBeforeModal, setOriginPathBeforeModal] = useState<string>('/');
+
+  const handleOpenReaderModal = React.useCallback(
+    (site: ZiarahSite, e?: React.MouseEvent) => {
+      if (e) {
+        e.preventDefault();
+      }
+      if (typeof window !== 'undefined') {
+        const current = window.location.pathname.startsWith('/direktori') ? '/direktori' : '/';
+        setOriginPathBeforeModal(current);
+        window.history.pushState({ inPlaceReaderSiteId: site.id }, '', getSitePath(site));
+      }
+      setActiveSiteModal(site);
+    },
+    []
+  );
+
+  const handleCloseReaderModal = React.useCallback(() => {
+    setActiveSiteModal(null);
+    if (typeof window !== 'undefined' && (window.location.pathname.startsWith('/situs/') || window.location.pathname.startsWith('/makam/'))) {
+      window.history.pushState(null, '', originPathBeforeModal || '/');
+    }
+  }, [originPathBeforeModal]);
+
+  useEffect(() => {
+    const onPopState = () => {
+      if (activeSiteModal) {
+        setActiveSiteModal(null);
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [activeSiteModal]);
 
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const sites = ziarahSites;
@@ -375,7 +422,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
               }`}
             >
               <Film className="w-3.5 h-3.5 text-emerald-800" strokeWidth={1.75} aria-hidden="true" />
-              <span>{showVisualShowcase ? 'Tutup Visualisasi' : 'Visualisasi Dokumenter'}</span>
+              <span>{showVisualShowcase ? 'Tutup Eksplorasi Visual' : 'Buka Eksplorasi Visual Nusantara'}</span>
             </button>
           </div>
         </header>
@@ -469,7 +516,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             <div className="flex items-center gap-4 shrink-0">
               <button
                 type="button"
-                onClick={() => onSelectSite(featuredHaulSite)}
+                onClick={(e) => handleOpenReaderModal(featuredHaulSite, e)}
                 className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 cursor-pointer"
               >
                 Baca wasiat beliau
@@ -657,10 +704,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
 
             return (
               <article key={site.id} className="group content-auto">
-                <Link
-                  to={siteUrl}
-                  onClick={() => onSelectSite(site)}
-                  aria-label={`Buka profil, sejarah, dan rute Makam ${site.title} (${site.name}) di ${site.location.city}, ${site.location.province}`}
+                <a
+                  href={siteUrl}
+                  onClick={(e) => handleOpenReaderModal(site, e)}
+                  aria-label={`Baca kisah, karomah, dan panduan Makam ${site.title} (${site.name}) di ${site.location.city}, ${site.location.province}`}
                   className="block cursor-pointer space-y-3 focus:outline-none"
                 >
                   {/* 1. Foto Rasio 4:3 dengan sudut membulat (rounded-2xl) & 1 Label Sudut */}
@@ -702,13 +749,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                     </p>
 
                     <div className="pt-3 mt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
-                      <span>Riwayat &amp; Doa Tersedia</span>
+                      <span>Kisah, Wasiat &amp; Doa</span>
                       <span className="font-medium text-emerald-800 group-hover:translate-x-0.5 transition-transform">
-                        Buka →
+                        Baca Kisah →
                       </span>
                     </div>
                   </div>
-                </Link>
+                </a>
               </article>
             );
           })}
@@ -853,6 +900,23 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
           </div>
         </div>
       </article>
+
+      {/* In-Place Reader Modal over DaftarMakam (No Map Redirect, Preserves Scroll Position) */}
+      {activeSiteModal && (
+        <SiteDetails
+          site={activeSiteModal}
+          onClose={handleCloseReaderModal}
+          isSaved={savedSiteIds.includes(activeSiteModal.id)}
+          onToggleSave={handleToggleSave ? () => handleToggleSave(activeSiteModal.id) : undefined}
+          savedDoas={savedDoas}
+          onToggleSaveDoa={onToggleSaveDoa}
+          onContribute={onOpenKontribusi}
+          onViewOnMap={(targetSite) => {
+            setActiveSiteModal(null);
+            onSelectSite(targetSite);
+          }}
+        />
+      )}
     </section>
   );
 });

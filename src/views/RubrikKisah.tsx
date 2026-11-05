@@ -678,33 +678,40 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             {displayedArticles.map((article, idx) => {
               const isSaved = savedArticles.includes(article.id);
               const isUnlocked = checkIsArticleUnlocked(article, idx);
-              const cleanContent = article.content.replace(/<!--more-->/g, ' ');
-              const hookLead = article.content.includes('<!--more-->')
-                ? article.content.split('<!--more-->')[0].trim()
-                : cleanContent.slice(0, 150);
+              const cleanContent = article.content.replace(/<!--more-->/g, ' ').replace(/\n+/g, ' ').trim();
+              const rawBeforeMore = article.content.includes('<!--more-->')
+                ? article.content.split('<!--more-->')[0].replace(/\n+/g, ' ').trim()
+                : cleanContent.slice(0, 170);
+              const firstSentenceMatch = cleanContent.match(/^[^.!?]+[.!?]+/);
+              const openingHookSentence = firstSentenceMatch ? firstSentenceMatch[0].trim() : rawBeforeMore;
+              const readableTimeLabel = article.readTime.includes('menit')
+                ? article.readTime
+                : article.readTime.replace('mnt', 'menit baca');
 
               return (
                 <article
                   key={article.id}
                   onClick={() => {
-                    if (!isUnlocked) {
+                    if (isUnlocked) {
+                      setActiveStoryModal(article);
+                    } else {
                       openUnlockModalFor(article);
                     }
                   }}
-                  className={`content-auto bg-white rounded-2xl p-6 border border-stone-200/70 shadow-2xs transition-colors flex flex-col justify-between group relative ${
+                  className={`content-auto bg-white rounded-2xl p-6 border border-stone-200/70 shadow-2xs transition-colors flex flex-col justify-between group relative cursor-pointer ${
                     isUnlocked
                       ? 'hover:border-stone-300'
-                      : 'hover:border-amber-300 cursor-pointer'
+                      : 'hover:border-amber-300'
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-2 gap-2">
+                    <div className="flex items-center justify-between mb-2.5 gap-2">
                       <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
                         {article.category}
                       </span>
                       <div className="flex items-center text-stone-400 space-x-2 shrink-0">
-                        <span className="flex items-center text-[11px] text-stone-500">
-                          <Clock className="w-3 h-3 mr-1" strokeWidth={1.75} /> {article.readTime}
+                        <span className="flex items-center text-[11px] font-medium text-stone-500">
+                          <Clock className="w-3 h-3 mr-1" strokeWidth={1.75} /> {readableTimeLabel}
                         </span>
                         <button
                           type="button"
@@ -724,22 +731,30 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       </div>
                     </div>
 
-                    <h2 className="font-serif text-xl text-stone-900 group-hover:text-emerald-900 transition-colors mb-1.5 leading-snug">
+                    <h2 className="font-serif text-xl sm:text-2xl text-stone-900 group-hover:text-emerald-900 transition-colors leading-snug">
                       {article.title}
                     </h2>
 
-                    <div className="text-xs text-stone-500 mb-3 truncate">
+                    <div className="text-xs text-stone-500 mt-1.5 mb-3 truncate">
                       {article.siteName} · {article.location}
                     </div>
 
                     {isUnlocked ? (
-                      <p className="text-sm text-stone-600 leading-relaxed line-clamp-3 mb-4">
-                        {cleanContent}
-                      </p>
+                      <div className="mt-2 mb-4 space-y-1.5">
+                        <p className="font-serif italic text-stone-800 text-sm leading-relaxed">
+                          &ldquo;{openingHookSentence}&rdquo;
+                        </p>
+                        <p className="text-sm text-stone-600 mt-2 line-clamp-3 leading-relaxed">
+                          {cleanContent}
+                        </p>
+                      </div>
                     ) : (
-                      <div className="mb-4 space-y-1.5">
-                        <p className="text-sm text-stone-700 leading-relaxed">
-                          {hookLead}...
+                      <div className="mt-2 mb-4 space-y-2">
+                        <p className="font-serif italic text-stone-800 text-sm leading-relaxed">
+                          &ldquo;{openingHookSentence}&rdquo;
+                        </p>
+                        <p className="text-sm text-stone-600 line-clamp-2 leading-relaxed">
+                          {rawBeforeMore}...
                         </p>
                         <p className="text-sm text-stone-500 opacity-40 blur-[2px] select-none pointer-events-none line-clamp-2">
                           Kisah di balik layar, riyadhoh malam, dan pesan wasiat beliau pada bagian ini disimpan dalam Khazanah Khusus.
@@ -761,7 +776,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                         }}
                         className="inline-flex items-center text-xs font-medium text-emerald-800 hover:text-emerald-950 transition-colors cursor-pointer"
                       >
-                        Baca Selengkapnya
+                        Baca Naskah
                         <ChevronRight className="w-4 h-4 ml-0.5" strokeWidth={1.75} />
                       </button>
                     ) : (
@@ -837,15 +852,11 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                     <span className="inline-block text-[10px] font-bold font-mono uppercase tracking-wider bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 mb-2">
                       Kode Referensi Bukti: #{receipt?.referenceCode}
                     </span>
-                    <h4 className="font-bold text-slate-900 text-lg mb-1">
-                      {gateSettings.requireManualVerification
-                        ? 'Bukti Infaq Terkirim ke Kurator!'
-                        : 'Alhamdulillah — Seluruh Khazanah Kini Terbuka!'}
+                    <h4 className="font-serif text-slate-900 text-lg mb-1.5">
+                      Alhamdulillah — Seluruh Khazanah Kini Terbuka!
                     </h4>
-                    <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-                      {gateSettings.requireManualVerification
-                        ? 'Bukti transfer Anda telah masuk ke antrean Admin Kurator. Silakan klik tombol WhatsApp di bawah untuk mempercepat pembukaan akses.'
-                        : 'Jazakumullahu khairan. Infaq dan munajat Anda telah tercatat, dan seluruh naskah Kisah Rahasia, Karomah & Manuskrip kini terbuka penuh di perangkat ini.'}
+                    <p className="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
+                      Alhamdulillah, terima kasih atas infaq jariyah Anda. Seluruh lembaran Khazanah &amp; Wasiat Rahasia kini telah terbuka penuh di perangkat Anda.
                     </p>
 
                     {receipt && (
@@ -869,13 +880,13 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                         onClick={() => {
                           const targetToRead = unlockModalArticle;
                           setUnlockModalArticle(null);
-                          if (!gateSettings.requireManualVerification && targetToRead) {
+                          if (targetToRead) {
                             setActiveStoryModal(targetToRead);
                           }
                         }}
                         className="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
                       >
-                        {gateSettings.requireManualVerification ? 'Selesai & Tutup' : 'Baca Naskah Lengkap Sekarang →'}
+                        Baca Naskah Lengkap Sekarang →
                       </button>
                       <a
                         href={waUnlockUrl}
@@ -1086,69 +1097,141 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Modal Detail Rubrik */}
+      {/* Modal Detail Rubrik — Medium / Substack Editorial Reader */}
       <AnimatePresence>
         {activeStoryModal && (
-          <div className="fixed inset-0 z-[3000] bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[3000] bg-stone-950/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 md:p-6">
+            <div
+              className="absolute inset-0 cursor-pointer"
+              onClick={() => setActiveStoryModal(null)}
+              aria-label="Tutup naskah"
+            />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={{ opacity: 0, scale: 0.98, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
+              exit={{ opacity: 0, scale: 0.98, y: 20 }}
+              className="relative z-10 bg-[#FAF8F5] sm:rounded-3xl max-w-3xl w-full h-full sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl border border-stone-200/80 overflow-hidden"
             >
               {/* Header Modal */}
-              <div className="p-6 border-b border-slate-100 bg-slate-50/60 flex items-start justify-between">
+              <div className="px-6 sm:px-10 py-5 border-b border-stone-200/80 bg-white flex items-start justify-between gap-4 shrink-0">
                 <div>
-                  <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-800 text-[10px] font-bold rounded-lg uppercase tracking-wider mb-2 inline-block border border-emerald-200/60">
-                    {activeStoryModal.category}
-                  </span>
-                  <h3 className="text-lg sm:text-xl font-serif font-black text-slate-900 leading-snug">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-emerald-800 mb-1.5">
+                    <span>{activeStoryModal.category}</span>
+                    <span>·</span>
+                    <span>
+                      {activeStoryModal.readTime.includes('menit')
+                        ? activeStoryModal.readTime
+                        : activeStoryModal.readTime.replace('mnt', 'menit baca')}
+                    </span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-serif text-stone-900 leading-snug">
                     {activeStoryModal.title}
                   </h3>
-                  <div className="flex items-center text-xs text-slate-500 mt-1">
-                    <MapPin className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                  <div className="flex items-center text-xs text-stone-500 mt-1.5">
+                    <MapPin className="w-3.5 h-3.5 mr-1.5 text-emerald-800 shrink-0" />
                     <span>{activeStoryModal.siteName} — {activeStoryModal.location}</span>
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setActiveStoryModal(null)}
-                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-full transition-colors shrink-0 cursor-pointer"
+                  className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition-colors shrink-0 cursor-pointer"
+                  aria-label="Tutup naskah"
                 >
                   ✕
                 </button>
               </div>
 
-              {/* Isi Modal */}
-              <div className="p-6 sm:p-8 overflow-y-auto space-y-4">
-                <div className="bg-emerald-50/60 border border-emerald-100 p-4 rounded-2xl text-xs text-emerald-950 leading-relaxed">
-                  <p className="font-semibold mb-0.5">Catatan Kurasi:</p>
-                  Kisah ini dihimpun dan dikurasi dari tradisi manuskrip dan riwayat lisan peziarah nusantara sebagai pembelajaran moral, keteladanan spiritual, dan khazanah sejarah Islam Nusantara.
-                </div>
+              {/* Isi Modal — Medium / Substack Reader Measure (max-w-[65ch] mx-auto) */}
+              <div className="px-6 sm:px-10 md:px-12 py-7 sm:py-9 overflow-y-auto flex-1">
+                <article className="max-w-[65ch] mx-auto space-y-6">
+                  {(() => {
+                    const raw = activeStoryModal.content || '';
+                    const parts = raw.split('<!--more-->');
+                    const splitParagraphs = (chunk: string): string[] => {
+                      const trimmed = chunk.trim();
+                      if (!trimmed) return [];
+                      const blocks = trimmed.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+                      if (blocks.length > 1) return blocks;
+                      const sentences = trimmed.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g);
+                      if (!sentences || sentences.length <= 2) return [trimmed];
+                      const out: string[] = [];
+                      let buf = '';
+                      sentences.forEach((s, i) => {
+                        buf = buf ? `${buf} ${s.trim()}` : s.trim();
+                        if ((i + 1) % 2 === 0 || buf.length >= 220) {
+                          out.push(buf);
+                          buf = '';
+                        }
+                      });
+                      if (buf) out.push(buf);
+                      return out;
+                    };
 
-                <div className="text-slate-700 text-sm sm:text-base leading-relaxed space-y-4 border-l-2 border-emerald-400 pl-4 italic">
-                  <p>{activeStoryModal.content.replace(/<!--more-->/g, ' ')}</p>
-                </div>
+                    const openingParas = splitParagraphs(parts[0] || '');
+                    const continuationParas = parts.length > 1 ? splitParagraphs(parts.slice(1).join('\n\n')) : [];
 
-                <div className="pt-4 border-t border-slate-100 text-xs text-slate-500">
-                  <p><span className="font-semibold text-slate-700">Rujukan & Sumber:</span> {activeStoryModal.source}</p>
-                </div>
+                    return (
+                      <div className="space-y-5">
+                        {openingParas.map((para, pIdx) => (
+                          <p
+                            key={`open-${pIdx}`}
+                            className={
+                              pIdx === 0
+                                ? 'font-serif text-lg sm:text-xl text-stone-900 leading-relaxed first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-emerald-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none'
+                                : 'text-[16px] sm:text-[18px] leading-[1.9] text-stone-800'
+                            }
+                          >
+                            {para}
+                          </p>
+                        ))}
+
+                        {continuationParas.length > 0 && (
+                          <>
+                            <h4 className="font-serif text-xl sm:text-2xl text-stone-900 pt-4 border-t border-stone-200/70">
+                              Wasiat Batin &amp; Hikmah Keteladanan
+                            </h4>
+                            {continuationParas.map((para, cIdx) => (
+                              <p
+                                key={`cont-${cIdx}`}
+                                className="text-[16px] sm:text-[18px] leading-[1.9] text-stone-800"
+                              >
+                                {para}
+                              </p>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  <div className="pt-6 border-t border-stone-200/70 text-xs text-stone-500 space-y-1.5">
+                    <p>
+                      <span className="font-semibold text-stone-700">Rujukan &amp; Sumber:</span> {activeStoryModal.source}
+                    </p>
+                    <p className="italic text-stone-500">
+                      Dikurasi dari tradisi manuskrip babad dan riwayat lisan peziarah Nusantara sebagai bahan keteladanan spiritual.
+                    </p>
+                  </div>
+                </article>
               </div>
 
               {/* Footer Modal */}
-              <div className="p-4 border-t border-slate-100 bg-white flex items-center justify-between">
+              <div className="px-6 sm:px-10 py-4 border-t border-stone-200/80 bg-white flex items-center justify-between shrink-0">
                 <Link
                   to={`/situs/${activeStoryModal.siteId}`}
                   onClick={() => setActiveStoryModal(null)}
-                  className="text-xs font-bold text-emerald-800 hover:underline inline-flex items-center"
+                  className="text-xs sm:text-sm font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 inline-flex items-center"
                 >
-                  Buka Profil Lengkap Makam
-                  <ExternalLink className="w-3.5 h-3.5 ml-1" />
+                  Buka Profil &amp; Peta Makam
+                  <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                 </Link>
                 <button
+                  type="button"
                   onClick={() => setActiveStoryModal(null)}
-                  className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                  className="px-5 py-2.5 bg-stone-900 hover:bg-emerald-900 text-white text-xs font-medium rounded-xl transition-colors cursor-pointer"
                 >
-                  Tutup
+                  Tutup Naskah
                 </button>
               </div>
             </motion.div>

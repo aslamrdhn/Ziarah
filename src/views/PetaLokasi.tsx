@@ -65,24 +65,15 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
       <div className="relative w-full h-[calc(100dvh-6.5rem)] md:h-[calc(100dvh-5.5rem)] min-h-[560px] flex flex-col">
         <InteractiveMap sites={ziarahSites} selectedSite={selectedSite} onSelectSite={handleMapSelect} />
         {selectedSite && (
-          <>
-            {/* Mobile & Tablet Backdrop Overlay */}
-            <div
-              className="md:hidden absolute inset-0 z-[999] bg-stone-950/35 backdrop-blur-xs pointer-events-auto rounded-3xl cursor-pointer"
-              onClick={handleClose}
-            />
-            <div className="absolute inset-x-0 bottom-0 top-2 sm:top-3 md:inset-y-2.5 md:right-2.5 md:left-auto z-[1000] w-full md:w-[520px] lg:w-[600px] xl:w-[640px] pointer-events-auto">
-              <SiteDetails
-                site={selectedSite}
-                onClose={handleClose}
-                isSaved={savedSiteIds.includes(selectedSite.id)}
-                onToggleSave={() => handleToggleSave(selectedSite.id)}
-                savedDoas={savedDoas}
-                onToggleSaveDoa={onToggleSaveDoa}
-                onContribute={onOpenKontribusi}
-              />
-            </div>
-          </>
+          <SiteDetails
+            site={selectedSite}
+            onClose={handleClose}
+            isSaved={savedSiteIds.includes(selectedSite.id)}
+            onToggleSave={() => handleToggleSave(selectedSite.id)}
+            savedDoas={savedDoas}
+            onToggleSaveDoa={onToggleSaveDoa}
+            onContribute={onOpenKontribusi}
+          />
         )}
       </div>
 

@@ -340,6 +340,35 @@ export const BacaanZiarah: React.FC = () => {
       }`}
     >
       <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
+        {/* Sub-Tab Switcher: Amalan & Doa Hub (/panduan & /doa) */}
+        <div
+          className={`flex items-center gap-6 border-b overflow-x-auto no-scrollbar ${
+            outdoorMode ? 'border-black' : 'border-stone-200/80'
+          }`}
+        >
+          <Link
+            to="/panduan"
+            aria-current="page"
+            className={`pb-3 -mb-px text-xs sm:text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
+              outdoorMode
+                ? 'border-black text-black'
+                : 'border-emerald-900 text-emerald-950'
+            }`}
+          >
+            1. Tuntunan Yasin, Tahlil &amp; Tasbih
+          </Link>
+          <Link
+            to="/doa"
+            className={`pb-3 -mb-px text-xs sm:text-sm font-medium whitespace-nowrap border-b-2 border-transparent transition-colors ${
+              outdoorMode
+                ? 'text-stone-700 hover:text-black'
+                : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            2. Wirid &amp; Doa Khusus Para Wali
+          </Link>
+        </div>
+
         {/* =====================================================================
             1. EDITORIAL HEADER (Bersih Tanpa Kapsul/Bintang)
             ===================================================================== */}
@@ -809,45 +838,51 @@ export const BacaanZiarah: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Arabic Naskh Text with Generous Line Spacing */}
-                <div className="space-y-8">
-                  <div className="text-center" dir="rtl">
-                    <div
-                      className={`font-arabic leading-[2.8] space-y-4 ${getArabicFontSizeClass()} ${
-                        outdoorMode ? 'text-black font-bold' : 'text-stone-900'
-                      }`}
-                    >
-                      {section.arabicLines.map((line, idx) => (
-                        <p key={idx}>{line}</p>
-                      ))}
-                    </div>
+                {/* Arabic Naskh Text, Latin Transliteration & Translation with Spacious Contrast */}
+                <div className="max-w-3xl mx-auto">
+                  <div className="divide-y divide-stone-200/50" dir="rtl">
+                    {section.arabicLines.map((line, idx) => (
+                      <div
+                        key={idx}
+                        className="py-5 border-b border-stone-200/50 last:border-b-0 text-right sm:text-center"
+                      >
+                        <p
+                          className={`font-arabic leading-[2.6] ${getArabicFontSizeClass()} ${
+                            outdoorMode ? 'text-black font-bold' : 'text-stone-950'
+                          }`}
+                        >
+                          {line}
+                        </p>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* Transliterasi Latin */}
-                  {showLatin && (
+                  {/* Transliterasi Latin & Terjemahan Bahasa Indonesia */}
+                  {(showLatin || showTerjemahan) && (
                     <div
-                      className={`p-5 sm:p-7 rounded-2xl text-center border ${
-                        outdoorMode
-                          ? 'bg-stone-50 border-black text-black font-semibold'
-                          : 'bg-[#FAF8F5] border-stone-200/70 text-stone-700'
+                      className={`mt-6 pt-5 border-t text-left sm:text-center ${
+                        outdoorMode ? 'border-black' : 'border-stone-200/70'
                       }`}
                     >
-                      <p className="italic leading-loose text-sm sm:text-base whitespace-pre-line">
-                        &ldquo;{section.latinText}&rdquo;
-                      </p>
-                    </div>
-                  )}
+                      {showLatin && (
+                        <p
+                          className={`font-medium text-sm sm:text-base mt-3 leading-relaxed whitespace-pre-line ${
+                            outdoorMode ? 'text-black font-semibold' : 'text-emerald-900/90'
+                          }`}
+                        >
+                          &ldquo;{section.latinText}&rdquo;
+                        </p>
+                      )}
 
-                  {/* Terjemahan Bahasa Indonesia */}
-                  {showTerjemahan && (
-                    <div className="text-center px-2 sm:px-8">
-                      <p
-                        className={`text-sm sm:text-base leading-relaxed max-w-3xl mx-auto ${
-                          outdoorMode ? 'text-black font-medium' : 'text-stone-500'
-                        }`}
-                      >
-                        &ldquo;{section.translationText}&rdquo;
-                      </p>
+                      {showTerjemahan && (
+                        <p
+                          className={`italic text-xs sm:text-sm mt-1.5 leading-relaxed max-w-3xl mx-auto ${
+                            outdoorMode ? 'text-black font-medium' : 'text-stone-600'
+                          }`}
+                        >
+                          &ldquo;{section.translationText}&rdquo;
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

@@ -486,8 +486,32 @@ export default function App() {
             }
           >
             <Routes location={location}>
-              <Route path="/" element={<DaftarMakam onSelectSite={handleSelectSite} />} />
-              <Route path="/direktori" element={<DaftarMakam onSelectSite={handleSelectSite} />} />
+              <Route
+                path="/"
+                element={
+                  <DaftarMakam
+                    onSelectSite={handleSelectSite}
+                    savedSiteIds={savedSiteIds}
+                    handleToggleSave={handleToggleSave}
+                    savedDoas={savedDoas}
+                    onToggleSaveDoa={handleToggleSaveDoa}
+                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                  />
+                }
+              />
+              <Route
+                path="/direktori"
+                element={
+                  <DaftarMakam
+                    onSelectSite={handleSelectSite}
+                    savedSiteIds={savedSiteIds}
+                    handleToggleSave={handleToggleSave}
+                    savedDoas={savedDoas}
+                    onToggleSaveDoa={handleToggleSaveDoa}
+                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                  />
+                }
+              />
               <Route
                 path="/peta"
                 element={
@@ -547,7 +571,19 @@ export default function App() {
               <Route path="/kurasi" element={<KebijakanKurasi />} />
               <Route path="/admin" element={<AdminKurator />} />
               <Route path="/kurator-admin" element={<AdminKurator />} />
-              <Route path="*" element={<DaftarMakam onSelectSite={handleSelectSite} />} />
+              <Route
+                path="*"
+                element={
+                  <DaftarMakam
+                    onSelectSite={handleSelectSite}
+                    savedSiteIds={savedSiteIds}
+                    handleToggleSave={handleToggleSave}
+                    savedDoas={savedDoas}
+                    onToggleSaveDoa={handleToggleSaveDoa}
+                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                  />
+                }
+              />
             </Routes>
           </Suspense>
         </main>

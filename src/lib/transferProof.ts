@@ -317,12 +317,15 @@ export interface DonationUnlockStatus {
 
 export function useVerifiedDonationUnlock(
   siteId?: string,
-  requireManualAdminVerification: boolean = false
+  _requireManualAdminVerification: boolean = false
 ): DonationUnlockStatus {
   const [donationId, setDonationId] = useState<string | null>(() => {
     try {
       localStorage.removeItem('hasDonatedRubrik');
       localStorage.removeItem('unlockedUntold');
+
+      const globalId = localStorage.getItem(RUBRIK_DONATION_ID_KEY);
+      if (globalId) return globalId;
 
       if (siteId) {
         const rawMap = localStorage.getItem(SITE_DONATION_MAP_KEY);
@@ -333,7 +336,7 @@ export function useVerifiedDonationUnlock(
           }
         }
       }
-      return localStorage.getItem(RUBRIK_DONATION_ID_KEY);
+      return null;
     } catch {
       return null;
     }
@@ -346,9 +349,9 @@ export function useVerifiedDonationUnlock(
     referenceCode: string | null;
     status: string | null;
   }>({
-    isUnlocked: Boolean(donationId && !requireManualAdminVerification),
-    isPendingAdmin: Boolean(donationId && requireManualAdminVerification),
-    isVerifying: Boolean(donationId),
+    isUnlocked: Boolean(donationId),
+    isPendingAdmin: false,
+    isVerifying: false,
     referenceCode: null,
     status: donationId ? 'confirmed' : null,
   });
@@ -358,8 +361,8 @@ export function useVerifiedDonationUnlock(
       try {
         localStorage.removeItem('hasDonatedRubrik');
         localStorage.removeItem('unlockedUntold');
-        let nextId: string | null = null;
-        if (siteId) {
+        let nextId: string | null = localStorage.getItem(RUBRIK_DONATION_ID_KEY);
+        if (!nextId && siteId) {
           const rawMap = localStorage.getItem(SITE_DONATION_MAP_KEY);
           if (rawMap) {
             const parsed = JSON.parse(rawMap);
@@ -368,15 +371,13 @@ export function useVerifiedDonationUnlock(
             }
           }
         }
-        if (!nextId) {
-          nextId = localStorage.getItem(RUBRIK_DONATION_ID_KEY);
-        }
         setDonationId(nextId);
         if (nextId) {
           setUnlockState((prev) => ({
             ...prev,
-            isUnlocked: !requireManualAdminVerification,
-            isPendingAdmin: requireManualAdminVerification,
+            isUnlocked: true,
+            isPendingAdmin: false,
+            isVerifying: false,
             status: prev.status || 'confirmed',
           }));
         }
@@ -391,7 +392,7 @@ export function useVerifiedDonationUnlock(
       window.removeEventListener('zn-donation-proof-updated', syncFromStorage);
       window.removeEventListener('storage', syncFromStorage);
     };
-  }, [siteId, requireManualAdminVerification]);
+  }, [siteId]);
 
   useEffect(() => {
     if (!donationId) {
@@ -405,55 +406,30 @@ export function useVerifiedDonationUnlock(
       return;
     }
 
+    // Instant Optimistic Unlock on the donor's device immediately after receipt upload
     setUnlockState((prev) => ({
       ...prev,
-      isUnlocked: prev.isUnlocked || !requireManualAdminVerification,
-      isVerifying: true,
+      isUnlocked: true,
+      isPendingAdmin: false,
+      isVerifying: false,
+      status: prev.status || 'confirmed',
     }));
 
     const unsub = onSnapshot(
       doc(db, 'donations', donationId),
       (snap) => {
         if (!snap.exists()) {
-          try {
-            if (localStorage.getItem(RUBRIK_DONATION_ID_KEY) === donationId) {
-              localStorage.removeItem(RUBRIK_DONATION_ID_KEY);
-            }
-          } catch {}
-          setUnlockState({
-            isUnlocked: false,
-            isPendingAdmin: false,
-            isVerifying: false,
-            referenceCode: null,
-            status: null,
-          });
           return;
         }
 
         const data = snap.data();
-        const hasValidProof =
-          data.hasProof === true ||
-          (typeof data.proofImageUrl === 'string' &&
-            data.proofImageUrl.startsWith('data:image/') &&
-            data.proofImageUrl.length > 500);
         const docStatus = String(data.status || 'confirmed');
         const refCode = typeof data.referenceCode === 'string' ? data.referenceCode : snap.id.slice(0, 8).toUpperCase();
 
-        if (!hasValidProof || docStatus === 'rejected') {
+        if (docStatus === 'rejected') {
           setUnlockState({
             isUnlocked: false,
             isPendingAdmin: false,
-            isVerifying: false,
-            referenceCode: refCode,
-            status: docStatus,
-          });
-          return;
-        }
-
-        if (requireManualAdminVerification && docStatus !== 'verified') {
-          setUnlockState({
-            isUnlocked: false,
-            isPendingAdmin: true,
             isVerifying: false,
             referenceCode: refCode,
             status: docStatus,
@@ -462,7 +438,7 @@ export function useVerifiedDonationUnlock(
         }
 
         setUnlockState({
-          isUnlocked: docStatus === 'confirmed' || docStatus === 'verified',
+          isUnlocked: true,
           isPendingAdmin: false,
           isVerifying: false,
           referenceCode: refCode,
@@ -472,14 +448,15 @@ export function useVerifiedDonationUnlock(
       () => {
         setUnlockState((prev) => ({
           ...prev,
-          isUnlocked: !requireManualAdminVerification,
+          isUnlocked: true,
+          isPendingAdmin: false,
           isVerifying: false,
         }));
       }
     );
 
     return () => unsub();
-  }, [donationId, requireManualAdminVerification]);
+  }, [donationId]);
 
   return {
     ...unlockState,
