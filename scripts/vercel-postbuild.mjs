@@ -13,6 +13,12 @@ if (!fs.existsSync(rootDist)) {
   process.exit(1);
 }
 
+// Strip temporary chat screenshot attachments from production dist/
+const tempAistudioAssets = path.join(rootDist, 'assets', 'aistudio');
+if (fs.existsSync(tempAistudioAssets)) {
+  fs.rmSync(tempAistudioAssets, { recursive: true, force: true });
+}
+
 function escapeXml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -297,12 +303,6 @@ function buildDirectoryLinksHtml() {
 function buildHomepageRootHtml() {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <header>
-          <img
-            src="${SITE_ORIGIN}/pwa-512x512.png"
-            alt="Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil &amp; Direktori 96 Makam Wali"
-            width="512"
-            height="512"
-          />
           <h1>Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali</h1>
           <p><strong>Hati sedang rindu keteduhan atau hendak berziarah?</strong> Temukan urutan doa ziarah kubur lengkap (teks Arab, Latin, dan artinya), bacaan Yasin, Tahlil, dan Tawassul, serta peta rute perjalanan dan kisah karomah 96 makam Walisongo, Ulama Nusantara, dan Habaib di 18 provinsi Indonesia.</p>
         </header>
@@ -333,12 +333,6 @@ function buildHomepageRootHtml() {
 function buildDirektoriRootHtml() {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <header>
-          <img
-            src="${SITE_ORIGIN}/pwa-512x512.png"
-            alt="Logo Resmi Ziarah Nusantara — Direktori 96 Makam Walisongo, Ulama &amp; Habaib di 18 Provinsi"
-            width="512"
-            height="512"
-          />
           <h1>Direktori 96 Makam Walisongo, Ulama &amp; Habaib di 18 Provinsi — Ziarah Nusantara</h1>
           <p>Jejak spiritual 96 lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia lengkap dengan alamat, peta rute perjalanan, kisah karomah, dan bacaan doa tawassul.</p>
         </header>
@@ -349,12 +343,6 @@ function buildDirektoriRootHtml() {
 function buildPanduanRootHtml() {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <header>
-          <img
-            src="${SITE_ORIGIN}/pwa-512x512.png"
-            alt="Logo Resmi Ziarah Nusantara — Panduan Bacaan Doa Ziarah Kubur Lengkap"
-            width="512"
-            height="512"
-          />
           <h1>Panduan Ziarah Kubur Lengkap: Urutan Doa (Arab, Latin, Artinya), Tahlil, Yasin &amp; Adab</h1>
           <p>Tuntunan lengkap adab, tata cara, dan urutan bacaan doa ziarah kubur singkat maupun lengkap untuk berziarah ke makam orang tua, kerabat, serta makam para Waliyullah (Wali Songo dan Ulama Nusantara) sesuai tradisi Ahlussunnah wal Jamaah.</p>
         </header>
@@ -376,12 +364,6 @@ function buildPanduanRootHtml() {
 function buildSiteRootHtml(site) {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <article>
-          <img
-            src="${SITE_ORIGIN}/pwa-512x512.png"
-            alt="Logo Resmi Ziarah Nusantara — Makam ${escapeXml(site.title)} (${escapeXml(site.city)}, ${escapeXml(site.province)})"
-            width="512"
-            height="512"
-          />
           <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori Provinsi ${escapeXml(site.province)}</a> &rsaquo; Makam ${escapeXml(site.title)}</p>
           <h1>Makam ${escapeXml(site.title)} (${escapeXml(site.name)}) — ${escapeXml(site.city)}, ${escapeXml(site.province)}</h1>
           <p><strong>Kategori Tokoh:</strong> ${escapeXml(site.category)} ${site.era ? `| <strong>Periode Sejarah:</strong> ${escapeXml(site.era)}` : ''}</p>
@@ -537,6 +519,22 @@ function renderCustomHtml(baseHtml, entry) {
 const baseIndexHtmlPath = path.join(rootDist, 'index.html');
 if (fs.existsSync(baseIndexHtmlPath)) {
   let baseHtml = fs.readFileSync(baseIndexHtmlPath, 'utf8');
+
+  // Inline the primary blocking CSS file (<link rel="stylesheet" crossorigin href="/assets/index-*.css">)
+  // directly into <head> to eliminate the 190ms render-blocking stylesheet request on mobile 4G.
+  const cssLinkMatch = baseHtml.match(/<link\s+rel="stylesheet"[^>]*href="(\/assets\/index-[^"]+\.css)"[^>]*>/i);
+  if (cssLinkMatch) {
+    const cssHref = cssLinkMatch[1];
+    const cssFilePath = path.join(rootDist, cssHref.replace(/^\/+/, ''));
+    if (fs.existsSync(cssFilePath)) {
+      const cssContent = fs.readFileSync(cssFilePath, 'utf8').trim();
+      baseHtml = baseHtml.replace(
+        cssLinkMatch[0],
+        `<style id="zn-inlined-app-css">${cssContent}</style>`
+      );
+      console.log(`[postbuild] Inlined ${cssHref} (${(cssContent.length / 1024).toFixed(1)} KB) into <head> to eliminate render-blocking CSS.`);
+    }
+  }
 
   // Inject <link rel="modulepreload"> for the main entry script right before </head> to flatten critical request chain
   const entryScriptMatch = baseHtml.match(/<script\s+type="module"[^>]*src="(\/assets\/index-[^"]+\.js)"[^>]*>/i);

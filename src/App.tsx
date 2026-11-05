@@ -92,7 +92,9 @@ export default function App() {
   // Dynamically sync canonical URL, OpenGraph URL/image, and Schema.org @graph on route/domain change
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    window.scrollTo({ top: 0, behavior: 'auto' });
+    if (window.scrollY > 0) {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
     const baseOrigin = customDomainOrigin || window.location.origin;
     const cleanPath = location.pathname === '/' ? '/' : location.pathname;
     const fullUrl = `${baseOrigin}${cleanPath}`;
@@ -593,11 +595,12 @@ export default function App() {
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <img
-                src="/pwa-192x192.png"
+                src="/favicon.svg"
                 alt="Logo Resmi Ziarah Nusantara"
                 width={32}
                 height={32}
                 loading="lazy"
+                decoding="async"
                 className="w-8 h-8 rounded-lg shrink-0"
               />
               <div>
@@ -606,31 +609,31 @@ export default function App() {
                 </p>
                 <p className="text-stone-700">
                   Dikelola secara resmi oleh <strong>Tim Kurator Arsip Ziarah Nusantara</strong> •{' '}
-                  <a href="https://ziarahnusantara.my.id" className="underline hover:text-stone-950">
+                  <a href="https://ziarahnusantara.my.id" className="py-1 inline-block underline hover:text-stone-950">
                     Portal Resmi Ziarah Nusantara
                   </a>
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-4 font-semibold text-stone-800">
-              <Link to="/direktori" className="hover:text-emerald-950">
+              <Link to="/direktori" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
                 Direktori
               </Link>
-              <Link to="/peta" className="hover:text-emerald-950">
+              <Link to="/peta" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
                 Peta Rute
               </Link>
-              <Link to="/panduan" className="hover:text-emerald-950">
+              <Link to="/panduan" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
                 Panduan Adab
               </Link>
-              <Link to="/doa" className="hover:text-emerald-950">
+              <Link to="/doa" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
                 Doa &amp; Tahlil
               </Link>
-              <Link to="/kurasi" className="hover:text-emerald-950">
+              <Link to="/kurasi" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
                 Standar Kurasi
               </Link>
               <Link
                 to="/admin"
-                className="text-stone-500 hover:text-stone-900 font-normal transition-colors"
+                className="py-1.5 min-h-[32px] inline-flex items-center text-stone-500 hover:text-stone-900 font-normal transition-colors"
                 title="Portal Internal Dewan Kurator"
               >
                 Portal Kurator

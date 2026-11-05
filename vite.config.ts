@@ -3,16 +3,26 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    target: 'es2020',
-    cssMinify: true,
-    chunkSizeWarningLimit: 650,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
+export default defineConfig(({ command }) => {
+  if (command === 'build') {
+    process.env.NODE_ENV = 'production';
+  }
+  return {
+    define:
+      command === 'build'
+        ? {
+            'process.env.NODE_ENV': JSON.stringify('production'),
+          }
+        : undefined,
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      target: 'es2020',
+      cssMinify: true,
+      chunkSizeWarningLimit: 650,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
           if (id.includes('src/data/sites')) {
             return 'data-sites';
           }
@@ -30,9 +40,10 @@ export default defineConfig({
               return 'vendor-leaflet';
             }
             if (
-              id.includes('react-dom') ||
-              id.includes('react-router') ||
-              id.includes('scheduler')
+              id.includes('/node_modules/react/') ||
+              id.includes('/node_modules/react-dom/') ||
+              id.includes('/node_modules/react-router') ||
+              id.includes('/node_modules/scheduler/')
             ) {
               return 'vendor-react';
             }
@@ -202,4 +213,5 @@ export default defineConfig({
       },
     }),
   ],
+  };
 });

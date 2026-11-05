@@ -243,6 +243,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       if (e) {
         e.preventDefault();
       }
+      ensureFullSitesLoaded();
       if (typeof window !== 'undefined') {
         const current = window.location.pathname.startsWith('/direktori') ? '/direktori' : '/';
         setOriginPathBeforeModal(current);
@@ -250,7 +251,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       }
       setActiveSiteModal(site);
     },
-    []
+    [ensureFullSitesLoaded]
   );
 
   const handleCloseReaderModal = React.useCallback(() => {
@@ -505,13 +506,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <div className="flex items-center gap-4 shrink-0">
               <Link
                 to="/rubrik"
-                className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4"
+                className="py-1.5 min-h-[32px] inline-flex items-center text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4"
               >
                 Buka kisah pengobat hati
               </Link>
               <Link
                 to="/infaq"
-                className="text-xs font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
+                className="py-1.5 min-h-[32px] inline-flex items-center text-xs font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
               >
                 Titip doa
               </Link>
@@ -526,13 +527,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               <button
                 type="button"
                 onClick={(e) => handleOpenReaderModal(featuredHaulSite, e)}
-                className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 cursor-pointer"
+                className="py-1.5 min-h-[32px] inline-flex items-center text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 cursor-pointer"
               >
                 Baca wasiat beliau
               </button>
               <Link
                 to="/infaq"
-                className="text-xs font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
+                className="py-1.5 min-h-[32px] inline-flex items-center text-xs font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
               >
                 Dinding munajat
               </Link>
@@ -639,7 +640,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             </div>
 
             {/* Clean Text Chips for Emotional Intent (No Sparkles/Emojis) */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2.5 lg:pb-2">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2.5 lg:pb-2">
               {EMOTIONAL_INTENTS.map((intent) => {
                 const isSelected = emotionalFilter === intent.id;
                 return (
@@ -651,7 +652,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       ensureFullSitesLoaded();
                       setEmotionalFilter(intent.id);
                     }}
-                    className={`px-2.5 py-1 rounded-lg text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                    className={`px-3 py-1.5 min-h-[32px] rounded-lg text-xs whitespace-nowrap transition-colors cursor-pointer ${
                       isSelected
                         ? 'bg-emerald-900 text-white font-medium'
                         : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
@@ -712,7 +713,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               .trim();
 
             return (
-              <article key={site.id} className="group content-auto">
+              <article key={site.id} className={index >= 3 ? 'group content-auto' : 'group'}>
                 <a
                   href={siteUrl}
                   onClick={(e) => handleOpenReaderModal(site, e)}
@@ -727,8 +728,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 360px"
                       onError={(e) => handleOptimizedImageError(e, site.imageUrl)}
                       alt={`Makam ${site.title} (${site.name}) — ${site.location.city}, ${site.location.province}`}
-                      width={480}
-                      height={360}
+                      width={400}
+                      height={300}
                       loading={isLcpCandidate ? 'eager' : 'lazy'}
                       fetchPriority={isLcpCandidate ? 'high' : 'auto'}
                       decoding={isLcpCandidate ? 'sync' : 'async'}
@@ -740,7 +741,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                     </span>
                   </div>
 
-                  {/* 2. Konten di Bawah Foto: Kota/Provinsi, Judul Serif, Cuplikan 2 Baris, Footer Bersih */}
+                  {/* 2. Konten di Bawah Foto: Kota/Provinsi, Judul Serif, Cuplikan 2 Baris */}
                   <div className="space-y-1 px-0.5">
                     <div className="flex items-center justify-between gap-2 text-xs text-stone-500 font-medium">
                       <span className="truncate">
@@ -756,25 +757,26 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                     <p className="text-sm text-stone-600 line-clamp-2 leading-relaxed">
                       {snippetText}
                     </p>
-
-                    <div className="pt-3 mt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onSelectSite(site);
-                        }}
-                        className="hover:text-stone-900 underline underline-offset-4 cursor-pointer"
-                      >
-                        {siteCopy.cardSecondaryMapCta}
-                      </button>
-                      <span className="font-medium text-emerald-800 group-hover:translate-x-0.5 transition-transform">
-                        {siteCopy.cardPrimaryCta} →
-                      </span>
-                    </div>
                   </div>
                 </a>
+
+                {/* 3. Footer Aksi Terpisah (Mencegah <button> di dalam <a> dan memenuhi standar ukuran sentuh >= 36px) */}
+                <div className="pt-2.5 mt-3 border-t border-stone-200/70 flex items-center justify-between gap-3 px-0.5 text-xs text-stone-600">
+                  <button
+                    type="button"
+                    onClick={() => onSelectSite(site)}
+                    className="py-2 pr-3 min-h-[36px] inline-flex items-center hover:text-stone-950 underline underline-offset-4 cursor-pointer"
+                  >
+                    {siteCopy.cardSecondaryMapCta}
+                  </button>
+                  <a
+                    href={siteUrl}
+                    onClick={(e) => handleOpenReaderModal(site, e)}
+                    className="py-2 pl-3 min-h-[36px] inline-flex items-center font-medium text-emerald-800 hover:text-emerald-950 group-hover:translate-x-0.5 transition-transform"
+                  >
+                    {siteCopy.cardPrimaryCta} →
+                  </a>
+                </div>
               </article>
             );
           })}
@@ -844,10 +846,12 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-2xs space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-4 border-b border-stone-100">
             <img
-              src="/pwa-512x512.png"
+              src="/favicon.svg"
               alt="Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil & Direktori 96 Makam Wali"
-              width={64}
-              height={64}
+              width={56}
+              height={56}
+              loading="lazy"
+              decoding="async"
               className="w-14 h-14 rounded-2xl border border-stone-200/80 shrink-0 object-cover"
             />
             <div className="space-y-1">
@@ -900,17 +904,17 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               <p>
                 Direktori ini mencakup sembilan makam <strong>Wali Songo</strong> di Jawa Timur, Jawa Tengah, dan Jawa Barat (Sunan Gresik, Sunan Ampel, Sunan Bonang, Sunan Drajat, Sunan Giri, Sunan Kalijaga, Sunan Kudus, Sunan Muria, dan Sunan Gunung Jati) hingga makam ulama besar, raja kesultanan Islam, dan habaib di Aceh, Sumatera, Banten, DKI Jakarta, Yogyakarta, Kalimantan, Sulawesi, Bali, Nusa Tenggara Barat, dan Maluku Utara.
               </p>
-              <div className="pt-2 flex flex-wrap gap-2">
+              <div className="pt-2 flex flex-wrap items-center gap-3">
                 <Link
                   to="/panduan"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline"
+                  className="py-1.5 min-h-[32px] inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline"
                 >
                   <span>Baca Teks Lengkap Doa Ziarah Kubur</span>
                 </Link>
-                <span className="text-stone-300">•</span>
+                <span className="text-stone-300" aria-hidden="true">•</span>
                 <Link
                   to="/doa"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline"
+                  className="py-1.5 min-h-[32px] inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline"
                 >
                   <span>Buka Susunan Tahlil &amp; Tawassul</span>
                 </Link>
