@@ -12,7 +12,8 @@ import {
   MessageSquareHeart,
   Database,
   Lock,
-  AlertCircle
+  AlertCircle,
+  Heart
 } from 'lucide-react';
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { collection, doc, onSnapshot, query, limit } from 'firebase/firestore';
@@ -400,64 +401,74 @@ export const InfaqDigital: React.FC = () => {
           </div>
 
           {/* 2. Pilih Destinasi Makam */}
-          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-3.5 flex items-center">
-              <span className="w-6 h-6 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center mr-2.5">2</span>
+          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-stone-200/70 shadow-2xs">
+            <h2 className="text-sm sm:text-base font-serif text-stone-900 mb-3 flex items-center">
+              <span className="w-6 h-6 rounded-lg bg-stone-100 text-stone-800 text-xs font-semibold flex items-center justify-center mr-2.5">2</span>
               Tujuan Alokasi Infaq Jariyah
             </h2>
             <select
               value={selectedSiteId}
               onChange={(e) => setSelectedSiteId(e.target.value)}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 cursor-pointer shadow-inner"
+              className="w-full px-4 py-3 bg-[#FAF8F5] border border-stone-200 rounded-xl text-stone-800 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-700 cursor-pointer"
             >
-              <option value="web-riset">📜 Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara</option>
-              <option value="all">🌐 Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)</option>
+              <option value="web-riset">Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara</option>
+              <option value="all">Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)</option>
             </select>
-            <p className="text-[11px] text-slate-400 mt-2">
+            <p className="text-[11px] text-stone-500 mt-2">
               Infaq akan disalurkan secara amanah sesuai akad pilihan program untuk pelestarian khazanah sejarah &amp; penyebaran riwayat para Auliya.
             </p>
           </div>
 
           {/* 3. Pilih Nominal */}
-          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-3.5 flex items-center">
-              <span className="w-6 h-6 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center mr-2.5">3</span>
+          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-stone-200/70 shadow-2xs">
+            <h2 className="text-sm sm:text-base font-serif text-stone-900 mb-3.5 flex items-center">
+              <span className="w-6 h-6 rounded-lg bg-stone-100 text-stone-800 text-xs font-semibold flex items-center justify-center mr-2.5">3</span>
               Pilih Nominal Infaq
             </h2>
-            <div className="grid grid-cols-3 gap-2.5 mb-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-3">
               {quickNominals.map((val) => {
                 const isSelected = !customNominal && nominal === val;
+                const subLabel =
+                  val === 10000
+                    ? 'Infaq Pembuka'
+                    : val === 25000
+                      ? 'Penjaga Sanad'
+                      : val === 50000
+                        ? 'Jariyah Utama'
+                        : 'Wakaf Khazanah';
                 return (
-                  <motion.button
+                  <button
                     key={val}
                     type="button"
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.94 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 25 }}
                     onClick={() => {
                       setNominal(val);
                       setCustomNominal('');
                     }}
-                    className={`py-3 px-2 rounded-2xl text-center font-bold text-xs sm:text-sm transition-all border cursor-pointer ${
+                    className={`py-3 px-3 rounded-xl text-left transition-colors border cursor-pointer ${
                       isSelected 
-                        ? 'bg-emerald-800 text-white border-emerald-800 shadow-xs shadow-emerald-950/10' 
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50/50 hover:text-emerald-800'
+                        ? 'bg-emerald-900 text-white border-emerald-900 shadow-2xs' 
+                        : 'bg-[#FAF8F5] text-stone-800 border-stone-200/80 hover:border-stone-400'
                     }`}
                   >
-                    Rp {val.toLocaleString('id-ID')}
-                  </motion.button>
+                    <div className="font-semibold text-xs sm:text-sm tabular-nums">
+                      Rp {val.toLocaleString('id-ID')}
+                    </div>
+                    <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-emerald-100' : 'text-stone-500'}`}>
+                      {subLabel}
+                    </div>
+                  </button>
                 );
               })}
             </div>
 
             <div className="relative mt-3">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-bold text-slate-400">Rp</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-stone-400">Rp</span>
               <input
                 type="number"
                 placeholder="Nominal lainnya (minimal Rp 5.000)"
                 value={customNominal}
                 onChange={(e) => setCustomNominal(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-inner"
+                className="w-full pl-11 pr-4 py-3 bg-[#FAF8F5] border border-stone-200 rounded-xl text-stone-900 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-700"
               />
             </div>
           </div>
@@ -645,18 +656,20 @@ export const InfaqDigital: React.FC = () => {
       </div>
 
       {/* Dinding Munajat & Infaq Peziarah Terkini (Real-time Firestore + Fallback Santun) */}
-      <div className="mt-12">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200">
-              <MessageSquareHeart className="w-5 h-5" />
+      <div className="mt-12 pt-8 border-t border-stone-200/80">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-6">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
+              Dinding Munajat Peziarah
             </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-serif font-black text-slate-900">Munajat &amp; Infaq Peziarah Terkini</h2>
-              <p className="text-xs text-slate-500">Mari aminkan doa dan hajat saudara seiman kita agar malaikat turut mengaminkan doa yang sama untuk kita.</p>
-            </div>
+            <h2 className="text-xl sm:text-2xl font-serif text-stone-900 mt-0.5">
+              Munajat &amp; Infaq Peziarah Terkini
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-600 mt-1">
+              Mari aminkan doa dan hajat saudara seiman kita agar malaikat turut mengaminkan doa yang sama untuk kita.
+            </p>
           </div>
-          <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+          <span className="text-xs text-stone-500 font-medium">
             {displayedMunajatList.length} Munajat Tercatat
           </span>
         </div>
@@ -666,52 +679,45 @@ export const InfaqDigital: React.FC = () => {
             const totalAamiin = (item.baseAamiinCount || 15) + (aamiinMap[item.id] || 0);
             const hasClickedAamiin = Boolean(aamiinMap[item.id]);
             return (
-              <motion.div
+              <div
                 key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex flex-col justify-between"
+                className="bg-white rounded-2xl p-5 border border-stone-200/70 shadow-2xs flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-7 h-7 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs flex items-center justify-center">
-                        {item.donorName.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">{item.donorName}</p>
-                        <p className="text-[10px] text-slate-400">{item.dateLabel}</p>
-                      </div>
+                    <div>
+                      <p className="text-sm font-medium text-stone-900">{item.donorName}</p>
+                      <p className="text-[11px] text-stone-400">{item.dateLabel}</p>
                     </div>
-                    <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60">
+                    <span className="text-xs font-semibold text-emerald-800 tabular-nums">
                       Rp {item.amount.toLocaleString('id-ID')}
                     </span>
                   </div>
-                  <p className="text-[11px] font-semibold text-emerald-700 mb-1.5 truncate">
-                    📍 {item.siteName}
+                  <p className="text-[11px] text-stone-500 mb-2 truncate">
+                    {item.siteName}
                   </p>
                   {item.doaHajat && (
-                    <p className="text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100 leading-relaxed">
-                      "{item.doaHajat}"
+                    <p className="text-sm text-stone-700 font-serif italic leading-relaxed">
+                      &ldquo;{item.doaHajat}&rdquo;
                     </p>
                   )}
                 </div>
-                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
                   <span className="truncate max-w-[155px]">{item.programTitle}</span>
                   <button
                     type="button"
                     onClick={() => handleAamiinClick(item.id)}
-                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer border ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
                       hasClickedAamiin
-                        ? 'bg-emerald-800 text-white border-emerald-800 shadow-2xs'
-                        : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+                        ? 'bg-emerald-900 text-white border-emerald-900'
+                        : 'bg-[#FAF8F5] hover:bg-stone-100 text-stone-700 border-stone-200/80'
                     }`}
                   >
-                    <span>Aamiin 🤲</span>
-                    <span className="text-[10px] opacity-90">({totalAamiin})</span>
+                    <Heart className={`w-3.5 h-3.5 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
+                    <span>Aamiin · {totalAamiin}</span>
                   </button>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
         </div>

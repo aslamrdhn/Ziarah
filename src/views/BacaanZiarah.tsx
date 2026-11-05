@@ -6,7 +6,6 @@ import {
   Smartphone,
   Vibrate,
   BookOpen,
-  Sparkles,
   Check,
   Eye,
 } from 'lucide-react';
@@ -342,51 +341,48 @@ export const BacaanZiarah: React.FC = () => {
     >
       <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
         {/* =====================================================================
-            1. EDITORIAL HEADER (85-10-5 Formula + Field Usability Status)
+            1. EDITORIAL HEADER (Bersih Tanpa Kapsul/Bintang)
             ===================================================================== */}
         <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-          <div className="space-y-2.5 max-w-2xl">
-            <div
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium tracking-wide ${
-                outdoorMode
-                  ? 'bg-black text-white'
-                  : 'bg-emerald-950/5 text-emerald-800'
+          <div className="space-y-2 max-w-2xl">
+            <span
+              className={`text-[11px] font-semibold uppercase tracking-widest block ${
+                outdoorMode ? 'text-black' : 'text-emerald-800'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Panduan Ibadah Lapangan · Ahlussunnah wal Jama&apos;ah</span>
-            </div>
+              Panduan Ibadah Lapangan · Ahlussunnah wal Jama&apos;ah
+            </span>
             <h1
-              className={`font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight leading-[1.15] ${
+              className={`font-serif text-3xl sm:text-5xl font-normal tracking-tight leading-[1.15] ${
                 outdoorMode ? 'text-black font-bold' : 'text-stone-900'
               }`}
             >
               Tuntunan Yasin, Tahlil &amp; Tasbih Digital.
             </h1>
             <p
-              className={`text-sm sm:text-base leading-relaxed tracking-tight ${
-                outdoorMode ? 'text-stone-900 font-medium' : 'text-stone-500'
+              className={`text-sm sm:text-base leading-relaxed ${
+                outdoorMode ? 'text-stone-900 font-medium' : 'text-stone-600'
               }`}
             >
-              Dirancang khusus untuk keterbacaan di area maqbarah: layar tetap menyala otomatis, mode kontras matahari
-              (WCAG AAA), dan tasbih digital dengan umpan balik getar haptik.
+              Dirancang khusus untuk keterbacaan di area maqbarah: layar tetap menyala otomatis, mode kontras matahari,
+              dan tasbih digital dengan umpan balik getar haptik.
             </p>
           </div>
 
-          {/* Field Status Pills (Wake Lock & Outdoor Contrast Toggle) */}
+          {/* Field Status Controls (Wake Lock & Outdoor Contrast Toggle) */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setOutdoorMode(!outdoorMode)}
               aria-pressed={outdoorMode}
-              className={`px-4 py-2.5 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition cursor-pointer border ${
+              className={`px-3.5 py-2 rounded-lg text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition cursor-pointer border ${
                 outdoorMode
-                  ? 'bg-black text-white border-black shadow-sm font-semibold'
+                  ? 'bg-black text-white border-black font-semibold'
                   : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
               }`}
             >
-              <Sun className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
-              <span>{outdoorMode ? 'Mode Kontras Matahari: Aktif' : 'Mode Luar Ruangan (Matahari)'}</span>
+              <Sun className="w-3.5 h-3.5 text-amber-600" strokeWidth={1.75} aria-hidden="true" />
+              <span>{outdoorMode ? 'Mode Kontras Matahari: Aktif' : 'Mode Luar Ruangan'}</span>
             </button>
 
             {wakeLockSupported && (
@@ -395,7 +391,7 @@ export const BacaanZiarah: React.FC = () => {
                 onClick={() => {
                   if (!wakeLockActive) requestWakeLock();
                 }}
-                className={`px-3.5 py-2.5 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 border ${
+                className={`px-3.5 py-2 rounded-lg text-xs font-medium tracking-tight inline-flex items-center gap-1.5 border ${
                   wakeLockActive
                     ? outdoorMode
                       ? 'bg-stone-100 text-black border-black font-semibold'
@@ -404,7 +400,7 @@ export const BacaanZiarah: React.FC = () => {
                 }`}
                 title="Mencegah layar ponsel mati otomatis saat membaca Yasin dan Tahlil"
               >
-                <Smartphone className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+                <Smartphone className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} aria-hidden="true" />
                 <span>{wakeLockActive ? 'Layar Tetap Menyala' : 'Aktifkan Layar Menyala'}</span>
               </button>
             )}
@@ -412,17 +408,15 @@ export const BacaanZiarah: React.FC = () => {
         </header>
 
         {/* =====================================================================
-            2. ASYMMETRIC BENTO GRID:
-               - 1 Kotak Besar (Left, 5 cols): Tasbih Digital Haptic + Persistence
-               - 2 Kotak Sedang (Right, 7 cols): Tahapan Doa & Kontrol Tipografi
+            2. READER TOOLBAR & TASBIH DIGITAL
             ===================================================================== */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-          {/* BENTO BOX 1 (KOTAK BESAR): TASBIH DIGITAL INTERAKTIF + HAPTIC */}
+          {/* TASBIH DIGITAL INTERAKTIF + HAPTIC */}
           <div
-            className={`lg:col-span-5 rounded-3xl p-5 sm:p-6 flex flex-col justify-between transition ${
+            className={`lg:col-span-5 rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition ${
               outdoorMode
                 ? 'bg-white border-2 border-black shadow-none'
-                : 'bg-white border border-stone-200/70 shadow-xs'
+                : 'bg-white border border-stone-200/70 shadow-2xs'
             }`}
           >
             <div className="space-y-4">
@@ -440,9 +434,9 @@ export const BacaanZiarah: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Target 33 / 100 Pill Selector */}
+                {/* Target 33 / 100 Segmented Control */}
                 <div
-                  className={`flex items-center p-1 rounded-full border ${
+                  className={`flex items-center p-1 rounded-lg border ${
                     outdoorMode ? 'bg-stone-100 border-black' : 'bg-stone-100 border-stone-200/70'
                   }`}
                 >
@@ -454,9 +448,9 @@ export const BacaanZiarah: React.FC = () => {
                         setTasbihMax(target);
                         setTasbihCount(0);
                       }}
-                      className={`px-3 py-1 text-xs rounded-full font-semibold transition cursor-pointer ${
+                      className={`px-2.5 py-1 text-xs rounded-md font-semibold transition cursor-pointer ${
                         tasbihMax === target
-                          ? 'bg-stone-900 text-white shadow-2xs'
+                          ? 'bg-stone-900 text-white'
                           : 'text-stone-600 hover:text-stone-900'
                       }`}
                     >
@@ -467,9 +461,9 @@ export const BacaanZiarah: React.FC = () => {
               </div>
 
               {/* Smooth Progress Bar */}
-              <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden">
                 <motion.div
-                  className="bg-emerald-700 h-full rounded-full"
+                  className="bg-emerald-800 h-full rounded-full"
                   initial={false}
                   animate={{ width: `${Math.min(100, Math.round((tasbihCount / tasbihMax) * 100))}%` }}
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
@@ -485,7 +479,7 @@ export const BacaanZiarah: React.FC = () => {
                 transition={{ type: 'spring', stiffness: 450, damping: 22 }}
                 onClick={handleTasbihClick}
                 aria-label={`Tambah hitungan tasbih, saat ini ${tasbihCount} dari ${tasbihMax}`}
-                className={`flex-1 min-h-[148px] rounded-2xl px-4 py-6 flex flex-col items-center justify-center cursor-pointer select-none transition border ${
+                className={`flex-1 min-h-[144px] rounded-xl px-4 py-6 flex flex-col items-center justify-center cursor-pointer select-none transition border ${
                   outdoorMode
                     ? 'bg-stone-50 border-2 border-black hover:bg-stone-100'
                     : 'bg-[#FAF8F5] hover:bg-emerald-950/5 border-stone-200/80'
@@ -511,7 +505,7 @@ export const BacaanZiarah: React.FC = () => {
                 <span
                   className={`text-xs font-medium mt-2 ${
                     tasbihCount === tasbihMax
-                      ? 'text-emerald-700 font-semibold'
+                      ? 'text-emerald-800 font-semibold'
                       : outdoorMode
                         ? 'text-stone-900'
                         : 'text-stone-500'
@@ -528,13 +522,13 @@ export const BacaanZiarah: React.FC = () => {
                 onClick={handleResetTasbih}
                 title="Reset Hitungan Tasbih"
                 aria-label="Reset Hitungan Tasbih"
-                className={`px-4 rounded-2xl border flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
+                className={`px-4 rounded-xl border flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
                   outdoorMode
                     ? 'bg-white border-2 border-black text-black hover:bg-stone-100'
                     : 'bg-white border-stone-200/80 text-stone-500 hover:text-stone-900 hover:border-stone-400'
                 }`}
               >
-                <RotateCcw className="w-4 h-4" aria-hidden="true" />
+                <RotateCcw className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
                 <span className="text-[10px] font-medium">Reset</span>
               </button>
             </div>
@@ -549,26 +543,26 @@ export const BacaanZiarah: React.FC = () => {
                 type="button"
                 onClick={() => setHapticEnabled(!hapticEnabled)}
                 aria-pressed={hapticEnabled}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition cursor-pointer border ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition cursor-pointer border ${
                   hapticEnabled
                     ? 'bg-emerald-950/5 text-emerald-800 border-emerald-200/80'
                     : 'bg-stone-100 text-stone-500 border-stone-200/70'
                 }`}
               >
-                <Vibrate className="w-3.5 h-3.5" aria-hidden="true" />
+                <Vibrate className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
                 <span>Getar Haptik: {hapticEnabled ? 'Aktif' : 'Nonaktif'}</span>
               </button>
             </div>
           </div>
 
-          {/* RIGHT COLUMN (2 KOTAK SEDANG DI SAMPINGNYA) */}
+          {/* RIGHT COLUMN: READER TOOLBAR (TAHAPAN BACAAN & KONTROL TIPOGRAFI) */}
           <div className="lg:col-span-7 flex flex-col justify-between gap-5">
-            {/* BENTO BOX 2 (KOTAK SEDANG ATAS): TAHAPAN BACAAN YASIN, TAHLIL & DOA */}
+            {/* TAHAPAN BACAAN YASIN, TAHLIL & DOA */}
             <div
-              className={`rounded-3xl p-5 sm:p-6 flex-1 flex flex-col justify-between transition ${
+              className={`rounded-2xl p-5 sm:p-6 flex-1 flex flex-col justify-between transition ${
                 outdoorMode
                   ? 'bg-white border-2 border-black'
-                  : 'bg-white border border-stone-200/70 shadow-xs'
+                  : 'bg-white border border-stone-200/70 shadow-2xs'
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
@@ -586,27 +580,27 @@ export const BacaanZiarah: React.FC = () => {
                 </div>
                 <Link
                   to="/doa"
-                  className="text-xs font-medium text-emerald-700 hover:text-emerald-800 hover:underline shrink-0"
+                  className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 shrink-0"
                 >
                   Buka Kumpulan Doa Khusus →
                 </Link>
               </div>
 
-              {/* Horizontal / Grid Pill Selector for Reading Steps */}
+              {/* Clean Reader Step Buttons (rounded-lg) */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setActiveStep('SEMUA')}
-                  className={`py-2.5 px-3.5 rounded-2xl text-xs font-medium tracking-tight text-left flex items-center justify-between transition cursor-pointer border ${
+                  className={`py-2.5 px-3.5 rounded-lg text-xs font-medium tracking-tight text-left flex items-center justify-between transition cursor-pointer border ${
                     activeStep === 'SEMUA'
-                      ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
+                      ? 'bg-stone-900 text-white border-stone-900'
                       : outdoorMode
                         ? 'bg-white text-black border-black hover:bg-stone-100'
                         : 'bg-[#FAF8F5] text-stone-700 border-stone-200/70 hover:border-stone-400'
                   }`}
                 >
                   <span>Semua Sekaligus</span>
-                  <Eye className="w-3.5 h-3.5 opacity-80 shrink-0" aria-hidden="true" />
+                  <Eye className="w-3.5 h-3.5 opacity-80 shrink-0" strokeWidth={1.75} aria-hidden="true" />
                 </button>
 
                 {PRAYER_SECTIONS.map((sec) => {
@@ -616,28 +610,28 @@ export const BacaanZiarah: React.FC = () => {
                       key={sec.id}
                       type="button"
                       onClick={() => setActiveStep(sec.id)}
-                      className={`py-2.5 px-3.5 rounded-2xl text-xs font-medium tracking-tight text-left flex items-center justify-between transition cursor-pointer border ${
+                      className={`py-2.5 px-3.5 rounded-lg text-xs font-medium tracking-tight text-left flex items-center justify-between transition cursor-pointer border ${
                         isSelected
-                          ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
+                          ? 'bg-stone-900 text-white border-stone-900'
                           : outdoorMode
                             ? 'bg-white text-black border-black hover:bg-stone-100'
                             : 'bg-[#FAF8F5] text-stone-700 border-stone-200/70 hover:border-stone-400'
                       }`}
                     >
                       <span>{sec.stepLabel}</span>
-                      <BookOpen className="w-3.5 h-3.5 opacity-60 shrink-0" aria-hidden="true" />
+                      <BookOpen className="w-3.5 h-3.5 opacity-60 shrink-0" strokeWidth={1.75} aria-hidden="true" />
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* BENTO BOX 3 (KOTAK SEDANG BAWAH): KONTROL TIPOGRAFI ARAB & TERJEMAHAN */}
+            {/* KONTROL TIPOGRAFI ARAB & TERJEMAHAN */}
             <div
-              className={`rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition ${
+              className={`rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition ${
                 outdoorMode
                   ? 'bg-white border-2 border-black'
-                  : 'bg-white border border-stone-200/70 shadow-xs'
+                  : 'bg-white border border-stone-200/70 shadow-2xs'
               }`}
             >
               <div className="space-y-1">
@@ -653,10 +647,10 @@ export const BacaanZiarah: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2.5">
-                {/* Font Size Pill Selector */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Font Size Segmented Control */}
                 <div
-                  className={`flex items-center p-1 rounded-full border ${
+                  className={`flex items-center p-1 rounded-lg border ${
                     outdoorMode ? 'bg-stone-100 border-black' : 'bg-[#FAF8F5] border-stone-200/80'
                   }`}
                 >
@@ -665,9 +659,9 @@ export const BacaanZiarah: React.FC = () => {
                       key={size}
                       type="button"
                       onClick={() => setFontSize(size)}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-full transition cursor-pointer ${
+                      className={`px-3 py-1 text-xs font-semibold rounded-md transition cursor-pointer ${
                         fontSize === size
-                          ? 'bg-stone-900 text-white shadow-2xs'
+                          ? 'bg-stone-900 text-white'
                           : 'text-stone-600 hover:text-stone-900'
                       }`}
                     >
@@ -676,32 +670,32 @@ export const BacaanZiarah: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Latin Toggle Pill */}
+                {/* Latin Toggle Button */}
                 <button
                   type="button"
                   onClick={() => setShowLatin(!showLatin)}
                   aria-pressed={showLatin}
-                  className={`px-3.5 py-2 rounded-full text-xs font-medium transition cursor-pointer border ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer border ${
                     showLatin
                       ? 'bg-stone-900 text-white border-stone-900'
                       : 'bg-white text-stone-600 border-stone-200/80 hover:border-stone-400'
                   }`}
                 >
-                  {showLatin ? '✓ Latin' : 'Latin'}
+                  {showLatin ? 'Latin: Aktif' : 'Latin'}
                 </button>
 
-                {/* Translation Toggle Pill */}
+                {/* Translation Toggle Button */}
                 <button
                   type="button"
                   onClick={() => setShowTerjemahan(!showTerjemahan)}
                   aria-pressed={showTerjemahan}
-                  className={`px-3.5 py-2 rounded-full text-xs font-medium transition cursor-pointer border ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer border ${
                     showTerjemahan
                       ? 'bg-stone-900 text-white border-stone-900'
                       : 'bg-white text-stone-600 border-stone-200/80 hover:border-stone-400'
                   }`}
                 >
-                  {showTerjemahan ? '✓ Terjemahan' : 'Terjemahan'}
+                  {showTerjemahan ? 'Terjemahan: Aktif' : 'Terjemahan'}
                 </button>
               </div>
             </div>
@@ -709,52 +703,42 @@ export const BacaanZiarah: React.FC = () => {
         </div>
 
         {/* =====================================================================
-            3. NASKH MODERN READING CANVAS (Generous Line Height leading-[2.8])
+            3. MINIMALIST INLINE TAWASSUL INPUT ABOVE READING CANVAS
             ===================================================================== */}
         <div
-          className={`rounded-3xl p-5 sm:p-7 transition ${
-            outdoorMode
-              ? 'bg-white border-2 border-black shadow-none'
-              : 'bg-gradient-to-br from-emerald-950/[0.03] via-white to-amber-900/[0.04] border border-stone-200/80 shadow-xs'
+          className={`py-4 px-1 border-b ${
+            outdoorMode ? 'border-black' : 'border-stone-200/80'
           }`}
         >
-          <div className="max-w-3xl space-y-3">
-            <span
-              className={`inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider ${
-                outdoorMode ? 'text-black' : 'text-emerald-800'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Hadirkan Hati &amp; Kerinduan Sebelum Membaca</span>
-            </span>
-            <h2
-              className={`font-serif text-lg sm:text-xl font-semibold tracking-tight ${
+          <div className="max-w-3xl space-y-2">
+            <label
+              htmlFor="tawassul-intent-input"
+              className={`block font-serif text-base sm:text-lg ${
                 outdoorMode ? 'text-black font-bold' : 'text-stone-900'
               }`}
             >
-              Untuk Siapa Al-Fatihah, Yasin &amp; Doa Anda Hari Ini?
-            </h2>
+              Untuk siapa Al-Fatihah, Yasin &amp; doa Anda hari ini?
+            </label>
             <input
+              id="tawassul-intent-input"
               type="text"
               value={tawassulIntent}
               onChange={(e) => handleTawassulIntentChange(e.target.value)}
               placeholder="Ketik nama almarhum/almarhumah orang tua atau hajat terdalam Anda..."
-              className={`w-full px-4 py-3 rounded-2xl text-xs sm:text-sm transition focus:outline-none ${
+              className={`w-full border-b bg-transparent py-2 text-sm focus:outline-none transition-colors ${
                 outdoorMode
-                  ? 'bg-stone-50 border-2 border-black text-black placeholder-stone-600 font-medium'
-                  : 'bg-white border border-stone-200/90 text-stone-900 placeholder-stone-400 focus:border-emerald-700 shadow-2xs'
+                  ? 'border-black text-black placeholder-stone-600 font-medium'
+                  : 'border-stone-200 focus:border-emerald-700 text-stone-900 placeholder-stone-400'
               }`}
             />
             {tawassulIntent.trim() && (
-              <div
-                className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed italic border ${
-                  outdoorMode
-                    ? 'bg-stone-100 border-black text-black font-semibold'
-                    : 'bg-emerald-950/[0.03] border-emerald-800/20 text-stone-700'
+              <p
+                className={`pt-2 font-serif italic text-sm sm:text-base leading-relaxed ${
+                  outdoorMode ? 'text-black font-semibold' : 'text-emerald-900'
                 }`}
               >
-                Khususon ilaa ruuhi / hajat: &laquo; <strong className="font-semibold not-italic">{tawassulIntent}</strong> &raquo; &mdash; Semoga Allah lapangkan kuburnya dengan cahaya kasih-Nya, terima setiap tetes rindu dalam doa ini, dan bukakan jalan keluar bagi setiap beban yang menyesakkan dada. Al-Fatihah...
-              </div>
+                Khususon ilaa ruuhi / hajat: &ldquo;{tawassulIntent}&rdquo; — Semoga Allah lapangkan kuburnya dengan cahaya kasih-Nya, terima setiap tetes rindu dalam doa ini, dan bukakan jalan keluar bagi setiap beban yang menyesakkan dada. Al-Fatihah...
+              </p>
             )}
           </div>
         </div>
@@ -765,10 +749,10 @@ export const BacaanZiarah: React.FC = () => {
             return (
               <article
                 key={section.id}
-                className={`rounded-3xl p-6 sm:p-10 transition ${
+                className={`rounded-2xl p-6 sm:p-10 transition ${
                   outdoorMode
                     ? 'bg-white border-2 border-black shadow-none'
-                    : 'bg-white border border-stone-200/70 shadow-xs'
+                    : 'bg-white border border-stone-200/70 shadow-2xs'
                 }`}
               >
                 {/* Section Header */}
@@ -779,15 +763,15 @@ export const BacaanZiarah: React.FC = () => {
                 >
                   <div className="space-y-1">
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider ${
-                        outdoorMode ? 'bg-black text-white' : 'bg-emerald-950/5 text-emerald-800'
+                      className={`text-[11px] font-semibold uppercase tracking-widest block ${
+                        outdoorMode ? 'text-black' : 'text-emerald-800'
                       }`}
                     >
                       {section.stepLabel}
                     </span>
                     <h2
-                      className={`font-serif text-xl sm:text-2xl font-semibold tracking-tight ${
-                        outdoorMode ? 'text-black' : 'text-stone-900'
+                      className={`font-serif text-xl sm:text-2xl font-normal tracking-tight ${
+                        outdoorMode ? 'text-black font-bold' : 'text-stone-900'
                       }`}
                     >
                       {section.title}
@@ -805,7 +789,7 @@ export const BacaanZiarah: React.FC = () => {
                       setCopiedId(section.id);
                       setTimeout(() => setCopiedId(null), 2000);
                     }}
-                    className={`self-start sm:self-auto px-3.5 py-2 rounded-full text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer border ${
+                    className={`self-start sm:self-auto px-3.5 py-2 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer border ${
                       outdoorMode
                         ? 'bg-white text-black border-black hover:bg-stone-100'
                         : 'bg-[#FAF8F5] text-stone-700 border-stone-200/80 hover:border-stone-400'
@@ -813,12 +797,12 @@ export const BacaanZiarah: React.FC = () => {
                   >
                     {isCopied ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+                        <Check className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} aria-hidden="true" />
                         <span className="text-emerald-700 font-semibold">Tersalin</span>
                       </>
                     ) : (
                       <>
-                        <Copy className="w-3.5 h-3.5 text-stone-400" aria-hidden="true" />
+                        <Copy className="w-3.5 h-3.5 text-stone-400" strokeWidth={1.75} aria-hidden="true" />
                         <span>Salin Bacaan</span>
                       </>
                     )}
@@ -872,77 +856,28 @@ export const BacaanZiarah: React.FC = () => {
           })}
         </div>
 
-        <div
-          className={`rounded-3xl p-6 sm:p-8 transition ${
-            outdoorMode
-              ? 'bg-white border-2 border-black shadow-none'
-              : 'bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900 text-white border border-emerald-800/40 shadow-md'
-          }`}
-        >
-          <div className="max-w-3xl space-y-3.5">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide ${
-                outdoorMode
-                  ? 'bg-black text-white'
-                  : 'bg-amber-400/15 text-amber-200 border border-amber-300/30'
-              }`}
+        {/* =====================================================================
+            4. CALM EDITORIAL CLOSING FOOTER (Tahap Desain 3)
+            ===================================================================== */}
+        <footer className="py-8 border-t border-stone-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <p className="font-serif italic text-base sm:text-lg text-stone-800 max-w-xl leading-relaxed">
+            Setiap huruf doa yang baru saja Anda lantunkan adalah bukti cinta yang tak terputus oleh kematian.
+          </p>
+          <div className="flex flex-wrap items-center gap-4 shrink-0">
+            <Link
+              to="/infaq"
+              className="px-5 py-2.5 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white text-xs sm:text-sm font-medium transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Jangan Biarkan Rindu &amp; Munajat Ini Berhenti di Layar Anda</span>
-            </span>
-            <h2
-              className={`font-serif text-xl sm:text-2xl font-bold tracking-tight leading-snug ${
-                outdoorMode ? 'text-black' : 'text-white'
-              }`}
+              Titipkan Doa di Dinding Munajat
+            </Link>
+            <Link
+              to="/rubrik"
+              className="text-xs sm:text-sm font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
             >
-              Abadikan Nama Beliau di Dinding Munajat &amp; Selami Wasiat Rahasia Para Kekasih Allah
-            </h2>
-            <p
-              className={`text-xs sm:text-sm leading-relaxed ${
-                outdoorMode ? 'text-stone-900 font-medium' : 'text-stone-200'
-              }`}
-            >
-              Setiap huruf yang baru saja Anda lantunkan adalah bukti cinta yang tak terputus oleh kematian. Titipkan nama almarhum/almarhumah beserta hajat Anda di Dinding Munajat agar terus diaminkan oleh saudara seiman setiap malam, sekaligus membuka lembaran kisah tirakat &amp; rahasia batin para Wali yang menenangkan jiwa.
-            </p>
-            <div className="pt-2 flex flex-wrap items-center gap-2.5">
-              <Link
-                to="/infaq"
-                className={`px-4 py-2.5 rounded-2xl text-xs font-semibold transition inline-flex items-center gap-1.5 ${
-                  outdoorMode
-                    ? 'bg-black text-white hover:bg-stone-800'
-                    : 'bg-amber-400 hover:bg-amber-300 text-stone-950 shadow-xs'
-                }`}
-              >
-                <span>Titipkan Nama &amp; Hajat di Dinding Munajat</span>
-              </Link>
-              <Link
-                to="/rubrik"
-                className={`px-4 py-2.5 rounded-2xl text-xs font-semibold transition inline-flex items-center gap-1.5 border ${
-                  outdoorMode
-                    ? 'bg-white text-black border-black hover:bg-stone-100'
-                    : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
-                }`}
-              >
-                <span>Buka Kisah Rahasia &amp; Air Mata Munajat Para Wali</span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ziarahnusantara.my.id';
-                  const shareText = `Mari kirimkan Al-Fatihah, Yasin & Tahlil untuk orang-orang tercinta yang telah mendahului kita lewat panduan ziarah bebas iklan ini (lengkap dengan kisah batin para Wali):\n\n${origin}/bacaan`;
-                  window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank', 'noopener,noreferrer');
-                }}
-                className={`px-4 py-2.5 rounded-2xl text-xs font-semibold transition inline-flex items-center gap-1.5 border cursor-pointer ${
-                  outdoorMode
-                    ? 'bg-stone-100 text-black border-black hover:bg-stone-200'
-                    : 'bg-emerald-900/60 hover:bg-emerald-800/80 text-emerald-100 border-emerald-600/40'
-                }`}
-              >
-                <span>Kirim Tuntunan Doa Ini ke Keluarga</span>
-              </button>
-            </div>
+              Baca Riwayat Para Wali →
+            </Link>
           </div>
-        </div>
+        </footer>
       </div>
 
       {/* Crawlable SEO Content (SR-Only so visual design remains 100% clean) */}

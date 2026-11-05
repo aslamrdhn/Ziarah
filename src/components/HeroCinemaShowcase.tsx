@@ -184,8 +184,8 @@ export const HeroCinemaShowcase: React.FC<HeroCinemaShowcaseProps> = React.memo(
       {/* LAYER 2: MEASURED CINEMA VIGNETTE */}
       <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/65 to-stone-950/35 z-10 pointer-events-none" />
 
-      {/* LAYER 3: TOP FILM ARCHIVE HUD */}
-      <div className="relative z-20 flex items-center justify-between px-4 sm:px-5 py-3 border-b border-white/15 text-[11px] font-mono text-stone-200">
+      {/* LAYER 3: TOP FILM ARCHIVE HEADER */}
+      <div className="relative z-20 flex items-center justify-between px-4 sm:px-5 py-3 border-b border-white/15 font-sans text-xs tracking-wide text-stone-300">
         <div className="flex items-center gap-2 min-w-0">
           <Film className="w-3.5 h-3.5 text-[#f3d9a4] shrink-0" aria-hidden="true" />
           <span className="uppercase tracking-widest font-sans font-semibold text-white truncate">
@@ -260,7 +260,7 @@ export const HeroCinemaShowcase: React.FC<HeroCinemaShowcaseProps> = React.memo(
                         : 'bg-stone-900/80 text-stone-200 hover:bg-white/15 hover:text-white border border-white/10'
                     }`}
                   >
-                    <span className="relative z-10 font-mono tabular-nums mr-1 text-[10px] text-[#f3d9a4]">
+                    <span className="relative z-10 font-sans text-xs tracking-wide text-stone-300 tabular-nums mr-1">
                       0{idx + 1}
                     </span>
                     <span className="relative z-10">{scene.category}</span>

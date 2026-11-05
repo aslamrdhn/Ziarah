@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSites } from '../context/SiteContext';
-import { BookOpen, Sparkles, MapPin, Bookmark, BookmarkCheck, Search, Copy, Check, Lock, Unlock } from 'lucide-react';
+import { BookOpen, Bookmark, BookmarkCheck, Search, Copy, Check } from 'lucide-react';
 import { auth, db, isUserAdmin } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
@@ -157,51 +157,51 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-12 text-slate-400">
-        <div className="w-10 h-10 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mb-4"></div>
-        <p className="text-sm font-medium">Memuat Doa Khusus...</p>
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-stone-500">
+        <div className="w-8 h-8 border-2 border-stone-200 border-t-emerald-700 rounded-full animate-spin mb-4" />
+        <p className="text-sm font-serif italic">Memuat Doa Khusus...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto pb-20">
+    <div className="flex-1 overflow-y-auto pb-20 bg-[#FAF8F5]">
       {/* Header Hub */}
-      <div className="bg-[#F9F8F4]/95 backdrop-blur-md border-b border-stone-300/80 sticky top-0 z-20 transition-all">
+      <div className="bg-[#FAF8F5]/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-20 transition-all">
         <div className="max-w-4xl mx-auto px-4 py-5 sm:py-7">
           <div className="mb-4">
-            <h1 className="text-xl sm:text-3xl font-serif font-black text-slate-900 tracking-tight mb-1">
-              Doa Khusus & Amalan Waliyullah
+            <h1 className="text-2xl sm:text-4xl font-serif font-normal text-stone-900 tracking-tight mb-1.5">
+              Doa Khusus &amp; Amalan Waliyullah.
             </h1>
-            <p className="text-slate-500 text-xs sm:text-sm font-medium">
+            <p className="text-stone-600 text-xs sm:text-sm">
               Koleksi bacaan tawasul, wirid, karomah, dan amalan yang dinisbatkan kepada para wali di Nusantara.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" strokeWidth={1.75} />
               <input 
                 type="text" 
                 placeholder="Cari doa, amalan, atau nama wali..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 sm:py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-slate-900 text-xs sm:text-sm font-medium placeholder-slate-400 transition-all"
+                className="w-full pl-11 pr-4 py-2.5 sm:py-3 bg-white border border-stone-200/80 rounded-2xl focus:outline-none focus:border-emerald-700 text-stone-900 text-xs sm:text-sm placeholder-stone-400 transition-colors shadow-2xs"
               />
             </div>
             
-            <div className="flex bg-slate-100 p-1 rounded-2xl shrink-0 border border-slate-200/80">
+            <div className="flex bg-stone-200/60 p-1 rounded-xl shrink-0">
               <button 
                 type="button"
                 onClick={() => setActiveTab('semua')}
-                className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${activeTab === 'semua' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
+                className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer ${activeTab === 'semua' ? 'bg-white text-emerald-950 shadow-2xs font-semibold' : 'text-stone-600 hover:text-stone-900'}`}
               >
                 Semua ({allDoaKaromah.length})
               </button>
               <button 
                 type="button"
                 onClick={() => setActiveTab('tersimpan')}
-                className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${activeTab === 'tersimpan' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
+                className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer ${activeTab === 'tersimpan' ? 'bg-white text-emerald-950 shadow-2xs font-semibold' : 'text-stone-600 hover:text-stone-900'}`}
               >
                 Tersimpan ({savedDoas.length})
               </button>
@@ -213,14 +213,14 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
       {/* Content List */}
       <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
         {filteredList.length === 0 ? (
-          <div className="text-center py-16 sm:py-20 bg-white rounded-3xl border border-slate-200/90 shadow-xs">
-            <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-emerald-600">
-              <BookOpen className="w-7 h-7" />
+          <div className="text-center py-16 sm:py-20 bg-white rounded-2xl border border-stone-200/70 shadow-2xs">
+            <div className="w-12 h-12 bg-stone-100 rounded-2xl flex items-center justify-center mx-auto mb-3 text-stone-600">
+              <BookOpen className="w-6 h-6" strokeWidth={1.75} />
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">Tidak Ada Data Doa</h3>
-            <p className="text-slate-500 text-xs sm:text-sm max-w-sm mx-auto">
+            <h3 className="text-base sm:text-lg font-serif text-stone-900 mb-1">Tidak Ada Data Doa</h3>
+            <p className="text-stone-500 text-xs sm:text-sm max-w-sm mx-auto">
               {activeTab === 'tersimpan' 
-                ? "Anda belum menyimpan doa atau amalan apa pun. Klik ikon bookmark pada kartu untuk menyimpan ke daftar favorit Anda."
+                ? "Anda belum menyimpan doa atau amalan apa pun. Klik ikon penanda pada kartu untuk menyimpan ke daftar favorit Anda."
                 : "Tidak ada doa atau karomah yang cocok dengan pencarian Anda."}
             </p>
           </div>
@@ -228,98 +228,79 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
           <div className="grid grid-cols-1 gap-5 sm:gap-6">
             {filteredList.map((item) => {
               const unlocked = isKaromahItemUnlocked(item);
-              const isSampleKaromah = item.type === 'karomah' && unlocked && lockEnabled && !hasDonated;
               return (
               <div 
                 key={item.id}
-                className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:border-emerald-300 hover:shadow-md transition-all"
+                className="bg-white rounded-2xl border border-stone-200/70 p-5 sm:p-7 shadow-2xs transition-colors"
               >
-                <div className={`p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between ${item.type === 'doa' ? 'bg-emerald-50/70' : 'bg-amber-50/70'}`}>
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2.5 rounded-xl ${item.type === 'doa' ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white'} shadow-xs`}>
-                      {item.type === 'doa' ? <BookOpen className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-stone-100">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
+                      {item.type === 'doa' ? 'Doa & Amalan' : 'Riwayat Karomah'} · {item.siteName}
                     </div>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h4 className="font-serif font-black text-slate-900 text-base sm:text-lg leading-tight">{item.title}</h4>
-                        {isSampleKaromah && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            Contoh Gratis
-                          </span>
-                        )}
-                        {!unlocked && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-200 inline-flex items-center gap-1">
-                            <Lock className="w-2.5 h-2.5" /> Khusus Donatur
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center text-[11px] font-semibold text-emerald-800 mt-0.5">
-                        <MapPin className="w-3 h-3 mr-1 shrink-0" />
-                        {item.siteName}
-                      </div>
-                    </div>
+                    <h4 className="font-serif text-xl text-stone-900 mt-1 leading-snug">
+                      {item.title}
+                    </h4>
                   </div>
                   
                   {unlocked && (
-                    <div className="flex items-center space-x-1.5">
+                    <div className="flex items-center space-x-1.5 shrink-0">
                       <button 
                         type="button"
                         onClick={() => handleCopy(item.id, `${item.title}\n\n${item.text}${item.translation ? `\n\nArtinya:\n${item.translation}` : ''}`)}
-                        className="p-2 bg-white rounded-xl shadow-2xs border border-slate-200 text-slate-400 hover:text-emerald-700 active:scale-95 transition-all cursor-pointer"
+                        className="p-2 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200/80 text-stone-500 hover:text-stone-900 transition-colors cursor-pointer"
                         title="Salin doa"
                       >
-                        {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                        {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-700" strokeWidth={1.75} /> : <Copy className="w-4 h-4" strokeWidth={1.75} />}
                       </button>
                       
                       <button 
                         type="button"
                         onClick={() => onToggleSaveDoa(item.id)}
-                        className="p-2 bg-white rounded-xl shadow-2xs border border-slate-200 text-slate-400 hover:text-emerald-700 active:scale-95 transition-all cursor-pointer"
+                        className="p-2 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200/80 text-stone-500 hover:text-stone-900 transition-colors cursor-pointer"
                         title={savedDoas.includes(item.id) ? "Hapus dari simpanan" : "Simpan doa"}
                       >
                         {savedDoas.includes(item.id) ? (
-                          <BookmarkCheck className="w-4 h-4 text-emerald-600" />
+                          <BookmarkCheck className="w-4 h-4 text-emerald-800" strokeWidth={1.75} />
                         ) : (
-                          <Bookmark className="w-4 h-4" />
+                          <Bookmark className="w-4 h-4" strokeWidth={1.75} />
                         )}
                       </button>
                     </div>
                   )}
                 </div>
                 
-                <div className="p-5 sm:p-7">
+                <div>
                   {item.type === 'doa' ? (
                     <>
-                      <p className="text-xl sm:text-2xl font-arabic text-slate-900 leading-[2.5] text-right mb-5 font-normal" dir="rtl">
+                      <p className="text-xl sm:text-2xl font-arabic text-stone-900 leading-[2.5] text-right mb-4 font-normal" dir="rtl">
                         {item.text}
                       </p>
                       {item.translation && (
-                        <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/70">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Artinya:</p>
-                          <p className="text-xs sm:text-sm text-slate-700 italic leading-relaxed">{item.translation}</p>
-                        </div>
+                        <p className="text-sm text-stone-600 font-serif italic leading-relaxed pt-3 border-t border-stone-100">
+                          &ldquo;{item.translation}&rdquo;
+                        </p>
                       )}
                     </>
                   ) : unlocked ? (
-                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                    <p className="text-[15px] sm:text-base text-stone-800 leading-[1.85]">
                       {item.text.replace(/<!--more-->/g, ' ')}
                     </p>
                   ) : (
-                    <div className="space-y-3">
-                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                        <span>{item.text.replace(/<!--more-->/g, ' ').slice(0, 50)}... </span>
-                        <span className="blur-[4px] select-none opacity-65">
-                          Kisah karomah lanjutan dibuka khusus bagi pengunjung yang telah melakukan donasi riset database dan terverifikasi oleh kurator.
-                        </span>
-                      </p>
-                      <div className="pt-1 flex items-center justify-between border-t border-slate-100">
-                        <span className="text-[11px] text-slate-400 italic">Terkunci untuk mendukung riset database</span>
+                    <div className="space-y-4">
+                      <div className="text-[15px] sm:text-base text-stone-800 leading-[1.85]">
+                        <p>{item.text.replace(/<!--more-->/g, ' ').slice(0, 90)}...</p>
+                        <p className="mt-1 opacity-40 blur-[2px] select-none pointer-events-none line-clamp-2 text-stone-600">
+                          Kisah karomah lanjutan dibuka khusus bagi pengunjung yang telah menyalurkan infaq jariyah penjagaan arsip digital.
+                        </p>
+                      </div>
+                      <div className="pt-3 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span className="text-xs text-stone-500 italic">Arsip Khazanah Terkunci</span>
                         <Link
                           to="/rubrik"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition-colors"
+                          className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4"
                         >
-                          <Unlock className="w-3.5 h-3.5 text-amber-700" />
-                          <span>Buka via Donasi di Rubrik</span>
+                          Buka Seluruh Arsip Kisah →
                         </Link>
                       </div>
                     </div>
@@ -331,30 +312,30 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
           </div>
         )}
 
-        <div className="mt-8 rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-emerald-950 via-stone-900 to-emerald-950 text-white border border-emerald-800/40 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div className="space-y-2 max-w-2xl">
-            <h3 className="font-serif text-lg sm:text-xl font-bold text-amber-100 leading-snug">
-              Tahukah Anda Ujian Batin Seberat Apa yang Melahirkan Munajat Para Wali Ini?
+        <footer className="mt-10 pt-8 border-t border-stone-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1 max-w-xl">
+            <h3 className="font-serif text-lg sm:text-xl text-stone-900">
+              Menyelami Ujian Batin yang Melahirkan Munajat Para Wali
             </h3>
-            <p className="text-xs sm:text-sm text-stone-200 leading-relaxed">
-              Di balik setiap wirid yang diwariskan para Auliya Nusantara, tersimpan kisah malam-malam penuh air mata, kesempitan hidup, dan pertolongan Allah yang datang tepat di detik terakhir. Selami naskah lengkapnya di Khazanah Khusus.
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              Di balik setiap wirid yang diwariskan para Auliya Nusantara, tersimpan kisah malam-malam penuh keteguhan dan pertolongan Allah.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-4 shrink-0">
             <Link
               to="/rubrik"
-              className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold text-center transition shadow-xs"
+              className="px-5 py-2.5 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white text-xs sm:text-sm font-medium transition-colors"
             >
-              Selami Kisah Rahasia di Balik Doa
+              Buka Arsip Kisah
             </Link>
             <Link
               to="/infaq"
-              className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-bold text-center transition"
+              className="text-xs sm:text-sm font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
             >
-              Titip Hajat di Dinding Munajat
+              Titip Hajat di Dinding Munajat →
             </Link>
           </div>
-        </div>
+        </footer>
       </div>
     </div>
   );

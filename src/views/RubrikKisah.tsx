@@ -9,10 +9,9 @@ import {
   ExternalLink,
   ChevronRight,
   Clock,
-  Compass,
   PlusCircle,
   Lock,
-  Sparkles,
+  Heart,
   HeartHandshake,
   Copy,
   CheckCircle2,
@@ -486,44 +485,35 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24">
       {/* Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-emerald-950 via-brand-900 to-teal-950 rounded-3xl p-6 sm:p-10 text-white shadow-lg mb-6 relative overflow-hidden border border-emerald-900/40"
-      >
-        <div className="absolute right-0 top-0 -mr-10 -mt-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-gold-300 text-xs font-semibold mb-4">
-              <ScrollText className="w-4 h-4" />
-              <span>Rubrik Khazanah Sejarah & Manuskrip</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
-              Rubrik Ziarah Nusantara
-            </h1>
-            <p className="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed">
-              Menghadirkan naskah manuskrip, kisah rahasia (*untold stories*), hikmah karomah, dan khazanah sejarah keilmuan para Aulia dan Ulama Nusantara.
-            </p>
+      <div className="mb-6 pb-6 border-b border-stone-200/80 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="max-w-2xl space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
+            Rubrik Khazanah Sejarah &amp; Manuskrip
           </div>
-          {onOpenKontribusi && (
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.96 }}
-              onClick={onOpenKontribusi}
-              className="self-start md:self-auto shrink-0 inline-flex items-center px-4 py-2.5 bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/20 text-white text-xs font-bold rounded-2xl transition-all cursor-pointer shadow-xs"
-            >
-              <PlusCircle className="w-4 h-4 mr-2 text-emerald-300" />
-              Kirim Naskah / Karomah
-            </motion.button>
-          )}
+          <h1 className="text-2xl sm:text-4xl font-serif font-normal text-stone-900 tracking-tight">
+            Rubrik Ziarah Nusantara.
+          </h1>
+          <p className="text-stone-600 text-xs sm:text-sm md:text-base leading-relaxed">
+            Menghadirkan naskah manuskrip, kisah rahasia, hikmah karomah, dan khazanah sejarah keilmuan para Aulia dan Ulama Nusantara.
+          </p>
         </div>
-      </motion.div>
+        {onOpenKontribusi && (
+          <button
+            type="button"
+            onClick={onOpenKontribusi}
+            className="self-start md:self-auto shrink-0 inline-flex items-center px-4 py-2.5 bg-white hover:bg-stone-50 border border-stone-200/90 text-stone-800 text-xs font-medium rounded-xl transition-colors cursor-pointer shadow-2xs"
+          >
+            <PlusCircle className="w-4 h-4 mr-2 text-emerald-800" strokeWidth={1.75} />
+            Kirim Naskah / Karomah
+          </button>
+        )}
+      </div>
 
       {/* Banner Informasi Akses Donasi & 2 Tulisan Contoh Gratis */}
       {isPendingAdmin && !isAllUnlocked && (
         <div className="bg-amber-50 rounded-2xl p-4 border border-amber-300 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+            <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" strokeWidth={1.75} />
             <div className="text-xs text-amber-950">
               <p className="font-bold">Bukti Transfer Terkirim (Ref: #{verifiedRefCode}) — Menunggu Verifikasi Admin Kurator</p>
               <p className="text-amber-800 mt-0.5">
@@ -537,38 +527,36 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             rel="noopener noreferrer"
             className="px-3.5 py-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold rounded-xl shrink-0 inline-flex items-center gap-1.5"
           >
-            <MessageSquareHeart className="w-3.5 h-3.5" />
+            <MessageSquareHeart className="w-3.5 h-3.5" strokeWidth={1.75} />
             Percepat via WhatsApp
           </a>
         </div>
       )}
 
       {gateSettings.lockEnabled && !isAllUnlocked ? (
-        <div className="bg-gradient-to-br from-amber-50/90 via-white to-emerald-50/70 rounded-3xl p-5 sm:p-6 border border-amber-200/80 shadow-xs mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="space-y-1.5 max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/80 text-amber-900 border border-amber-300/60 text-[11px] font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-              <span>{gateSettings.freeSampleCount} Tulisan Pilihan Terbuka Gratis Sebagai Contoh</span>
+        <div className="bg-[#FAF8F5] rounded-2xl p-5 sm:p-6 border border-stone-200/90 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1 max-w-2xl">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-amber-800">
+              {gateSettings.freeSampleCount} Naskah Pilihan Terbuka Sebagai Contoh
             </div>
-            <h2 className="text-sm sm:text-base font-serif font-black text-slate-900">
+            <h2 className="text-base sm:text-lg font-serif text-stone-900">
               {gateSettings.bannerTitle}
             </h2>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
               {gateSettings.bannerDescription}
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end gap-2.5 shrink-0 w-full md:w-auto">
             <button
               type="button"
               onClick={() => openUnlockModalFor(filteredArticles[gateSettings.freeSampleCount] || filteredArticles[0] || null)}
-              className="px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-2xl transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+              className="px-5 py-2.5 bg-emerald-900 hover:bg-emerald-800 text-white text-xs sm:text-sm font-medium rounded-xl transition-colors cursor-pointer"
             >
-              <HeartHandshake className="w-4 h-4 text-emerald-300" />
-              <span>Buka Seluruh Kisah Rahasia &amp; Niatkan Infaq</span>
+              Buka Seluruh Arsip Kisah
             </button>
             <Link
               to="/infaq"
-              className="px-4 py-2 bg-white hover:bg-slate-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold rounded-xl transition-colors text-center"
+              className="text-xs text-stone-600 hover:text-stone-900 underline underline-offset-4 text-center"
             >
               Ke Halaman Infaq &amp; Dinding Munajat →
             </Link>
@@ -576,8 +564,8 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         </div>
       ) : (
         <div className="bg-emerald-50/80 rounded-2xl px-4 py-3 border border-emerald-200/80 mb-6 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 text-xs text-emerald-900 font-semibold">
-            <BookOpenCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+          <div className="flex items-center gap-2.5 text-xs text-emerald-900 font-medium">
+            <BookOpenCheck className="w-4 h-4 text-emerald-700 shrink-0" strokeWidth={1.75} />
             <span>
               {isAdmin
                 ? 'Mode Kurator Aktif: Seluruh arsip Kisah Rahasia, Manuskrip & Karomah terbuka penuh.'
@@ -585,59 +573,56 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             </span>
           </div>
           {hasDonated && !isAdmin && (
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-white text-emerald-800 border border-emerald-200 shrink-0">
-              Bukti Terverifikasi {verifiedRefCode ? `(#${verifiedRefCode})` : ''}
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-md bg-white text-emerald-800 border border-emerald-200 shrink-0">
+              Terverifikasi {verifiedRefCode ? `(#${verifiedRefCode})` : ''}
             </span>
           )}
         </div>
       )}
 
       {/* Ticker Ringkas: Munajat & Infaq Peziarah Terkini */}
-      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-stone-200/90 shadow-xs mb-6 space-y-3">
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/70 shadow-2xs mb-6 space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <MessageSquareHeart className="w-4 h-4 text-emerald-700 shrink-0" />
-            <h3 className="text-xs sm:text-sm font-serif font-bold text-slate-900">
-              Munajat &amp; Infaq Peziarah Terkini
-            </h3>
-          </div>
-          <Link to="/infaq" className="text-[11px] font-semibold text-emerald-800 hover:underline">
+          <h3 className="text-xs sm:text-sm font-serif text-stone-900">
+            Munajat &amp; Infaq Peziarah Terkini
+          </h3>
+          <Link to="/infaq" className="text-xs font-medium text-emerald-800 hover:underline underline-offset-4">
             Lihat Dinding Munajat →
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {recentMunajat.slice(0, 3).map((item) => {
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 divide-y md:divide-y-0 md:divide-x divide-stone-200/60">
+          {recentMunajat.slice(0, 3).map((item, idx) => {
             const totalAamiin = (item.baseAamiinCount || 12) + (aamiinMap[item.id] || 0);
             const hasClickedAamiin = Boolean(aamiinMap[item.id]);
             return (
               <div
                 key={item.id}
-                className="bg-stone-50/80 rounded-2xl p-3.5 border border-stone-200/80 flex flex-col justify-between gap-2.5"
+                className={`flex flex-col justify-between gap-2.5 ${idx > 0 ? 'pt-3 md:pt-0 md:pl-4' : ''}`}
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-xs font-bold text-slate-900 truncate">{item.donorName}</span>
-                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/70 shrink-0">
+                    <span className="text-xs font-medium text-stone-900 truncate">{item.donorName}</span>
+                    <span className="text-xs text-emerald-800 font-medium shrink-0">
                       Rp {item.amount.toLocaleString('id-ID')}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-600 italic line-clamp-2 leading-relaxed">
-                    "{item.doaHajat}"
+                  <p className="text-xs text-stone-600 font-serif italic line-clamp-2 leading-relaxed">
+                    &ldquo;{item.doaHajat}&rdquo;
                   </p>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-stone-200/60">
-                  <span className="text-[10px] text-stone-400 truncate max-w-[120px]">{item.dateLabel}</span>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-stone-400 truncate max-w-[120px]">{item.dateLabel}</span>
                   <button
                     type="button"
                     onClick={() => handleAamiinClick(item.id)}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors cursor-pointer border ${
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
                       hasClickedAamiin
-                        ? 'bg-emerald-800 text-white border-emerald-800'
-                        : 'bg-white hover:bg-emerald-50 text-emerald-800 border-emerald-200'
+                        ? 'bg-emerald-900 text-white border-emerald-900'
+                        : 'bg-white hover:bg-stone-50 text-stone-700 border-stone-200/80'
                     }`}
                   >
-                    <span>Aamiin 🤲</span>
-                    <span className="text-[10px] opacity-90">({totalAamiin})</span>
+                    <Heart className={`w-3 h-3 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
+                    <span>Aamiin · {totalAamiin}</span>
                   </button>
                 </div>
               </div>
@@ -647,47 +632,45 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       </div>
 
       {/* Filter & Search */}
-      <div className="bg-white rounded-3xl p-4 sm:p-6 border border-slate-200/90 shadow-xs mb-8 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari rubrik, tokoh wali, manuskrip, atau daerah..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-            />
-          </div>
+      <div className="mb-8 space-y-4">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" strokeWidth={1.75} />
+          <input
+            type="text"
+            placeholder="Cari rubrik, tokoh wali, manuskrip, atau daerah..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-11 pr-4 py-3 bg-white border border-stone-200/80 rounded-2xl text-stone-900 text-xs sm:text-sm focus:outline-none focus:border-emerald-700 shadow-2xs"
+          />
+        </div>
 
-          <div className="flex overflow-x-auto pb-1 sm:pb-0 gap-1.5 scrollbar-hide">
-            {categories.map((cat) => (
-              <motion.button
+        <div className="flex items-center gap-6 overflow-x-auto no-scrollbar border-b border-stone-200">
+          {categories.map((cat) => {
+            const isSelected = selectedCategory === cat;
+            return (
+              <button
                 key={cat}
                 type="button"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.94 }}
-                transition={{ type: "spring", stiffness: 450, damping: 25 }}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
-                  selectedCategory === cat 
-                    ? 'bg-emerald-800 text-white border-emerald-800 shadow-xs' 
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-emerald-50/50 hover:text-emerald-800'
+                className={`pb-3 -mb-px text-xs sm:text-sm whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
+                  isSelected 
+                    ? 'border-emerald-800 text-emerald-950 font-semibold' 
+                    : 'border-transparent text-stone-500 hover:text-stone-800 font-medium'
                 }`}
               >
                 {cat} {cat === 'Tersimpan' ? `(${savedArticles.length})` : ''}
-              </motion.button>
-            ))}
-          </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Articles Grid */}
       {filteredArticles.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/90 shadow-sm">
-          <ScrollText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-700 mb-1">Belum Ada Rubrik yang Sesuai</h3>
-          <p className="text-xs text-slate-500">Silakan sesuaikan kata kunci pencarian atau kategori filter.</p>
+        <div className="bg-white rounded-2xl p-12 text-center border border-stone-200/70 shadow-2xs">
+          <ScrollText className="w-10 h-10 text-stone-300 mx-auto mb-3" strokeWidth={1.75} />
+          <h3 className="text-base font-serif text-stone-800 mb-1">Belum Ada Rubrik yang Sesuai</h3>
+          <p className="text-xs text-stone-500">Silakan sesuaikan kata kunci pencarian atau kategori filter.</p>
         </div>
       ) : (
         <>
@@ -708,33 +691,20 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       openUnlockModalFor(article);
                     }
                   }}
-                  className={`content-auto bg-white rounded-3xl p-6 border transition-all duration-200 flex flex-col justify-between group relative overflow-hidden ${
+                  className={`content-auto bg-white rounded-2xl p-6 border border-stone-200/70 shadow-2xs transition-colors flex flex-col justify-between group relative ${
                     isUnlocked
-                      ? 'border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300'
-                      : 'border-amber-200/80 shadow-xs hover:shadow-md hover:border-amber-400 cursor-pointer'
+                      ? 'hover:border-stone-300'
+                      : 'hover:border-amber-300 cursor-pointer'
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-3 text-xs gap-2">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-                          {article.category}
-                        </span>
-                        {isUnlocked && gateSettings.lockEnabled && !isAllUnlocked && (
-                          <span className="px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] bg-emerald-800 text-white shadow-2xs">
-                            Contoh Bacaan Gratis
-                          </span>
-                        )}
-                        {!isUnlocked && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] bg-amber-50 text-amber-900 border border-amber-200">
-                            <Lock className="w-3 h-3 text-amber-700" />
-                            Khazanah Khusus
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center text-slate-400 space-x-2 shrink-0">
-                        <span className="flex items-center text-[11px] text-slate-500 font-medium">
-                          <Clock className="w-3 h-3 mr-1" /> {article.readTime}
+                    <div className="flex items-center justify-between mb-2 gap-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
+                        {article.category}
+                      </span>
+                      <div className="flex items-center text-stone-400 space-x-2 shrink-0">
+                        <span className="flex items-center text-[11px] text-stone-500">
+                          <Clock className="w-3 h-3 mr-1" strokeWidth={1.75} /> {article.readTime}
                         </span>
                         <button
                           type="button"
@@ -742,55 +712,45 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                             e.stopPropagation();
                             toggleSaveArticle(article.id);
                           }}
-                          className={`p-1.5 rounded-xl border transition-colors cursor-pointer ${
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                             isSaved 
-                              ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-2xs' 
-                              : 'hover:bg-slate-100 text-slate-400 border-transparent'
+                              ? 'bg-emerald-50 text-emerald-800' 
+                              : 'hover:bg-stone-100 text-stone-400'
                           }`}
                           title={isSaved ? "Hapus dari simpanan" : "Simpan rubrik"}
                         >
-                          {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+                          {isSaved ? <BookmarkCheck className="w-4 h-4" strokeWidth={1.75} /> : <Bookmark className="w-4 h-4" strokeWidth={1.75} />}
                         </button>
                       </div>
                     </div>
 
-                    <h2 className="text-base sm:text-lg font-serif font-bold text-slate-900 group-hover:text-emerald-700 transition-colors mb-2 leading-snug">
+                    <h2 className="font-serif text-xl text-stone-900 group-hover:text-emerald-900 transition-colors mb-1.5 leading-snug">
                       {article.title}
                     </h2>
 
-                    <div className="flex items-center text-xs text-emerald-700 font-semibold mb-3">
-                      <Compass className="w-3.5 h-3.5 mr-1 text-emerald-600 shrink-0" />
-                      <span className="truncate">{article.siteName}</span>
-                      <span className="mx-1.5 text-slate-300 shrink-0">•</span>
-                      <span className="text-slate-500 font-normal truncate">{article.location}</span>
+                    <div className="text-xs text-stone-500 mb-3 truncate">
+                      {article.siteName} · {article.location}
                     </div>
 
                     {isUnlocked ? (
-                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3 mb-4">
+                      <p className="text-sm text-stone-600 leading-relaxed line-clamp-3 mb-4">
                         {cleanContent}
                       </p>
                     ) : (
-                      <div className="relative mb-4 rounded-2xl bg-slate-50/70 p-3 border border-slate-100 overflow-hidden">
-                        <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                          <span>{hookLead}... </span>
-                          <span className="blur-[4px] select-none opacity-65">
-                            Kisah di balik layar, riyadhoh malam, dan pesan wasiat beliau pada bagian ini disimpan dalam Khazanah Khusus.
-                          </span>
+                      <div className="mb-4 space-y-1.5">
+                        <p className="text-sm text-stone-700 leading-relaxed">
+                          {hookLead}...
                         </p>
-                        <div className="mt-2.5 pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] font-bold text-amber-900">
-                          <span className="inline-flex items-center gap-1.5">
-                            <Lock className="w-3.5 h-3.5 text-amber-700" />
-                            Lembaran Rahasia &amp; Wasiat Batin Terkunci
-                          </span>
-                          <span className="text-emerald-800 underline">Buka Akses</span>
-                        </div>
+                        <p className="text-sm text-stone-500 opacity-40 blur-[2px] select-none pointer-events-none line-clamp-2">
+                          Kisah di balik layar, riyadhoh malam, dan pesan wasiat beliau pada bagian ini disimpan dalam Khazanah Khusus.
+                        </p>
                       </div>
                     )}
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-2">
-                    <span className="text-[11px] text-slate-400 italic truncate max-w-[190px]">
-                      Sumber: {article.source}
+                  <div className="pt-4 border-t border-stone-100 flex items-center justify-between mt-2">
+                    <span className="text-[11px] text-stone-400 italic truncate max-w-[190px]">
+                      {article.source}
                     </span>
                     {isUnlocked ? (
                       <button
@@ -799,10 +759,10 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                           e.stopPropagation();
                           setActiveStoryModal(article);
                         }}
-                        className="inline-flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-900 transition-colors cursor-pointer"
+                        className="inline-flex items-center text-xs font-medium text-emerald-800 hover:text-emerald-950 transition-colors cursor-pointer"
                       >
                         Baca Selengkapnya
-                        <ChevronRight className="w-4 h-4 ml-0.5" />
+                        <ChevronRight className="w-4 h-4 ml-0.5" strokeWidth={1.75} />
                       </button>
                     ) : (
                       <button
@@ -811,10 +771,9 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                           e.stopPropagation();
                           openUnlockModalFor(article);
                         }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
+                        className="text-xs font-medium text-amber-800 hover:text-amber-950 underline underline-offset-4 transition-colors cursor-pointer"
                       >
-                        <Lock className="w-3 h-3 text-amber-700" />
-                        <span>Buka Khazanah</span>
+                        Buka Arsip →
                       </button>
                     )}
                   </div>
@@ -828,12 +787,12 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               <button
                 type="button"
                 onClick={() => setVisibleCount((prev) => prev + 16)}
-                className="px-6 py-3 bg-emerald-900 hover:bg-emerald-950 text-white rounded-full text-xs font-bold inline-flex items-center gap-2 transition cursor-pointer shadow-xs"
+                className="px-6 py-3 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl text-xs font-medium inline-flex items-center gap-2 transition cursor-pointer shadow-2xs"
               >
                 <span>
                   Tampilkan Lebih Banyak (+{Math.min(16, filteredArticles.length - displayedArticles.length)} Naskah)
                 </span>
-                <ArrowDown className="w-3.5 h-3.5" />
+                <ArrowDown className="w-3.5 h-3.5" strokeWidth={1.75} />
               </button>
             </div>
           )}
@@ -937,7 +896,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                         "Siapa yang membantu menghidupkan kisah dan jejak orang-orang shalih, semoga Allah memudahkan segala hajat dunia dan akhiratnya."
                       </p>
                       <p className="text-[11px] text-emerald-800 font-semibold mt-1.5">
-                        ✦ Amal Jariyah: Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara
+                        Amal Jariyah: Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara
                       </p>
                     </div>
 

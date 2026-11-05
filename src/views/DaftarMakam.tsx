@@ -1,16 +1,13 @@
 import React, { useState, useMemo, useDeferredValue, lazy, Suspense } from 'react';
 import {
   Search,
-  MapPin,
   X,
   Compass,
   Filter,
   ArrowDown,
   BookOpen,
   Map as MapIcon,
-  Sparkles,
   Film,
-  Lock,
 } from 'lucide-react';
 import type { ZiarahSite } from '../data/sites';
 import { ALL_PROVINCES, TOTAL_SITE_COUNT } from '../data/initialSites';
@@ -38,11 +35,11 @@ const EMOTIONAL_INTENTS: Array<{
   id: EmotionalIntentId;
   label: string;
 }> = [
-  { id: 'all', label: 'Semua Jejak Auliya' },
-  { id: 'keteduhan', label: 'Penawar Hati Gelisah & Rindu Keteduhan' },
-  { id: 'ikhtiar', label: 'Ikhtiar Rezeki, Dagang & Kedermawanan' },
-  { id: 'keteguhan', label: 'Keteguhan Saat Ujian Berat & Perjuangan' },
-  { id: 'ilmu', label: 'Sanad Ilmu, Pesantren & Bakti Guru' },
+  { id: 'all', label: 'Semua Riwayat' },
+  { id: 'keteduhan', label: 'Penawar Hati' },
+  { id: 'ikhtiar', label: 'Ikhtiar & Rezeki' },
+  { id: 'keteguhan', label: 'Keteguhan Uji' },
+  { id: 'ilmu', label: 'Sanad Keilmuan' },
 ];
 
 function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntentId): boolean {
@@ -229,11 +226,11 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
 
   const categories = useMemo(
     () => [
-      { id: 'Semua', label: 'Semua Situs' },
+      { id: 'Semua', label: 'Semua' },
       { id: 'Walisongo', label: 'Wali Songo' },
       { id: 'Ulama Nusantara', label: 'Ulama Nusantara' },
       { id: 'Habaib', label: 'Habaib' },
-      { id: 'Auliya Nusantara', label: 'Auliya & Kesultanan' },
+      { id: 'Auliya Nusantara', label: 'Auliya Nusantara' },
     ],
     []
   );
@@ -338,52 +335,46 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
 
   return (
     <section className="min-h-screen bg-[#FAF8F5] text-stone-900 px-4 py-6 sm:py-10 md:px-8 relative z-10">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* =====================================================================
-            1. EDITORIAL HEADER: Bersih, Tanpa Banner Berlebihan (85-10-5 Formula)
+            1. EDITORIAL HEADER: Bersih, Tanpa Kapsul Berlapis atau Emoji/Bintang
             ===================================================================== */}
-        <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/8 text-emerald-900 text-xs font-medium tracking-wide">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-800" aria-hidden="true" />
-              <span>
-                Panduan Ziarah Kubur &amp; Direktori Jejak Batin · {totalCatalogCount} Makam Wali di {provinces.length - 1} Provinsi
-              </span>
-            </div>
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight text-stone-900 leading-[1.15]">
-              Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin {totalCatalogCount} Makam Wali
+        <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+          <div className="space-y-2.5 max-w-2xl">
+            <h1 className="font-serif text-3xl sm:text-5xl font-normal tracking-tight text-stone-900 leading-[1.15]">
+              Jejak Auliya &amp; Khazanah Ziarah Nusantara.
             </h1>
-            <p className="text-stone-600 text-sm sm:text-base leading-relaxed tracking-tight max-w-xl">
-              Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, dan artinya), bacaan Yasin, Tahlil, dan Tawassul, serta peta rute perjalanan dan kisah karomah {totalCatalogCount} makam Wali Songo, ulama pesantren, dan habaib di seluruh Indonesia.
+            <p className="text-sm sm:text-base text-stone-600 max-w-2xl leading-relaxed">
+              Peta interaktif, tuntunan tahlil lapangan, dan arsip riwayat batin para Wali di kepulauan Indonesia.
             </p>
           </div>
 
           {/* Subtle Editorial Quick Actions */}
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <Link
               to="/peta"
-              className="px-4 py-2.5 rounded-full bg-stone-900 hover:bg-emerald-800 text-white text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition shadow-xs"
+              className="px-4 py-2.5 rounded-xl bg-stone-900 hover:bg-emerald-900 text-white text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition"
             >
-              <MapIcon className="w-3.5 h-3.5" aria-hidden="true" />
+              <MapIcon className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
               <span>Peta &amp; Jalur Wali Songo</span>
             </Link>
             <Link
               to="/panduan"
-              className="px-4 py-2.5 rounded-full bg-white hover:border-stone-400 text-stone-700 border border-stone-200/80 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition"
+              className="px-4 py-2.5 rounded-xl bg-white hover:border-stone-400 text-stone-700 border border-stone-200/80 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition"
             >
-              <BookOpen className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+              <BookOpen className="w-3.5 h-3.5 text-emerald-800" strokeWidth={1.75} aria-hidden="true" />
               <span>Yasin, Tahlil &amp; Tasbih</span>
             </Link>
             <button
               type="button"
               onClick={() => setShowVisualShowcase(!showVisualShowcase)}
-              className={`px-3.5 py-2.5 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition cursor-pointer border ${
+              className={`px-3.5 py-2.5 rounded-xl text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition cursor-pointer border ${
                 showVisualShowcase
                   ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
                   : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
               }`}
             >
-              <Film className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+              <Film className="w-3.5 h-3.5 text-emerald-800" strokeWidth={1.75} aria-hidden="true" />
               <span>{showVisualShowcase ? 'Tutup Visualisasi' : 'Visualisasi Dokumenter'}</span>
             </button>
           </div>
@@ -391,30 +382,30 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
 
         {/* Optional Collapsible Documentary / Constellation Showcase */}
         {showVisualShowcase && (
-          <div className="bg-white rounded-3xl p-4 sm:p-6 border border-stone-200/70 shadow-xs space-y-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 border border-stone-200/70 shadow-2xs space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-medium text-stone-600 tracking-tight">
                 Eksplorasi Visual Jaringan Dakwah Nusantara
               </span>
-              <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-full border border-stone-200/70">
+              <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200/70">
                 <button
                   type="button"
                   onClick={() => setHeroMediaMode('video')}
-                  className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer ${
                     heroMediaMode === 'video' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'
                   }`}
                 >
-                  <Film className="w-3.5 h-3.5" aria-hidden="true" />
+                  <Film className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
                   <span>Dokumenter</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setHeroMediaMode('constellation')}
-                  className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer ${
                     heroMediaMode === 'constellation' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'
                   }`}
                 >
-                  <Compass className="w-3.5 h-3.5" aria-hidden="true" />
+                  <Compass className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
                   <span>Konstelasi</span>
                 </button>
               </div>
@@ -447,152 +438,94 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
           </div>
         )}
 
-        {/* Banner Reflektif Panggilan Rindu / Momentum Jumat & Haul (Tahap 7) */}
+        {/* =====================================================================
+            1B. SATU BARIS KALIMAT PEMBUKA MINIMALIS TANPA KOTAK (Editorial Lead)
+            ===================================================================== */}
         {isJumatMomentum ? (
-          <div className="rounded-3xl p-5 sm:p-6 bg-gradient-to-r from-emerald-950 via-stone-900 to-emerald-950 text-white border border-emerald-800/40 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="space-y-1.5 max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/15 text-amber-200 border border-amber-300/30 text-[11px] font-semibold tracking-wide">
-                <Sparkles className="w-3 h-3" aria-hidden="true" />
-                <span>Malam &amp; Hari Jumat Mubarak · Pintu Langit Terbuka</span>
-              </span>
-              <h2 className="font-serif text-base sm:text-lg font-semibold text-white leading-snug">
-                Ada Rindu yang Hanya Sampai Lewat Fatihah, dan Ada Beban Hati yang Luruh Saat Mengingat Kisah Para Kekasih-Nya.
-              </h2>
-              <p className="text-xs text-stone-300 leading-relaxed">
-                Temukan penawar kegelisahan batin lewat wasiat rahasia para Auliya, atau titipkan nama almarhum orang tua &amp; hajat keluarga Anda agar diaminkan bersama.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="py-2.5 border-y border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
+            <p className="font-serif italic text-stone-700 leading-relaxed">
+              Malam &amp; Hari Jumat Mubarak — Ada rindu yang hanya sampai lewat Fatihah, dan ada beban hati yang luruh saat mengingat kisah para kekasih-Nya.
+            </p>
+            <div className="flex items-center gap-4 shrink-0">
               <Link
                 to="/rubrik"
-                className="px-3.5 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-semibold transition shadow-2xs"
+                className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4"
               >
-                Buka Kisah Pengobat Hati
+                Buka kisah pengobat hati
               </Link>
               <Link
                 to="/infaq"
-                className="px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-semibold transition"
+                className="text-xs font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
               >
-                Titip Nama &amp; Hajat
-              </Link>
-              <Link
-                to="/bacaan"
-                className="px-3.5 py-2 rounded-full bg-emerald-900/70 hover:bg-emerald-800 text-emerald-100 border border-emerald-600/40 text-xs font-semibold transition"
-              >
-                Baca Yasin &amp; Tahlil
+                Titip doa
               </Link>
             </div>
           </div>
         ) : featuredHaulSite ? (
-          <div className="rounded-3xl p-5 sm:p-6 bg-gradient-to-r from-amber-50/80 via-white to-emerald-50/60 border border-amber-200/80 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="space-y-1.5 max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/5 text-emerald-800 border border-emerald-800/15 text-[11px] font-semibold tracking-wide">
-                <Sparkles className="w-3 h-3 text-amber-600" aria-hidden="true" />
-                <span>Panggilan Rindu &amp; Jejak Haul · {featuredHaulSite.haulSchedule || 'Waliyullah Nusantara'}</span>
-              </span>
-              <h2 className="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-snug">
-                Mengenang {featuredHaulSite.title}: Rahasia Batin Apa yang Membuat Beliau Tegar Saat Seluruh Pintu Dunia Terasa Tertutup?
-              </h2>
-              <p className="text-xs text-stone-600 leading-relaxed italic">
-                &ldquo;
-                {(
-                  featuredHaulSite.untoldStory ||
-                  (Array.isArray(featuredHaulSite.karomah) ? featuredHaulSite.karomah[0] : featuredHaulSite.karomah) ||
-                  featuredHaulSite.description ||
-                  ''
-                )
-                  .replace(/<!--more-->/g, ' ')
-                  .trim()
-                  .slice(0, 130)}
-                ...&rdquo;
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="py-2.5 border-y border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
+            <p className="font-serif italic text-stone-700 leading-relaxed">
+              Jejak Haul &amp; Wasiat {featuredHaulSite.title} ({featuredHaulSite.haulSchedule || 'Waliyullah Nusantara'}) — Menyelami rahasia keteguhan batin beliau saat menghadapi ujian zaman.
+            </p>
+            <div className="flex items-center gap-4 shrink-0">
               <button
                 type="button"
                 onClick={() => onSelectSite(featuredHaulSite)}
-                className="px-4 py-2.5 rounded-full bg-stone-900 hover:bg-emerald-800 text-white text-xs font-semibold transition cursor-pointer shadow-2xs"
+                className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 cursor-pointer"
               >
-                Buka Wasiat &amp; Kisah Beliau
+                Baca wasiat beliau
               </button>
               <Link
                 to="/infaq"
-                className="px-4 py-2.5 rounded-full bg-white hover:border-stone-400 text-stone-800 border border-stone-200/90 text-xs font-semibold transition"
+                className="text-xs font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
               >
-                Titip Doa di Dinding Munajat
+                Dinding munajat
               </Link>
             </div>
           </div>
         ) : null}
 
         {/* =====================================================================
-            2. MINIMALIST SEARCH & HORIZONTAL PILL FILTERS
+            2. UNIFIED SEARCH & FILTER BAR (Direct-to-Content Layout)
             ===================================================================== */}
-        <div
-          id="katalog-direktori"
-          className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between pt-2"
-        >
-          {/* Minimalist Search Input */}
-          <div className="relative flex-1 max-w-md">
-            <label htmlFor="site-search-input" className="sr-only">
-              Cari nama tokoh, makam, atau kota
-            </label>
-            <Search
-              className="w-4 h-4 text-stone-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-              aria-hidden="true"
-            />
-            <input
-              id="site-search-input"
-              type="search"
-              placeholder="Cari nama tokoh, makam, atau kota..."
-              value={searchQuery}
-              onFocus={() => {
-                ensureFullSitesLoaded();
-              }}
-              onChange={(e) => {
-                ensureFullSitesLoaded();
-                setSearchQuery(e.target.value);
-              }}
-              className="w-full pl-11 pr-10 py-3 bg-white rounded-2xl border border-stone-200/80 text-sm text-stone-900 placeholder-stone-500 focus:outline-none focus:border-emerald-700 transition shadow-2xs"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                aria-label="Hapus pencarian"
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-800 cursor-pointer"
-              >
-                <X className="w-4 h-4" aria-hidden="true" />
-              </button>
-            )}
-          </div>
-
-          {/* Horizontal Scrollable Pill Filters + Province Pill */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
-            {categories.map((cat) => {
-              const isSelected = selectedCategory === cat.id;
-              return (
+        <div id="katalog-direktori" className="space-y-4">
+          {/* Unified Search Input + Province Select */}
+          <div className="bg-white rounded-2xl border border-stone-200/80 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center divide-y sm:divide-y-0 sm:divide-x divide-stone-200/70">
+            <div className="relative flex-1">
+              <label htmlFor="site-search-input" className="sr-only">
+                Cari nama tokoh, makam, atau kota
+              </label>
+              <Search
+                className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                strokeWidth={1.75}
+                aria-hidden="true"
+              />
+              <input
+                id="site-search-input"
+                type="search"
+                placeholder="Cari nama tokoh, makam, atau kota..."
+                value={searchQuery}
+                onFocus={() => {
+                  ensureFullSitesLoaded();
+                }}
+                onChange={(e) => {
+                  ensureFullSitesLoaded();
+                  setSearchQuery(e.target.value);
+                }}
+                className="w-full pl-11 pr-10 py-3 bg-transparent text-sm text-stone-900 placeholder-stone-400 focus:outline-none"
+              />
+              {searchQuery && (
                 <button
-                  key={cat.id}
                   type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => {
-                    ensureFullSitesLoaded();
-                    setSelectedCategory(cat.id);
-                  }}
-                  className={`px-4 py-2 rounded-full text-xs font-medium tracking-tight whitespace-nowrap transition cursor-pointer ${
-                    isSelected
-                      ? 'bg-stone-900 text-white shadow-2xs'
-                      : 'bg-white text-stone-700 border border-stone-200/80 hover:border-stone-400 hover:text-stone-900'
-                  }`}
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Hapus pencarian"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-800 cursor-pointer"
                 >
-                  {cat.label}
+                  <X className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
                 </button>
-              );
-            })}
+              )}
+            </div>
 
-            {/* Minimal Province Pill Dropdown */}
-            <div className="relative shrink-0">
+            <div className="relative sm:w-56 shrink-0">
               <label htmlFor="province-filter-select" className="sr-only">
                 Filter berdasarkan provinsi
               </label>
@@ -607,11 +540,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                   ensureFullSitesLoaded();
                   setSelectedProvince(e.target.value);
                 }}
-                className={`appearance-none pl-3.5 pr-8 py-2 rounded-full text-xs font-medium tracking-tight cursor-pointer transition border focus:outline-none focus:border-emerald-700 ${
-                  selectedProvince !== 'Semua Provinsi'
-                    ? 'bg-emerald-700 text-white border-emerald-700'
-                    : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
-                }`}
+                className="w-full appearance-none pl-4 pr-9 py-3 bg-transparent text-xs sm:text-sm font-medium text-stone-700 cursor-pointer focus:outline-none"
               >
                 {provinces.map((prov) => (
                   <option key={prov} value={prov} className="bg-white text-stone-900">
@@ -620,56 +549,74 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                 ))}
               </select>
               <Filter
-                className={`w-3 h-3 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${
-                  selectedProvince !== 'Semua Provinsi' ? 'text-white' : 'text-stone-500'
-                }`}
+                className="w-3.5 h-3.5 text-stone-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                strokeWidth={1.75}
                 aria-hidden="true"
               />
             </div>
           </div>
-        </div>
 
-        {/* =====================================================================
-            2B. BARIS FILTER "JEJAK BATIN & HIKMAH KEHIDUPAN" (EMOTIONAL INTENT PILLS)
-            ===================================================================== */}
-        <div className="bg-gradient-to-r from-emerald-950/[0.03] via-amber-900/[0.04] to-emerald-950/[0.03] rounded-2xl p-3.5 sm:p-4 border border-stone-200/80 space-y-2.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-stone-700 px-0.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" aria-hidden="true" />
-            <span>Temukan Kisah &amp; Wasilah Sesuai Suasana Hati Anda:</span>
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
-            {EMOTIONAL_INTENTS.map((intent) => {
-              const isSelected = emotionalFilter === intent.id;
-              return (
-                <button
-                  key={intent.id}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => {
-                    ensureFullSitesLoaded();
-                    setEmotionalFilter(intent.id);
-                  }}
-                  className={`px-3.5 py-2 rounded-full text-xs font-medium tracking-tight whitespace-nowrap transition cursor-pointer border ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-emerald-800 to-teal-900 text-amber-50 border-emerald-800 shadow-xs'
-                      : 'bg-white/90 text-stone-700 border-stone-200/90 hover:border-amber-400/80 hover:bg-amber-50/40 hover:text-stone-900'
-                  }`}
-                >
-                  {intent.label}
-                </button>
-              );
-            })}
+          {/* Minimalist Underline Tabs for Category + Clean Text Chips for Emotional Intent */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-stone-200">
+            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+              {categories.map((cat) => {
+                const isSelected = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      ensureFullSitesLoaded();
+                      setSelectedCategory(cat.id);
+                    }}
+                    className={`pb-3 -mb-px text-xs sm:text-sm whitespace-nowrap transition-colors cursor-pointer border-b-2 ${
+                      isSelected
+                        ? 'border-emerald-800 text-emerald-950 font-semibold'
+                        : 'border-transparent text-stone-500 hover:text-stone-800 font-medium'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Clean Text Chips for Emotional Intent (No Sparkles/Emojis) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2.5 lg:pb-2">
+              {EMOTIONAL_INTENTS.map((intent) => {
+                const isSelected = emotionalFilter === intent.id;
+                return (
+                  <button
+                    key={intent.id}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      ensureFullSitesLoaded();
+                      setEmotionalFilter(intent.id);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-900 text-white font-medium'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
+                    }`}
+                  >
+                    {intent.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Subtle Results Status Row */}
-        <div className="flex items-center justify-between text-xs text-stone-600 px-1">
+        <div className="flex items-center justify-between text-xs text-stone-500 px-0.5">
           <p>
             Menampilkan <strong className="font-semibold text-stone-900">{displayedSites.length}</strong> dari{' '}
             <strong className="font-semibold text-stone-900">
               {isFiltered ? filteredSites.length : totalCatalogCount}
             </strong>{' '}
-            situs
+            makam di {provinces.length - 1} provinsi
             {selectedCategory !== 'Semua' && <span> · {selectedCategory}</span>}
             {selectedProvince !== 'Semua Provinsi' && <span> · {selectedProvince}</span>}
             {emotionalFilter !== 'all' && (
@@ -686,7 +633,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                 setEmotionalFilter('all');
                 setVisibleCount(INITIAL_VISIBLE_SITES);
               }}
-              className="text-xs font-medium text-emerald-800 hover:text-emerald-900 hover:underline cursor-pointer"
+              className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 cursor-pointer"
             >
               Reset Filter
             </button>
@@ -694,9 +641,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
         </div>
 
         {/* =====================================================================
-            3. CLEAN CARD GRID (Aturan Maksimal 3 Elemen — Anatomi Kartu ala Airbnb)
+            3. CLEAN CARD GRID (Airbnb / Kinfolk Editorial Card Style)
             ===================================================================== */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {displayedSites.map((site, index) => {
             const optimizedThumb = optimizeSiteImageUrl(site.imageUrl, 480, 68);
             const thumbSrcSet = getSiteImageSrcSet(site.imageUrl, 68);
@@ -704,7 +651,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
             const shortEra = extractShortEra(site.era);
             const badgeLabel = site.category === 'Walisongo' ? 'Wali Songo' : site.category;
             const isLcpCandidate = index === 0;
-            const karomahCount = site.karomah ? site.karomah.length : 0;
+            const snippetText = (site.untoldStory || site.description || '')
+              .replace(/<!--more-->/g, ' ')
+              .trim();
 
             return (
               <article key={site.id} className="group content-auto">
@@ -714,8 +663,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                   aria-label={`Buka profil, sejarah, dan rute Makam ${site.title} (${site.name}) di ${site.location.city}, ${site.location.province}`}
                   className="block cursor-pointer space-y-3 focus:outline-none"
                 >
-                  {/* 1. Foto Rasio 4:3 dengan sudut membulat (rounded-2xl) & 1 Badge Transparan */}
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-stone-200 border border-stone-200/60 shadow-2xs">
+                  {/* 1. Foto Rasio 4:3 dengan sudut membulat (rounded-2xl) & 1 Label Sudut */}
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-stone-200">
                     <img
                       src={optimizedThumb}
                       srcSet={thumbSrcSet}
@@ -730,38 +679,34 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                       referrerPolicy="no-referrer"
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
-                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-medium bg-stone-900/90 text-white">
+                    <span className="absolute top-3 left-3 text-[11px] font-medium px-2.5 py-1 rounded-md bg-stone-950/60 text-stone-100 backdrop-blur-xs">
                       {badgeLabel}
                     </span>
                   </div>
 
-                  {/* 2 & 3. Kota/Provinsi + Era Singkat & Nama Tokoh/Situs + Curiosity Badge */}
-                  <div className="space-y-1.5 px-1">
-                    <div className="flex items-center justify-between gap-2 text-xs text-stone-600">
-                      <span className="inline-flex items-center gap-1 truncate">
-                        <MapPin className="w-3.5 h-3.5 text-emerald-700 shrink-0" aria-hidden="true" />
-                        <span className="truncate">
-                          {site.location.city}, {site.location.province}
-                        </span>
+                  {/* 2. Konten di Bawah Foto: Kota/Provinsi, Judul Serif, Cuplikan 2 Baris, Footer Bersih */}
+                  <div className="space-y-1 px-0.5">
+                    <div className="flex items-center justify-between gap-2 text-xs text-stone-500 font-medium">
+                      <span className="truncate">
+                        {site.location.city}, {site.location.province}
                       </span>
-                      <span className="shrink-0 text-stone-600">{shortEra}</span>
+                      {shortEra && <span className="shrink-0 text-stone-400">{shortEra}</span>}
                     </div>
 
-                    <h2 className="font-serif text-lg font-semibold tracking-tight text-stone-900 group-hover:text-emerald-800 transition line-clamp-1">
+                    <h2 className="font-serif text-xl text-stone-900 group-hover:text-emerald-900 transition-colors line-clamp-1">
                       Makam {site.title}
                     </h2>
 
-                    <p className="text-xs text-stone-600 line-clamp-1">{site.name}</p>
+                    <p className="text-sm text-stone-600 line-clamp-2 leading-relaxed">
+                      {snippetText}
+                    </p>
 
-                    {karomahCount > 1 && (
-                      <div className="pt-1">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50/90 text-amber-900 border border-amber-200/80 text-[11px] font-medium tracking-tight group-hover:bg-amber-100/80 transition">
-                          <Sparkles className="w-3 h-3 text-amber-600 shrink-0" aria-hidden="true" />
-                          <span>{karomahCount} Kisah Karomah &amp; Riwayat Khusus</span>
-                          <Lock className="w-2.5 h-2.5 text-amber-700/70 shrink-0 ml-0.5" aria-hidden="true" />
-                        </span>
-                      </div>
-                    )}
+                    <div className="pt-3 mt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
+                      <span>Riwayat &amp; Doa Tersedia</span>
+                      <span className="font-medium text-emerald-800 group-hover:translate-x-0.5 transition-transform">
+                        Buka →
+                      </span>
+                    </div>
                   </div>
                 </Link>
               </article>
@@ -771,7 +716,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
           {filteredSites.length === 0 && (
             <div className="col-span-full bg-white rounded-2xl p-8 sm:p-12 text-center border border-stone-200/70 shadow-2xs my-4">
               <div className="inline-flex p-3.5 bg-stone-100 text-stone-600 rounded-2xl mb-3">
-                <Compass className="w-6 h-6" aria-hidden="true" />
+                <Compass className="w-6 h-6" strokeWidth={1.75} aria-hidden="true" />
               </div>
               <h3 className="text-lg font-serif font-semibold text-stone-900 mb-1">Situs Tidak Ditemukan</h3>
               <p className="text-xs sm:text-sm text-stone-500 max-w-sm mx-auto mb-5">
@@ -786,7 +731,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                   setEmotionalFilter('all');
                   setVisibleCount(INITIAL_VISIBLE_SITES);
                 }}
-                className="px-5 py-2.5 bg-stone-900 hover:bg-emerald-800 text-white rounded-full text-xs font-medium transition cursor-pointer"
+                className="px-5 py-2.5 bg-stone-900 hover:bg-emerald-900 text-white rounded-xl text-xs font-medium transition cursor-pointer"
               >
                 Tampilkan Semua Situs
               </button>
@@ -803,10 +748,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                 const all = await ensureFullSitesLoaded();
                 setVisibleCount((prev) => Math.min(all.length, prev + 12));
               }}
-              className="px-6 py-3 bg-stone-900 hover:bg-emerald-800 text-white rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-2 transition cursor-pointer shadow-xs"
+              className="px-6 py-3 bg-stone-900 hover:bg-emerald-900 text-white rounded-xl text-xs font-medium tracking-tight inline-flex items-center gap-2 transition cursor-pointer shadow-2xs"
             >
               <span>Tampilkan Lebih Banyak (+{Math.min(12, totalCatalogCount - visibleCount)} Situs)</span>
-              <ArrowDown className="w-3.5 h-3.5" aria-hidden="true" />
+              <ArrowDown className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -814,7 +759,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({ onSelectSit
                 const all = await ensureFullSitesLoaded();
                 setVisibleCount(all.length);
               }}
-              className="px-5 py-3 bg-white hover:border-stone-400 text-stone-700 border border-stone-200/80 rounded-full text-xs font-medium tracking-tight transition cursor-pointer"
+              className="px-5 py-3 bg-white hover:border-stone-400 text-stone-700 border border-stone-200/80 rounded-xl text-xs font-medium tracking-tight transition cursor-pointer"
             >
               Buka Seluruh {totalCatalogCount} Situs
             </button>
