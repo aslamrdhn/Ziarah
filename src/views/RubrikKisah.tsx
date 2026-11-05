@@ -12,7 +12,6 @@ import {
   PlusCircle,
   Lock,
   Heart,
-  HeartHandshake,
   Copy,
   CheckCircle2,
   MessageSquareHeart,
@@ -40,6 +39,7 @@ import {
   useVerifiedDonationUnlock,
 } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
+import { useSiteCopy } from '../lib/siteCopy';
 
 export interface RubrikItem {
   id: string;
@@ -113,6 +113,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   onOpenKontribusi
 }) => {
   const { sites } = useSites();
+  const siteCopy = useSiteCopy();
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
@@ -283,14 +284,15 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   }, []);
 
   // Compile articles from curator custom articles, live sites data, and approved community contributions
+  // Deduplicate by id so any built-in article edited by Admin in customArticles overrides its default version
   const articles: RubrikItem[] = useMemo(() => {
-    const list: RubrikItem[] = [
+    const rawList: RubrikItem[] = [
       ...(gateSettings.customArticles || []),
       ...approvedCommunityRubrik
     ];
 
     // Add highlighted historical editorial entries near the top so they serve as compelling samples
-    list.push({
+    rawList.push({
       id: 'rubrik-wali-songo-strategy',
       siteId: 'wali-7',
       siteName: 'Sunan Kalijaga (Raden Sahid)',
@@ -302,7 +304,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       readTime: '4 mnt'
     });
 
-    list.push({
+    rawList.push({
       id: 'rubrik-sekumpul-adab',
       siteId: 'ulama-3',
       siteName: 'KH. Muhammad Zaini Abdul Ghani (Abah Guru Sekumpul)',
@@ -316,7 +318,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
     sites.forEach(site => {
       if (site.untoldStory) {
-        list.push({
+        rawList.push({
           id: `rubrik-${site.id}-untold`,
           siteId: site.id,
           siteName: site.name,
@@ -331,7 +333,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
       if (site.karomah && site.karomah.length > 0) {
         site.karomah.forEach((k, idx) => {
-          list.push({
+          rawList.push({
             id: `rubrik-${site.id}-karomah-${idx}`,
             siteId: site.id,
             siteName: site.name,
@@ -346,7 +348,14 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       }
     });
 
-    return list;
+    const seenIds = new Set<string>();
+    const deduped: RubrikItem[] = [];
+    for (const item of rawList) {
+      if (!item || !item.id || seenIds.has(item.id)) continue;
+      seenIds.add(item.id);
+      deduped.push(item);
+    }
+    return deduped;
   }, [sites, approvedCommunityRubrik, gateSettings.customArticles]);
 
   const filteredArticles = useMemo(() => {
@@ -494,7 +503,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             Rubrik Ziarah Nusantara.
           </h1>
           <p className="text-stone-600 text-xs sm:text-sm md:text-base leading-relaxed">
-            Menghadirkan naskah manuskrip, kisah rahasia, hikmah karomah, dan khazanah sejarah keilmuan para Aulia dan Ulama Nusantara.
+            {siteCopy.rubrikHeaderSubtitle}
           </p>
         </div>
         {onOpenKontribusi && (
@@ -817,59 +826,58 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       {/* Modal Buka Akses Rubrik (3 Paket Infaq Psikologis + Titip Doa + Bukti Transfer) */}
       <AnimatePresence>
         {unlockModalArticle && (
-          <div className="fixed inset-0 z-[3000] bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[3000] bg-stone-950/60 backdrop-blur-xs flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
+              className="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] flex flex-col shadow-2xl border border-stone-200/90 overflow-hidden"
             >
-              <div className="p-5 sm:p-6 bg-gradient-to-r from-emerald-900 via-brand-900 to-teal-950 text-white relative shrink-0">
+              <div className="p-5 sm:p-6 bg-[#FAF8F5] border-b border-stone-200/80 text-stone-900 relative shrink-0">
                 <button
                   onClick={() => setUnlockModalArticle(null)}
-                  className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/15 rounded-full transition-colors cursor-pointer"
+                  className="absolute top-4 right-4 p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 rounded-full transition-colors cursor-pointer"
                 >
                   ✕
                 </button>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-gold-300 text-[11px] font-bold mb-2">
-                  <HeartHandshake className="w-3.5 h-3.5" />
-                  <span>Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara</span>
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-stone-500 mb-1.5">
+                  Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara
                 </div>
-                <h3 className="text-lg font-serif font-black leading-snug">
+                <h3 className="text-lg font-serif font-semibold text-stone-900 leading-snug">
                   {unlockModalArticle.title}
                 </h3>
-                <p className="text-xs text-slate-200 mt-1">
-                  {unlockModalArticle.siteName} • {unlockModalArticle.location}
+                <p className="text-xs text-stone-500 mt-1">
+                  {unlockModalArticle.siteName} · {unlockModalArticle.location}
                 </p>
               </div>
 
               <div className="p-5 sm:p-6 overflow-y-auto space-y-4">
                 {unlockSuccessState ? (
                   <div className="text-center py-3">
-                    <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-emerald-100 shadow-xs">
+                    <div className="w-14 h-14 bg-stone-100 text-stone-800 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-stone-200/80">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
-                    <span className="inline-block text-[10px] font-bold font-mono uppercase tracking-wider bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 mb-2">
+                    <span className="inline-block text-[10px] font-semibold font-mono uppercase tracking-wider bg-[#FAF8F5] text-stone-700 px-2.5 py-1 rounded-lg border border-stone-200 mb-2">
                       Kode Referensi Bukti: #{receipt?.referenceCode}
                     </span>
-                    <h4 className="font-serif text-slate-900 text-lg mb-1.5">
+                    <h4 className="font-serif text-stone-900 text-lg mb-1.5">
                       Alhamdulillah — Seluruh Khazanah Kini Terbuka!
                     </h4>
-                    <p className="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
-                      Alhamdulillah, terima kasih atas infaq jariyah Anda. Seluruh lembaran Khazanah &amp; Wasiat Rahasia kini telah terbuka penuh di perangkat Anda.
+                    <p className="text-xs sm:text-sm text-stone-600 mb-4 leading-relaxed">
+                      {siteCopy.unlockSuccessMessage}
                     </p>
 
                     {receipt && (
-                      <div className="mb-4 p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3 text-left">
+                      <div className="mb-4 p-3 bg-[#FAF8F5] rounded-2xl border border-stone-200/80 flex items-center gap-3 text-left">
                         <img
                           src={receipt.dataUrl}
                           alt="Bukti Transfer"
-                          className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
+                          className="w-12 h-12 rounded-xl object-cover border border-stone-200 shrink-0"
                         />
                         <div className="text-xs min-w-0">
-                          <p className="font-bold text-slate-900 truncate">{finalDonorForWa} ({paymentMethod})</p>
-                          <p className="text-emerald-700 font-semibold">Rp {activeEffectiveNominal.toLocaleString('id-ID')}</p>
-                          <p className="text-[10px] text-slate-400">Tersimpan di Arsip Digital &amp; Dinding Munajat</p>
+                          <p className="font-semibold text-stone-900 truncate">{finalDonorForWa} ({paymentMethod})</p>
+                          <p className="text-stone-700 font-medium">Rp {activeEffectiveNominal.toLocaleString('id-ID')}</p>
+                          <p className="text-[10px] text-stone-400">Tersimpan di Arsip Digital &amp; Dinding Munajat</p>
                         </div>
                       </div>
                     )}
@@ -884,7 +892,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                             setActiveStoryModal(targetToRead);
                           }
                         }}
-                        className="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
+                        className="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-2xl text-xs sm:text-sm transition-colors cursor-pointer"
                       >
                         Baca Naskah Lengkap Sekarang →
                       </button>
@@ -892,9 +900,9 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                         href={waUnlockUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                        className="w-full py-3 bg-[#FAF8F5] hover:bg-stone-100 text-stone-800 border border-stone-200/90 font-medium rounded-2xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        <MessageSquareHeart className="w-4 h-4" />
+                        <MessageSquareHeart className="w-4 h-4 text-stone-700" />
                         <span>Teruskan Bukti ke WhatsApp Admin (+62 857-1737-8885)</span>
                       </a>
                     </div>
@@ -902,24 +910,23 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                 ) : (
                   <>
                     {/* Kutipan Hikmah di atas form konfirmasi infaq */}
-                    <div className="p-3.5 bg-gradient-to-br from-emerald-50/90 via-amber-50/60 to-white border border-emerald-200/80 rounded-2xl text-xs text-emerald-950 leading-relaxed">
-                      <p className="font-serif italic text-slate-800 leading-relaxed">
-                        "Siapa yang membantu menghidupkan kisah dan jejak orang-orang shalih, semoga Allah memudahkan segala hajat dunia dan akhiratnya."
+                    <div className="p-4 bg-[#FAF8F5] border border-stone-200/80 rounded-2xl text-xs text-stone-800 leading-relaxed">
+                      <p className="font-serif italic text-stone-700 leading-relaxed">
+                        &ldquo;Siapa yang membantu menghidupkan kisah dan jejak orang-orang shalih, semoga Allah memudahkan segala hajat dunia dan akhiratnya.&rdquo;
                       </p>
-                      <p className="text-[11px] text-emerald-800 font-semibold mt-1.5">
-                        Amal Jariyah: Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara
+                      <p className="text-[11px] text-stone-500 font-medium mt-1.5">
+                        Amal Jariyah · Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara
                       </p>
                     </div>
 
                     {/* 3 Paket Pilihan Infaq Psikologis (Decoy Pricing) */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-2">
+                      <label className="block text-xs font-semibold text-stone-800 mb-2">
                         Pilih Paket Infaq Jariyah Pembuka Khazanah:
                       </label>
                       <div className="space-y-2.5">
                         {RUBRIK_DECOY_PACKAGES.map((pkg) => {
                           const isSelected = !customNominalInput.trim() && selectedNominal === pkg.amount;
-                          const isPopular = pkg.amount === 25000;
                           return (
                             <button
                               key={pkg.amount}
@@ -928,40 +935,32 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                                 setSelectedNominal(pkg.amount);
                                 setCustomNominalInput('');
                               }}
-                              className={`w-full text-left p-3.5 rounded-2xl border transition-all cursor-pointer relative ${
+                              className={`w-full text-left p-3.5 rounded-2xl border transition-colors cursor-pointer relative ${
                                 isSelected
-                                  ? 'bg-emerald-50/90 border-emerald-700 ring-2 ring-emerald-600/20 shadow-xs'
-                                  : isPopular
-                                    ? 'bg-amber-50/40 border-amber-300/90 hover:border-emerald-600'
-                                    : 'bg-white border-slate-200 hover:border-emerald-300 hover:bg-slate-50/60'
+                                  ? 'bg-[#FAF8F5] border-stone-900 shadow-2xs'
+                                  : 'bg-white border-stone-200/80 hover:border-stone-400'
                               }`}
                             >
                               <div className="flex items-center justify-between gap-2 mb-1">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-xs sm:text-sm font-serif font-black text-slate-900">
-                                    Rp {pkg.amount.toLocaleString('id-ID')} — "{pkg.title}"
+                                  <span className="text-xs sm:text-sm font-serif font-semibold text-stone-900">
+                                    Rp {pkg.amount.toLocaleString('id-ID')} — &ldquo;{pkg.title}&rdquo;
                                   </span>
                                   {pkg.badge && (
-                                    <span
-                                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                        isPopular
-                                          ? 'bg-amber-500 text-white shadow-2xs'
-                                          : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                                      }`}
-                                    >
+                                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 border border-stone-200/80">
                                       {pkg.badge}
                                     </span>
                                   )}
                                 </div>
                                 <span
                                   className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                                    isSelected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-300 bg-white'
+                                    isSelected ? 'border-stone-900 bg-stone-900 text-white' : 'border-stone-300 bg-white'
                                   }`}
                                 >
                                   {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
                                 </span>
                               </div>
-                              <p className="text-[11px] text-slate-600 leading-relaxed">{pkg.description}</p>
+                              <p className="text-[11px] text-stone-600 leading-relaxed">{pkg.description}</p>
                             </button>
                           );
                         })}
@@ -1032,7 +1031,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       <textarea
                         rows={2}
                         maxLength={200}
-                        placeholder="Contoh: Mohon doa untuk kesembuhan orang tua & kelancaran rezeki keluarga..."
+                        placeholder={siteCopy.doaHajatPlaceholder}
                         value={prayerIntent}
                         onChange={(e) => setPrayerIntent(e.target.value)}
                         className="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 resize-none"
@@ -1065,10 +1064,10 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                         type="button"
                         onClick={handleConfirmUnlockDonation}
                         disabled={isSubmittingDonation || !isProofComplete}
-                        className={`w-full py-3.5 font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-sm flex items-center justify-center gap-2 ${
+                        className={`w-full py-3.5 font-medium rounded-2xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 ${
                           !isProofComplete
-                            ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-emerald-700 via-emerald-800 to-brand-900 hover:from-emerald-800 hover:to-brand-950 text-white cursor-pointer'
+                            ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
+                            : 'bg-stone-900 hover:bg-stone-800 text-white cursor-pointer'
                         }`}
                       >
                         {isSubmittingDonation ? (

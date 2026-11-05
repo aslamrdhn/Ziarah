@@ -16,7 +16,11 @@ import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
 import { getSitePath } from '../lib/siteSlugs';
 import { extractShortEra } from '../lib/siteLogistics';
-import { SiteDetails } from '../components/SiteDetails';
+import { useSiteCopy } from '../lib/siteCopy';
+
+const SiteDetails = lazy(() =>
+  import('../components/SiteDetails').then((m) => ({ default: m.SiteDetails }))
+);
 
 const HeroCinemaShowcase = lazy(() =>
   import('../components/HeroCinemaShowcase').then((m) => ({ default: m.HeroCinemaShowcase }))
@@ -222,6 +226,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   onOpenKontribusi,
 }) => {
   const { sites: ziarahSites, isLoading, ensureFullSitesLoaded } = useSites();
+  const siteCopy = useSiteCopy();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
@@ -267,19 +272,23 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const sites = ziarahSites;
+  const currentModalSite = useMemo(
+    () => (activeSiteModal ? ziarahSites.find((s) => s.id === activeSiteModal.id) || activeSiteModal : null),
+    [activeSiteModal, ziarahSites]
+  );
   const isJumatMomentum = [4, 5].includes(new Date().getDay());
   const featuredHaulSite =
     sites.find((s) => Boolean(s.haulSchedule && (s.untoldStory || s.karomah))) || sites[0];
 
   const categories = useMemo(
     () => [
-      { id: 'Semua', label: 'Semua' },
-      { id: 'Walisongo', label: 'Wali Songo' },
-      { id: 'Ulama Nusantara', label: 'Ulama Nusantara' },
+      { id: 'Semua', label: siteCopy.tabLabelAll },
+      { id: 'Walisongo', label: siteCopy.tabLabelWaliSongo },
+      { id: 'Ulama Nusantara', label: siteCopy.tabLabelUlama },
       { id: 'Habaib', label: 'Habaib' },
-      { id: 'Auliya Nusantara', label: 'Auliya Nusantara' },
+      { id: 'Auliya Nusantara', label: siteCopy.tabLabelRaja },
     ],
-    []
+    [siteCopy.tabLabelAll, siteCopy.tabLabelWaliSongo, siteCopy.tabLabelUlama, siteCopy.tabLabelRaja]
   );
 
   const provinces = useMemo(() => {
@@ -389,10 +398,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
           <div className="space-y-2.5 max-w-2xl">
             <h1 className="font-serif text-3xl sm:text-5xl font-normal tracking-tight text-stone-900 leading-[1.15]">
-              Jejak Auliya &amp; Khazanah Ziarah Nusantara.
+              {siteCopy.heroTitle}
             </h1>
             <p className="text-sm sm:text-base text-stone-600 max-w-2xl leading-relaxed">
-              Peta interaktif, tuntunan tahlil lapangan, dan arsip riwayat batin para Wali di kepulauan Indonesia.
+              {siteCopy.heroSubtitle}
             </p>
           </div>
 
@@ -491,7 +500,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         {isJumatMomentum ? (
           <div className="py-2.5 border-y border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
             <p className="font-serif italic text-stone-700 leading-relaxed">
-              Malam &amp; Hari Jumat Mubarak — Ada rindu yang hanya sampai lewat Fatihah, dan ada beban hati yang luruh saat mengingat kisah para kekasih-Nya.
+              {siteCopy.jumatBannerTitle} — {siteCopy.jumatBannerSubtitle}
             </p>
             <div className="flex items-center gap-4 shrink-0">
               <Link
@@ -549,7 +558,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               <input
                 id="site-search-input"
                 type="search"
-                placeholder="Cari nama tokoh, makam, atau kota..."
+                placeholder={siteCopy.searchPlaceholder}
                 value={searchQuery}
                 onFocus={() => {
                   ensureFullSitesLoaded();
@@ -749,9 +758,19 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                     </p>
 
                     <div className="pt-3 mt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
-                      <span>Kisah, Wasiat &amp; Doa</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onSelectSite(site);
+                        }}
+                        className="hover:text-stone-900 underline underline-offset-4 cursor-pointer"
+                      >
+                        {siteCopy.cardSecondaryMapCta}
+                      </button>
                       <span className="font-medium text-emerald-800 group-hover:translate-x-0.5 transition-transform">
-                        Baca Kisah →
+                        {siteCopy.cardPrimaryCta} →
                       </span>
                     </div>
                   </div>
@@ -902,20 +921,22 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       </article>
 
       {/* In-Place Reader Modal over DaftarMakam (No Map Redirect, Preserves Scroll Position) */}
-      {activeSiteModal && (
-        <SiteDetails
-          site={activeSiteModal}
-          onClose={handleCloseReaderModal}
-          isSaved={savedSiteIds.includes(activeSiteModal.id)}
-          onToggleSave={handleToggleSave ? () => handleToggleSave(activeSiteModal.id) : undefined}
-          savedDoas={savedDoas}
-          onToggleSaveDoa={onToggleSaveDoa}
-          onContribute={onOpenKontribusi}
-          onViewOnMap={(targetSite) => {
-            setActiveSiteModal(null);
-            onSelectSite(targetSite);
-          }}
-        />
+      {currentModalSite && (
+        <Suspense fallback={null}>
+          <SiteDetails
+            site={currentModalSite}
+            onClose={handleCloseReaderModal}
+            isSaved={savedSiteIds.includes(currentModalSite.id)}
+            onToggleSave={handleToggleSave ? () => handleToggleSave(currentModalSite.id) : undefined}
+            savedDoas={savedDoas}
+            onToggleSaveDoa={onToggleSaveDoa}
+            onContribute={onOpenKontribusi}
+            onViewOnMap={(targetSite) => {
+              setActiveSiteModal(null);
+              onSelectSite(targetSite);
+            }}
+          />
+        </Suspense>
       )}
     </section>
   );

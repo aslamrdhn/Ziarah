@@ -10,6 +10,7 @@ import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOpt
 import { getSiteLogistics } from '../lib/siteLogistics';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
 import { getSiteSlug } from '../lib/siteSlugs';
+import { useSiteCopy } from '../lib/siteCopy';
 
 function splitIntoReadableParagraphs(rawText: string): string[] {
   const cleaned = (rawText || '').replace(/<!--more-->/g, '\n\n').trim();
@@ -170,6 +171,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   const [cloudStories, setCloudStories] = useState<StoryItem[]>([]);
   const [transactionType, setTransactionType] = useState<'infaq' | 'untold' | null>(null);
   const { isUnlocked: isDonationVerified } = useVerifiedDonationUnlock(site?.id);
+  const siteCopy = useSiteCopy();
 
   // Pre-fill author name if logged in
   useEffect(() => {
@@ -371,7 +373,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                   }`}
                 >
                   <ScrollText className="w-3.5 h-3.5 mr-2" strokeWidth={1.75} />
-                  Kisah, Karomah &amp; Wasiat Beliau
+                  {siteCopy.readerTabMainStory}
                 </button>
                 <button
                   type="button"
@@ -383,7 +385,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                   }`}
                 >
                   <BookOpen className="w-3.5 h-3.5 mr-2" strokeWidth={1.75} />
-                  Panduan Ziarah, Doa Khusus &amp; Catatan ({allStories.length})
+                  {siteCopy.readerTabPrayerGuide} ({allStories.length})
                 </button>
               </div>
 
@@ -540,13 +542,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                     {!hasUntold && (
                                       <div className="p-6 rounded-2xl bg-white border border-stone-200/90 shadow-2xs">
                                         <div className="text-[11px] font-medium tracking-widest uppercase text-amber-800">
-                                          Arsip Khazanah Terkunci
+                                          {siteCopy.paywallBadge}
                                         </div>
                                         <h4 className="font-serif text-xl text-stone-900 mt-1">
-                                          Lanjutkan Membaca Wasiat &amp; Riwayat Batin Beliau
+                                          {siteCopy.paywallTitle}
                                         </h4>
                                         <p className="text-sm text-stone-600 mt-2 leading-relaxed">
-                                          Buka seluruh arsip kisah rahasia di 96+ makam Nusantara sekaligus berinfaq jariyah sekali saja dari perangkat Anda.
+                                          {siteCopy.paywallSubtitle}
                                         </p>
                                         <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                                           <button
@@ -554,7 +556,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                             onClick={() => setTransactionType('untold')}
                                             className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white text-sm font-medium transition-colors cursor-pointer"
                                           >
-                                            Buka Seluruh Arsip Kisah
+                                            {siteCopy.paywallPrimaryButton}
                                           </button>
                                           <a
                                             href={waShareUrl}
@@ -624,13 +626,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                               {/* Kartu Pembuka Khazanah (In-Place Unlock) */}
                               <div className="p-6 rounded-2xl bg-white border border-stone-200/90 shadow-2xs">
                                 <div className="text-[11px] font-medium tracking-widest uppercase text-amber-800">
-                                  Arsip Khazanah Terkunci
+                                  {siteCopy.paywallBadge}
                                 </div>
                                 <h4 className="font-serif text-xl text-stone-900 mt-1">
-                                  Lanjutkan Membaca Wasiat &amp; Riwayat Batin Beliau
+                                  {siteCopy.paywallTitle}
                                 </h4>
                                 <p className="text-sm text-stone-600 mt-2 leading-relaxed">
-                                  Buka seluruh arsip kisah rahasia di 96+ makam Nusantara dan Rubrik Kisah sekaligus berinfaq jariyah sekali saja dari perangkat Anda.
+                                  {siteCopy.paywallSubtitle}
                                 </p>
                                 <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                                   <button
@@ -638,7 +640,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                     onClick={() => setTransactionType('untold')}
                                     className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white text-sm font-medium transition-colors cursor-pointer"
                                   >
-                                    Buka Seluruh Arsip Kisah
+                                    {siteCopy.paywallPrimaryButton}
                                   </button>
                                   <a
                                     href={untoldWaUrl}

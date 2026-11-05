@@ -104,7 +104,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isValidId(storyId) && isValidStory(incoming()) && (!('status' in incoming()) || incoming().status in ['pending', 'published']);
       allow update: if isAdmin() && isValidId(storyId) && isValidStory(incoming());
-      allow delete: if isAdmin() && isValidId(storyId);
+      allow delete: if isValidId(storyId) && (isAdmin() || (isSignedIn() && existing().authorUid == request.auth.uid));
     }
 
     match /donations/{donationId} {

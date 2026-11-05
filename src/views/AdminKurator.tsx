@@ -21,7 +21,12 @@ import {
   Globe,
   Copy,
   Check,
-  LogOut
+  LogOut,
+  Type,
+  Download,
+  Upload,
+  Edit3,
+  Scissors
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
@@ -39,10 +44,17 @@ import { ContributionItem, DonationAdminItem } from './admin/AdminTypes';
 import { ContributionQueueSection } from './admin/ContributionQueueSection';
 import { SiteDirectoryAdminSection } from './admin/SiteDirectoryAdminSection';
 import { DonationVerificationModal } from './admin/DonationVerificationModal';
+import { SiteCopyAdminSection } from './admin/SiteCopyAdminSection';
+import {
+  SiteCopyConfig,
+  fetchSiteCopyFromCloud,
+  saveSiteCopyToCloud,
+  getCachedSiteCopy,
+} from '../lib/siteCopy';
 
 export const AdminKurator: React.FC = () => {
   const { sites, isSeededInCloud, cloudSiteCount, refreshCloudSites } = useSites();
-  const [activeTab, setActiveTab] = useState<'kontribusi' | 'makam' | 'rubrik' | 'infaq'>('kontribusi');
+  const [activeTab, setActiveTab] = useState<'kontribusi' | 'makam' | 'rubrik' | 'teks_ui' | 'infaq'>('kontribusi');
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedMessage, setSeedMessage] = useState('');
   const [user, setUser] = useState<User | null>(null);
@@ -90,6 +102,7 @@ export const AdminKurator: React.FC = () => {
   const [infaqPrograms, setInfaqPrograms] = useState<InfaqProgramItem[]>(DEFAULT_INFAQ_PROGRAMS);
   const [rubrikGate, setRubrikGate] = useState<RubrikGateSettings>(DEFAULT_RUBRIK_GATE_SETTINGS);
   const [newCustomArticle, setNewCustomArticle] = useState<Partial<RubrikItem>>({
+    id: '',
     title: '',
     siteName: '',
     location: 'Nusantara',
@@ -98,11 +111,14 @@ export const AdminKurator: React.FC = () => {
     source: 'Arsip Kurator Ziarah Nusantara',
     readTime: '3 mnt',
   });
+  const [editingRubrikArticleId, setEditingRubrikArticleId] = useState<string | null>(null);
   const [isAddingCustomArticle, setIsAddingCustomArticle] = useState(false);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState('');
   const [donations, setDonations] = useState<any[]>([]);
   const [previewProofDonation, setPreviewProofDonation] = useState<any | null>(null);
+  const [restoredSiteCopy, setRestoredSiteCopy] = useState<SiteCopyConfig | null>(null);
+  const [isRestoringBackup, setIsRestoringBackup] = useState(false);
 
   const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
   const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -387,14 +403,25 @@ export const AdminKurator: React.FC = () => {
     const cleanDesc = sanitizeMultilineText(editingSite.description, 1500);
     const cleanHistory = sanitizeMultilineText(editingSite.history, 8000) || cleanDesc;
 
+    const cleanDoaKhusus = (editingSite.doaKhusus || [])
+      .map((d) => ({
+        title: sanitizePlainText(d.title, 160),
+        text: sanitizeMultilineText(d.text, 2500),
+        translation: sanitizeMultilineText(d.translation || '', 2500),
+      }))
+      .filter((d) => Boolean(d.title || d.text));
+
     const payload: ZiarahSite = {
       id: slug,
       name: cleanName,
       title: sanitizePlainText(editingSite.title, 200) || `Makam ${cleanName}`,
       category: (editingSite.category as any) || 'Ulama Nusantara',
+      era: sanitizePlainText(editingSite.era, 160),
+      sanad: sanitizeMultilineText(editingSite.sanad, 3000),
       description: cleanDesc,
       history: cleanHistory,
       imageUrl: cleanImageUrl,
+      imageSource: sanitizePlainText(editingSite.imageSource, 400),
       openingHours: sanitizePlainText(editingSite.openingHours, 120) || 'Buka 24 Jam',
       facilities: (editingSite.facilities || ['Masjid / Musholla', 'Area Parkir']).map((f) => sanitizePlainText(f, 80)).filter(Boolean),
       location: {
@@ -404,11 +431,13 @@ export const AdminKurator: React.FC = () => {
         city: sanitizePlainText(editingSite.location?.city, 120),
         province: sanitizePlainText(editingSite.location?.province, 120),
       },
-      karomah: (editingSite.karomah || []).map((k) => sanitizeMultilineText(k, 1500)).filter(Boolean),
-      doaKhusus: editingSite.doaKhusus || [],
-      untoldStory: sanitizeMultilineText(editingSite.untoldStory, 4000),
-      haulSchedule: sanitizePlainText(editingSite.haulSchedule, 200),
-      localAdab: sanitizeMultilineText(editingSite.localAdab, 1500),
+      karomah: (editingSite.karomah || []).map((k) => sanitizeMultilineText(k, 3000)).filter(Boolean),
+      doaKhusus: cleanDoaKhusus,
+      untoldStory: sanitizeMultilineText(editingSite.untoldStory, 6000),
+      haulSchedule: sanitizePlainText(editingSite.haulSchedule, 240),
+      localAdab: sanitizeMultilineText(editingSite.localAdab, 2000),
+      karya: (editingSite.karya || []).map((k) => sanitizePlainText(k, 240)).filter(Boolean),
+      references: (editingSite.references || []).map((r) => sanitizePlainText(r, 400)).filter(Boolean),
     };
 
     try {
@@ -534,24 +563,109 @@ export const AdminKurator: React.FC = () => {
     });
   };
 
+  const getDefaultBuiltInRubrikArticles = (): RubrikItem[] => [
+    {
+      id: 'rubrik-wali-songo-strategy',
+      siteId: 'wali-7',
+      siteName: 'Sunan Kalijaga (Raden Sahid)',
+      location: 'Demak, Jawa Tengah',
+      category: 'Manuskrip',
+      title: 'Filosofi Gamelan & Tembang Lir-Ilir dalam Dakwah Kultural',
+      content:
+        'Pendekatan dakwah Sunan Kalijaga memadukan kearifan lokal Jawa dengan tauhid Islam. Melalui wayang kulit purwa dan tembang Ilir-Ilir, makna kebangkitan spiritual diajarkan secara metaforik tanpa konfrontasi fisik.<!--more--> Catatan serat kuno mencatat bagaimana beliau mendesain tata kota keraton dengan alun-alun, pohon beringin kembar, dan masjid agung sebagai simbol keterhubungan duniawi dan ukhrawi.',
+      source: 'Katalog Serat Centhini & Naskah Babad Demak',
+      readTime: '4 mnt',
+    },
+    {
+      id: 'rubrik-sekumpul-adab',
+      siteId: 'ulama-3',
+      siteName: 'KH. Muhammad Zaini Abdul Ghani (Abah Guru Sekumpul)',
+      location: 'Martapura, Kalimantan Selatan',
+      category: 'Hikmah & Karomah',
+      title: 'Adab Menghadiri Majelis Maulid & Keberkahan Jamuan Musafir',
+      content:
+        'Abah Guru Sekumpul sangat memuliakan tamu dan penuntut ilmu. Selama haul dan majelis mingguan, ribuan dapur umum warga di Martapura menyajikan makanan gratis bagi siapa saja tanpa memandang status sosial.<!--more--> Tradisi luhur ini terus berlanjut hingga kini, membuktikan buah tarbiyah akhlak yang meresap ke dalam sanubari masyarakat Banjar.',
+      source: 'Manuskrip Biografi & Kesaksian Para Habaib Martapura',
+      readTime: '3 mnt',
+    },
+    ...sites
+      .filter((s) => Boolean(s.untoldStory))
+      .slice(0, 12)
+      .map((s) => ({
+        id: `rubrik-${s.id}-untold`,
+        siteId: s.id,
+        siteName: s.name,
+        location: `${s.location.city}, ${s.location.province}`,
+        category: 'Kisah Rahasia' as const,
+        title: `Catatan Khusus: ${s.name}`,
+        content: s.untoldStory || s.history,
+        source: 'Manuskrip Lisan & Catatan Pengasuh Makam',
+        readTime: '3 mnt',
+      })),
+  ];
+
+  const handleLoadBuiltInRubrikArticlesToEditor = () => {
+    const builtIns = getDefaultBuiltInRubrikArticles();
+    setRubrikGate((prev) => {
+      const existingIds = new Set((prev.customArticles || []).map((a) => a.id));
+      const newClones = builtIns.filter((b) => !existingIds.has(b.id));
+      return {
+        ...prev,
+        customArticles: [...(prev.customArticles || []), ...newClones],
+      };
+    });
+    setSettingsMsg(
+      'Artikel bawaan telah dimuat ke daftar editor kustom! Klik "Edit Judul & Isi" pada artikel mana pun, lalu klik "Simpan Pengaturan Rubrik ke Firestore".'
+    );
+  };
+
+  const handleSelectEditRubrikArticle = (art: RubrikItem) => {
+    setEditingRubrikArticleId(art.id);
+    setNewCustomArticle({
+      id: art.id,
+      siteId: art.siteId || 'wali-7',
+      title: art.title,
+      siteName: art.siteName,
+      location: art.location || 'Nusantara',
+      category: art.category || 'Kisah Rahasia',
+      content: art.content || '',
+      source: art.source || 'Arsip Kurator Ziarah Nusantara',
+      readTime: art.readTime || '3 mnt',
+    });
+    setIsAddingCustomArticle(true);
+  };
+
   const handleAddCustomRubrikArticle = () => {
     if (!newCustomArticle.title?.trim() || !newCustomArticle.content?.trim()) return;
+    const targetId = editingRubrikArticleId || newCustomArticle.id?.trim() || `rubrik-custom-${Date.now()}`;
     const item: RubrikItem = {
-      id: `rubrik-custom-${Date.now()}`,
-      siteId: 'wali-7',
+      id: targetId,
+      siteId: newCustomArticle.siteId || 'wali-7',
       siteName: sanitizePlainText(newCustomArticle.siteName, 140) || 'Aulia Nusantara',
       location: sanitizePlainText(newCustomArticle.location, 140) || 'Nusantara',
       category: (newCustomArticle.category as any) || 'Kisah Rahasia',
       title: sanitizePlainText(newCustomArticle.title, 200),
-      content: sanitizeMultilineText(newCustomArticle.content, 5000),
+      content: sanitizeMultilineText(newCustomArticle.content, 6000),
       source: sanitizePlainText(newCustomArticle.source, 200) || 'Arsip Kurator Ziarah Nusantara',
       readTime: sanitizePlainText(newCustomArticle.readTime, 40) || '3 mnt',
     };
-    setRubrikGate((prev) => ({
-      ...prev,
-      customArticles: [item, ...(prev.customArticles || [])],
-    }));
+    setRubrikGate((prev) => {
+      const existingList = prev.customArticles || [];
+      const existsIdx = existingList.findIndex((a) => a.id === targetId);
+      let nextList: RubrikItem[];
+      if (existsIdx >= 0) {
+        nextList = [...existingList];
+        nextList[existsIdx] = item;
+      } else {
+        nextList = [item, ...existingList];
+      }
+      return {
+        ...prev,
+        customArticles: nextList,
+      };
+    });
     setNewCustomArticle({
+      id: '',
       title: '',
       siteName: '',
       location: 'Nusantara',
@@ -560,7 +674,11 @@ export const AdminKurator: React.FC = () => {
       source: 'Arsip Kurator Ziarah Nusantara',
       readTime: '3 mnt',
     });
+    setEditingRubrikArticleId(null);
     setIsAddingCustomArticle(false);
+    setSettingsMsg(
+      `Artikel "${item.title}" siap disimpan. Jangan lupa klik tombol "Simpan Pengaturan Rubrik ke Firestore" di bawah.`
+    );
   };
 
   const handleDeleteCustomRubrikArticle = (id: string) => {
@@ -569,6 +687,95 @@ export const AdminKurator: React.FC = () => {
       customArticles: (prev.customArticles || []).filter((a) => a.id !== id),
       pinnedFreeArticleIds: prev.pinnedFreeArticleIds.filter((pid) => pid !== id),
     }));
+  };
+
+  const handleExportFullBackupJson = async () => {
+    try {
+      const latestCopy = await fetchSiteCopyFromCloud().catch(() => getCachedSiteCopy());
+      const backupPayload = {
+        exportedAt: new Date().toISOString(),
+        version: 'zn-cms-backup-v1',
+        infaqSettings: {
+          bankName,
+          accountNumber,
+          accountHolder,
+          qrisImageUrl,
+          qrisPayload,
+          customDomain,
+          programs: infaqPrograms,
+          rubrikGate,
+        },
+        siteCopy: latestCopy,
+        sites,
+      };
+      const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ziarah-nusantara-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setSettingsMsg('Berhasil mengunduh file Backup Konfigurasi (.json) lengkap!');
+    } catch (err: any) {
+      setSettingsMsg('Gagal mengekspor backup: ' + (err?.message || 'Error'));
+    }
+  };
+
+  const handleImportFullBackupJson = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !isAdmin) return;
+    setIsRestoringBackup(true);
+    setSettingsMsg('Memulihkan data konfigurasi dari file JSON...');
+    try {
+      const rawText = await file.text();
+      const parsed = JSON.parse(rawText);
+
+      if (parsed.infaqSettings && typeof parsed.infaqSettings === 'object') {
+        const inf = parsed.infaqSettings;
+        if (inf.bankName) setBankName(inf.bankName);
+        if (inf.accountNumber) setAccountNumber(inf.accountNumber);
+        if (inf.accountHolder) setAccountHolder(inf.accountHolder);
+        if (inf.qrisImageUrl !== undefined) setQrisImageUrl(inf.qrisImageUrl);
+        if (inf.qrisPayload) setQrisPayload(inf.qrisPayload);
+        if (inf.customDomain) setCustomDomain(inf.customDomain);
+        if (Array.isArray(inf.programs)) setInfaqPrograms(inf.programs);
+        if (inf.rubrikGate) setRubrikGate(inf.rubrikGate);
+
+        await setDoc(
+          doc(db, 'settings', 'infaq'),
+          {
+            ...inf,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
+
+      if (parsed.siteCopy && typeof parsed.siteCopy === 'object') {
+        const savedCopy = await saveSiteCopyToCloud(parsed.siteCopy);
+        setRestoredSiteCopy(savedCopy);
+      }
+
+      if (Array.isArray(parsed.sites) && parsed.sites.length > 0) {
+        for (const s of parsed.sites) {
+          if (s && s.id) {
+            await setDoc(doc(db, 'sites', s.id), s, { merge: true });
+          }
+        }
+        await refreshCloudSites(true);
+      }
+
+      setSettingsMsg(
+        'Alhamdulillah, seluruh konfigurasi (Infaq, Rubrik, Teks UI, dan Direktori Makam) berhasil dipulihkan ke Cloud Firestore!'
+      );
+    } catch (err: any) {
+      setSettingsMsg('Gagal mengimpor file JSON: Pastikan format file backup valid (' + (err?.message || '') + ').');
+    } finally {
+      setIsRestoringBackup(false);
+      e.target.value = '';
+    }
   };
 
   const handleVerifyDonation = async (id: string) => {
@@ -656,6 +863,15 @@ export const AdminKurator: React.FC = () => {
                 Rubrik & Kunci Donasi
               </button>
               <button
+                onClick={() => setActiveTab('teks_ui')}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center cursor-pointer ${
+                  activeTab === 'teks_ui' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Type className="w-3.5 h-3.5 mr-1.5" />
+                Teks & Copywriting UI
+              </button>
+              <button
                 onClick={() => setActiveTab('infaq')}
                 className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center cursor-pointer ${
                   activeTab === 'infaq' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
@@ -667,6 +883,35 @@ export const AdminKurator: React.FC = () => {
             </div>
           )}
         </div>
+
+        {isAdmin && (
+          <div className="mb-6 pb-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-slate-500">
+              Pusat Kendali Penuh (Full Headless CMS) — Seluruh perubahan langsung tersimpan di Cloud Firestore.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExportFullBackupJson}
+                className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 text-emerald-800" />
+                <span>Unduh Backup Konfigurasi (.json)</span>
+              </button>
+              <label className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
+                <Upload className="w-3.5 h-3.5 text-emerald-800" />
+                <span>{isRestoringBackup ? 'Memulihkan...' : 'Impor / Restore Konfigurasi (.json)'}</span>
+                <input
+                  type="file"
+                  accept="application/json,.json"
+                  onChange={handleImportFullBackupJson}
+                  disabled={isRestoringBackup}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+        )}
 
         {!isAdmin ? (
           <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-6 sm:p-8 space-y-5">
@@ -805,8 +1050,15 @@ export const AdminKurator: React.FC = () => {
                     name: '',
                     title: '',
                     category: 'Ulama Nusantara',
+                    era: 'Abad ke-19 – 20 M',
+                    sanad: '',
                     description: '',
                     history: '',
+                    untoldStory: '',
+                    haulSchedule: '',
+                    localAdab: '',
+                    karomah: [],
+                    doaKhusus: [],
                     imageUrl: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80',
                     openingHours: 'Buka 24 Jam',
                     facilities: ['Masjid / Musholla', 'Area Parkir', 'Tempat Wudhu'],
@@ -818,7 +1070,17 @@ export const AdminKurator: React.FC = () => {
                 onSaveSite={handleSaveSite}
                 onCancelSiteForm={() => setIsSiteFormOpen(false)}
                 onSelectEditSite={(s) => {
-                  setEditingSite(s);
+                  setEditingSite({
+                    ...s,
+                    era: s.era || '',
+                    sanad: s.sanad || '',
+                    untoldStory: s.untoldStory || '',
+                    haulSchedule: s.haulSchedule || '',
+                    localAdab: s.localAdab || '',
+                    karomah: Array.isArray(s.karomah) ? [...s.karomah] : [],
+                    doaKhusus: Array.isArray(s.doaKhusus) ? s.doaKhusus.map((d) => ({ ...d })) : [],
+                    facilities: Array.isArray(s.facilities) ? [...s.facilities] : [],
+                  });
                   setIsSiteFormOpen(true);
                 }}
                 onDeleteSite={handleDeleteSite}
@@ -932,27 +1194,64 @@ export const AdminKurator: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Tambah Tulisan Rubrik Baru */}
+                  {/* Tambah / Edit Tulisan Rubrik & Pilihan Contoh Gratis */}
                   <div className="pt-3 border-t border-slate-200">
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                       <div>
-                        <h4 className="text-xs sm:text-sm font-bold text-slate-900">Tulisan Rubrik Kustom & Pilihan Contoh Gratis</h4>
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                          Editor Penuh Artikel Rubrik (Kustom &amp; Bawaan)
+                        </h4>
                         <p className="text-[11px] text-slate-500">
-                          Tambahkan kisah rahasia/karomah baru atau tandai tulisan tertentu agar selalu terbuka gratis.
+                          Edit judul, isi naskah, titik potong gembok <code className="bg-slate-200/70 px-1 rounded">&lt;!--more--&gt;</code>, atau tandai tulisan sebagai contoh gratis.
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setIsAddingCustomArticle(!isAddingCustomArticle)}
-                        className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Tambah Tulisan Rubrik</span>
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={handleLoadBuiltInRubrikArticlesToEditor}
+                          className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Muat / Edit Artikel Bawaan di Editor Admin</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingRubrikArticleId(null);
+                            setNewCustomArticle({
+                              id: '',
+                              title: '',
+                              siteName: '',
+                              location: 'Nusantara',
+                              category: 'Kisah Rahasia',
+                              content: '',
+                              source: 'Arsip Kurator Ziarah Nusantara',
+                              readTime: '3 mnt',
+                            });
+                            setIsAddingCustomArticle(!isAddingCustomArticle);
+                          }}
+                          className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Tambah Tulisan Rubrik</span>
+                        </button>
+                      </div>
                     </div>
 
                     {isAddingCustomArticle && (
                       <div className="bg-white p-4 rounded-2xl border border-emerald-200 space-y-3 mb-4">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                          <span className="text-xs font-bold text-emerald-900">
+                            {editingRubrikArticleId
+                              ? `Mengedit Artikel Rubrik (ID: ${editingRubrikArticleId})`
+                              : 'Tambah Artikel Rubrik Baru'}
+                          </span>
+                          {editingRubrikArticleId && (
+                            <span className="text-[11px] text-slate-500">
+                              Perubahan akan menimpa versi bawaan dengan ID yang sama
+                            </span>
+                          )}
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div>
                             <label className="block text-[11px] font-bold text-slate-700 mb-1">Judul Tulisan *</label>
@@ -987,20 +1286,78 @@ export const AdminKurator: React.FC = () => {
                             </select>
                           </div>
                         </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">Kota / Lokasi</label>
+                            <input
+                              type="text"
+                              placeholder="Contoh: Demak, Jawa Tengah"
+                              value={newCustomArticle.location || ''}
+                              onChange={(e) => setNewCustomArticle({ ...newCustomArticle, location: e.target.value })}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">Sumber Referensi</label>
+                            <input
+                              type="text"
+                              placeholder="Contoh: Arsip Kurator Ziarah Nusantara"
+                              value={newCustomArticle.source || ''}
+                              onChange={(e) => setNewCustomArticle({ ...newCustomArticle, source: e.target.value })}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">Estimasi Waktu Baca</label>
+                            <input
+                              type="text"
+                              placeholder="Contoh: 4 mnt"
+                              value={newCustomArticle.readTime || ''}
+                              onChange={(e) => setNewCustomArticle({ ...newCustomArticle, readTime: e.target.value })}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                            />
+                          </div>
+                        </div>
+
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-700 mb-1">Isi Lengkap Naskah / Kisah *</label>
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                            <label className="block text-[11px] font-bold text-slate-700">
+                              Isi Lengkap Naskah / Kisah *
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const current = newCustomArticle.content || '';
+                                if (current.includes('<!--more-->')) return;
+                                const cut = Math.min(220, Math.floor(current.length * 0.45));
+                                const nextVal =
+                                  current.length > 60
+                                    ? `${current.slice(0, cut).trim()} <!--more--> ${current.slice(cut).trim()}`
+                                    : `${current} <!--more--> `;
+                                setNewCustomArticle({ ...newCustomArticle, content: nextVal });
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-950 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                            >
+                              <Scissors className="w-3 h-3" />
+                              <span>+ Sisipkan Titik Potong Gembok (&lt;!--more--&gt;)</span>
+                            </button>
+                          </div>
                           <textarea
-                            rows={3}
-                            placeholder="Tuliskan isi kisah rahasia, manuskrip, atau hikmah karomah..."
+                            rows={5}
+                            placeholder="Tuliskan isi kisah rahasia, manuskrip, atau hikmah karomah... Gunakan <!--more--> untuk menentukan batas bacaan gratis sebelum gembok infaq."
                             value={newCustomArticle.content || ''}
                             onChange={(e) => setNewCustomArticle({ ...newCustomArticle, content: e.target.value })}
-                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs leading-relaxed"
                           />
                         </div>
                         <div className="flex justify-end gap-2">
                           <button
                             type="button"
-                            onClick={() => setIsAddingCustomArticle(false)}
+                            onClick={() => {
+                              setEditingRubrikArticleId(null);
+                              setIsAddingCustomArticle(false);
+                            }}
                             className="px-3.5 py-1.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl cursor-pointer"
                           >
                             Batal
@@ -1010,56 +1367,62 @@ export const AdminKurator: React.FC = () => {
                             onClick={handleAddCustomRubrikArticle}
                             className="px-4 py-1.5 bg-emerald-700 text-white text-xs font-bold rounded-xl cursor-pointer"
                           >
-                            Tambahkan ke Daftar
+                            {editingRubrikArticleId ? 'Simpan Perubahan Artikel' : 'Tambahkan ke Daftar'}
                           </button>
                         </div>
                       </div>
                     )}
 
-                    {/* Daftar Artikel Kustom & Bawaan untuk Toggle Gratis/Kunci */}
-                    <div className="max-h-72 overflow-y-auto bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100">
-                      {[
-                        ...(rubrikGate.customArticles || []).map((ca) => ({ ...ca, isCustom: true })),
-                        {
-                          id: 'rubrik-wali-songo-strategy',
-                          title: 'Filosofi Gamelan & Tembang Lir-Ilir dalam Dakwah Kultural',
-                          siteName: 'Sunan Kalijaga',
-                          category: 'Manuskrip',
-                          isCustom: false,
-                        },
-                        {
-                          id: 'rubrik-sekumpul-adab',
-                          title: 'Adab Menghadiri Majelis Maulid & Keberkahan Jamuan Musafir',
-                          siteName: 'Abah Guru Sekumpul',
-                          category: 'Hikmah & Karomah',
-                          isCustom: false,
-                        },
-                        ...sites.slice(0, 12).map((s) => ({
-                          id: `rubrik-${s.id}-untold`,
-                          title: `Catatan Khusus: ${s.name}`,
-                          siteName: s.name,
-                          category: 'Kisah Rahasia',
-                          isCustom: false,
-                        })),
-                      ].map((art) => {
+                    {/* Daftar Artikel Kustom & Bawaan untuk Edit / Toggle Gratis / Kunci */}
+                    <div className="max-h-96 overflow-y-auto bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100">
+                      {(() => {
+                        const customList = (rubrikGate.customArticles || []).map((ca) => ({
+                          ...ca,
+                          isCustom: true,
+                        }));
+                        const customIds = new Set(customList.map((c) => c.id));
+                        const builtIns = getDefaultBuiltInRubrikArticles()
+                          .filter((b) => !customIds.has(b.id))
+                          .map((b) => ({ ...b, isCustom: false }));
+                        return [...customList, ...builtIns];
+                      })().map((art) => {
                         const isPinnedFree = rubrikGate.pinnedFreeArticleIds.includes(art.id);
                         return (
-                          <div key={art.id} className="p-3 flex items-center justify-between gap-3 hover:bg-slate-50">
+                          <div key={art.id} className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50">
                             <div className="min-w-0">
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-1.5">
                                 <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">
                                   {art.category}
                                 </span>
-                                {art.isCustom && (
-                                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">
-                                    Kustom Kurator
+                                {art.isCustom ? (
+                                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                    Kustom / Diedit Kurator
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-stone-100 text-stone-600">
+                                    Artikel Bawaan
+                                  </span>
+                                )}
+                                {art.content?.includes('<!--more-->') && (
+                                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200">
+                                    &lt;!--more--&gt; Aktif
                                   </span>
                                 )}
                               </div>
                               <p className="text-xs font-bold text-slate-900 truncate mt-1">{art.title}</p>
-                              <p className="text-[11px] text-slate-500">{art.siteName}</p>
+                              <p className="text-[11px] text-slate-500 truncate">
+                                {art.siteName} • {art.location}
+                              </p>
                             </div>
-                            <div className="flex items-center gap-2 shrink-0">
+                            <div className="flex flex-wrap items-center gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleSelectEditRubrikArticle(art)}
+                                className="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-stone-100 hover:bg-stone-200 text-stone-800 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Edit3 className="w-3 h-3 text-emerald-800" />
+                                <span>Edit Judul &amp; Isi</span>
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => handleTogglePinnedFreeArticle(art.id)}
@@ -1086,7 +1449,7 @@ export const AdminKurator: React.FC = () => {
                                   type="button"
                                   onClick={() => handleDeleteCustomRubrikArticle(art.id)}
                                   className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg cursor-pointer"
-                                  title="Hapus tulisan kustom"
+                                  title="Hapus versi kustom (kembalikan ke bawaan jika artikel bawaan)"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
@@ -1111,6 +1474,14 @@ export const AdminKurator: React.FC = () => {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* TAB 4B: PUSAT KENDALI TEKS & COPYWRITING UI */}
+            {activeTab === 'teks_ui' && (
+              <SiteCopyAdminSection
+                showBanner={(_type, text) => setSettingsMsg(text)}
+                externalSiteCopy={restoredSiteCopy}
+              />
             )}
 
             {/* TAB 4: PENGATURAN PROGRAM KEBAIKAN, REKENING, QRIS & RIWAYAT INFAQ */}

@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { InteractiveMap } from '../components/InteractiveMap';
-import { SiteDetails } from '../components/SiteDetails';
 import { ZiarahSite } from '../data/sites';
 import { useSites } from '../context/SiteContext';
 import { findSiteByParam, getSitePath } from '../lib/siteSlugs';
+
+const SiteDetails = lazy(() =>
+  import('../components/SiteDetails').then((m) => ({ default: m.SiteDetails }))
+);
 
 interface PetaLokasiProps {
   selectedSite: ZiarahSite | null;
@@ -65,15 +68,17 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
       <div className="relative w-full h-[calc(100dvh-6.5rem)] md:h-[calc(100dvh-5.5rem)] min-h-[560px] flex flex-col">
         <InteractiveMap sites={ziarahSites} selectedSite={selectedSite} onSelectSite={handleMapSelect} />
         {selectedSite && (
-          <SiteDetails
-            site={selectedSite}
-            onClose={handleClose}
-            isSaved={savedSiteIds.includes(selectedSite.id)}
-            onToggleSave={() => handleToggleSave(selectedSite.id)}
-            savedDoas={savedDoas}
-            onToggleSaveDoa={onToggleSaveDoa}
-            onContribute={onOpenKontribusi}
-          />
+          <Suspense fallback={null}>
+            <SiteDetails
+              site={selectedSite}
+              onClose={handleClose}
+              isSaved={savedSiteIds.includes(selectedSite.id)}
+              onToggleSave={() => handleToggleSave(selectedSite.id)}
+              savedDoas={savedDoas}
+              onToggleSaveDoa={onToggleSaveDoa}
+              onContribute={onOpenKontribusi}
+            />
+          </Suspense>
         )}
       </div>
 

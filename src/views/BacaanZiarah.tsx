@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
+import { useSiteCopy } from '../lib/siteCopy';
 
 const STORAGE_KEY = 'ziarah_panduan_prefs_v1';
 
@@ -133,6 +134,7 @@ const PRAYER_SECTIONS: PrayerSectionData[] = [
 ];
 
 export const BacaanZiarah: React.FC = () => {
+  const siteCopy = useSiteCopy();
   // Load initial preferences & tasbih state from localStorage
   const [fontSize, setFontSize] = useState<'A' | 'A+' | 'A++'>(() => {
     try {
@@ -386,15 +388,14 @@ export const BacaanZiarah: React.FC = () => {
                 outdoorMode ? 'text-black font-bold' : 'text-stone-900'
               }`}
             >
-              Tuntunan Yasin, Tahlil &amp; Tasbih Digital.
+              {siteCopy.bacaanTitle}
             </h1>
             <p
               className={`text-sm sm:text-base leading-relaxed ${
                 outdoorMode ? 'text-stone-900 font-medium' : 'text-stone-600'
               }`}
             >
-              Dirancang khusus untuk keterbacaan di area maqbarah: layar tetap menyala otomatis, mode kontras matahari,
-              dan tasbih digital dengan umpan balik getar haptik.
+              {siteCopy.yasinHeaderSubtitle}
             </p>
           </div>
 
@@ -746,14 +747,14 @@ export const BacaanZiarah: React.FC = () => {
                 outdoorMode ? 'text-black font-bold' : 'text-stone-900'
               }`}
             >
-              Untuk siapa Al-Fatihah, Yasin &amp; doa Anda hari ini?
+              {siteCopy.tawassulTitle}
             </label>
             <input
               id="tawassul-intent-input"
               type="text"
               value={tawassulIntent}
               onChange={(e) => handleTawassulIntentChange(e.target.value)}
-              placeholder="Ketik nama almarhum/almarhumah orang tua atau hajat terdalam Anda..."
+              placeholder={siteCopy.tawassulPlaceholder}
               className={`w-full border-b bg-transparent py-2 text-sm focus:outline-none transition-colors ${
                 outdoorMode
                   ? 'border-black text-black placeholder-stone-600 font-medium'
@@ -896,7 +897,7 @@ export const BacaanZiarah: React.FC = () => {
             ===================================================================== */}
         <footer className="py-8 border-t border-stone-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <p className="font-serif italic text-base sm:text-lg text-stone-800 max-w-xl leading-relaxed">
-            Setiap huruf doa yang baru saja Anda lantunkan adalah bukti cinta yang tak terputus oleh kematian.
+            {siteCopy.postPrayerTitle}
           </p>
           <div className="flex flex-wrap items-center gap-4 shrink-0">
             <Link

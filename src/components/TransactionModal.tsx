@@ -10,6 +10,7 @@ import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from './TransferProofUploadField';
 import { CompressedReceiptResult, saveVerifiedDonationRecord, submitDonationWithPrivateProof } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
+import { useSiteCopy } from '../lib/siteCopy';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface TransactionModalProps {
 }
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, site, type, onSuccess }) => {
+  const siteCopy = useSiteCopy();
   const [selectedNominal, setSelectedNominal] = useState(25000);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -142,40 +144,43 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
 
   return (
     <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 pointer-events-auto">
-      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs cursor-pointer" onClick={onClose} />
+      <div className="absolute inset-0 bg-stone-950/60 backdrop-blur-xs cursor-pointer" onClick={onClose} />
       <motion.div 
-        initial={{ opacity: 0, scale: 0.93, y: 25 }}
+        initial={{ opacity: 0, scale: 0.96, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.93, y: 20 }}
-        transition={{ type: "spring", damping: 25, stiffness: 320 }}
-        className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-slate-200/90 pointer-events-auto"
+        exit={{ opacity: 0, scale: 0.96, y: 20 }}
+        transition={{ type: "spring", damping: 26, stiffness: 320 }}
+        className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-stone-200/90 pointer-events-auto"
       >
         {/* Header */}
-        <div className={`p-5 sm:p-6 text-white relative overflow-hidden shrink-0 ${type === 'infaq' ? 'bg-gradient-to-r from-emerald-800 via-emerald-900 to-brand-950' : 'bg-gradient-to-r from-purple-800 via-purple-900 to-indigo-950'}`}>
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <button type="button" onClick={onClose} className="absolute top-4 right-4 z-20 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors cursor-pointer">
-            <X className="w-5 h-5" />
+        <div className="p-5 sm:p-6 bg-[#FAF8F5] border-b border-stone-200/80 text-stone-900 relative shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 z-20 p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 rounded-full transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
           </button>
           
-          <div className="relative z-10">
-            <span className="bg-white/20 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider mb-2 inline-flex items-center space-x-1.5 backdrop-blur-md">
+          <div className="relative z-10 pr-8">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800 mb-1 inline-flex items-center gap-1.5">
               {type === 'infaq' ? (
                 <>
-                  <HeartHandshake className="w-3.5 h-3.5 mr-1" />
-                  <span>Donasi Digital Makam</span>
+                  <HeartHandshake className="w-3.5 h-3.5" strokeWidth={1.75} />
+                  <span>Infaq Jariyah Makam</span>
                 </>
               ) : (
                 <>
-                  <ScrollText className="w-3.5 h-3.5 mr-1" />
-                  <span>Rubrik Khusus & Manuskrip</span>
+                  <ScrollText className="w-3.5 h-3.5" strokeWidth={1.75} />
+                  <span>Arsip Khazanah &amp; Manuskrip</span>
                 </>
               )}
-            </span>
-            <h2 className="text-lg sm:text-xl font-serif font-black mb-1 drop-shadow-xs">{site.name}</h2>
-            <p className="text-white/80 text-xs">
+            </div>
+            <h2 className="text-lg sm:text-xl font-serif font-semibold text-stone-900 mb-1 leading-snug">{site.name}</h2>
+            <p className="text-stone-600 text-xs leading-relaxed">
               {type === 'infaq' 
-                ? 'Sedekah jariyah langsung untuk pemeliharaan makam & fasilitas jamaah.' 
-                : 'Buka akses naskah sejarah dan karomah khusus setelah donasi & unggah bukti transfer.'}
+                ? 'Sedekah jariyah untuk pelestarian arsip sejarah & fasilitas peziarah.' 
+                : 'Buka seluruh arsip naskah sejarah, karomah lanjutan, dan wasiat rahasia di perangkat Anda.'}
             </p>
           </div>
         </div>
@@ -184,83 +189,84 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         <div className="p-5 sm:p-6 overflow-y-auto">
           {isSuccess ? (
             <div className="text-center py-3">
-              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-emerald-100 shadow-xs">
+              <div className="w-14 h-14 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-emerald-200/80">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <span className="inline-block text-[10px] font-bold font-mono uppercase tracking-wider bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 mb-2">
+              <span className="inline-block text-[10px] font-semibold font-mono uppercase tracking-wider bg-[#FAF8F5] text-stone-700 px-2.5 py-1 rounded-lg border border-stone-200 mb-2">
                 Kode Referensi Bukti: #{receipt?.referenceCode}
               </span>
-              <h3 className="font-serif text-slate-900 text-lg mb-1.5">
+              <h3 className="font-serif text-stone-900 text-lg mb-1.5">
                 Alhamdulillah, Lembaran Khazanah Telah Terbuka
               </h3>
-              <p className="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
-                Alhamdulillah, terima kasih atas infaq jariyah Anda. Seluruh lembaran Khazanah &amp; Wasiat Rahasia kini telah terbuka penuh di perangkat Anda.
+              <p className="text-xs sm:text-sm text-stone-600 mb-4 leading-relaxed">
+                {siteCopy.unlockSuccessMessage}
               </p>
 
               {receipt && (
-                <div className="mb-4 p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3 text-left">
+                <div className="mb-4 p-3 bg-[#FAF8F5] rounded-2xl border border-stone-200/80 flex items-center gap-3 text-left">
                   <img
                     src={receipt.dataUrl}
                     alt="Bukti Transfer"
-                    className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
+                    className="w-12 h-12 rounded-xl object-cover border border-stone-200 shrink-0"
                   />
                   <div className="text-xs min-w-0">
-                    <p className="font-bold text-slate-900 truncate">{donorName} ({paymentMethod})</p>
-                    <p className="text-emerald-700 font-semibold">Rp {amount.toLocaleString('id-ID')}</p>
-                    <p className="text-[10px] text-slate-400">Tersimpan di Sistem Verifikasi Kurator</p>
+                    <p className="font-semibold text-stone-900 truncate">{donorName} ({paymentMethod})</p>
+                    <p className="text-emerald-800 font-medium">Rp {amount.toLocaleString('id-ID')}</p>
+                    <p className="text-[10px] text-stone-400">Tersimpan di Sistem Verifikasi Kurator</p>
                   </div>
                 </div>
               )}
 
               <div className="space-y-2.5">
+                <button
+                  onClick={onClose}
+                  className="w-full py-3 bg-stone-900 hover:bg-emerald-900 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors cursor-pointer"
+                >
+                  Selesai &amp; Baca Sekarang →
+                </button>
                 <a
                   href={waConfirmUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3 bg-[#FAF8F5] hover:bg-stone-100 text-stone-700 border border-stone-200/90 rounded-xl font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <MessageSquareHeart className="w-4 h-4" />
+                  <MessageSquareHeart className="w-4 h-4 text-emerald-800" />
                   <span>Teruskan Bukti ke WhatsApp Admin</span>
                 </a>
-                <button
-                  onClick={onClose}
-                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer"
-                >
-                  Selesai & Baca Sekarang
-                </button>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
               {type === 'infaq' ? (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">Pilih Nominal Donasi:</label>
+                  <label className="block text-xs font-semibold text-stone-800 mb-2">Pilih Nominal Infaq:</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[10000, 25000, 50000, 100000, 250000, 500000].map((nominal) => (
-                      <motion.button
+                      <button
                         key={nominal}
                         type="button"
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.94 }}
-                        transition={{ type: "spring", stiffness: 450, damping: 25 }}
                         onClick={() => setSelectedNominal(nominal)}
-                        className={`py-2 px-1 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                        className={`py-2.5 px-2 text-xs font-semibold rounded-xl border transition-colors cursor-pointer ${
                           selectedNominal === nominal 
-                            ? 'bg-emerald-50 border-emerald-600 text-emerald-900 ring-2 ring-emerald-500/20 shadow-xs' 
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                            ? 'bg-stone-900 border-stone-900 text-white' 
+                            : 'bg-[#FAF8F5] border-stone-200/80 text-stone-700 hover:border-stone-400'
                         }`}
                       >
                         Rp {nominal.toLocaleString('id-ID')}
-                      </motion.button>
+                      </button>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="bg-purple-50 p-4 rounded-2xl border border-purple-100 text-center">
-                  <ScrollText className="w-7 h-7 text-purple-600 mx-auto mb-1.5" />
-                  <h4 className="font-bold text-purple-900 text-sm mb-1">Akses Rubrik Kisah Khusus</h4>
-                  <p className="text-xs text-purple-700 leading-relaxed">
-                    Buka akses penuh ke catatan manuskrip, karomah lanjutan, dan sejarah tak terungkap dengan donasi literasi <strong className="font-bold">Rp 15.000</strong> serta mengunggah bukti transfer.
+                <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-stone-200/80 text-left">
+                  <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800 mb-1">
+                    Pembuka Seluruh Khazanah Nusantara
+                  </div>
+                  <h4 className="font-serif font-semibold text-stone-900 text-sm sm:text-base mb-1">
+                    Akses Penuh 96+ Makam &amp; Wasiat Rahasia
+                  </h4>
+                  <p className="text-xs text-stone-600 leading-relaxed">
+                    Buka akses penuh ke seluruh catatan manuskrip, karomah lanjutan, dan wasiat rahasia melalui infaq literasi <strong className="font-semibold text-stone-900">Rp 15.000</strong> serta mengunggah bukti transfer.
                   </p>
                 </div>
               )}
@@ -272,20 +278,20 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 compact
               />
 
-              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-                <p className="text-[11px] font-bold text-slate-600 mb-2">Alternatif Transfer Rekening Bank:</p>
-                <div className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+              <div className="bg-[#FAF8F5] p-3.5 rounded-2xl border border-stone-200/80">
+                <p className="text-[11px] font-semibold text-stone-600 mb-2">Alternatif Transfer Rekening Bank:</p>
+                <div className="bg-white p-3 rounded-xl border border-stone-200/80 flex items-center justify-between">
                   <div>
-                    <p className="font-bold text-slate-900 text-xs">{bankSettings.bankName}</p>
-                    <p className="text-slate-700 font-mono text-xs font-bold">{bankSettings.accountNumber}</p>
-                    <p className="text-[10px] text-slate-500">a.n. {bankSettings.accountHolder}</p>
+                    <p className="font-semibold text-stone-900 text-xs">{bankSettings.bankName}</p>
+                    <p className="text-stone-700 font-mono text-xs font-semibold">{bankSettings.accountNumber}</p>
+                    <p className="text-[10px] text-stone-500">a.n. {bankSettings.accountHolder}</p>
                   </div>
                   <button
                     type="button"
                     onClick={handleCopyAccount}
-                    className="px-2.5 py-1.5 bg-slate-50 hover:bg-emerald-50 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1.5 bg-[#FAF8F5] hover:bg-stone-100 border border-stone-200 rounded-lg text-[11px] font-medium text-stone-700 flex items-center gap-1 cursor-pointer"
                   >
-                    {copiedBank ? <span className="text-emerald-600">Tersalin!</span> : <><Copy className="w-3 h-3" /><span>Salin</span></>}
+                    {copiedBank ? <span className="text-emerald-700 font-semibold">Tersalin!</span> : <><Copy className="w-3 h-3" /><span>Salin</span></>}
                   </button>
                 </div>
               </div>
@@ -300,7 +306,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 onReceiptChange={setReceipt}
                 agreedToAkad={agreedToAkad}
                 onAgreedToAkadChange={setAgreedToAkad}
-                accentColor={type === 'untold' ? 'purple' : 'emerald'}
+                accentColor="emerald"
                 requiredForUnlock
               />
 
@@ -311,23 +317,20 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 </div>
               )}
 
-              <motion.button 
-                whileHover={isProofComplete ? { scale: 1.01 } : {}}
-                whileTap={isProofComplete ? { scale: 0.97 } : {}}
+              <button 
+                type="button"
                 onClick={handleConfirmPayment}
                 disabled={isSaving || !isProofComplete}
-                className={`w-full py-3.5 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center gap-2 ${
+                className={`w-full py-3.5 rounded-xl font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 ${
                   !isProofComplete
-                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                    : type === 'untold'
-                      ? 'bg-purple-700 hover:bg-purple-800 text-white cursor-pointer'
-                      : 'bg-gradient-to-r from-emerald-800 to-brand-900 hover:from-emerald-900 hover:to-brand-950 text-white cursor-pointer'
+                    ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
+                    : 'bg-stone-900 hover:bg-emerald-900 text-white cursor-pointer'
                 }`}
               >
                 {isSaving ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Mengirim & Memverifikasi Bukti Transfer...</span>
+                    <span>Mengirim &amp; Memverifikasi Bukti Transfer...</span>
                   </>
                 ) : !isProofComplete ? (
                   <>
@@ -339,21 +342,21 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                     <CheckCircle2 className="w-4 h-4" />
                     <span>
                       {type === 'infaq'
-                        ? `Kirim Bukti & Konfirmasi Donasi (Rp ${amount.toLocaleString('id-ID')})`
-                        : 'Kirim Bukti Transfer & Buka Akses Rubrik'}
+                        ? `Kirim Bukti & Konfirmasi Infaq (Rp ${amount.toLocaleString('id-ID')})`
+                        : 'Kirim Bukti Transfer & Buka Seluruh Khazanah'}
                     </span>
                   </>
                 )}
-              </motion.button>
+              </button>
 
               {type === 'infaq' && (
                 <div className="text-center pt-1">
                   <Link 
                     to="/infaq" 
                     onClick={onClose}
-                    className="text-xs text-emerald-700 hover:text-emerald-900 hover:underline font-semibold"
+                    className="text-xs text-stone-600 hover:text-stone-900 underline underline-offset-4 font-medium"
                   >
-                    Buka Halaman Lengkap Donasi Digital →
+                    Buka Halaman Lengkap Infaq &amp; Munajat →
                   </Link>
                 </div>
               )}

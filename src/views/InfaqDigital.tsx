@@ -30,6 +30,7 @@ import {
   submitDonationWithPrivateProof,
 } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
+import { useSiteCopy } from '../lib/siteCopy';
 
 interface DonationRecord {
   id: string;
@@ -91,6 +92,7 @@ const ICON_MAP = {
 };
 
 export const InfaqDigital: React.FC = () => {
+  const siteCopy = useSiteCopy();
   const [selectedProgram, setSelectedProgram] = useState<string>('riset-web');
   const [selectedSiteId, setSelectedSiteId] = useState<string>('web-riset');
   const [nominal, setNominal] = useState<number>(25000);
@@ -203,7 +205,7 @@ export const InfaqDigital: React.FC = () => {
 
   const programs = infaqSettings.programs;
 
-  const quickNominals = [10000, 25000, 50000, 100000, 250000, 500000];
+  const quickNominalPackages = siteCopy.quickNominalPackages;
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text.replace(/[^0-9]/g, '') || text);
@@ -321,10 +323,10 @@ export const InfaqDigital: React.FC = () => {
               <span>Sedekah Jariyah &amp; Wasilah Kebaikan</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
-              Infaq Jariyah &amp; Dinding Munajat Peziarah
+              {siteCopy.infaqHeadline}
             </h1>
             <p className="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed">
-              Salurkan infaq jariyah untuk Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara, sekaligus membuka seluruh naskah Kisah Rahasia &amp; Karomah di perangkat Anda.
+              {siteCopy.infaqSubheadline}
             </p>
           </div>
           {recentDonations.length > 0 && (
@@ -415,7 +417,7 @@ export const InfaqDigital: React.FC = () => {
               <option value="all">Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)</option>
             </select>
             <p className="text-[11px] text-stone-500 mt-2">
-              Infaq akan disalurkan secara amanah sesuai akad pilihan program untuk pelestarian khazanah sejarah &amp; penyebaran riwayat para Auliya.
+              {siteCopy.infaqTransparencyNote}
             </p>
           </div>
 
@@ -426,22 +428,14 @@ export const InfaqDigital: React.FC = () => {
               Pilih Nominal Infaq
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-3">
-              {quickNominals.map((val) => {
-                const isSelected = !customNominal && nominal === val;
-                const subLabel =
-                  val === 10000
-                    ? 'Infaq Pembuka'
-                    : val === 25000
-                      ? 'Penjaga Sanad'
-                      : val === 50000
-                        ? 'Jariyah Utama'
-                        : 'Wakaf Khazanah';
+              {quickNominalPackages.map((pkg, idx) => {
+                const isSelected = !customNominal && nominal === pkg.amount;
                 return (
                   <button
-                    key={val}
+                    key={`${pkg.amount}-${idx}`}
                     type="button"
                     onClick={() => {
-                      setNominal(val);
+                      setNominal(pkg.amount);
                       setCustomNominal('');
                     }}
                     className={`py-3 px-3 rounded-xl text-left transition-colors border cursor-pointer ${
@@ -451,10 +445,10 @@ export const InfaqDigital: React.FC = () => {
                     }`}
                   >
                     <div className="font-semibold text-xs sm:text-sm tabular-nums">
-                      Rp {val.toLocaleString('id-ID')}
+                      Rp {pkg.amount.toLocaleString('id-ID')}
                     </div>
                     <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-emerald-100' : 'text-stone-500'}`}>
-                      {subLabel}
+                      {pkg.tag || pkg.label}
                     </div>
                   </button>
                 );
@@ -509,7 +503,7 @@ export const InfaqDigital: React.FC = () => {
               <textarea
                 rows={2}
                 maxLength={200}
-                placeholder="Contoh: Mohon doa untuk kesembuhan orang tua & kelancaran rezeki keluarga..."
+                placeholder={siteCopy.doaHajatPlaceholder}
                 value={doaHajat}
                 onChange={(e) => setDoaHajat(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 resize-none"
@@ -663,10 +657,10 @@ export const InfaqDigital: React.FC = () => {
               Dinding Munajat Peziarah
             </div>
             <h2 className="text-xl sm:text-2xl font-serif text-stone-900 mt-0.5">
-              Munajat &amp; Infaq Peziarah Terkini
+              {siteCopy.munajatHeaderTitle}
             </h2>
             <p className="text-xs sm:text-sm text-stone-600 mt-1">
-              Mari aminkan doa dan hajat saudara seiman kita agar malaikat turut mengaminkan doa yang sama untuk kita.
+              {siteCopy.munajatHeaderSubtitle}
             </p>
           </div>
           <span className="text-xs text-stone-500 font-medium">
@@ -743,6 +737,9 @@ export const InfaqDigital: React.FC = () => {
               <h3 className="text-xl font-serif font-black text-slate-900 mb-2">
                 Alhamdulillah, Jazakumullahu Khairan
               </h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                {siteCopy.unlockSuccessMessage}
+              </p>
               
               <div className="my-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left text-xs space-y-2">
                 <div className="flex justify-between">

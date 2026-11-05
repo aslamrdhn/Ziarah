@@ -22,7 +22,6 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
   onSenderAccountChange,
   receipt,
   onReceiptChange,
-  accentColor = 'emerald',
   requiredForUnlock = true,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -49,35 +48,29 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
     }
   };
 
-  const isPurple = accentColor === 'purple';
-
   return (
-    <div className={`rounded-2xl p-4 border space-y-3.5 ${
-      isPurple ? 'bg-purple-50/50 border-purple-200/90' : 'bg-emerald-50/40 border-emerald-200/90'
-    }`}>
+    <div className="rounded-2xl p-4 border border-stone-200/80 bg-[#FAF8F5] space-y-3.5">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <ShieldCheck className={`w-4 h-4 shrink-0 ${isPurple ? 'text-purple-700' : 'text-emerald-700'}`} />
-          <span className="text-xs font-bold text-slate-900">
+          <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-800" strokeWidth={1.75} />
+          <span className="text-xs font-semibold text-stone-900">
             Verifikasi &amp; Unggah Bukti Transfer {requiredForUnlock ? '(Wajib)' : ''}
           </span>
         </div>
       </div>
 
       <div>
-        <label className="block text-[11px] font-bold text-slate-700 mb-1.5">
+        <label className="block text-[11px] font-semibold text-stone-700 mb-1.5">
           1. Metode Pembayaran yang Digunakan <span className="text-rose-600">*</span>
         </label>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => onPaymentMethodChange('QRIS')}
-            className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+            className={`py-2 px-3 rounded-xl text-xs font-medium border transition-colors cursor-pointer ${
               paymentMethod === 'QRIS'
-                ? isPurple
-                  ? 'bg-purple-700 text-white border-purple-700 shadow-2xs'
-                  : 'bg-emerald-800 text-white border-emerald-800 shadow-2xs'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                ? 'bg-stone-900 text-white border-stone-900'
+                : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
             }`}
           >
             QRIS Resmi (E-Wallet / M-Banking)
@@ -85,12 +78,10 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
           <button
             type="button"
             onClick={() => onPaymentMethodChange('Transfer Bank')}
-            className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+            className={`py-2 px-3 rounded-xl text-xs font-medium border transition-colors cursor-pointer ${
               paymentMethod === 'Transfer Bank'
-                ? isPurple
-                  ? 'bg-purple-700 text-white border-purple-700 shadow-2xs'
-                  : 'bg-emerald-800 text-white border-emerald-800 shadow-2xs'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                ? 'bg-stone-900 text-white border-stone-900'
+                : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
             }`}
           >
             Transfer Rekening Bank BCA
@@ -99,7 +90,7 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
       </div>
 
       <div>
-        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+        <label className="block text-[11px] font-semibold text-stone-700 mb-1">
           2. Nama Pengirim di Struk / E-Wallet / Rekening <span className="text-rose-600">*</span>
         </label>
         <input
@@ -108,7 +99,7 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
           placeholder="Contoh: Ahmad Fauzi (DANA / BCA / Mandiri)"
           value={senderAccount}
           onChange={(e) => onSenderAccountChange(e.target.value)}
-          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+          className="w-full px-3.5 py-2 bg-white border border-stone-200/80 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-emerald-700"
         />
         {senderAccount.trim().length > 0 && senderAccount.trim().length < 3 && (
           <p className="text-[10px] text-rose-600 mt-1 font-medium">
@@ -118,7 +109,7 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
       </div>
 
       <div>
-        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+        <label className="block text-[11px] font-semibold text-stone-700 mb-1">
           3. Unggah Screenshot / Foto Bukti Transfer <span className="text-rose-600">*</span>
         </label>
         <input
@@ -134,25 +125,23 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
             type="button"
             disabled={isProcessing}
             onClick={() => fileInputRef.current?.click()}
-            className="w-full py-4 px-4 bg-white hover:bg-slate-50 border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="w-full py-4 px-4 bg-white hover:bg-stone-50 border border-dashed border-stone-300 hover:border-stone-500 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             {isProcessing ? (
               <>
-                <Loader2 className="w-6 h-6 text-emerald-700 animate-spin" />
-                <span className="text-xs font-bold text-slate-700">Memvalidasi Bukti Transfer...</span>
+                <Loader2 className="w-6 h-6 text-emerald-800 animate-spin" />
+                <span className="text-xs font-semibold text-stone-700">Memvalidasi Bukti Transfer...</span>
               </>
             ) : (
               <>
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                  isPurple ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-800'
-                }`}>
-                  <Upload className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-stone-100 text-stone-700">
+                  <Upload className="w-4 h-4" strokeWidth={1.75} />
                 </div>
-                <span className="text-xs font-bold text-slate-800">
+                <span className="text-xs font-semibold text-stone-800">
                   Klik untuk Pilih Screenshot / Foto Struk Transfer
                 </span>
-                <span className="text-[10px] text-slate-500">
-                  Format JPG, PNG, WEBP • Otomatis terkompresi aman &amp; terenkripsi ke Database Kurator
+                <span className="text-[10px] text-stone-500">
+                  Format JPG, PNG, WEBP · Otomatis terkompresi aman ke Database Kurator
                 </span>
               </>
             )}

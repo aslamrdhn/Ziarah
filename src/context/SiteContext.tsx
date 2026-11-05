@@ -141,6 +141,12 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
+      if (forceNetwork && typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem(CLOUD_SITES_CACHE_KEY);
+        } catch {}
+      }
+
       const [{ db }, { collection, getDocs }] = await Promise.all([
         import('../lib/firebase'),
         import('firebase/firestore'),
@@ -165,7 +171,11 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Ignore storage quota warning
         }
       } else {
+        try {
+          localStorage.removeItem(CLOUD_SITES_CACHE_KEY);
+        } catch {}
         startTransition(() => {
+          setSites(loadedLocalSites);
           setIsSeededInCloud(false);
           setCloudSiteCount(0);
           setIsLoading(false);

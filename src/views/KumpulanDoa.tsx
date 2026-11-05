@@ -5,6 +5,7 @@ import { auth, db, isUserAdmin } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { useVerifiedDonationUnlock } from '../lib/transferProof';
+import { useSiteCopy } from '../lib/siteCopy';
 
 interface KumpulanDoaProps {
   savedDoas: string[];
@@ -23,6 +24,7 @@ interface DoaKaromahItem {
 
 export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, onToggleSaveDoa }) => {
   const { sites: ziarahSites, isLoading } = useSites();
+  const siteCopy = useSiteCopy();
 
   const [activeTab, setActiveTab] = useState<'semua' | 'tersimpan'>('semua');
   const [searchQuery, setSearchQuery] = useState('');
@@ -188,10 +190,10 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
 
           <div className="mb-4">
             <h1 className="text-2xl sm:text-4xl font-serif font-normal text-stone-900 tracking-tight mb-1.5">
-              Wirid &amp; Doa Khusus Para Wali.
+              {siteCopy.doaKhususTitle}
             </h1>
             <p className="text-stone-600 text-xs sm:text-sm">
-              Koleksi bacaan tawasul, wirid, karomah, dan amalan yang dinisbatkan kepada para wali di Nusantara.
+              {siteCopy.doaHeaderSubtitle}
             </p>
           </div>
 
@@ -312,12 +314,12 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                         </p>
                       </div>
                       <div className="pt-3 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <span className="text-xs text-stone-500 italic">Arsip Khazanah Terkunci</span>
+                        <span className="text-xs text-stone-500 italic">{siteCopy.paywallBadge}</span>
                         <Link
                           to="/rubrik"
                           className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4"
                         >
-                          Buka Seluruh Arsip Kisah →
+                          {siteCopy.paywallPrimaryButton} →
                         </Link>
                       </div>
                     </div>
