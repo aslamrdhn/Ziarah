@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl } from '../lib/sanitize';
 
 interface KontribusiModalProps {
@@ -88,12 +88,14 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
 
     setIsSubmitting(true);
     const newDocRef = doc(collection(db, 'contributions'));
+    const privateContactRef = doc(db, 'contributions', newDocRef.id, 'private', 'contact');
     try {
-      await setDoc(newDocRef, {
+      const batch = writeBatch(db);
+      batch.set(newDocRef, {
         id: newDocRef.id,
         type: activeTab,
         contributorName: cleanContributor,
-        contributorContact: cleanContact,
+        contributorContact: '',
         targetName: cleanTarget,
         category: activeTab === 'baru' ? sanitizePlainText(category, 80) : '',
         city: cleanCity,
@@ -105,6 +107,13 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
         authorUid: auth.currentUser?.uid || 'guest',
         createdAt: serverTimestamp(),
       });
+      if (cleanContact) {
+        batch.set(privateContactRef, {
+          contributorContact: cleanContact,
+          createdAt: serverTimestamp(),
+        });
+      }
+      await batch.commit();
       setIsSuccess(true);
     } catch (err: any) {
       console.error('Failed to submit contribution:', err);

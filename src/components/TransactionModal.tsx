@@ -122,7 +122,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         receipt,
         doaHajat: sanitizePlainText(
           type === 'infaq' ? `Donasi pemeliharaan untuk ${site.name}` : `Apresiasi pembukaan manuskrip ${site.name}`,
-          1000
+          200
         ),
       });
 

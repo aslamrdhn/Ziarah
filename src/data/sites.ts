@@ -29,6 +29,8 @@ export interface ZiarahSite {
     text: string;
     translation?: string;
   }[];
+  isDeleted?: boolean;
+  updatedAt?: string;
 }
 
 export const ziarahSites: ZiarahSite[] = [

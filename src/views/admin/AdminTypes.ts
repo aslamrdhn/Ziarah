@@ -29,5 +29,16 @@ export interface DonationAdminItem {
   proofImageUrl?: string;
   referenceCode?: string;
   doaHajat?: string;
-  status?: 'confirmed' | 'verified' | 'rejected' | string;
+  status?: 'pending' | 'confirmed' | 'verified' | 'rejected' | string;
 }
+
+export interface VisitorStoryAdminItem {
+  id: string;
+  siteId: string;
+  authorName: string;
+  authorUid?: string;
+  text: string;
+  status: 'pending' | 'approved' | 'published' | string;
+  createdAtMs: number;
+}
+

@@ -10,6 +10,15 @@ export function resolveOfficialQrisPayload(rawPayload?: string): string {
   if (!trimmed || !trimmed.startsWith('000201') || LEGACY_QRIS_PAYLOADS.has(trimmed)) {
     return OFFICIAL_QRIS_STATIC_PAYLOAD;
   }
+  const crcTagIndex = trimmed.lastIndexOf('6304');
+  if (trimmed.length < 24 || crcTagIndex === -1 || crcTagIndex !== trimmed.length - 8) {
+    return OFFICIAL_QRIS_STATIC_PAYLOAD;
+  }
+  const payloadWithoutCrcValue = trimmed.slice(0, -4);
+  const providedCrc = trimmed.slice(-4).toUpperCase();
+  if (computeQrisCrc16(payloadWithoutCrcValue) !== providedCrc) {
+    return OFFICIAL_QRIS_STATIC_PAYLOAD;
+  }
   return trimmed;
 }
 

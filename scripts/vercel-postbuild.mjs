@@ -222,6 +222,13 @@ async function fetchCloudSitesForSeo(localSites) {
       const docId = parseFirestoreStringField(f, 'id', docNameParts[docNameParts.length - 1]);
       if (!docId) continue;
 
+      if (f.isDeleted?.booleanValue === true) {
+        const existingSlug = mergedById.get(docId)?.slug;
+        mergedById.delete(docId);
+        if (existingSlug) slugToId.delete(existingSlug);
+        continue;
+      }
+
       const locFields = f.location?.mapValue?.fields || {};
       const baseById = mergedById.get(docId);
       const name = parseFirestoreStringField(f, 'name', baseById?.name || docId);
@@ -381,6 +388,13 @@ function buildSiteRootHtml(site) {
 const allEntries = [
   ...staticRoutes.map((r) => ({
     loc: `${SITE_ORIGIN}${r.path === '/' ? '/' : r.path}`,
+    canonicalLoc:
+      r.path === '/direktori'
+        ? `${SITE_ORIGIN}/`
+        : r.path === '/infaq'
+          ? `${SITE_ORIGIN}/donasi`
+          : `${SITE_ORIGIN}${r.path === '/' ? '/' : r.path}`,
+    isAliasRoute: r.path === '/direktori' || r.path === '/infaq',
     changefreq: r.changefreq,
     priority: r.priority,
     title: r.title,
@@ -395,6 +409,8 @@ const allEntries = [
   })),
   ...sites.map((s) => ({
     loc: `${SITE_ORIGIN}/situs/${encodeURIComponent(s.slug)}`,
+    canonicalLoc: `${SITE_ORIGIN}/situs/${encodeURIComponent(s.slug)}`,
+    isAliasRoute: false,
     changefreq: 'weekly',
     priority: '0.8',
     title: `Makam ${s.title} (${s.city}, ${s.province}) — Rute, Kisah Karomah & Doa Ziarah | Ziarah Nusantara`,
@@ -405,11 +421,13 @@ const allEntries = [
   })),
 ];
 
+const sitemapEntries = allEntries.filter((e) => !e.isAliasRoute);
+
 // 1. Generate standards-compliant sitemap XML
 const xmlLines = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...allEntries.map((entry) => `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n  </url>`),
+  ...sitemapEntries.map((entry) => `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n  </url>`),
   '</urlset>',
   '',
 ];
@@ -428,7 +446,7 @@ const sitemapIndexLines = [
 const sitemapIndexContent = sitemapIndexLines.join('\n');
 
 // 2. Generate plain-text sitemap.txt
-const sitemapTxtContent = allEntries.map((entry) => entry.loc).join('\n') + '\n';
+const sitemapTxtContent = sitemapEntries.map((entry) => entry.loc).join('\n') + '\n';
 
 // 3. Generate RSS 2.0 feed (rss.xml) — also supported by Google Search Console as a Sitemap
 const rssLines = [
@@ -440,7 +458,7 @@ const rssLines = [
   '    <description>Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil &amp; Tawassul, serta peta rute &amp; kisah karomah 96 makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia.</description>',
   '    <language>id-ID</language>',
   `    <atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml" />`,
-  ...allEntries.map(
+  ...sitemapEntries.map(
     (entry) =>
       `    <item>\n      <title>${escapeXml(entry.title)}</title>\n      <link>${escapeXml(entry.loc)}</link>\n      <guid isPermaLink="true">${escapeXml(entry.loc)}</guid>\n      <description>${escapeXml(entry.description)}</description>\n    </item>`
   ),
@@ -463,6 +481,7 @@ for (const targetFolder of [rootPublic, rootDist]) {
 }
 
 function renderCustomHtml(baseHtml, entry) {
+  const canonicalHref = entry.canonicalLoc || entry.loc;
   let html = baseHtml
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeXml(entry.title)}</title>`)
     .replace(
@@ -471,19 +490,19 @@ function renderCustomHtml(baseHtml, entry) {
     )
     .replace(
       /<link rel="canonical" id="canonical-link" href="[^"]*"\s*\/?>/i,
-      `<link rel="canonical" id="canonical-link" href="${escapeXml(entry.loc)}" />`
+      `<link rel="canonical" id="canonical-link" href="${escapeXml(canonicalHref)}" />`
     )
     .replace(
       /<link rel="alternate" hreflang="id-ID" id="hreflang-id" href="[^"]*"\s*\/?>/i,
-      `<link rel="alternate" hreflang="id-ID" id="hreflang-id" href="${escapeXml(entry.loc)}" />`
+      `<link rel="alternate" hreflang="id-ID" id="hreflang-id" href="${escapeXml(canonicalHref)}" />`
     )
     .replace(
       /<link rel="alternate" hreflang="id" id="hreflang-id-short" href="[^"]*"\s*\/?>/i,
-      `<link rel="alternate" hreflang="id" id="hreflang-id-short" href="${escapeXml(entry.loc)}" />`
+      `<link rel="alternate" hreflang="id" id="hreflang-id-short" href="${escapeXml(canonicalHref)}" />`
     )
     .replace(
       /<link rel="alternate" hreflang="x-default" id="hreflang-default" href="[^"]*"\s*\/?>/i,
-      `<link rel="alternate" hreflang="x-default" id="hreflang-default" href="${escapeXml(entry.loc)}" />`
+      `<link rel="alternate" hreflang="x-default" id="hreflang-default" href="${escapeXml(canonicalHref)}" />`
     )
     .replace(
       /<meta property="og:title" id="og-title" content="[^"]*"\s*\/?>/i,

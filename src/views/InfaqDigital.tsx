@@ -171,24 +171,37 @@ export const InfaqDigital: React.FC = () => {
     const unsubDonations = onSnapshot(
       query(collection(db, 'donations'), limit(30)),
       (snapshot) => {
-        const list: DonationRecord[] = snapshot.docs.map((docSnap, idx) => {
-          const d = docSnap.data();
-          const ts = d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now() - idx * 60000;
-          const dateLabel = d.createdAt?.toDate
-            ? d.createdAt.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-            : 'Baru saja';
-          return {
-            id: docSnap.id,
-            donorName: d.donorName || 'Hamba Allah',
-            amount: Number(d.amount) || 0,
-            programTitle: d.programTitle || 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
-            siteName: d.siteName || 'Khazanah Auliya Nusantara',
-            doaHajat: d.doaHajat || 'Semoga menjadi amal jariyah dan wasilah keberkahan keluarga.',
-            dateLabel,
-            createdAtMs: ts,
-            baseAamiinCount: 15 + (idx % 23),
-          };
-        });
+        let myId = '';
+        try {
+          myId = localStorage.getItem('zn_verified_rubrik_donation_id') || '';
+        } catch {}
+        const list: DonationRecord[] = snapshot.docs
+          .filter((docSnap) => {
+            const d = docSnap.data();
+            return (
+              d.status === 'verified' ||
+              d.status === 'confirmed' ||
+              (myId && docSnap.id === myId && d.status !== 'rejected')
+            );
+          })
+          .map((docSnap, idx) => {
+            const d = docSnap.data();
+            const ts = d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now() - idx * 60000;
+            const dateLabel = d.createdAt?.toDate
+              ? d.createdAt.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+              : 'Baru saja';
+            return {
+              id: docSnap.id,
+              donorName: d.donorName || 'Hamba Allah',
+              amount: Number(d.amount) || 0,
+              programTitle: d.programTitle || 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
+              siteName: d.siteName || 'Khazanah Auliya Nusantara',
+              doaHajat: d.doaHajat || 'Semoga menjadi amal jariyah dan wasilah keberkahan keluarga.',
+              dateLabel,
+              createdAtMs: ts,
+              baseAamiinCount: 15 + (idx % 23),
+            };
+          });
         list.sort((a, b) => b.createdAtMs - a.createdAtMs);
         setRecentDonations(list);
       },

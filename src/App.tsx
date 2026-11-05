@@ -143,9 +143,20 @@ export default function App() {
 
     const applySeoMetadata = (matchedSite: ZiarahSite | null) => {
       if (cancelled) return;
-      let activeTitle = routeSeoMap[cleanPath]?.title || routeSeoMap['/'].title;
+      const isInternalAdminRoute =
+        cleanPath.startsWith('/admin') || cleanPath.startsWith('/kurator');
+
+      let activeTitle = isInternalAdminRoute
+        ? 'Portal Internal Dewan Kurator — Ziarah Nusantara'
+        : routeSeoMap[cleanPath]?.title || routeSeoMap['/'].title;
       let activeDesc = routeSeoMap[cleanPath]?.desc || routeSeoMap['/'].desc;
       let canonicalUrl = fullUrl;
+
+      if (cleanPath === '/direktori') {
+        canonicalUrl = `${baseOrigin}/`;
+      } else if (cleanPath === '/infaq') {
+        canonicalUrl = `${baseOrigin}/donasi`;
+      }
 
       if (matchedSite) {
         activeTitle = `Makam ${matchedSite.title} (${matchedSite.location.city}, ${matchedSite.location.province}) — Rute, Sejarah & Doa Ziarah | Ziarah Nusantara`;
@@ -154,6 +165,16 @@ export default function App() {
       }
 
       document.title = activeTitle;
+
+      let robotsEl = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+      if (!robotsEl) {
+        robotsEl = document.createElement('meta');
+        robotsEl.name = 'robots';
+        document.head.appendChild(robotsEl);
+      }
+      robotsEl.content = isInternalAdminRoute
+        ? 'noindex, nofollow'
+        : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
       const descEl = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
       if (descEl) descEl.content = activeDesc;

@@ -47,6 +47,12 @@ function mergeLocalAndCloudSites(loadedLocalSites: ZiarahSite[], fetchedSites: Z
     'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80';
 
   fetchedSites.forEach((cloudSite) => {
+    if (!cloudSite || !cloudSite.id) return;
+    if (cloudSite.isDeleted === true) {
+      mergedMap.delete(cloudSite.id);
+      return;
+    }
+
     const baseLocal = localMap.get(cloudSite.id);
     if (baseLocal) {
       const effectiveImageUrl =
@@ -60,25 +66,18 @@ function mergeLocalAndCloudSites(loadedLocalSites: ZiarahSite[], fetchedSites: Z
         ...baseLocal,
         ...cloudSite,
         imageUrl: effectiveImageUrl,
-        imageSource: cloudSite.imageSource || baseLocal.imageSource,
-        era: cloudSite.era || baseLocal.era,
-        sanad: cloudSite.sanad || baseLocal.sanad,
-        karya: cloudSite.karya && cloudSite.karya.length > 0 ? cloudSite.karya : baseLocal.karya,
-        references:
-          cloudSite.references && cloudSite.references.length > 0
-            ? cloudSite.references
-            : baseLocal.references,
-        karomah:
-          cloudSite.karomah && cloudSite.karomah.length > 0 ? cloudSite.karomah : baseLocal.karomah,
-        doaKhusus:
-          cloudSite.doaKhusus && cloudSite.doaKhusus.length > 0
-            ? cloudSite.doaKhusus
-            : baseLocal.doaKhusus,
-        untoldStory: cloudSite.untoldStory || baseLocal.untoldStory,
-        haulSchedule: cloudSite.haulSchedule || baseLocal.haulSchedule,
-        localAdab: cloudSite.localAdab || baseLocal.localAdab,
+        imageSource: 'imageSource' in cloudSite ? cloudSite.imageSource : baseLocal.imageSource,
+        era: 'era' in cloudSite ? cloudSite.era : baseLocal.era,
+        sanad: 'sanad' in cloudSite ? cloudSite.sanad : baseLocal.sanad,
+        karya: Array.isArray(cloudSite.karya) ? cloudSite.karya : baseLocal.karya,
+        references: Array.isArray(cloudSite.references) ? cloudSite.references : baseLocal.references,
+        karomah: Array.isArray(cloudSite.karomah) ? cloudSite.karomah : baseLocal.karomah,
+        doaKhusus: Array.isArray(cloudSite.doaKhusus) ? cloudSite.doaKhusus : baseLocal.doaKhusus,
+        untoldStory: 'untoldStory' in cloudSite ? cloudSite.untoldStory : baseLocal.untoldStory,
+        haulSchedule: 'haulSchedule' in cloudSite ? cloudSite.haulSchedule : baseLocal.haulSchedule,
+        localAdab: 'localAdab' in cloudSite ? cloudSite.localAdab : baseLocal.localAdab,
       });
-    } else {
+    } else if (cloudSite.name && cloudSite.location) {
       mergedMap.set(cloudSite.id, cloudSite);
     }
   });

@@ -144,6 +144,7 @@ interface StoryItem {
   text: string;
   date: string;
   authorUid?: string;
+  status?: string;
   createdAtMs?: number;
   isDefault?: boolean;
 }
@@ -193,21 +194,35 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const fetched: StoryItem[] = snapshot.docs.map(docSnap => {
-          const d = docSnap.data();
-          const ts = d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now();
-          const formattedDate = d.createdAt?.toDate
-            ? d.createdAt.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-            : 'Baru saja';
-          return {
-            id: docSnap.id,
-            name: d.authorName || 'Hamba Allah',
-            text: d.text || '',
-            date: formattedDate,
-            authorUid: d.authorUid,
-            createdAtMs: ts,
-          };
-        });
+        let localPendingIds: string[] = [];
+        try {
+          localPendingIds = JSON.parse(localStorage.getItem('zn_my_pending_story_ids') || '[]');
+        } catch {}
+        const currentUid = auth.currentUser?.uid;
+        const fetched: StoryItem[] = snapshot.docs
+          .filter((docSnap) => {
+            const d = docSnap.data();
+            const isPublicApproved = !d.status || d.status === 'approved' || d.status === 'published';
+            const isOwnPending =
+              (currentUid && d.authorUid === currentUid) || localPendingIds.includes(docSnap.id);
+            return isPublicApproved || isOwnPending;
+          })
+          .map((docSnap) => {
+            const d = docSnap.data();
+            const ts = d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now();
+            const formattedDate = d.createdAt?.toDate
+              ? d.createdAt.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+              : 'Baru saja';
+            return {
+              id: docSnap.id,
+              name: d.authorName || 'Hamba Allah',
+              text: d.text || '',
+              date: d.status === 'pending' ? `${formattedDate} • Menunggu Moderasi` : formattedDate,
+              authorUid: d.authorUid,
+              status: d.status || 'approved',
+              createdAtMs: ts,
+            };
+          });
         fetched.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
         setCloudStories(fetched);
       },
@@ -236,8 +251,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
         authorName: cleanName,
         authorUid: auth.currentUser?.uid || 'guest',
         text: cleanText,
+        status: 'pending',
         createdAt: serverTimestamp(),
       });
+      try {
+        const prev = JSON.parse(localStorage.getItem('zn_my_pending_story_ids') || '[]');
+        localStorage.setItem('zn_my_pending_story_ids', JSON.stringify([storyRef.id, ...prev].slice(0, 30)));
+      } catch {}
       setNewStory('');
     } catch (error) {
       console.error('Error saving visitor story:', error);

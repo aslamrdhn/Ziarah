@@ -219,7 +219,19 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     const unsubDonations = onSnapshot(
       query(collection(db, 'donations'), limit(25)),
       (snapshot) => {
+        let myId = '';
+        try {
+          myId = localStorage.getItem('zn_verified_rubrik_donation_id') || '';
+        } catch {}
         const fetched: CuratedMunajatItem[] = snapshot.docs
+          .filter((docSnap) => {
+            const d = docSnap.data();
+            return (
+              d.status === 'verified' ||
+              d.status === 'confirmed' ||
+              (myId && docSnap.id === myId && d.status !== 'rejected')
+            );
+          })
           .map((docSnap, idx) => {
             const d = docSnap.data();
             const ts = d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now() - idx * 60000;

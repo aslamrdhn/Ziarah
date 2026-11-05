@@ -40,7 +40,7 @@ import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectRes
 import { OFFICIAL_QRIS_STATIC_PAYLOAD, resolveOfficialQrisPayload } from '../lib/qris';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl } from '../lib/sanitize';
-import { ContributionItem, DonationAdminItem } from './admin/AdminTypes';
+import { ContributionItem, DonationAdminItem, VisitorStoryAdminItem } from './admin/AdminTypes';
 import { ContributionQueueSection } from './admin/ContributionQueueSection';
 import { SiteDirectoryAdminSection } from './admin/SiteDirectoryAdminSection';
 import { DonationVerificationModal } from './admin/DonationVerificationModal';
@@ -62,8 +62,9 @@ export const AdminKurator: React.FC = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  // Contributions state
+  // Contributions & Visitor Stories state
   const [contributions, setContributions] = useState<ContributionItem[]>([]);
+  const [visitorStories, setVisitorStories] = useState<VisitorStoryAdminItem[]>([]);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   // Site CRUD state
@@ -188,13 +189,13 @@ export const AdminKurator: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Subscribe to contributions & donations & settings when Admin is logged in
+  // Subscribe to contributions, visitor stories, donations & settings when Admin is logged in
   useEffect(() => {
     if (!isAdmin) return;
 
     const unsubContrib = onSnapshot(
       collection(db, 'contributions'),
-      (snap) => {
+      async (snap) => {
         const list: ContributionItem[] = snap.docs.map(d => {
           const data = d.data();
           return {
@@ -216,8 +217,47 @@ export const AdminKurator: React.FC = () => {
         });
         list.sort((a, b) => b.createdAtMs - a.createdAtMs);
         setContributions(list);
+
+        // Hydrate private contributor contacts from /contributions/{id}/private/contact for Admin view
+        const withContacts = await Promise.all(
+          list.map(async (item) => {
+            if (item.contributorContact) return item;
+            try {
+              const privSnap = await getDoc(doc(db, 'contributions', item.id, 'private', 'contact'));
+              if (privSnap.exists()) {
+                const privData = privSnap.data();
+                if (privData?.contributorContact) {
+                  return { ...item, contributorContact: String(privData.contributorContact) };
+                }
+              }
+            } catch {}
+            return item;
+          })
+        );
+        setContributions(withContacts);
       },
       (err) => handleFirestoreError(err, OperationType.LIST, 'contributions')
+    );
+
+    const unsubStories = onSnapshot(
+      collection(db, 'stories'),
+      (snap) => {
+        const list: VisitorStoryAdminItem[] = snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            siteId: data.siteId || '',
+            authorName: data.authorName || 'Hamba Allah',
+            authorUid: data.authorUid || '',
+            text: data.text || '',
+            status: data.status || 'approved',
+            createdAtMs: data.createdAt?.toMillis ? data.createdAt.toMillis() : Date.now(),
+          };
+        });
+        list.sort((a, b) => b.createdAtMs - a.createdAtMs);
+        setVisitorStories(list);
+      },
+      (err) => handleFirestoreError(err, OperationType.LIST, 'stories')
     );
 
     const unsubDonations = onSnapshot(
@@ -260,6 +300,7 @@ export const AdminKurator: React.FC = () => {
 
     return () => {
       unsubContrib();
+      unsubStories();
       unsubDonations();
     };
   }, [isAdmin]);
@@ -304,7 +345,7 @@ export const AdminKurator: React.FC = () => {
     setSeedMessage('Memulai sinkronisasi data ke Cloud Firestore...');
     try {
       for (const site of localSites) {
-        await setDoc(doc(db, 'sites', site.id), site);
+        await setDoc(doc(db, 'sites', site.id), { ...site, isDeleted: false }, { merge: true });
       }
       await refreshCloudSites(true);
       setSeedMessage('Berhasil mensinkronisasi ' + localSites.length + ' data makam ke Firestore.');
@@ -347,7 +388,8 @@ export const AdminKurator: React.FC = () => {
             address: item.mapsUrl || `${item.city || 'Nusantara'}`,
             city: item.city || 'Nusantara',
             province: item.province || 'Indonesia',
-          }
+          },
+          isDeleted: false,
         };
         await setDoc(doc(db, 'sites', slug), newSite, { merge: true });
         await refreshCloudSites(true);
@@ -381,9 +423,41 @@ export const AdminKurator: React.FC = () => {
     if (!isAdmin || processingId) return;
     setProcessingId(id);
     try {
+      try {
+        await deleteDoc(doc(db, 'contributions', id, 'private', 'contact'));
+      } catch {}
       await deleteDoc(doc(db, 'contributions', id));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `contributions/${id}`);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleApproveVisitorStory = async (story: VisitorStoryAdminItem) => {
+    if (!isAdmin || processingId) return;
+    setProcessingId(story.id);
+    try {
+      await updateDoc(doc(db, 'stories', story.id), {
+        siteId: story.siteId,
+        authorName: story.authorName,
+        text: story.text,
+        status: 'approved',
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `stories/${story.id}`);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleDeleteVisitorStory = async (id: string) => {
+    if (!isAdmin || processingId) return;
+    setProcessingId(id);
+    try {
+      await deleteDoc(doc(db, 'stories', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `stories/${id}`);
     } finally {
       setProcessingId(null);
     }
@@ -438,6 +512,8 @@ export const AdminKurator: React.FC = () => {
       localAdab: sanitizeMultilineText(editingSite.localAdab, 2000),
       karya: (editingSite.karya || []).map((k) => sanitizePlainText(k, 240)).filter(Boolean),
       references: (editingSite.references || []).map((r) => sanitizePlainText(r, 400)).filter(Boolean),
+      isDeleted: false,
+      updatedAt: new Date().toISOString(),
     };
 
     try {
@@ -458,9 +534,13 @@ export const AdminKurator: React.FC = () => {
   const handleDeleteSite = async (siteId: string) => {
     if (!isAdmin) return;
     try {
-      await deleteDoc(doc(db, 'sites', siteId));
+      await setDoc(
+        doc(db, 'sites', siteId),
+        { id: siteId, isDeleted: true, updatedAt: new Date().toISOString() },
+        { merge: true }
+      );
       await refreshCloudSites(true);
-      setSiteStatusMsg(`Data makam (${siteId}) dihapus dari Cloud Firestore.`);
+      setSiteStatusMsg(`Data makam (${siteId}) telah dinonaktifkan (soft-delete tombstone) di Cloud Firestore.`);
     } catch (error: any) {
       setSiteStatusMsg(`Gagal menghapus: ${error.message}`);
     }
@@ -807,7 +887,9 @@ export const AdminKurator: React.FC = () => {
     }
   };
 
-  const pendingCount = contributions.filter(c => c.status === 'pending').length;
+  const pendingCount =
+    contributions.filter((c) => c.status === 'pending').length +
+    visitorStories.filter((s) => s.status === 'pending').length;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 relative z-20 pt-4 pb-24">
@@ -1019,14 +1101,17 @@ export const AdminKurator: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* TAB 1: ANTREAN KONTRIBUSI KOMUNITAS */}
+            {/* TAB 1: ANTREAN KONTRIBUSI KOMUNITAS & MODERASI CERITA */}
             {activeTab === 'kontribusi' && (
               <ContributionQueueSection
                 contributions={contributions}
+                visitorStories={visitorStories}
                 processingId={processingId}
                 onApprove={handleApproveContribution}
                 onReject={handleRejectContribution}
                 onDelete={handleDeleteContribution}
+                onApproveStory={handleApproveVisitorStory}
+                onDeleteStory={handleDeleteVisitorStory}
               />
             )}
 

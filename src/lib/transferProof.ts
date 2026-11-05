@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, doc, getDoc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
 export const RUBRIK_DONATION_ID_KEY = 'zn_verified_rubrik_donation_id';
@@ -144,15 +144,18 @@ export async function validateAndCompressReceipt(file: File): Promise<Compressed
 }
 
 /**
- * Stores lightweight public donation metadata in `/donations/{id}` (~1 KB)
- * and isolates the compressed Base64 transfer receipt in `/donations/{id}/private/proof` (F-02, F-04).
+ * Stores lightweight public donation metadata in `/donations/{id}` (~1 KB) with initial `status: 'pending'`
+ * and isolates the compressed Base64 transfer receipt in `/donations/{id}/private/proof` atomically via `writeBatch`.
  */
 export async function submitDonationWithPrivateProof(payload: SubmitDonationPayload): Promise<string> {
   const donationRef = doc(collection(db, 'donations'));
   const donationId = donationRef.id;
   const authorUid = auth.currentUser?.uid || 'guest';
 
-  await setDoc(donationRef, {
+  const proofRef = doc(db, 'donations', donationId, 'private', 'proof');
+  const batch = writeBatch(db);
+
+  batch.set(donationRef, {
     id: donationId,
     programId: payload.programId,
     programTitle: payload.programTitle,
@@ -163,14 +166,13 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
     paymentMethod: payload.paymentMethod,
     hasProof: true,
     referenceCode: payload.receipt.referenceCode,
-    doaHajat: payload.doaHajat,
+    doaHajat: (payload.doaHajat || '').slice(0, 200),
     authorUid,
-    status: 'confirmed',
+    status: 'pending',
     createdAt: serverTimestamp(),
   });
 
-  const proofRef = doc(db, 'donations', donationId, 'private', 'proof');
-  await setDoc(proofRef, {
+  batch.set(proofRef, {
     donationId,
     senderAccount: payload.senderAccount,
     proofImageUrl: payload.receipt.dataUrl,
@@ -181,6 +183,7 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
     createdAt: serverTimestamp(),
   });
 
+  await batch.commit();
   return donationId;
 }
 
@@ -317,7 +320,7 @@ export interface DonationUnlockStatus {
 
 export function useVerifiedDonationUnlock(
   siteId?: string,
-  _requireManualAdminVerification: boolean = false
+  requireManualAdminVerification: boolean = false
 ): DonationUnlockStatus {
   const [donationId, setDonationId] = useState<string | null>(() => {
     try {
@@ -349,11 +352,11 @@ export function useVerifiedDonationUnlock(
     referenceCode: string | null;
     status: string | null;
   }>({
-    isUnlocked: Boolean(donationId),
-    isPendingAdmin: false,
-    isVerifying: false,
+    isUnlocked: Boolean(donationId) && !requireManualAdminVerification,
+    isPendingAdmin: Boolean(donationId) && requireManualAdminVerification,
+    isVerifying: Boolean(donationId),
     referenceCode: null,
-    status: donationId ? 'confirmed' : null,
+    status: donationId ? 'pending' : null,
   });
 
   useEffect(() => {
@@ -372,15 +375,6 @@ export function useVerifiedDonationUnlock(
           }
         }
         setDonationId(nextId);
-        if (nextId) {
-          setUnlockState((prev) => ({
-            ...prev,
-            isUnlocked: true,
-            isPendingAdmin: false,
-            isVerifying: false,
-            status: prev.status || 'confirmed',
-          }));
-        }
       } catch {
         setDonationId(null);
       }
@@ -406,24 +400,27 @@ export function useVerifiedDonationUnlock(
       return;
     }
 
-    // Instant Optimistic Unlock on the donor's device immediately after receipt upload
     setUnlockState((prev) => ({
       ...prev,
-      isUnlocked: true,
-      isPendingAdmin: false,
-      isVerifying: false,
-      status: prev.status || 'confirmed',
+      isVerifying: true,
     }));
 
     const unsub = onSnapshot(
       doc(db, 'donations', donationId),
       (snap) => {
         if (!snap.exists()) {
+          setUnlockState({
+            isUnlocked: false,
+            isPendingAdmin: false,
+            isVerifying: false,
+            referenceCode: null,
+            status: null,
+          });
           return;
         }
 
         const data = snap.data();
-        const docStatus = String(data.status || 'confirmed');
+        const docStatus = String(data.status || 'pending');
         const refCode = typeof data.referenceCode === 'string' ? data.referenceCode : snap.id.slice(0, 8).toUpperCase();
 
         if (docStatus === 'rejected') {
@@ -437,26 +434,48 @@ export function useVerifiedDonationUnlock(
           return;
         }
 
-        setUnlockState({
-          isUnlocked: true,
-          isPendingAdmin: false,
-          isVerifying: false,
-          referenceCode: refCode,
-          status: docStatus,
-        });
+        if (docStatus === 'verified' || docStatus === 'confirmed') {
+          setUnlockState({
+            isUnlocked: true,
+            isPendingAdmin: false,
+            isVerifying: false,
+            referenceCode: refCode,
+            status: docStatus,
+          });
+          return;
+        }
+
+        // docStatus === 'pending'
+        if (requireManualAdminVerification) {
+          setUnlockState({
+            isUnlocked: false,
+            isPendingAdmin: true,
+            isVerifying: false,
+            referenceCode: refCode,
+            status: docStatus,
+          });
+        } else {
+          // Optimistic Unlock on the donor's own device while awaiting public moderation
+          setUnlockState({
+            isUnlocked: true,
+            isPendingAdmin: true,
+            isVerifying: false,
+            referenceCode: refCode,
+            status: docStatus,
+          });
+        }
       },
       () => {
+        // Never unlock on Firestore permission or network error
         setUnlockState((prev) => ({
           ...prev,
-          isUnlocked: true,
-          isPendingAdmin: false,
           isVerifying: false,
         }));
       }
     );
 
     return () => unsub();
-  }, [donationId]);
+  }, [donationId, requireManualAdminVerification]);
 
   return {
     ...unlockState,

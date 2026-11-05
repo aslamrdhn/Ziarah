@@ -5,6 +5,7 @@ import {
   parseEmvTags,
   parseQrisMerchantInfo,
   buildQrisPayload,
+  resolveOfficialQrisPayload,
 } from '../qris';
 
 describe('QRIS EMVCo Dynamic Payload & CRC-16/CCITT-FALSE', () => {
@@ -40,5 +41,11 @@ describe('QRIS EMVCo Dynamic Payload & CRC-16/CCITT-FALSE', () => {
       amount: 100000,
     });
     expect(res).toBe(OFFICIAL_QRIS_STATIC_PAYLOAD);
+  });
+
+  it('falls back to OFFICIAL_QRIS_STATIC_PAYLOAD when CRC-16 is tampered', () => {
+    const tampered = OFFICIAL_QRIS_STATIC_PAYLOAD.slice(0, -4) + 'FFFF';
+    expect(resolveOfficialQrisPayload(tampered)).toBe(OFFICIAL_QRIS_STATIC_PAYLOAD);
+    expect(resolveOfficialQrisPayload(OFFICIAL_QRIS_STATIC_PAYLOAD)).toBe(OFFICIAL_QRIS_STATIC_PAYLOAD);
   });
 });
