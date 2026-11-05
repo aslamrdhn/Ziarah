@@ -18,6 +18,7 @@ import {
   fetchSiteCopyFromCloud,
   saveSiteCopyToCloud,
   QuickNominalPackage,
+  StoryReelSlide,
 } from '../../lib/siteCopy';
 
 interface SiteCopyAdminSectionProps {
@@ -27,7 +28,7 @@ interface SiteCopyAdminSectionProps {
 
 type EditableStringCopyKey = Exclude<
   keyof SiteCopyConfig,
-  'quickNominalPackages' | 'updatedAt'
+  'quickNominalPackages' | 'storyReelSlides' | 'updatedAt'
 >;
 
 interface CopyFieldDef {
@@ -106,6 +107,18 @@ const COPY_FIELDS: CopyFieldDef[] = [
     key: 'cardSecondaryMapCta',
     label: 'Teks Tautan Peta Rute Kartu Makam',
     description: 'Teks tautan sekunder menuju Peta Rute pada setiap kartu makam.',
+    section: 'beranda',
+  },
+  {
+    key: 'storyReelSectionTitle',
+    label: 'Judul Utama Panggung Story Reel (5 Slide Hikmah Ziarah)',
+    description: 'Judul seksi karusel vertikal 5 slide edukasi hikmah ziarah kubur di Beranda.',
+    section: 'beranda',
+  },
+  {
+    key: 'storyReelSectionSubtitle',
+    label: 'Subjudul Label Kiri Story Reel',
+    description: 'Label kecil di pojok kiri atas panggung Story Reel (mis. Reel Kisah · Hikmah & Sanad).',
     section: 'beranda',
   },
 
@@ -327,6 +340,27 @@ export const SiteCopyAdminSection: React.FC<SiteCopyAdminSectionProps> = ({
     }));
   };
 
+  const handleStorySlideChange = (
+    index: number,
+    field: keyof StoryReelSlide,
+    value: string
+  ) => {
+    setFormCopy((prev) => {
+      const baseSlides =
+        Array.isArray(prev.storyReelSlides) && prev.storyReelSlides.length > 0
+          ? [...prev.storyReelSlides]
+          : [...DEFAULT_SITE_COPY.storyReelSlides];
+      baseSlides[index] = {
+        ...baseSlides[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        storyReelSlides: baseSlides,
+      };
+    });
+  };
+
   const handleSaveAllCopy = async () => {
     setIsSavingCopy(true);
     try {
@@ -416,6 +450,18 @@ export const SiteCopyAdminSection: React.FC<SiteCopyAdminSectionProps> = ({
         String(pkg.amount).includes(normalizedQuery)
     );
 
+  const showStorySlidesInSearch =
+    !normalizedQuery ||
+    'story reel hikmah ziarah slide hadits muslim hakim syirik'.includes(normalizedQuery) ||
+    (formCopy.storyReelSlides || DEFAULT_SITE_COPY.storyReelSlides).some(
+      (s) =>
+        s.title.toLowerCase().includes(normalizedQuery) ||
+        s.shortTabTitle.toLowerCase().includes(normalizedQuery) ||
+        s.narrative.toLowerCase().includes(normalizedQuery) ||
+        (s.arabicQuote || '').toLowerCase().includes(normalizedQuery) ||
+        (s.arabicSource || '').toLowerCase().includes(normalizedQuery)
+    );
+
   return (
     <div className="space-y-6">
       {/* Top Action & Search Header */}
@@ -462,7 +508,7 @@ export const SiteCopyAdminSection: React.FC<SiteCopyAdminSectionProps> = ({
             type="text"
             value={copySearchQuery}
             onChange={(e) => setCopySearchQuery(e.target.value)}
-            placeholder="Cari Teks / Label (misal: Beranda, Gembok, Wali Songo, Infaq, Yasin)..."
+            placeholder="Cari Teks / Label (misal: Beranda, Story Reel, Gembok, Wali Songo, Infaq, Yasin)..."
             className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white"
           />
           {copySearchQuery && (
@@ -481,7 +527,8 @@ export const SiteCopyAdminSection: React.FC<SiteCopyAdminSectionProps> = ({
       {sections.map((sec) => {
         const fields = filterFieldsBySection(sec.id);
         const includePackages = sec.id === 'infaq' && showPackagesInSearch;
-        if (fields.length === 0 && !includePackages) return null;
+        const includeStorySlides = sec.id === 'beranda' && showStorySlidesInSearch;
+        if (fields.length === 0 && !includePackages && !includeStorySlides) return null;
 
         return (
           <div
@@ -532,6 +579,124 @@ export const SiteCopyAdminSection: React.FC<SiteCopyAdminSectionProps> = ({
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Dynamic 5-Slide Story Reel Editor inside Section 1 ('beranda') */}
+            {includeStorySlides && (
+              <div className="pt-4 border-t border-stone-200/80 space-y-4">
+                <div>
+                  <h4 className="text-sm font-bold text-stone-900">
+                    Editor 5 Slide &ldquo;Story Reel Hikmah Ziarah&rdquo; (storyReelSlides)
+                  </h4>
+                  <p className="text-xs text-stone-500">
+                    Ubah teks label tahapan, judul kartu samping, judul utama, isi narasi, serta kutipan hadits Arab &amp; terjemahannya untuk kelima kartu Story Reel di Beranda.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {(formCopy.storyReelSlides || DEFAULT_SITE_COPY.storyReelSlides).map(
+                    (slide, idx) => (
+                      <div
+                        key={slide.id || idx}
+                        className="p-4 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200 space-y-3"
+                      >
+                        <div className="flex items-center justify-between border-b border-stone-200/70 pb-2">
+                          <span className="text-xs font-bold text-emerald-900">
+                            Slide #{idx + 1} — {slide.shortTabTitle}
+                          </span>
+                          <span className="text-[11px] font-mono text-stone-400">
+                            id: {slide.id}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[11px] font-bold text-stone-600 mb-1">
+                              Label Tahapan Atas (stepLabel)
+                            </label>
+                            <input
+                              type="text"
+                              value={slide.stepLabel}
+                              onChange={(e) =>
+                                handleStorySlideChange(idx, 'stepLabel', e.target.value)
+                              }
+                              className="w-full px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-stone-800"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-stone-600 mb-1">
+                              Judul Kartu Samping / Tab (shortTabTitle)
+                            </label>
+                            <input
+                              type="text"
+                              value={slide.shortTabTitle}
+                              onChange={(e) =>
+                                handleStorySlideChange(idx, 'shortTabTitle', e.target.value)
+                              }
+                              className="w-full px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-stone-800"
+                            />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="block text-[11px] font-bold text-stone-600 mb-1">
+                              Judul Utama Slide (title)
+                            </label>
+                            <input
+                              type="text"
+                              value={slide.title}
+                              onChange={(e) =>
+                                handleStorySlideChange(idx, 'title', e.target.value)
+                              }
+                              className="w-full px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-bold text-stone-900"
+                            />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="block text-[11px] font-bold text-stone-600 mb-1">
+                              Narasi Utama Slide (narrative)
+                            </label>
+                            <textarea
+                              rows={2}
+                              value={slide.narrative}
+                              onChange={(e) =>
+                                handleStorySlideChange(idx, 'narrative', e.target.value)
+                              }
+                              className="w-full px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-stone-800"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-stone-600 mb-1">
+                              Teks Kaligrafi Hadits Arab (arabicQuote — Opsional)
+                            </label>
+                            <input
+                              type="text"
+                              dir="rtl"
+                              value={slide.arabicQuote || ''}
+                              onChange={(e) =>
+                                handleStorySlideChange(idx, 'arabicQuote', e.target.value)
+                              }
+                              placeholder="Kosongkan jika tidak ada kutipan Arab"
+                              className="w-full px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-sm font-arabic text-stone-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-stone-600 mb-1">
+                              Terjemahan &amp; Perawi Hadits (arabicSource — Opsional)
+                            </label>
+                            <input
+                              type="text"
+                              value={slide.arabicSource || ''}
+                              onChange={(e) =>
+                                handleStorySlideChange(idx, 'arabicSource', e.target.value)
+                              }
+                              placeholder="Contoh: Artinya: ... (HR. Muslim)"
+                              className="w-full px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-stone-800"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
               </div>
             )}
 

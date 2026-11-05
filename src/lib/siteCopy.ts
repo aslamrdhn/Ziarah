@@ -8,6 +8,16 @@ export interface QuickNominalPackage {
   badge?: string;
 }
 
+export interface StoryReelSlide {
+  id: string;
+  stepLabel: string;
+  shortTabTitle: string;
+  title: string;
+  narrative: string;
+  arabicQuote?: string;
+  arabicSource?: string;
+}
+
 export interface SiteCopyConfig {
   // 1. Identitas & Beranda (DaftarMakam.tsx)
   heroTitle: string;
@@ -21,6 +31,9 @@ export interface SiteCopyConfig {
   tabLabelRaja: string;
   cardPrimaryCta: string;
   cardSecondaryMapCta: string;
+  storyReelSectionTitle: string;
+  storyReelSectionSubtitle: string;
+  storyReelSlides: StoryReelSlide[];
   // 2. Ruang Baca & Gembok Cerita (SiteDetails.tsx & RubrikKisah.tsx)
   readerTabMainStory: string;
   readerTabPrayerGuide: string;
@@ -67,6 +80,57 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   tabLabelRaja: 'Auliya Nusantara',
   cardPrimaryCta: 'Baca Kisah',
   cardSecondaryMapCta: 'Lihat di Peta Rute',
+  storyReelSectionTitle: 'Mengapa Hati Kita Rindu Berziarah?',
+  storyReelSectionSubtitle: 'Reel Kisah · Hikmah & Sanad',
+  storyReelSlides: [
+    {
+      id: 'rindu',
+      stepLabel: '1 / 5 · Panggilan Batin',
+      shortTabTitle: '1. Mengapa Hati Rindu Berziarah?',
+      title: 'Ternyata Rasulullah SAW Sangat Menganjurkan Ziarah Kubur',
+      narrative:
+        'Saat dada terasa sesak oleh hiruk-pikuk dunia, duduk hening di tepi pusara orang tua dan para kekasih Allah bukanlah kesia-siaan—melainkan sunnah mulia yang menghidupkan kembali hati yang gersang.',
+    },
+    {
+      id: 'prasangka',
+      stepLabel: '2 / 5 · Meluruskan Prasangka',
+      shortTabTitle: '2. Mengapa Dulu Sempat Dilarang?',
+      title: 'Bukan Syirik: Memahami Konteks Sejarah Masa Awal Islam',
+      narrative:
+        'Sebagian orang khawatir ziarah kubur mengarah pada kemusyrikan. Memang benar, pada masa awal Islam (transisi jahiliyah), Rasulullah SAW sempat melarangnya karena umat kala itu baru lepas dari kebiasaan menyembah berhala dan meratap berlebihan.',
+    },
+    {
+      id: 'perintah',
+      stepLabel: '3 / 5 · Sabda Nabi SAW',
+      shortTabTitle: '3. Perintah Berziarah Setelah Tauhid Kuat',
+      title: 'Bukan Syirik, Tapi Pengingat Pulang',
+      narrative:
+        'Setelah akidah umat kokoh, Rasulullah SAW mencabut larangan tersebut dan justru memerintahkan umatnya untuk berziarah kubur:',
+      arabicQuote: 'كُنْتُ نَهَيْتُكُمْ عَنْ زِيَارَةِ الْقُبُورِ فَزُورُوهَا',
+      arabicSource:
+        'Artinya: Dahulu aku melarang kalian berziarah kubur, maka (sekarang) berziarahlah kalian. (HR. Muslim)',
+    },
+    {
+      id: 'obat-hati',
+      stepLabel: '4 / 5 · Obat Hati yang Keras & Kering',
+      shortTabTitle: '4. Obat Hati yang Keras & Kering',
+      title: '3 Keajaiban Batin: Melembutkan Hati & Menitikkan Air Mata',
+      narrative:
+        'Rasulullah SAW menjelaskan langsung manfaat emosional dan spiritual mengapa kita dianjurkan berziarah:',
+      arabicQuote:
+        'فَإِنَّهُ يُرِقُّ الْقَلْبَ، وَتُدْمِعُ الْعَيْنَ، وَتُذَكِّرُ الْآخِرَةَ، وَلَا تَقُولُوا هُجْرًا',
+      arabicSource:
+        'Artinya: ...Sesungguhnya ziarah kubur itu dapat melunakkan hati, menitikkan air mata, dan mengingatkan pada akhirat, dan janganlah kalian berkata buruk. (HR. Hakim)',
+    },
+    {
+      id: 'niat-doa',
+      stepLabel: '5 / 5 · Luruskan Niat & Hadiahkan Fatihah',
+      shortTabTitle: '5. Semua Amal Tergantung Niat Kita',
+      title: 'Mendoakan Kerabat & Mengingat Bahwa Kita Akan Menyusul',
+      narrative:
+        'Ziarah kubur bukan untuk menyekutukan Allah, melainkan wujud bakti mendoakan orang tua serta pengingat bahwa cepat atau lambat kita pun akan menyusul pulang menghadap-Nya.',
+    },
+  ],
   // 2. Ruang Baca & Gembok Cerita
   readerTabMainStory: 'Kisah, Karomah & Wasiat Beliau',
   readerTabPrayerGuide: 'Panduan Ziarah, Doa Khusus & Catatan',
@@ -194,6 +258,31 @@ export function mergeWithDefaultSiteCopy(
   const str = (val: unknown, fallback: string): string =>
     typeof val === 'string' && val.trim().length > 0 ? val.trim() : fallback;
 
+  const rawSlides = Array.isArray(raw.storyReelSlides) ? raw.storyReelSlides : [];
+  const validSlides: StoryReelSlide[] =
+    rawSlides.length === DEFAULT_SITE_COPY.storyReelSlides.length
+      ? DEFAULT_SITE_COPY.storyReelSlides.map((defaultSlide, index) => {
+          const item = rawSlides[index] as Partial<StoryReelSlide> | undefined;
+          const arabicQuote =
+            typeof item?.arabicQuote === 'string'
+              ? item.arabicQuote.trim()
+              : defaultSlide.arabicQuote;
+          const arabicSource =
+            typeof item?.arabicSource === 'string'
+              ? item.arabicSource.trim()
+              : defaultSlide.arabicSource;
+          return {
+            id: str(item?.id, defaultSlide.id),
+            stepLabel: str(item?.stepLabel, defaultSlide.stepLabel),
+            shortTabTitle: str(item?.shortTabTitle, defaultSlide.shortTabTitle),
+            title: str(item?.title, defaultSlide.title),
+            narrative: str(item?.narrative, defaultSlide.narrative),
+            ...(arabicQuote ? { arabicQuote } : {}),
+            ...(arabicSource ? { arabicSource } : {}),
+          };
+        })
+      : DEFAULT_SITE_COPY.storyReelSlides;
+
   return {
     heroTitle: str(raw.heroTitle, DEFAULT_SITE_COPY.heroTitle),
     heroSubtitle: str(raw.heroSubtitle, DEFAULT_SITE_COPY.heroSubtitle),
@@ -206,6 +295,15 @@ export function mergeWithDefaultSiteCopy(
     tabLabelRaja: str(raw.tabLabelRaja, DEFAULT_SITE_COPY.tabLabelRaja),
     cardPrimaryCta: str(raw.cardPrimaryCta, DEFAULT_SITE_COPY.cardPrimaryCta),
     cardSecondaryMapCta: str(raw.cardSecondaryMapCta, DEFAULT_SITE_COPY.cardSecondaryMapCta),
+    storyReelSectionTitle: str(
+      raw.storyReelSectionTitle,
+      DEFAULT_SITE_COPY.storyReelSectionTitle
+    ),
+    storyReelSectionSubtitle: str(
+      raw.storyReelSectionSubtitle,
+      DEFAULT_SITE_COPY.storyReelSectionSubtitle
+    ),
+    storyReelSlides: validSlides,
     readerTabMainStory: str(raw.readerTabMainStory, DEFAULT_SITE_COPY.readerTabMainStory),
     readerTabPrayerGuide: str(raw.readerTabPrayerGuide, DEFAULT_SITE_COPY.readerTabPrayerGuide),
     paywallBadge: str(raw.paywallBadge, DEFAULT_SITE_COPY.paywallBadge),

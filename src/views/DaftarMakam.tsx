@@ -17,6 +17,7 @@ import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } f
 import { getSitePath } from '../lib/siteSlugs';
 import { extractShortEra } from '../lib/siteLogistics';
 import { useSiteCopy } from '../lib/siteCopy';
+import { ZiarahStoryReel } from '../components/ZiarahStoryReel';
 
 const SiteDetails = lazy(() =>
   import('../components/SiteDetails').then((m) => ({ default: m.SiteDetails }))
@@ -435,6 +436,15 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               <Film className="w-3.5 h-3.5 text-emerald-800" strokeWidth={1.75} aria-hidden="true" />
               <span>{showVisualShowcase ? 'Tutup Eksplorasi Visual' : 'Buka Eksplorasi Visual Nusantara'}</span>
             </button>
+            <button
+              type="button"
+              onClick={() =>
+                document.getElementById('hikmah-ziarah-reel')?.scrollIntoView({ behavior: 'smooth' })
+              }
+              className="px-3.5 py-2.5 rounded-xl bg-amber-50/80 hover:bg-amber-100/80 text-amber-950 border border-amber-300/60 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <span>✨ Hikmah Ziarah · 5 Slide</span>
+            </button>
           </div>
         </header>
 
@@ -834,6 +844,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             </button>
           </div>
         )}
+      </div>
+
+      {/* =====================================================================
+          3.8. STORY REEL & AUDIO-VISUAL CAROUSEL (OPSI 2: 5 SLIDE HIKMAH ZIARAH)
+          ===================================================================== */}
+      <div id="hikmah-ziarah-reel" className="max-w-6xl mx-auto mt-12 mb-6">
+        <ZiarahStoryReel />
       </div>
 
       {/* =====================================================================
