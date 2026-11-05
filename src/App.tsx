@@ -633,7 +633,7 @@ export default function App() {
               </Link>
               <Link
                 to="/admin"
-                className="py-1.5 min-h-[32px] inline-flex items-center text-stone-500 hover:text-stone-900 font-normal transition-colors"
+                className="py-1.5 min-h-[32px] inline-flex items-center text-stone-600 hover:text-stone-950 font-normal transition-colors"
                 title="Portal Internal Dewan Kurator"
               >
                 Portal Kurator

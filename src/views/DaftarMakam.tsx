@@ -552,7 +552,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 Cari nama tokoh, makam, atau kota
               </label>
               <Search
-                className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                className="w-4 h-4 text-stone-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
                 strokeWidth={1.75}
                 aria-hidden="true"
               />
@@ -568,14 +568,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                   ensureFullSitesLoaded();
                   setSearchQuery(e.target.value);
                 }}
-                className="w-full pl-11 pr-10 py-3 bg-transparent text-sm text-stone-900 placeholder-stone-400 focus:outline-none"
+                className="w-full pl-11 pr-10 py-3 bg-transparent text-sm text-stone-900 placeholder-stone-500 focus:outline-none"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
                   aria-label="Hapus pencarian"
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-800 cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-800 cursor-pointer"
                 >
                   <X className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
                 </button>
@@ -606,7 +606,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 ))}
               </select>
               <Filter
-                className="w-3.5 h-3.5 text-stone-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                className="w-3.5 h-3.5 text-stone-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
                 strokeWidth={1.75}
                 aria-hidden="true"
               />
@@ -630,7 +630,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                     className={`pb-3 -mb-px text-xs sm:text-sm whitespace-nowrap transition-colors cursor-pointer border-b-2 ${
                       isSelected
                         ? 'border-emerald-800 text-emerald-950 font-semibold'
-                        : 'border-transparent text-stone-500 hover:text-stone-800 font-medium'
+                        : 'border-transparent text-stone-600 hover:text-stone-900 font-medium'
                     }`}
                   >
                     {cat.label}
@@ -667,7 +667,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         </div>
 
         {/* Subtle Results Status Row */}
-        <div className="flex items-center justify-between text-xs text-stone-500 px-0.5">
+        <div className="flex items-center justify-between text-xs text-stone-600 px-0.5">
           <p>
             Menampilkan <strong className="font-semibold text-stone-900">{displayedSites.length}</strong> dari{' '}
             <strong className="font-semibold text-stone-900">
@@ -736,18 +736,18 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       referrerPolicy="no-referrer"
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
-                    <span className="absolute top-3 left-3 text-[11px] font-medium px-2.5 py-1 rounded-md bg-stone-950/60 text-stone-100 backdrop-blur-xs">
+                    <span className="absolute top-3 left-3 text-[11px] font-medium px-2.5 py-1 rounded-md bg-stone-950/80 text-white backdrop-blur-xs">
                       {badgeLabel}
                     </span>
                   </div>
 
                   {/* 2. Konten di Bawah Foto: Kota/Provinsi, Judul Serif, Cuplikan 2 Baris */}
                   <div className="space-y-1 px-0.5">
-                    <div className="flex items-center justify-between gap-2 text-xs text-stone-500 font-medium">
+                    <div className="flex items-center justify-between gap-2 text-xs text-stone-600 font-medium">
                       <span className="truncate">
                         {site.location.city}, {site.location.province}
                       </span>
-                      {shortEra && <span className="shrink-0 text-stone-400">{shortEra}</span>}
+                      {shortEra && <span className="shrink-0 text-stone-600">{shortEra}</span>}
                     </div>
 
                     <h2 className="font-serif text-xl text-stone-900 group-hover:text-emerald-900 transition-colors line-clamp-1">
