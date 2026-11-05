@@ -233,6 +233,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   const [selectedProvince, setSelectedProvince] = useState('Semua Provinsi');
   const [emotionalFilter, setEmotionalFilter] = useState<EmotionalIntentId>('all');
   const [showVisualShowcase, setShowVisualShowcase] = useState(false);
+  const [showEditorialFaq, setShowEditorialFaq] = useState(false);
   const [heroMediaMode, setHeroMediaMode] = useState<'video' | 'constellation'>('video');
   const [visibleCount, setVisibleCount] = useState<number>(INITIAL_VISIBLE_SITES);
   const [activeSiteModal, setActiveSiteModal] = useState<ZiarahSite | null>(null);
@@ -841,30 +842,52 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       <article
         lang="id"
         aria-label="Panduan Lengkap Pengertian, Hukum, Adab, dan Urutan Bacaan Doa Ziarah Kubur dalam Islam"
-        className="max-w-6xl mx-auto mt-14 pt-10 border-t border-stone-200/80 space-y-8 text-stone-800"
+        className="max-w-6xl mx-auto mt-10 pt-8 border-t border-stone-200/80 text-stone-800"
       >
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-2xs space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-4 border-b border-stone-100">
-            <img
-              src="/favicon.svg"
-              alt="Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil & Direktori 96 Makam Wali"
-              width={56}
-              height={56}
-              loading="lazy"
-              decoding="async"
-              className="w-14 h-14 rounded-2xl border border-stone-200/80 shrink-0 object-cover"
-            />
-            <div className="space-y-1">
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
-                Ensiklopedia &amp; Tuntunan Resmi Peziarah Indonesia
-              </span>
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
-                Panduan Pengertian, Hukum, Adab, dan Urutan Doa Ziarah Kubur Sesuai Sunnah
-              </h2>
+        <div className="bg-white rounded-2xl p-4 sm:px-6 sm:py-5 border border-stone-200/80 shadow-2xs space-y-5">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <img
+                src="/favicon.svg"
+                alt="Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil & Direktori 96 Makam Wali"
+                width={44}
+                height={44}
+                loading="lazy"
+                decoding="async"
+                className="w-11 h-11 rounded-xl border border-stone-200/80 shrink-0 object-cover"
+              />
+              <div className="space-y-0.5 min-w-0">
+                <span className="block text-[10px] font-semibold uppercase tracking-widest text-emerald-800">
+                  Ensiklopedia &amp; Tuntunan Resmi Peziarah Indonesia
+                </span>
+                <h2 className="font-serif text-base sm:text-lg font-bold text-stone-900 leading-snug">
+                  Panduan Pengertian, Hukum, Adab, dan Urutan Doa Ziarah Kubur Sesuai Sunnah
+                </h2>
+              </div>
             </div>
+
+            <button
+              type="button"
+              aria-expanded={showEditorialFaq}
+              onClick={() => setShowEditorialFaq((prev) => !prev)}
+              className="px-4 py-2 min-h-[36px] rounded-xl border border-stone-200/80 bg-stone-50 hover:bg-stone-100 text-xs font-medium text-stone-700 hover:text-stone-950 inline-flex items-center gap-1.5 shrink-0 transition cursor-pointer"
+            >
+              <span>{showEditorialFaq ? 'Sembunyikan Panduan' : 'Tampilkan Panduan'}</span>
+              <ArrowDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${showEditorialFaq ? 'rotate-180' : ''}`}
+                strokeWidth={1.75}
+                aria-hidden="true"
+              />
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm leading-relaxed text-stone-700">
+          <div
+            className={
+              showEditorialFaq
+                ? 'grid grid-cols-1 md:grid-cols-3 gap-6 pt-5 border-t border-stone-100 text-sm leading-relaxed text-stone-700'
+                : 'hidden'
+            }
+          >
             <div className="space-y-2">
               <h3 className="font-serif font-semibold text-base text-stone-900">
                 Apa Tujuan dan Hukum Ziarah Kubur dalam Islam?
