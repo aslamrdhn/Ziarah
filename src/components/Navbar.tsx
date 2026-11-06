@@ -20,7 +20,7 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { APP_BRAND } from '../config/brand';
 
-const DEFAULT_ADMIN_EMAILS = ['aslamramadhan08@gmail.com'];
+const DEFAULT_ADMIN_EMAILS = ['aslamramadhan08@gmail.com', 'agoraruangsemesta@gmail.com'];
 
 function checkIsUserAdmin(user: FirebaseUser | null): boolean {
   if (!user || !user.email) return false;

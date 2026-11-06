@@ -77,7 +77,7 @@ googleProvider.setCustomParameters({
   prompt: 'select_account',
 });
 
-const DEFAULT_ADMIN_EMAILS = ['aslamramadhan08@gmail.com'];
+const DEFAULT_ADMIN_EMAILS = ['aslamramadhan08@gmail.com', 'agoraruangsemesta@gmail.com'];
 
 export function isUserAdmin(user: User | null): boolean {
   if (!user || !user.email) return false;

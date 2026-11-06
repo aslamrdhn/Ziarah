@@ -27,7 +27,7 @@ service cloud.firestore {
 
     function isBootstrapOwner() {
       return isSignedIn() &&
-        request.auth.token.email == 'aslamramadhan08@gmail.com' &&
+        request.auth.token.email in ['aslamramadhan08@gmail.com', 'agoraruangsemesta@gmail.com'] &&
         request.auth.token.email_verified == true;
     }
 
