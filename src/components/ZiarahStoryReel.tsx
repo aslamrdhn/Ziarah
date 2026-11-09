@@ -5,9 +5,9 @@ import {
   ChevronRight,
   Pause,
   Play,
-  Sparkles,
   BookOpen,
   HeartHandshake,
+  Lock,
 } from 'lucide-react';
 import { useSiteCopy, DEFAULT_SITE_COPY } from '../lib/siteCopy';
 
@@ -33,6 +33,7 @@ export const ZiarahStoryReel: React.FC = () => {
   const nextIndex = (safeIndex + 1) % totalSlides;
   const prevSlide = slides[prevIndex];
   const nextSlide = slides[nextIndex];
+  const isClosingSlides = safeIndex >= 3;
   const isLastSlide = safeIndex === totalSlides - 1;
 
   const goToNext = useCallback(() => {
@@ -81,26 +82,20 @@ export const ZiarahStoryReel: React.FC = () => {
   return (
     <section
       aria-label={siteCopy.storyReelSectionTitle || DEFAULT_SITE_COPY.storyReelSectionTitle}
-      className="bg-[#F4F1EA] rounded-3xl p-5 sm:p-8 border border-stone-200/80 shadow-xs relative overflow-hidden"
+      className="bg-slate-50 rounded-3xl p-5 sm:p-8 border border-slate-200 relative overflow-hidden"
     >
-      {/* Subtle ambient radial glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[240px] bg-gradient-to-b from-amber-500/10 via-emerald-900/5 to-transparent blur-3xl"
-      />
-
       {/* Top Header Row */}
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-2 pb-6 sm:pb-8">
-        <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-900/80">
-          <Sparkles className="w-3.5 h-3.5 text-amber-600" aria-hidden="true" />
+        <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-800">
+          <BookOpen className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
           <span>{siteCopy.storyReelSectionSubtitle || DEFAULT_SITE_COPY.storyReelSectionSubtitle}</span>
         </div>
 
-        <h2 className="font-serif text-2xl sm:text-3xl text-stone-900 text-center">
+        <h2 className="font-serif text-2xl sm:text-3xl text-slate-900 text-center">
           {siteCopy.storyReelSectionTitle || DEFAULT_SITE_COPY.storyReelSectionTitle}
         </h2>
 
-        <div className="text-xs font-medium text-stone-600 tracking-tight">
+        <div className="text-xs font-medium text-slate-600 tracking-tight">
           Cerita Visual ({safeIndex + 1}–{totalSlides})
         </div>
       </div>
@@ -126,7 +121,7 @@ export const ZiarahStoryReel: React.FC = () => {
                 setActiveIndex(prevIndex);
               }
             }}
-            className="hidden md:flex w-[260px] aspect-[4/5] rounded-3xl bg-gradient-to-b from-[#1A382F] to-[#0D211B] p-6 opacity-60 scale-90 cursor-pointer hover:opacity-80 transition-all flex-col justify-between text-stone-200 shadow-lg border border-amber-500/10 shrink-0 -mr-6 lg:-mr-4"
+            className="hidden md:flex w-[260px] aspect-[4/5] rounded-3xl bg-white p-6 opacity-75 scale-90 cursor-pointer hover:opacity-95 transition-all flex-col justify-between text-slate-700 border border-slate-200 shrink-0 -mr-6 lg:-mr-4"
           >
             {/* Dimmed Progress Bars */}
             <div className="space-y-2">
@@ -135,35 +130,35 @@ export const ZiarahStoryReel: React.FC = () => {
                   <div
                     key={s.id || idx}
                     className={`h-1 rounded-full ${
-                      idx <= prevIndex ? 'bg-amber-300/60' : 'bg-white/15'
+                      idx <= prevIndex ? 'bg-emerald-700' : 'bg-slate-200'
                     }`}
                   />
                 ))}
               </div>
-              <span className="block text-[10px] uppercase tracking-widest text-amber-200/70">
+              <span className="block text-[10px] uppercase tracking-widest text-emerald-800 font-semibold">
                 {prevSlide.stepLabel}
               </span>
             </div>
 
             {/* Subtle Silhouette Preview */}
-            <div className="my-auto flex items-center justify-center opacity-40">
+            <div className="my-auto flex items-center justify-center opacity-60">
               <svg viewBox="0 0 160 80" className="w-36 h-20" aria-hidden="true">
-                <circle cx="80" cy="44" r="24" fill="#C5A059" fillOpacity="0.25" />
+                <circle cx="80" cy="44" r="24" fill="#059669" fillOpacity="0.12" />
                 <path
                   d="M25 68 L52 44 L80 24 L108 44 L135 68 Z"
-                  fill="#061510"
-                  stroke="#C5A059"
-                  strokeWidth="0.8"
-                  strokeOpacity="0.4"
+                  fill="#F8FAFC"
+                  stroke="#059669"
+                  strokeWidth="1.2"
+                  strokeOpacity="0.5"
                 />
               </svg>
             </div>
 
             <div className="space-y-1.5">
-              <p className="font-serif text-lg leading-snug text-stone-100 line-clamp-3">
+              <p className="font-serif text-lg leading-snug text-slate-900 line-clamp-3">
                 {prevSlide.shortTabTitle}
               </p>
-              <span className="inline-flex items-center gap-1 text-[11px] text-amber-300/80 font-medium">
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-800 font-medium">
                 <ChevronLeft className="w-3.5 h-3.5" /> Ketuk untuk kembali
               </span>
             </div>
@@ -171,7 +166,7 @@ export const ZiarahStoryReel: React.FC = () => {
         )}
 
         {/* Center Active Card */}
-        <div className="w-full max-w-[350px] sm:max-w-[380px] min-h-[470px] sm:min-h-[500px] rounded-3xl bg-gradient-to-b from-[#0E3A2F] via-[#08261E] to-[#041611] text-amber-50 p-6 sm:p-7 shadow-2xl border border-amber-500/20 relative z-10 flex flex-col justify-between transition-all duration-500">
+        <div className="w-full max-w-[350px] sm:max-w-[380px] min-h-[470px] sm:min-h-[500px] rounded-3xl bg-white text-slate-900 p-6 sm:p-7 shadow-sm border border-slate-200 relative z-10 flex flex-col justify-between transition-all duration-500">
           {/* Top Story Progress Bar (5 Segments) + Auto-Slide Play/Pause */}
           <div className="space-y-2.5">
             <div className="grid grid-cols-5 gap-1.5" role="tablist" aria-label="Progres Slide Hikmah Ziarah">
@@ -185,11 +180,11 @@ export const ZiarahStoryReel: React.FC = () => {
                     aria-selected={idx === safeIndex}
                     aria-label={`Buka slide ${idx + 1}: ${slideItem.shortTabTitle}`}
                     onClick={() => setActiveIndex(idx)}
-                    className="h-1 rounded-full bg-white/20 overflow-hidden cursor-pointer focus:outline-none"
+                    className="h-1.5 rounded-full bg-slate-200 overflow-hidden cursor-pointer focus:outline-none"
                   >
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${
-                        isCompletedOrActive ? 'w-full bg-amber-300' : 'w-0 bg-transparent'
+                        isCompletedOrActive ? 'w-full bg-emerald-700' : 'w-0 bg-transparent'
                       }`}
                     />
                   </button>
@@ -197,24 +192,24 @@ export const ZiarahStoryReel: React.FC = () => {
               })}
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-amber-200/80">
-              <span className="font-medium tracking-wider uppercase text-amber-300/90">
+            <div className="flex items-center justify-between text-[11px] text-slate-600">
+              <span className="font-semibold tracking-wider uppercase text-emerald-800">
                 {currentSlide.stepLabel}
               </span>
               <button
                 type="button"
                 onClick={() => setIsAutoPlay((prev) => !prev)}
                 aria-label={isAutoPlay ? 'Jeda putar otomatis' : 'Putar otomatis'}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/15 text-[10px] font-medium text-amber-100 transition cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 transition cursor-pointer"
               >
                 {isAutoPlay ? (
                   <>
-                    <Pause className="w-2.5 h-2.5 text-amber-300" />
+                    <Pause className="w-2.5 h-2.5 text-emerald-700" />
                     <span>Auto</span>
                   </>
                 ) : (
                   <>
-                    <Play className="w-2.5 h-2.5 text-amber-300" />
+                    <Play className="w-2.5 h-2.5 text-emerald-700" />
                     <span>Jeda</span>
                   </>
                 )}
@@ -222,148 +217,98 @@ export const ZiarahStoryReel: React.FC = () => {
             </div>
           </div>
 
-          {/* Atmospheric Nusantara Dusk Multi-Layer SVG Illustration */}
-          <div className="relative my-3 rounded-2xl overflow-hidden border border-amber-400/15 bg-gradient-to-b from-[#17493B] via-[#10352B] to-[#061A14]">
+          {/* Clean Slate & Emerald Nusantara Joglo Maqbarah Illustration */}
+          <div className="relative my-3 rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
             <svg
-              viewBox="0 0 360 135"
-              className="w-full h-28 sm:h-32 block"
+              viewBox="0 0 360 120"
+              className="w-full h-24 sm:h-28 block"
               role="img"
-              aria-label="Ilustrasi siluet cungkup makam wali Nusantara di bawah langit senja keemasan"
+              aria-label="Ilustrasi siluet cungkup makam wali Nusantara"
             >
-              <defs>
-                <radialGradient id="znSunGlow" cx="50%" cy="62%" r="48%">
-                  <stop offset="0%" stopColor="#EAB308" stopOpacity="0.55" />
-                  <stop offset="55%" stopColor="#C5A059" stopOpacity="0.22" />
-                  <stop offset="100%" stopColor="#0E3A2F" stopOpacity="0" />
-                </radialGradient>
-                <linearGradient id="znHorizonMist" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#C5A059" stopOpacity="0" />
-                  <stop offset="100%" stopColor="#C5A059" stopOpacity="0.18" />
-                </linearGradient>
-              </defs>
-
-              {/* Golden dusk sky aura */}
-              <rect width="360" height="135" fill="url(#znHorizonMist)" />
-              <circle cx="180" cy="82" r="68" fill="url(#znSunGlow)" />
-              <circle cx="180" cy="82" r="24" fill="#EAB308" fillOpacity="0.28" />
-
-              {/* Subtle stars & crescent */}
-              <circle cx="64" cy="26" r="1.2" fill="#FDE68A" fillOpacity="0.7" />
-              <circle cx="112" cy="18" r="1" fill="#FDE68A" fillOpacity="0.5" />
-              <circle cx="255" cy="22" r="1.3" fill="#FDE68A" fillOpacity="0.65" />
-              <circle cx="302" cy="32" r="1" fill="#FDE68A" fillOpacity="0.45" />
-
-              {/* Distant archipelago hills */}
+              <circle cx="180" cy="68" r="46" fill="#059669" fillOpacity="0.08" />
               <path
-                d="M0 112 Q65 88 135 106 T275 100 T360 110 L360 135 L0 135 Z"
-                fill="#0A2920"
+                d="M0 98 Q75 82 145 94 T280 90 T360 98 L360 120 L0 120 Z"
+                fill="#E2E8F0"
               />
-
-              {/* Left & Right Kamboja (Frangipani) sanctuary trees */}
-              <g fill="#051712" stroke="#C5A059" strokeWidth="0.5" strokeOpacity="0.3">
-                <path d="M38 128 Q44 96 30 74 Q45 84 48 100 Q55 80 68 72 Q56 92 50 128 Z" />
-                <circle cx="30" cy="72" r="7" fill="#07221B" />
-                <circle cx="67" cy="70" r="8" fill="#07221B" />
-                <path d="M318 128 Q312 96 326 74 Q311 84 308 100 Q301 80 288 72 Q300 92 306 128 Z" />
-                <circle cx="326" cy="72" r="7" fill="#07221B" />
-                <circle cx="289" cy="70" r="8" fill="#07221B" />
-              </g>
-
-              {/* Javanese 3-Tiered Joglo / Cungkup Maqbarah Silhouette */}
               <g>
-                {/* Mustaka (Finial crown) */}
-                <path d="M180 22 L184 31 L176 31 Z" fill="#EAB308" fillOpacity="0.85" />
-                {/* Tier 1 Top Roof */}
+                <path d="M180 18 L184 26 L176 26 Z" fill="#059669" />
                 <path
-                  d="M152 46 L180 29 L208 46 Z"
-                  fill="#051813"
-                  stroke="#C5A059"
-                  strokeWidth="0.9"
-                  strokeOpacity="0.65"
+                  d="M152 40 L180 25 L208 40 Z"
+                  fill="#0F172A"
                 />
-                {/* Tier 2 Middle Roof */}
                 <path
-                  d="M126 64 L156 46 L204 46 L234 64 Z"
-                  fill="#041510"
-                  stroke="#C5A059"
-                  strokeWidth="0.9"
-                  strokeOpacity="0.6"
+                  d="M126 56 L156 40 L204 40 L234 56 Z"
+                  fill="#1E293B"
                 />
-                {/* Tier 3 Wide Pendopo Eaves */}
                 <path
-                  d="M96 80 L132 64 L228 64 L264 80 Z"
-                  fill="#03110D"
-                  stroke="#C5A059"
-                  strokeWidth="1"
-                  strokeOpacity="0.7"
+                  d="M96 70 L132 56 L228 56 L264 70 Z"
+                  fill="#0F172A"
                 />
-                {/* Wooden Soko Guru Pillars */}
-                <rect x="122" y="80" width="4" height="38" fill="#04120E" />
-                <rect x="152" y="80" width="4" height="38" fill="#04120E" />
-                <rect x="204" y="80" width="4" height="38" fill="#04120E" />
-                <rect x="234" y="80" width="4" height="38" fill="#04120E" />
-
-                {/* Hanging Sanctuary Lanterns (Lentera Maqbarah) */}
-                <line x1="138" y1="80" x2="138" y2="90" stroke="#FDE68A" strokeWidth="0.7" />
-                <circle cx="138" cy="92" r="2.8" fill="#FDE68A" />
-                <circle cx="138" cy="92" r="6" fill="#EAB308" fillOpacity="0.3" />
-
-                <line x1="222" y1="80" x2="222" y2="90" stroke="#FDE68A" strokeWidth="0.7" />
-                <circle cx="222" cy="92" r="2.8" fill="#FDE68A" />
-                <circle cx="222" cy="92" r="6" fill="#EAB308" fillOpacity="0.3" />
-
-                {/* Center Gravestone / Nisan Nusantara Silhouette */}
+                <rect x="124" y="70" width="4" height="34" fill="#334155" />
+                <rect x="154" y="70" width="4" height="34" fill="#334155" />
+                <rect x="202" y="70" width="4" height="34" fill="#334155" />
+                <rect x="232" y="70" width="4" height="34" fill="#334155" />
                 <path
-                  d="M175 116 L175 96 L180 90 L185 96 L185 116 Z"
-                  fill="#C5A059"
-                  fillOpacity="0.45"
+                  d="M175 104 L175 86 L180 80 L185 86 L185 104 Z"
+                  fill="#059669"
                 />
-                {/* Peziarah sitting in quiet contemplation */}
-                <path
-                  d="M161 116 C161 107 168 107 169 116 Z"
-                  fill="#020B08"
-                />
-                <circle cx="165" cy="104" r="3" fill="#020B08" />
               </g>
-
-              {/* Foreground Courtyard Steps */}
-              <rect x="82" y="118" width="196" height="5" rx="2" fill="#03100C" />
-              <rect x="0" y="123" width="360" height="12" fill="#020B08" />
+              <rect x="82" y="104" width="196" height="5" rx="2" fill="#CBD5E1" />
             </svg>
           </div>
 
           {/* Main Content: Sub-label, Title, Narrative & Optional Arabic Hadith Box */}
           <div className="my-auto flex-1 flex flex-col justify-center">
-            <span className="text-[11px] font-medium tracking-widest uppercase text-amber-300/90">
+            <span className="text-[11px] font-semibold tracking-widest uppercase text-emerald-800">
               {currentSlide.stepLabel}
             </span>
-            <h3 className="font-serif text-xl sm:text-2xl text-white leading-snug mt-1">
+            <h3 className="font-serif text-xl sm:text-2xl text-slate-900 leading-snug mt-1">
               {currentSlide.title}
             </h3>
-            <p className="text-xs sm:text-sm text-stone-200/95 leading-relaxed mt-2.5">
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2">
               {currentSlide.narrative}
             </p>
 
             {currentSlide.arabicQuote && (
-              <div className="my-3 py-2.5 px-3 rounded-xl bg-black/25 border border-amber-400/20 text-center">
+              <div className="my-3 py-2.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
                 <p
                   dir="rtl"
                   lang="ar"
-                  className="font-arabic text-lg sm:text-xl text-amber-300 leading-loose"
+                  className="font-arabic text-lg sm:text-xl text-slate-900 leading-loose"
                 >
                   {currentSlide.arabicQuote}
                 </p>
                 {currentSlide.arabicSource && (
-                  <p className="text-[11px] text-stone-300 italic mt-1">
+                  <p className="text-[11px] text-slate-600 italic mt-1">
                     {currentSlide.arabicSource}
                   </p>
                 )}
               </div>
             )}
+
+            {/* Slide 4 & 5: Blurred Amalan & Doa Preview to guide visitors to full guide & infaq */}
+            {isClosingSlides && (
+              <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-emerald-800">
+                  <span className="inline-flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    Rangkaian Tawassul &amp; Doa Munajat Lengkap
+                  </span>
+                </div>
+                <div className="blur-[5px] select-none pointer-events-none opacity-55 space-y-1" aria-hidden="true">
+                  <p dir="rtl" className="font-arabic text-base text-slate-900 text-right">
+                    اللَّهُمَّ اغْفِرْ لَهُمْ وَارْحَمْهُمْ وَعَافِهِمْ وَاعْفُ عَنْهُمْ وَانْفَعْنَا بِأَسْرَارِهِمْ
+                  </p>
+                  <p className="text-[11px] text-slate-600 italic">
+                    Ya Allah, limpahkanlah rahmat dan keberkahan ilmu para kekasih-Mu kepada keluarga kami...
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Card Footer Navigation & Final Slide Conversion CTAs */}
-          <div className="pt-4 mt-3 border-t border-white/10">
+          <div className="pt-4 mt-3 border-t border-slate-200">
             {!isLastSlide ? (
               <div className="flex items-center justify-between gap-2">
                 <button
@@ -372,8 +317,8 @@ export const ZiarahStoryReel: React.FC = () => {
                   disabled={safeIndex === 0}
                   className={`inline-flex items-center gap-1 text-xs font-medium transition cursor-pointer ${
                     safeIndex === 0
-                      ? 'text-stone-500 cursor-not-allowed'
-                      : 'text-stone-300 hover:text-white'
+                      ? 'text-slate-400 cursor-not-allowed'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
@@ -383,7 +328,7 @@ export const ZiarahStoryReel: React.FC = () => {
                 <button
                   type="button"
                   onClick={goToNext}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-amber-300 hover:text-amber-200 transition cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 hover:text-emerald-900 transition cursor-pointer"
                 >
                   <span>
                     Geser Kisah ({safeIndex + 1}/{totalSlides})
@@ -396,16 +341,16 @@ export const ZiarahStoryReel: React.FC = () => {
                 <div className="flex flex-col gap-2">
                   <Link
                     to="/panduan"
-                    className="w-full py-2.5 px-4 rounded-xl bg-amber-400/90 hover:bg-amber-300 text-stone-950 font-semibold text-xs text-center transition-colors inline-flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs text-center transition-colors inline-flex items-center justify-center gap-1.5"
                   >
                     <BookOpen className="w-3.5 h-3.5" />
                     <span>Buka Tuntunan Yasin &amp; Doa Ziarah</span>
                   </Link>
                   <Link
                     to="/donasi"
-                    className="w-full py-2 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-amber-100 font-medium text-xs text-center border border-white/15 transition-colors inline-flex items-center justify-center gap-1.5"
+                    className="w-full py-2 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-900 font-medium text-xs text-center border border-slate-200 transition-colors inline-flex items-center justify-center gap-1.5"
                   >
-                    <HeartHandshake className="w-3.5 h-3.5 text-amber-300" />
+                    <HeartHandshake className="w-3.5 h-3.5 text-emerald-700" />
                     <span>Titip Doa Almarhum di Dinding Munajat</span>
                   </Link>
                 </div>
@@ -413,7 +358,7 @@ export const ZiarahStoryReel: React.FC = () => {
                   <button
                     type="button"
                     onClick={goToPrev}
-                    className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-300 hover:text-white transition cursor-pointer"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer"
                   >
                     <ChevronLeft className="w-3 h-3" />
                     <span>Sebelumnya</span>
@@ -421,9 +366,9 @@ export const ZiarahStoryReel: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setActiveIndex(0)}
-                    className="text-[11px] font-medium text-amber-300/90 hover:text-amber-200 transition cursor-pointer"
+                    className="text-[11px] font-semibold text-emerald-800 hover:text-emerald-900 transition cursor-pointer"
                   >
-                    Ulangi dari Slide 1 ↺
+                    Ulangi dari Slide 1
                   </button>
                 </div>
               </div>
@@ -444,7 +389,7 @@ export const ZiarahStoryReel: React.FC = () => {
                 setActiveIndex(nextIndex);
               }
             }}
-            className="hidden md:flex w-[260px] aspect-[4/5] rounded-3xl bg-gradient-to-b from-[#1A382F] to-[#0D211B] p-6 opacity-60 scale-90 cursor-pointer hover:opacity-80 transition-all flex-col justify-between text-stone-200 shadow-lg border border-amber-500/10 shrink-0 -ml-6 lg:-ml-4"
+            className="hidden md:flex w-[260px] aspect-[4/5] rounded-3xl bg-white p-6 opacity-75 scale-90 cursor-pointer hover:opacity-95 transition-all flex-col justify-between text-slate-700 border border-slate-200 shrink-0 -ml-6 lg:-ml-4"
           >
             {/* Dimmed Progress Bars */}
             <div className="space-y-2">
@@ -453,35 +398,35 @@ export const ZiarahStoryReel: React.FC = () => {
                   <div
                     key={s.id || idx}
                     className={`h-1 rounded-full ${
-                      idx <= nextIndex ? 'bg-amber-300/60' : 'bg-white/15'
+                      idx <= nextIndex ? 'bg-emerald-700' : 'bg-slate-200'
                     }`}
                   />
                 ))}
               </div>
-              <span className="block text-[10px] uppercase tracking-widest text-amber-200/70">
+              <span className="block text-[10px] uppercase tracking-widest text-emerald-800 font-semibold">
                 {nextSlide.stepLabel}
               </span>
             </div>
 
             {/* Subtle Silhouette Preview */}
-            <div className="my-auto flex items-center justify-center opacity-40">
+            <div className="my-auto flex items-center justify-center opacity-60">
               <svg viewBox="0 0 160 80" className="w-36 h-20" aria-hidden="true">
-                <circle cx="80" cy="44" r="24" fill="#C5A059" fillOpacity="0.25" />
+                <circle cx="80" cy="44" r="24" fill="#059669" fillOpacity="0.12" />
                 <path
                   d="M25 68 L52 44 L80 24 L108 44 L135 68 Z"
-                  fill="#061510"
-                  stroke="#C5A059"
-                  strokeWidth="0.8"
-                  strokeOpacity="0.4"
+                  fill="#F8FAFC"
+                  stroke="#059669"
+                  strokeWidth="1.2"
+                  strokeOpacity="0.5"
                 />
               </svg>
             </div>
 
             <div className="space-y-1.5">
-              <p className="font-serif text-lg leading-snug text-stone-100 line-clamp-3">
+              <p className="font-serif text-lg leading-snug text-slate-900 line-clamp-3">
                 {nextSlide.shortTabTitle}
               </p>
-              <span className="inline-flex items-center gap-1 text-[11px] text-amber-300/80 font-medium">
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-800 font-medium">
                 Selanjutnya <ChevronRight className="w-3.5 h-3.5" />
               </span>
             </div>
@@ -489,7 +434,7 @@ export const ZiarahStoryReel: React.FC = () => {
         )}
       </div>
 
-      {/* Bottom Quick-Jump Pill Selector for Desktop & Mobile */}
+      {/* Bottom Quick-Jump Selector for Desktop & Mobile */}
       <div className="relative z-10 mt-5 flex flex-wrap items-center justify-center gap-1.5">
         {slides.map((slideItem, idx) => {
           const active = idx === safeIndex;
@@ -500,8 +445,8 @@ export const ZiarahStoryReel: React.FC = () => {
               onClick={() => setActiveIndex(idx)}
               className={`px-3 py-1.5 rounded-xl text-[11px] font-medium transition cursor-pointer border ${
                 active
-                  ? 'bg-[#0E3A2F] text-amber-200 border-amber-500/30 shadow-2xs'
-                  : 'bg-white/80 text-stone-700 border-stone-200/80 hover:border-stone-400'
+                  ? 'bg-emerald-700 text-white border-emerald-700'
+                  : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
               }`}
             >
               {slideItem.shortTabTitle}

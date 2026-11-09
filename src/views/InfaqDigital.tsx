@@ -535,7 +535,7 @@ export const InfaqDigital: React.FC = () => {
             </h3>
 
             {/* Kutipan Hikmah di atas form konfirmasi infaq */}
-            <div className="mb-4 p-3.5 bg-gradient-to-br from-emerald-50/90 via-amber-50/50 to-white rounded-2xl border border-emerald-200/80 text-xs">
+            <div className="mb-4 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
               <p className="font-serif italic text-slate-800 leading-relaxed">
                 "Siapa yang membantu menghidupkan kisah dan jejak orang-orang shalih, semoga Allah memudahkan segala hajat dunia dan akhiratnya."
               </p>

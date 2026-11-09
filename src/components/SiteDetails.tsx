@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ZiarahSite } from '../data/sites';
-import { X, MapPin, Navigation, Clock, Heart, BookOpen, Bookmark, BookmarkCheck, QrCode, Send, ScrollText, Trash2, Loader2, Calendar, ShieldCheck, Type, Map as MapIcon } from 'lucide-react';
+import { X, MapPin, Navigation, Clock, Heart, BookOpen, Bookmark, BookmarkCheck, QrCode, Send, ScrollText, Trash2, Loader2, Calendar, ShieldCheck, Type, Map as MapIcon, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransactionModal } from './TransactionModal';
 import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { useVerifiedDonationUnlock } from '../lib/transferProof';
+import { useVerifiedDonationUnlock, useVerifiedBarokahUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
-import { getSiteLogistics } from '../lib/siteLogistics';
+import { getSiteLogistics, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
 import { getSiteSlug } from '../lib/siteSlugs';
 import { useSiteCopy } from '../lib/siteCopy';
@@ -115,8 +115,39 @@ export function getEmotionalCliffhanger(text: string): { preview: string; remain
   };
 }
 
+export function getShortLockedSplit(text: string, maxChars: number = 120): { preview: string; remainder: string } {
+  const raw = (text || '').replace(/<!--more-->/g, ' ').trim();
+  const fallbackRemainder =
+    'Lanjutan riwayat karomah, riyadhoh malam, dan wasiat batin beliau tersimpan dalam lembaran Khazanah Khusus yang dijaga keaslian sanadnya oleh para juru kunci dan santri sepuh.';
+  if (!raw) {
+    return {
+      preview: '',
+      remainder: fallbackRemainder,
+    };
+  }
+
+  const firstSentenceMatch = raw.match(/^[^.!?]+[.!?]/);
+  let cutIndex = Math.min(maxChars, raw.length);
+  if (firstSentenceMatch && firstSentenceMatch[0].length <= maxChars) {
+    cutIndex = firstSentenceMatch[0].length;
+  } else {
+    const lastSpace = raw.lastIndexOf(' ', maxChars);
+    if (lastSpace > 35) {
+      cutIndex = lastSpace;
+    }
+  }
+
+  const previewClean = raw.slice(0, cutIndex).trim().replace(/[,;:]+$/, '');
+  const restClean = raw.slice(cutIndex).trim();
+
+  return {
+    preview: previewClean.endsWith('.') ? previewClean : `${previewClean}...`,
+    remainder: restClean.length > 50 ? restClean : `${restClean} ${fallbackRemainder}`.trim(),
+  };
+}
+
 function buildWhatsAppCliffhangerUrl(site: ZiarahSite, rawStoryText: string): string {
-  const { preview } = getEmotionalCliffhanger(rawStoryText);
+  const { preview } = getShortLockedSplit(rawStoryText, 120);
   const cuplikanCliffhanger = preview.replace(/\.\.\.\s*$/, '').trim();
   const locationLabel =
     typeof site.location === 'string'
@@ -164,14 +195,15 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   onContribute,
   onViewOnMap,
 }) => {
-  const [activeTab, setActiveTab] = useState<'kisah_utama' | 'panduan_doa'>('kisah_utama');
+  const [activeTab, setActiveTab] = useState<'kisah_utama' | 'barokah_doa' | 'panduan_doa'>('kisah_utama');
   const [largeReadingText, setLargeReadingText] = useState(false);
   const [authorName, setAuthorName] = useState('');
   const [newStory, setNewStory] = useState('');
   const [isSendingStory, setIsSendingStory] = useState(false);
   const [cloudStories, setCloudStories] = useState<StoryItem[]>([]);
-  const [transactionType, setTransactionType] = useState<'infaq' | 'untold' | null>(null);
+  const [transactionType, setTransactionType] = useState<'infaq' | 'untold' | 'barokah_doa' | null>(null);
   const { isUnlocked: isDonationVerified } = useVerifiedDonationUnlock(site?.id);
+  const { isUnlocked: isBarokahDonationVerified } = useVerifiedBarokahUnlock(site?.id);
   const siteCopy = useSiteCopy();
 
   // Pre-fill author name if logged in
@@ -287,13 +319,152 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   if (!site) return null;
 
   const hasKaromah = site.karomah && site.karomah.length > 0;
-  const hasDoa = site.doaKhusus && site.doaKhusus.length > 0;
+  const effectiveDoaKhusus = getEffectiveSiteDoaKhusus(site);
+  const barokahHajatText = getSiteBarokahHajat(site);
+  const barokahHajatSplit = getShortLockedSplit(barokahHajatText, 120);
   const hasUntold = !!site.untoldStory;
   const currentUser = auth.currentUser;
   const isCurrentUserAdmin = isUserAdmin(currentUser);
-  const isSiteUnlocked = isCurrentUserAdmin || isDonationVerified;
+  // Strict lock without Admin bypass so all visitors (including site owner) see locked & blurred paid content unless unlocked via verified donation
+  const isSiteUnlocked = isDonationVerified;
+  const isBarokahUnlocked = isBarokahDonationVerified;
   const logistics = getSiteLogistics(site);
   const pullQuoteText = extractPullQuote(site.description, logistics.localAdab);
+
+  const renderBarokahDoaSection = () => (
+    <section className="mt-8 pt-6 border-t border-slate-200 space-y-5">
+      <div>
+        <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
+          <Lock className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} />
+          <span>Barokah Hajat &amp; Doa Khusus Peziarah</span>
+        </div>
+        <h3 className="font-serif text-2xl text-slate-900 mt-1">
+          Wasilah Hajat &amp; Amalan Tawassul di {site.title}
+        </h3>
+      </div>
+
+      {/* Kalimat pengantar singkat (1 kalimat) */}
+      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+        <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
+          Harapan &amp; Wasilah Hajat Jamaah
+        </div>
+        <p className="text-sm sm:text-[15.5px] text-slate-900 leading-relaxed">
+          {isBarokahUnlocked ? barokahHajatText : barokahHajatSplit.preview}
+        </p>
+      </div>
+
+      {/* Isi Bacaan Arab, Latin, Terjemahan & Tata Cara Amalan */}
+      {isBarokahUnlocked ? (
+        <div className="space-y-4">
+          {effectiveDoaKhusus.map((doa, idx) => {
+            const dId = `${site.id}-doa-${idx}`;
+            const isSavedDoa = savedDoas.includes(dId);
+
+            return (
+              <div
+                key={idx}
+                className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-800 block mb-0.5">
+                      Amalan &amp; Tawassul Makam #{idx + 1}
+                    </span>
+                    <h4 className="font-serif text-lg sm:text-xl text-slate-900">{doa.title}</h4>
+                  </div>
+                  {onToggleSaveDoa && (
+                    <button
+                      type="button"
+                      onClick={() => onToggleSaveDoa(dId)}
+                      title="Simpan Doa ke Koleksi"
+                      className={`p-2 transition-colors rounded-xl border cursor-pointer shrink-0 ${
+                        isSavedDoa
+                          ? 'text-emerald-800 bg-emerald-50 border-emerald-200'
+                          : 'text-slate-500 bg-slate-50 border-slate-200 hover:text-slate-900'
+                      }`}
+                    >
+                      {isSavedDoa ? (
+                        <BookmarkCheck className="w-4 h-4" strokeWidth={1.75} />
+                      ) : (
+                        <Bookmark className="w-4 h-4" strokeWidth={1.75} />
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-4 pt-2 border-t border-slate-100">
+                  <p
+                    className="text-2xl sm:text-3xl font-arabic text-slate-900 leading-[2.6] text-right"
+                    dir="rtl"
+                  >
+                    {doa.text}
+                  </p>
+                  {doa.translation && (
+                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                      <p className="text-slate-600 italic text-xs sm:text-sm leading-relaxed">
+                        {doa.translation}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="relative rounded-2xl bg-white border border-slate-200 p-5 sm:p-6 overflow-hidden">
+          {/* Seluruh isi bacaan Arab, Latin, terjemahan, dan tata cara amalan dalam keadaan BLUR */}
+          <div className="blur-[6px] select-none pointer-events-none opacity-50 space-y-5" aria-hidden="true">
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {barokahHajatSplit.remainder}
+            </p>
+            {effectiveDoaKhusus.map((doa, idx) => (
+              <div key={idx} className="pt-3 border-t border-slate-200 space-y-2.5">
+                <div className="text-xs font-semibold text-slate-800">{doa.title}</div>
+                <p
+                  className="text-xl sm:text-2xl font-arabic text-slate-900 leading-[2.2] text-right"
+                  dir="rtl"
+                >
+                  {doa.text}
+                </p>
+                {doa.translation && (
+                  <p className="text-xs sm:text-sm text-slate-600 italic leading-relaxed">
+                    {doa.translation}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Overlay Kartu Gembok Bersih */}
+          <div className="mt-4 pt-4 border-t border-slate-200 bg-white space-y-3">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
+              <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
+              <span>Khazanah Doa Khusus · Rp 5.000</span>
+            </div>
+            <h4 className="font-serif text-xl text-slate-900">
+              Amalan &amp; Doa Khusus Hajat Terkunci
+            </h4>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Buka bacaan Arab, Latin, terjemahan, dan tata cara amalan tawassul hajat di{' '}
+              <strong className="font-semibold text-slate-900">{site.title}</strong> dengan infaq{' '}
+              <strong className="font-semibold text-emerald-800">Rp 5.000</strong>.
+            </p>
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setTransactionType('barokah_doa')}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Lock className="w-4 h-4" strokeWidth={1.75} />
+                <span>Buka Barokah &amp; Doa Khusus (Rp 5.000)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
 
   const historyParagraphs = splitIntoReadableParagraphs(site.history || site.description);
   const bodyParagraphClass = largeReadingText
@@ -372,7 +543,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 </div>
 
                 <div className="absolute bottom-3.5 left-6 right-6 z-10 text-white pointer-events-none">
-                  <div className="text-[11px] font-medium uppercase tracking-widest text-amber-300/95 mb-1">
+                  <div className="text-[11px] font-medium uppercase tracking-widest text-emerald-200 mb-1">
                     {site.category} · {site.location.city}, {site.location.province}
                   </div>
                   <h2 className="text-xl sm:text-2xl font-serif font-normal text-white leading-tight tracking-tight line-clamp-1">
@@ -381,31 +552,43 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 </div>
               </div>
 
-              {/* 2 Continuous Reader Tabs */}
-              <div className="relative z-20 flex px-6 sm:px-10 bg-white border-b border-stone-200/80 overflow-x-auto scrollbar-hide shrink-0 gap-6 sm:gap-8 pointer-events-auto">
+              {/* 3 Internal Reader Tabs */}
+              <div className="relative z-20 flex px-6 sm:px-10 bg-white border-b border-slate-200 overflow-x-auto scrollbar-hide shrink-0 gap-5 sm:gap-7 pointer-events-auto">
                 <button
                   type="button"
                   onClick={() => setActiveTab('kisah_utama')}
                   className={`shrink-0 flex items-center py-3.5 -mb-px text-xs sm:text-sm font-medium whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
                     activeTab === 'kisah_utama'
-                      ? 'border-emerald-900 text-emerald-950 font-semibold'
-                      : 'border-transparent text-stone-500 hover:text-stone-900'
+                      ? 'border-emerald-700 text-slate-900 font-semibold'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   <ScrollText className="w-3.5 h-3.5 mr-2" strokeWidth={1.75} />
-                  {siteCopy.readerTabMainStory}
+                  Kisah &amp; Karomah
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('barokah_doa')}
+                  className={`shrink-0 flex items-center py-3.5 -mb-px text-xs sm:text-sm font-medium whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
+                    activeTab === 'barokah_doa'
+                      ? 'border-emerald-700 text-slate-900 font-semibold'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Lock className="w-3.5 h-3.5 mr-1.5 text-emerald-700" strokeWidth={1.75} />
+                  Barokah &amp; Doa Khusus
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('panduan_doa')}
                   className={`shrink-0 flex items-center py-3.5 -mb-px text-xs sm:text-sm font-medium whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
                     activeTab === 'panduan_doa'
-                      ? 'border-emerald-900 text-emerald-950 font-semibold'
-                      : 'border-transparent text-stone-500 hover:text-stone-900'
+                      ? 'border-emerald-700 text-slate-900 font-semibold'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   <BookOpen className="w-3.5 h-3.5 mr-2" strokeWidth={1.75} />
-                  {siteCopy.readerTabPrayerGuide} ({allStories.length})
+                  Panduan &amp; Adab Ziarah ({allStories.length})
                 </button>
               </div>
 
@@ -481,7 +664,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
 
                     {/* Editorial Pull-Quote */}
                     {pullQuoteText && (
-                      <blockquote className="my-8 py-4 border-y border-amber-700/30 font-serif italic text-xl text-stone-900 leading-snug text-center">
+                      <blockquote className="my-8 py-4 border-y border-slate-200 font-serif italic text-xl text-slate-900 leading-snug text-center">
                         &ldquo;{pullQuoteText}&rdquo;
                       </blockquote>
                     )}
@@ -489,10 +672,10 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     {/* Babak II — Kesaksian Karomah & Keajaiban Batin */}
                     {hasKaromah && (
                       <section className="mt-8 pt-2">
-                        <div className="text-[11px] font-medium uppercase tracking-widest text-amber-800">
+                        <div className="text-[11px] font-medium uppercase tracking-widest text-emerald-800">
                           Keteladanan Spiritual
                         </div>
-                        <h3 className="font-serif text-2xl text-stone-900 mt-1 mb-4">
+                        <h3 className="font-serif text-2xl text-slate-900 mt-1 mb-4">
                           Babak II — Kesaksian Karomah &amp; Keajaiban Batin
                         </h3>
 
@@ -500,14 +683,15 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                           {site.karomah!.map((item, idx) => {
                             const kId = `${site.id}-karomah-${idx}`;
                             const isSavedKaromah = savedDoas.includes(kId);
-                            const isItemUnlocked = isSiteUnlocked || idx === 0;
-                            const cliffhanger = getEmotionalCliffhanger(item);
+                            // Strict lock on ALL karomah items (including idx === 0) until Rp 10.000 donation is verified
+                            const isItemUnlocked = isSiteUnlocked;
+                            const cliffhanger = getShortLockedSplit(item, 120);
                             const waShareUrl = buildWhatsAppCliffhangerUrl(site, item);
 
                             return (
-                              <div key={idx} className="border-b border-stone-200/70 pb-7 last:border-b-0">
+                              <div key={idx} className="border-b border-slate-200 pb-7 last:border-b-0">
                                 <div className="flex items-center justify-between mb-3">
-                                  <h4 className="font-serif text-lg sm:text-xl text-stone-900">
+                                  <h4 className="font-serif text-lg sm:text-xl text-slate-900">
                                     Kesaksian Karomah Ke-{idx + 1}
                                   </h4>
                                   {onToggleSaveDoa && isItemUnlocked && (
@@ -516,7 +700,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                       onClick={() => onToggleSaveDoa(kId)}
                                       title="Simpan ke Koleksi"
                                       className={`p-1.5 transition-colors rounded-lg cursor-pointer ${
-                                        isSavedKaromah ? 'text-emerald-800 bg-emerald-50' : 'text-stone-400 hover:text-stone-800'
+                                        isSavedKaromah ? 'text-emerald-800 bg-emerald-50' : 'text-slate-400 hover:text-slate-800'
                                       }`}
                                     >
                                       {isSavedKaromah ? (
@@ -540,49 +724,48 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                         href={waShareUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-xs text-stone-500 hover:text-stone-800 underline underline-offset-4"
+                                        className="text-xs text-slate-600 hover:text-slate-900 underline underline-offset-4"
                                       >
                                         Bagikan cuplikan kisah ini via WhatsApp
                                       </a>
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="space-y-5">
+                                  <div className="space-y-4">
                                     <div>
-                                      {splitIntoReadableParagraphs(cliffhanger.preview).map((para, pIdx) => (
-                                        <p key={pIdx} className={bodyParagraphClass}>
-                                          {para}
-                                        </p>
-                                      ))}
-                                      <p className={`${bodyParagraphClass} opacity-40 blur-[2px] select-none pointer-events-none line-clamp-2 text-stone-600`}>
+                                      <p className={bodyParagraphClass}>
+                                        {cliffhanger.preview}
+                                      </p>
+                                      <p className="blur-[5px] select-none pointer-events-none opacity-60 text-slate-600 leading-relaxed">
                                         {cliffhanger.remainder}
                                       </p>
                                     </div>
 
-                                    {!hasUntold && (
-                                      <div className="p-6 rounded-2xl bg-white border border-stone-200/90 shadow-2xs">
-                                        <div className="text-[11px] font-medium tracking-widest uppercase text-amber-800">
-                                          {siteCopy.paywallBadge}
+                                    {idx === site.karomah!.length - 1 && !hasUntold && (
+                                      <div className="p-6 rounded-2xl bg-white border border-slate-200">
+                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
+                                          <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
+                                          <span>{siteCopy.paywallBadge}</span>
                                         </div>
-                                        <h4 className="font-serif text-xl text-stone-900 mt-1">
+                                        <h4 className="font-serif text-xl text-slate-900 mt-2">
                                           {siteCopy.paywallTitle}
                                         </h4>
-                                        <p className="text-sm text-stone-600 mt-2 leading-relaxed">
+                                        <p className="text-sm text-slate-600 mt-2 leading-relaxed">
                                           {siteCopy.paywallSubtitle}
                                         </p>
                                         <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                                           <button
                                             type="button"
                                             onClick={() => setTransactionType('untold')}
-                                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white text-sm font-medium transition-colors cursor-pointer"
+                                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium transition-colors cursor-pointer"
                                           >
-                                            {siteCopy.paywallPrimaryButton}
+                                            Buka Seluruh Kisah &amp; Wasiat (Rp 10.000)
                                           </button>
                                           <a
                                             href={waShareUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-xs text-stone-500 hover:text-stone-800 underline underline-offset-4 text-center sm:text-left"
+                                            className="text-xs text-slate-600 hover:text-slate-900 underline underline-offset-4 text-center sm:text-left"
                                           >
                                             Bagikan cuplikan via WhatsApp
                                           </a>
@@ -598,18 +781,21 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       </section>
                     )}
 
+                    {/* Seksi Mengalir Tepat Setelah Karomah: Barokah Hajat & Doa Khusus (Rp 5.000) */}
+                    {renderBarokahDoaSection()}
+
                     {/* Babak III — Wasiat Rahasia & Naskah Khusus */}
                     {hasUntold && (
-                      <section className="mt-8 pt-6 border-t border-stone-200/70">
-                        <div className="text-[11px] font-medium uppercase tracking-widest text-amber-800">
+                      <section className="mt-8 pt-6 border-t border-slate-200">
+                        <div className="text-[11px] font-medium uppercase tracking-widest text-emerald-800">
                           Arsip Sejarah &amp; Manuskrip
                         </div>
-                        <h3 className="font-serif text-2xl text-stone-900 mt-1 mb-4">
+                        <h3 className="font-serif text-2xl text-slate-900 mt-1 mb-4">
                           Babak III — Wasiat Rahasia &amp; Naskah Khusus
                         </h3>
 
                         {(() => {
-                          const untoldCliffhanger = getEmotionalCliffhanger(site.untoldStory || '');
+                          const untoldCliffhanger = getShortLockedSplit(site.untoldStory || '', 120);
                           const untoldWaUrl = buildWhatsAppCliffhangerUrl(site, site.untoldStory || site.history);
 
                           return isSiteUnlocked ? (
@@ -624,7 +810,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                   href={untoldWaUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-xs text-stone-500 hover:text-stone-800 underline underline-offset-4"
+                                  className="text-xs text-slate-600 hover:text-slate-900 underline underline-offset-4"
                                 >
                                   Bagikan cuplikan via WhatsApp
                                 </a>
@@ -633,40 +819,44 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                           ) : (
                             <div className="space-y-5">
                               <div>
-                                {splitIntoReadableParagraphs(untoldCliffhanger.preview).map((para, pIdx) => (
-                                  <p key={pIdx} className={bodyParagraphClass}>
-                                    {para}
-                                  </p>
-                                ))}
-                                <p className={`${bodyParagraphClass} opacity-40 blur-[2px] select-none pointer-events-none line-clamp-3 text-stone-600`}>
-                                  {untoldCliffhanger.remainder}
+                                <p className={bodyParagraphClass}>
+                                  {untoldCliffhanger.preview}
                                 </p>
+                                <div className="blur-[6px] select-none pointer-events-none opacity-50 space-y-3 text-slate-600 leading-relaxed" aria-hidden="true">
+                                  {splitIntoReadableParagraphs(untoldCliffhanger.remainder).map((para, pIdx) => (
+                                    <p key={pIdx}>
+                                      {para}
+                                    </p>
+                                  ))}
+                                </div>
                               </div>
 
                               {/* Kartu Pembuka Khazanah (In-Place Unlock) */}
-                              <div className="p-6 rounded-2xl bg-white border border-stone-200/90 shadow-2xs">
-                                <div className="text-[11px] font-medium tracking-widest uppercase text-amber-800">
-                                  {siteCopy.paywallBadge}
+                              <div className="p-6 rounded-2xl bg-white border border-slate-200">
+                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
+                                  <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
+                                  <span>{siteCopy.paywallBadge}</span>
                                 </div>
-                                <h4 className="font-serif text-xl text-stone-900 mt-1">
+                                <h4 className="font-serif text-xl text-slate-900 mt-2">
                                   {siteCopy.paywallTitle}
                                 </h4>
-                                <p className="text-sm text-stone-600 mt-2 leading-relaxed">
+                                <p className="text-sm text-slate-600 mt-2 leading-relaxed">
                                   {siteCopy.paywallSubtitle}
                                 </p>
                                 <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                                   <button
                                     type="button"
                                     onClick={() => setTransactionType('untold')}
-                                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white text-sm font-medium transition-colors cursor-pointer"
+                                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
                                   >
-                                    {siteCopy.paywallPrimaryButton}
+                                    <Lock className="w-4 h-4" strokeWidth={1.75} />
+                                    <span>Buka Seluruh Kisah &amp; Wasiat (Rp 10.000)</span>
                                   </button>
                                   <a
                                     href={untoldWaUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-xs text-stone-500 hover:text-stone-800 underline underline-offset-4 text-center sm:text-left"
+                                    className="text-xs text-slate-600 hover:text-slate-900 underline underline-offset-4 text-center sm:text-left"
                                   >
                                     Bagikan cuplikan via WhatsApp
                                   </a>
@@ -722,6 +912,16 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       </button>
                     </footer>
                   </motion.article>
+                )}
+
+                {activeTab === 'barokah_doa' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="max-w-[65ch] mx-auto space-y-6"
+                  >
+                    {renderBarokahDoaSection()}
+                  </motion.div>
                 )}
 
                 {activeTab === 'panduan_doa' && (
@@ -791,60 +991,8 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       )}
                     </section>
 
-                    {/* Doa & Tawasul Khusus */}
-                    {hasDoa && (
-                      <section className="pb-7 border-b border-stone-200/70 space-y-6">
-                        <div>
-                          <div className="text-[11px] font-medium uppercase tracking-widest text-emerald-800">
-                            Amalan &amp; Wasilah
-                          </div>
-                          <h3 className="font-serif text-2xl text-stone-900 mt-1">
-                            Doa &amp; Tawasul Khusus di Makam Beliau
-                          </h3>
-                        </div>
-
-                        <div className="divide-y divide-stone-200/60">
-                          {site.doaKhusus!.map((doa, idx) => {
-                            const dId = `${site.id}-doa-${idx}`;
-                            const isSavedDoa = savedDoas.includes(dId);
-                            return (
-                              <div key={idx} className="py-5 first:pt-0 last:pb-0">
-                                <div className="flex items-start justify-between mb-4">
-                                  <h4 className="font-serif text-lg sm:text-xl text-stone-900 pr-6">{doa.title}</h4>
-                                  {onToggleSaveDoa && (
-                                    <button
-                                      type="button"
-                                      onClick={() => onToggleSaveDoa(dId)}
-                                      title="Simpan ke Koleksi"
-                                      className={`p-1.5 transition-colors rounded-lg cursor-pointer ${
-                                        isSavedDoa ? 'text-emerald-800 bg-emerald-50' : 'text-stone-400 hover:text-stone-800'
-                                      }`}
-                                    >
-                                      {isSavedDoa ? (
-                                        <BookmarkCheck className="w-4 h-4" strokeWidth={1.75} />
-                                      ) : (
-                                        <Bookmark className="w-4 h-4" strokeWidth={1.75} />
-                                      )}
-                                    </button>
-                                  )}
-                                </div>
-                                <p
-                                  className="text-2xl sm:text-3xl font-arabic text-stone-950 leading-[2.6] text-right mb-4"
-                                  dir="rtl"
-                                >
-                                  {doa.text}
-                                </p>
-                                {doa.translation && (
-                                  <p className="text-stone-600 italic text-xs sm:text-sm mt-1.5 leading-relaxed">
-                                    &ldquo;{doa.translation}&rdquo;
-                                  </p>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </section>
-                    )}
+                    {/* Doa & Tawasul Khusus (Menghormati Gembok Barokah Rp 5.000) */}
+                    {renderBarokahDoaSection()}
 
                     {/* Catatan Peziarah */}
                     <section className="pb-7 border-b border-stone-200/70 space-y-6">

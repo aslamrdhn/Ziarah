@@ -24,6 +24,7 @@ export interface ZiarahSite {
   untoldStory?: string;
   haulSchedule?: string;
   localAdab?: string;
+  barokahHajat?: string;
   doaKhusus?: {
     title: string;
     text: string;

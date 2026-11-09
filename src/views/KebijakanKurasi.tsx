@@ -46,9 +46,9 @@ export const KebijakanKurasi: React.FC = () => {
           </p>
           <ul className="space-y-3 text-xs sm:text-sm text-slate-700 font-medium">
             <li className="flex items-start"><span className="w-2.5 h-2.5 rounded-full bg-slate-400 mt-1.5 mr-3 shrink-0"></span><strong>Pending:</strong> Usulan masuk dari masyarakat / peziarah.</li>
-            <li className="flex items-start"><span className="w-2.5 h-2.5 rounded-full bg-amber-400 mt-1.5 mr-3 shrink-0"></span><strong>Reviewed:</strong> Divalidasi oleh dewan kurator sejarah Islam.</li>
-            <li className="flex items-start"><span className="w-2.5 h-2.5 rounded-full bg-emerald-600 mt-1.5 mr-3 shrink-0"></span><strong>Approved:</strong> Titik koordinat & biografi resmi tayang.</li>
-            <li className="flex items-start"><span className="w-2.5 h-2.5 rounded-full bg-rose-500 mt-1.5 mr-3 shrink-0"></span><strong>Rejected:</strong> Ditolak jika fiktif, SARA, atau duplikat.</li>
+            <li className="flex items-start"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1.5 mr-3 shrink-0"></span><strong>Reviewed:</strong> Divalidasi oleh dewan kurator sejarah Islam.</li>
+            <li className="flex items-start"><span className="w-2.5 h-2.5 rounded-full bg-emerald-700 mt-1.5 mr-3 shrink-0"></span><strong>Approved:</strong> Titik koordinat & biografi resmi tayang.</li>
+            <li className="flex items-start"><span className="w-2.5 h-2.5 rounded-full bg-slate-700 mt-1.5 mr-3 shrink-0"></span><strong>Rejected:</strong> Ditolak jika fiktif, SARA, atau duplikat.</li>
           </ul>
         </motion.div>
 
@@ -57,17 +57,17 @@ export const KebijakanKurasi: React.FC = () => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white p-6 sm:p-8 rounded-3xl shadow-xs border border-slate-200/90 flex flex-col h-full"
+          className="bg-white p-6 sm:p-8 rounded-3xl shadow-xs border border-slate-200 flex flex-col h-full"
         >
-          <div className="w-12 h-12 bg-amber-50 rounded-2xl border border-amber-200 flex items-center justify-center mb-5">
-            <Scale className="w-6 h-6 text-amber-700" />
+          <div className="w-12 h-12 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-center mb-5">
+            <Scale className="w-6 h-6 text-emerald-700" />
           </div>
           <h2 className="text-lg font-serif font-black text-slate-900 mb-3 tracking-tight">2. Penanganan Sengketa</h2>
-          <p className="text-xs sm:text-sm text-slate-500 mb-5 flex-1">
+          <p className="text-xs sm:text-sm text-slate-600 mb-5 flex-1">
             Dalam sejarah Islam Nusantara, wajar terdapat perbedaan penuturan manuskrip atau tradisi lisan (babad, prasasti, lontar).
           </p>
-          <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 text-xs sm:text-sm text-slate-700 italic">
-            <strong className="text-amber-800 not-italic block mb-1 font-bold">Aturan Editorial:</strong> Jika terdapat perbedaan riwayat atau lebih dari satu petilasan makam, sistem menyertakan "Catatan Kritis & Variasi Riwayat" transparan tanpa memaksakan satu klaim mutlak.
+          <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 italic">
+            <strong className="text-emerald-800 not-italic block mb-1 font-bold">Aturan Editorial:</strong> Jika terdapat perbedaan riwayat atau lebih dari satu petilasan makam, sistem menyertakan "Catatan Kritis & Variasi Riwayat" transparan tanpa memaksakan satu klaim mutlak.
           </div>
         </motion.div>
 
@@ -76,20 +76,20 @@ export const KebijakanKurasi: React.FC = () => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white p-6 sm:p-8 rounded-3xl shadow-xs border border-slate-200/90 flex flex-col h-full"
+          className="bg-white p-6 sm:p-8 rounded-3xl shadow-xs border border-slate-200 flex flex-col h-full"
         >
-          <div className="w-12 h-12 bg-indigo-50 rounded-2xl border border-indigo-200 flex items-center justify-center mb-5">
-            <BookOpen className="w-6 h-6 text-indigo-700" />
+          <div className="w-12 h-12 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-center mb-5">
+            <BookOpen className="w-6 h-6 text-emerald-700" />
           </div>
           <h2 className="text-lg font-serif font-black text-slate-900 mb-3 tracking-tight">3. Rujukan & Dewan Kurator</h2>
-          <p className="text-xs sm:text-sm text-slate-500 mb-5 flex-1">
+          <p className="text-xs sm:text-sm text-slate-600 mb-5 flex-1">
             Basis data ziarah kami diselaraskan dengan rujukan otoritatif seperti:
           </p>
           <ul className="space-y-2.5 text-xs sm:text-sm text-slate-700 font-medium list-none">
-            <li className="flex items-start"><span className="text-indigo-600 mr-2.5 font-bold">✦</span>Kementerian Agama Republik Indonesia (Direktorat Zawa).</li>
-            <li className="flex items-start"><span className="text-indigo-600 mr-2.5 font-bold">✦</span>Buku <em>Atlas Wali Songo</em> karya KH. Agus Sunyoto / LESBUMI PBNU.</li>
-            <li className="flex items-start"><span className="text-indigo-600 mr-2.5 font-bold">✦</span>Manuskrip Babad Cirebon, Babad Demak, dan Carita Purwaka Caruban.</li>
-            <li className="flex items-start"><span className="text-indigo-600 mr-2.5 font-bold">✦</span>Silsilah resmi Rabithah Alawiyah & Lembaga Nasab Nasional.</li>
+            <li className="flex items-start"><span className="text-emerald-700 mr-2.5 font-bold">·</span>Kementerian Agama Republik Indonesia (Direktorat Zawa).</li>
+            <li className="flex items-start"><span className="text-emerald-700 mr-2.5 font-bold">·</span>Buku <em>Atlas Wali Songo</em> karya KH. Agus Sunyoto / LESBUMI PBNU.</li>
+            <li className="flex items-start"><span className="text-emerald-700 mr-2.5 font-bold">·</span>Manuskrip Babad Cirebon, Babad Demak, dan Carita Purwaka Caruban.</li>
+            <li className="flex items-start"><span className="text-emerald-700 mr-2.5 font-bold">·</span>Silsilah resmi Rabithah Alawiyah & Lembaga Nasab Nasional.</li>
           </ul>
         </motion.div>
 

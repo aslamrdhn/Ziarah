@@ -411,7 +411,7 @@ export const BacaanZiarah: React.FC = () => {
                   : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
               }`}
             >
-              <Sun className="w-3.5 h-3.5 text-amber-600" strokeWidth={1.75} aria-hidden="true" />
+              <Sun className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} aria-hidden="true" />
               <span>{outdoorMode ? 'Mode Kontras Matahari: Aktif' : 'Mode Luar Ruangan'}</span>
             </button>
 

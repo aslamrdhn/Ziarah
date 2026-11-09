@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ShieldCheck, 
   Database, 
@@ -117,9 +117,79 @@ export const AdminKurator: React.FC = () => {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState('');
   const [donations, setDonations] = useState<any[]>([]);
+  const [donationFilter, setDonationFilter] = useState<'all' | 'barokah-doa' | 'rubrik-manuskrip' | 'other'>('all');
   const [previewProofDonation, setPreviewProofDonation] = useState<any | null>(null);
   const [restoredSiteCopy, setRestoredSiteCopy] = useState<SiteCopyConfig | null>(null);
   const [isRestoringBackup, setIsRestoringBackup] = useState(false);
+
+  const donationAnalytics = useMemo(() => {
+    const barokahDonations = donations.filter((d) => d.programId === 'barokah-doa');
+    const rubrikDonations = donations.filter((d) => d.programId === 'rubrik-manuskrip');
+    const otherDonations = donations.filter(
+      (d) => d.programId !== 'barokah-doa' && d.programId !== 'rubrik-manuskrip'
+    );
+
+    const sumAmount = (items: any[]) =>
+      items.reduce((acc, item) => acc + (Number(item.amount) || 0), 0);
+
+    const buildSiteRanking = (items: any[]) => {
+      const map = new Map<string, { key: string; siteId: string; siteName: string; count: number; totalAmount: number }>();
+      for (const item of items) {
+        const siteId = String(item.siteId || '').trim();
+        const rawSiteName = String(item.siteName || '').trim();
+        const fallbackTitle = String(item.programTitle || '')
+          .replace(/^(Barokah & Doa Khusus:|Rubrik & Khazanah:)\s*/i, '')
+          .trim();
+        const siteName = rawSiteName || fallbackTitle || 'Makam / Umum';
+        const key = siteId || siteName.toLowerCase();
+        const current = map.get(key) || {
+          key,
+          siteId,
+          siteName,
+          count: 0,
+          totalAmount: 0,
+        };
+        current.count += 1;
+        current.totalAmount += Number(item.amount) || 0;
+        map.set(key, current);
+      }
+      return Array.from(map.values()).sort(
+        (a, b) => b.count - a.count || b.totalAmount - a.totalAmount
+      );
+    };
+
+    return {
+      barokah: {
+        count: barokahDonations.length,
+        total: sumAmount(barokahDonations),
+        ranking: buildSiteRanking(barokahDonations),
+      },
+      rubrik: {
+        count: rubrikDonations.length,
+        total: sumAmount(rubrikDonations),
+        ranking: buildSiteRanking(rubrikDonations),
+      },
+      other: {
+        count: otherDonations.length,
+        total: sumAmount(otherDonations),
+      },
+    };
+  }, [donations]);
+
+  const filteredDonations = useMemo(() => {
+    if (donationFilter === 'barokah-doa') {
+      return donations.filter((d) => d.programId === 'barokah-doa');
+    }
+    if (donationFilter === 'rubrik-manuskrip') {
+      return donations.filter((d) => d.programId === 'rubrik-manuskrip');
+    }
+    if (donationFilter === 'other') {
+      return donations.filter(
+        (d) => d.programId !== 'barokah-doa' && d.programId !== 'rubrik-manuskrip'
+      );
+    }
+    return donations;
+  }, [donations, donationFilter]);
 
   const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
   const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -506,6 +576,7 @@ export const AdminKurator: React.FC = () => {
         province: sanitizePlainText(editingSite.location?.province, 120),
       },
       karomah: (editingSite.karomah || []).map((k) => sanitizeMultilineText(k, 3000)).filter(Boolean),
+      barokahHajat: sanitizeMultilineText(editingSite.barokahHajat, 2000),
       doaKhusus: cleanDoaKhusus,
       untoldStory: sanitizeMultilineText(editingSite.untoldStory, 6000),
       haulSchedule: sanitizePlainText(editingSite.haulSchedule, 240),
@@ -1198,7 +1269,7 @@ export const AdminKurator: React.FC = () => {
                         className="rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
                       />
                       <span className="text-xs font-bold text-slate-800">
-                        {rubrikGate.lockEnabled ? '🔒 Kunci Donasi & Bukti Transfer Aktif' : '🔓 Semua Terbuka Gratis'}
+                        {rubrikGate.lockEnabled ? 'Kunci Donasi & Bukti Transfer Aktif' : 'Semua Terbuka Gratis'}
                       </span>
                     </label>
                   </div>
@@ -2051,23 +2122,225 @@ export const AdminKurator: React.FC = () => {
                   </div>
                 </form>
 
+                {/* Panel Analitik Pemisah Donasi & Peringkat Makam Paling Sering Dibuka */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-5">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-emerald-800 mb-1">
+                      Analitik Pembuka Kunci &amp; Infaq Peziarah
+                    </p>
+                    <h3 className="font-bold text-slate-900 text-base">
+                      Perbandingan &amp; Peringkat Donasi yang Sering Dibuka Peziarah
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Pemisahan otomatis antara pembuka gembok <strong>Barokah &amp; Doa Khusus (Rp 5.000)</strong>, <strong>Rubrik &amp; Khazanah (Rp 10.000)</strong>, serta <strong>Infaq Umum / Pemeliharaan Situs</strong>.
+                    </p>
+                  </div>
+
+                  {/* a) 3 Kartu Ringkasan Kategori Donasi */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                    <div className="bg-white border border-amber-200 rounded-xl p-4 shadow-xs">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
+                          programId: barokah-doa
+                        </span>
+                        <span className="text-xs font-bold text-amber-800">Rp 5.000</span>
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-800">
+                        1. Donasi Barokah &amp; Doa Khusus
+                      </h4>
+                      <p className="text-xl font-black font-mono tabular-nums text-amber-800 mt-1">
+                        Rp {donationAnalytics.barokah.total.toLocaleString('id-ID')}
+                      </p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Total <strong>{donationAnalytics.barokah.count}</strong> transaksi pembuka doa
+                      </p>
+                    </div>
+
+                    <div className="bg-white border border-emerald-200 rounded-xl p-4 shadow-xs">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-200">
+                          programId: rubrik-manuskrip
+                        </span>
+                        <span className="text-xs font-bold text-emerald-800">Rp 10.000</span>
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-800">
+                        2. Donasi Rubrik &amp; Khazanah
+                      </h4>
+                      <p className="text-xl font-black font-mono tabular-nums text-emerald-800 mt-1">
+                        Rp {donationAnalytics.rubrik.total.toLocaleString('id-ID')}
+                      </p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Total <strong>{donationAnalytics.rubrik.count}</strong> transaksi pembuka kisah
+                      </p>
+                    </div>
+
+                    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                          Infaq Umum &amp; Situs
+                        </span>
+                        <span className="text-xs font-bold text-slate-600">Bebas</span>
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-800">
+                        3. Donasi Pemeliharaan / Infaq Umum
+                      </h4>
+                      <p className="text-xl font-black font-mono tabular-nums text-slate-900 mt-1">
+                        Rp {donationAnalytics.other.total.toLocaleString('id-ID')}
+                      </p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Total <strong>{donationAnalytics.other.count}</strong> transaksi infaq umum
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* b) 2 Tabel Peringkat Makam Terlaris */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Tabel 1: Barokah & Doa Khusus (Rp 5.000) */}
+                    <div className="bg-white border border-slate-200 rounded-xl p-4">
+                      <h4 className="text-xs font-bold text-slate-900 mb-1">
+                        Tabel 1: Makam dengan &ldquo;Barokah &amp; Doa Khusus (Rp 5.000)&rdquo; Paling Sering Dibuka
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mb-3">
+                        Diurutkan berdasarkan jumlah buka kunci terbanyak oleh peziarah.
+                      </p>
+                      {donationAnalytics.barokah.ranking.length === 0 ? (
+                        <p className="text-xs text-slate-400 italic py-3">
+                          Belum ada data pembukaan Barokah &amp; Doa Khusus (Rp 5.000).
+                        </p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                              <tr className="border-b border-slate-200 text-[10px] uppercase tracking-wider text-slate-500">
+                                <th className="py-2 pr-2">Rank</th>
+                                <th className="py-2 px-2">Nama Makam</th>
+                                <th className="py-2 px-2 text-right">Dibuka</th>
+                                <th className="py-2 pl-2 text-right">Total Infaq</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {donationAnalytics.barokah.ranking.slice(0, 10).map((row, idx) => (
+                                <tr key={row.key} className="hover:bg-amber-50/40">
+                                  <td className="py-2 pr-2 font-black text-amber-800">#{idx + 1}</td>
+                                  <td className="py-2 px-2 font-semibold text-slate-900">{row.siteName}</td>
+                                  <td className="py-2 px-2 text-right font-bold text-amber-900">{row.count}x dibuka</td>
+                                  <td className="py-2 pl-2 text-right font-mono font-bold text-slate-800">
+                                    Rp {row.totalAmount.toLocaleString('id-ID')}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Tabel 2: Rubrik & Khazanah (Rp 10.000) */}
+                    <div className="bg-white border border-slate-200 rounded-xl p-4">
+                      <h4 className="text-xs font-bold text-slate-900 mb-1">
+                        Tabel 2: Makam/Artikel dengan &ldquo;Rubrik &amp; Khazanah (Rp 10.000)&rdquo; Paling Sering Dibuka
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mb-3">
+                        Diurutkan berdasarkan jumlah buka kunci kisah rahasia &amp; rubrik terbanyak.
+                      </p>
+                      {donationAnalytics.rubrik.ranking.length === 0 ? (
+                        <p className="text-xs text-slate-400 italic py-3">
+                          Belum ada data pembukaan Rubrik &amp; Khazanah (Rp 10.000).
+                        </p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                              <tr className="border-b border-slate-200 text-[10px] uppercase tracking-wider text-slate-500">
+                                <th className="py-2 pr-2">Rank</th>
+                                <th className="py-2 px-2">Nama Makam / Artikel</th>
+                                <th className="py-2 px-2 text-right">Dibuka</th>
+                                <th className="py-2 pl-2 text-right">Total Infaq</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {donationAnalytics.rubrik.ranking.slice(0, 10).map((row, idx) => (
+                                <tr key={row.key} className="hover:bg-emerald-50/40">
+                                  <td className="py-2 pr-2 font-black text-emerald-800">#{idx + 1}</td>
+                                  <td className="py-2 px-2 font-semibold text-slate-900">{row.siteName}</td>
+                                  <td className="py-2 px-2 text-right font-bold text-emerald-900">{row.count}x dibuka</td>
+                                  <td className="py-2 pl-2 text-right font-mono font-bold text-slate-800">
+                                    Rp {row.totalAmount.toLocaleString('id-ID')}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 {/* Daftar Konfirmasi Donasi & Verifikasi Bukti Transfer */}
                 <div>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                     <div>
                       <h3 className="font-bold text-slate-900 text-base">
-                        Riwayat Konfirmasi Donasi &amp; Verifikasi Bukti Transfer ({donations.length})
+                        Riwayat Konfirmasi Donasi &amp; Verifikasi Bukti Transfer ({filteredDonations.length} dari {donations.length})
                       </h3>
                       <p className="text-xs text-slate-500">
                         Periksa foto struk bukti transfer pewakif. Jika bukti tidak valid, klik <strong>Cabut &amp; Hapus</strong> untuk mengunci kembali akses secara real-time.
                       </p>
                     </div>
+                    {/* c) Filter Cepat di Tabel Verifikasi Donasi Admin */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setDonationFilter('all')}
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
+                          donationFilter === 'all'
+                            ? 'bg-slate-900 text-white'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        Semua ({donations.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDonationFilter('barokah-doa')}
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
+                          donationFilter === 'barokah-doa'
+                            ? 'bg-amber-700 text-white'
+                            : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                        }`}
+                      >
+                        Barokah &amp; Doa Rp 5.000 ({donationAnalytics.barokah.count})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDonationFilter('rubrik-manuskrip')}
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
+                          donationFilter === 'rubrik-manuskrip'
+                            ? 'bg-emerald-800 text-white'
+                            : 'bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100'
+                        }`}
+                      >
+                        Rubrik &amp; Khazanah Rp 10.000 ({donationAnalytics.rubrik.count})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDonationFilter('other')}
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
+                          donationFilter === 'other'
+                            ? 'bg-slate-800 text-white'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        Infaq Umum ({donationAnalytics.other.count})
+                      </button>
+                    </div>
                   </div>
-                  {donations.length === 0 ? (
-                    <p className="text-xs text-slate-500 italic">Belum ada data konfirmasi donasi di database.</p>
+                  {filteredDonations.length === 0 ? (
+                    <p className="text-xs text-slate-500 italic">Belum ada data konfirmasi donasi untuk kategori filter ini.</p>
                   ) : (
                     <div className="max-h-[480px] overflow-y-auto border border-slate-200 rounded-2xl divide-y divide-slate-100 bg-white">
-                      {donations.map((d: DonationAdminItem) => {
+                      {filteredDonations.map((d: DonationAdminItem) => {
                         const hasProof =
                           d.hasProof === true ||
                           (typeof d.proofImageUrl === 'string' && d.proofImageUrl.startsWith('data:image/'));

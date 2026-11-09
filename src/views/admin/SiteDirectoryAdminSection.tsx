@@ -612,15 +612,15 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
             </div>
           </div>
 
-          {/* 6. Doa & Tawassul Khusus Makam (doaKhusus) */}
+          {/* 6. Barokah Hajat & Doa Tawassul Khusus Makam (barokahHajat & doaKhusus) */}
           <div className="space-y-3 pt-4 border-t border-stone-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h5 className="text-xs font-bold uppercase tracking-wider text-stone-700">
-                  6. Doa, Wirid &amp; Tawassul Khusus Makam (`doaKhusus`)
+                  6. Barokah Hajat &amp; Doa Khusus Makam (`barokahHajat` &amp; `doaKhusus` — Gembok Rp 5.000)
                 </h5>
                 <p className="text-[11px] text-stone-500">
-                  Tampil di Tab 2 (&ldquo;Panduan Ziarah &amp; Doa Khusus&rdquo;) serta halaman Kumpulan Doa Para Wali.
+                  Kalimat Barokah Hajat tampil terbuka sebagai pemicu minat tepat setelah Karomah, sedangkan bacaan Doa Khusus dikunci dengan infaq Rp 5.000.
                 </p>
               </div>
               <button
@@ -631,6 +631,19 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                 <BookOpen className="w-3.5 h-3.5 text-emerald-800" />
                 <span>+ Tambah Doa Khusus</span>
               </button>
+            </div>
+
+            <div className="p-3.5 bg-amber-50/70 rounded-xl border border-amber-200 space-y-1.5">
+              <label className="block text-xs font-bold text-amber-950">
+                Barokah &amp; Hajat yang Diharapkan Peziarah (`barokahHajat` — Tampil Terbuka)
+              </label>
+              <textarea
+                rows={3}
+                value={editingSite.barokahHajat || ''}
+                onChange={(e) => onChangeEditingSite({ ...editingSite, barokahHajat: e.target.value })}
+                placeholder="Contoh: Biasanya peziarah yang datang ke makam ini bertawassul mengharapkan wasilah dimudahkan jodoh pendamping hidup, kelancaran perniagaan, dan ketenangan batin keluarga... (Kosongkan untuk gunakan generator cerdas otomatis)"
+                className="w-full px-3.5 py-2 bg-white border border-amber-200 rounded-xl text-xs leading-relaxed text-stone-800"
+              />
             </div>
 
             {doaKhususList.length === 0 ? (

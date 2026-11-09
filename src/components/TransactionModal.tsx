@@ -16,13 +16,15 @@ interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
   site: ZiarahSite;
-  type: 'infaq' | 'untold';
+  type: 'infaq' | 'untold' | 'barokah_doa';
   onSuccess?: () => void;
 }
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, site, type, onSuccess }) => {
   const siteCopy = useSiteCopy();
-  const [selectedNominal, setSelectedNominal] = useState(25000);
+  const [selectedNominal, setSelectedNominal] = useState(
+    type === 'barokah_doa' ? 5000 : type === 'untold' ? 10000 : 25000
+  );
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [copiedBank, setCopiedBank] = useState(false);
@@ -46,6 +48,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       setReceipt(null);
       setAgreedToAkad(false);
       setSubmitError(null);
+      setSelectedNominal(type === 'barokah_doa' ? 5000 : type === 'untold' ? 10000 : 25000);
       if (auth.currentUser?.displayName && !senderAccount) {
         setSenderAccount(auth.currentUser.displayName);
       }
@@ -64,16 +67,38 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         })
         .catch(() => {});
     }
-  }, [isOpen]);
+  }, [isOpen, type]);
 
   if (!isOpen) return null;
 
-  const amount = sanitizeDonationAmount(type === 'infaq' ? selectedNominal : 15000, 1000, 1000000000) || 15000;
+  const minAmount = type === 'barokah_doa' ? 5000 : 10000;
+  const amount =
+    sanitizeDonationAmount(selectedNominal, minAmount, 1000000000) || minAmount;
   const cleanSender = sanitizePlainText(senderAccount, 80);
   const donorName = cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
   const isProofComplete = Boolean(receipt && cleanSender.length >= 3);
 
-  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer ${type === 'infaq' ? 'Donasi Pemeliharaan Makam' : 'Donasi Literasi Pembuka Rubrik'} di sistem:\n\n` +
+  const programId =
+    type === 'barokah_doa'
+      ? 'barokah-doa'
+      : type === 'untold'
+        ? 'rubrik-manuskrip'
+        : 'pemeliharaan';
+
+  const programTitle =
+    type === 'barokah_doa'
+      ? `Barokah & Doa Khusus: ${site.name}`.slice(0, 150)
+      : type === 'untold'
+        ? `Rubrik & Khazanah: ${site.name}`.slice(0, 150)
+        : 'Pemeliharaan & Revitalisasi Makam';
+
+  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer ${
+    type === 'barokah_doa'
+      ? 'Infaq Pembuka Barokah & Doa Khusus (Rp 5.000)'
+      : type === 'infaq'
+        ? 'Donasi Pemeliharaan Makam'
+        : 'Donasi Literasi Pembuka Rubrik & Khazanah'
+  } di sistem:\n\n` +
     `• *Kode Referensi:* ${receipt?.referenceCode || '-'}\n` +
     `• *Nama Pengirim:* ${donorName}\n` +
     `• *Metode Pembayaran:* ${paymentMethod}\n` +
@@ -111,8 +136,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
 
     try {
       const donationId = await submitDonationWithPrivateProof({
-        programId: type === 'infaq' ? 'pemeliharaan' : 'rubrik-manuskrip',
-        programTitle: type === 'infaq' ? 'Pemeliharaan & Revitalisasi Makam' : 'Apresiasi Literasi & Manuskrip Rubrik',
+        programId,
+        programTitle,
         siteId: sanitizePlainText(site.id, 128),
         siteName: sanitizePlainText(site.name, 150),
         amount,
@@ -121,12 +146,21 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         senderAccount: cleanSender,
         receipt,
         doaHajat: sanitizePlainText(
-          type === 'infaq' ? `Donasi pemeliharaan untuk ${site.name}` : `Apresiasi pembukaan manuskrip ${site.name}`,
+          type === 'barokah_doa'
+            ? `Ikhtiar Barokah & Doa Khusus di ${site.name}`
+            : type === 'infaq'
+              ? `Donasi pemeliharaan untuk ${site.name}`
+              : `Apresiasi pembukaan manuskrip ${site.name}`,
           200
         ),
       });
 
-      saveVerifiedDonationRecord(donationId, site.id);
+      saveVerifiedDonationRecord({
+        donationId,
+        siteId: site.id,
+        programId,
+        amount,
+      });
       setIsSaving(false);
       setIsSuccess(true);
       if (onSuccess) onSuccess();
@@ -164,7 +198,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
           
           <div className="relative z-10 pr-8">
             <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800 mb-1 inline-flex items-center gap-1.5">
-              {type === 'infaq' ? (
+              {type === 'barokah_doa' ? (
+                <>
+                  <ScrollText className="w-3.5 h-3.5" strokeWidth={1.75} />
+                  <span>Khazanah Barokah &amp; Doa Khusus · Rp 5.000</span>
+                </>
+              ) : type === 'infaq' ? (
                 <>
                   <HeartHandshake className="w-3.5 h-3.5" strokeWidth={1.75} />
                   <span>Infaq Jariyah Makam</span>
@@ -176,11 +215,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 </>
               )}
             </div>
-            <h2 className="text-lg sm:text-xl font-serif font-semibold text-stone-900 mb-1 leading-snug">{site.name}</h2>
+            <h2 className="text-lg sm:text-xl font-serif font-semibold text-stone-900 mb-1 leading-snug">
+              {type === 'barokah_doa'
+                ? `Buka Barokah Hajat & Doa Khusus — ${site.name}`
+                : site.name}
+            </h2>
             <p className="text-stone-600 text-xs leading-relaxed">
-              {type === 'infaq' 
-                ? 'Sedekah jariyah untuk pelestarian arsip sejarah & fasilitas peziarah.' 
-                : 'Buka seluruh arsip naskah sejarah, karomah lanjutan, dan wasiat rahasia di perangkat Anda.'}
+              {type === 'barokah_doa'
+                ? 'Sempurnakan ikhtiar hajat Anda dengan infaq Rp 5.000 untuk membuka bacaan tawassul, wirid, dan doa khusus di makam ini.'
+                : type === 'infaq' 
+                  ? 'Sedekah jariyah untuk pelestarian arsip sejarah & fasilitas peziarah.' 
+                  : 'Buka seluruh arsip naskah sejarah, karomah lanjutan, dan wasiat rahasia di perangkat Anda.'}
             </p>
           </div>
         </div>
@@ -196,10 +241,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 Kode Referensi Bukti: #{receipt?.referenceCode}
               </span>
               <h3 className="font-serif text-stone-900 text-lg mb-1.5">
-                Alhamdulillah, Lembaran Khazanah Telah Terbuka
+                {type === 'barokah_doa'
+                  ? 'Alhamdulillah, Barokah & Doa Khusus Telah Terbuka'
+                  : 'Alhamdulillah, Lembaran Khazanah Telah Terbuka'}
               </h3>
               <p className="text-xs sm:text-sm text-stone-600 mb-4 leading-relaxed">
-                {siteCopy.unlockSuccessMessage}
+                {type === 'barokah_doa'
+                  ? `Terima kasih atas infaq jariyah Anda. Seluruh bacaan tawassul, wirid, dan doa khusus di ${site.title} kini telah terbuka penuh di perangkat Anda.`
+                  : siteCopy.unlockSuccessMessage}
               </p>
 
               {receipt && (
@@ -237,7 +286,39 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
             </div>
           ) : (
             <div className="space-y-4">
-              {type === 'infaq' ? (
+              {type === 'barokah_doa' ? (
+                <div className="space-y-3">
+                  <div className="bg-emerald-50 p-3.5 rounded-2xl border border-emerald-200 text-left">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 mb-0.5">
+                      Wasilah Tawassul &amp; Doa Khusus Makam
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Infaq mulai <strong className="font-semibold text-slate-900">Rp 5.000</strong> untuk membuka penuh lafaz Arab, Latin, terjemahan, dan tata cara amalan hajat khusus di <strong>{site.title}</strong>.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-800 mb-2">
+                      Pilih Nominal Infaq Barokah &amp; Doa:
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[5000, 10000, 25000].map((nominal) => (
+                        <button
+                          key={nominal}
+                          type="button"
+                          onClick={() => setSelectedNominal(nominal)}
+                          className={`py-2.5 px-2 text-xs font-semibold rounded-xl border transition-colors cursor-pointer ${
+                            selectedNominal === nominal
+                              ? 'bg-emerald-900 border-emerald-900 text-white'
+                              : 'bg-[#FAF8F5] border-stone-200/80 text-stone-700 hover:border-stone-400'
+                          }`}
+                        >
+                          Rp {nominal.toLocaleString('id-ID')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : type === 'infaq' ? (
                 <div>
                   <label className="block text-xs font-semibold text-stone-800 mb-2">Pilih Nominal Infaq:</label>
                   <div className="grid grid-cols-3 gap-2">
@@ -258,16 +339,39 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                   </div>
                 </div>
               ) : (
-                <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-stone-200/80 text-left">
-                  <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800 mb-1">
-                    Pembuka Seluruh Khazanah Nusantara
+                <div className="space-y-3">
+                  <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-stone-200/80 text-left">
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800 mb-1">
+                      Pembuka Seluruh Khazanah Nusantara
+                    </div>
+                    <h4 className="font-serif font-semibold text-stone-900 text-sm sm:text-base mb-1">
+                      Akses Penuh 96+ Makam &amp; Wasiat Rahasia
+                    </h4>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      Buka akses penuh ke seluruh catatan manuskrip, karomah lanjutan, dan wasiat rahasia melalui infaq literasi minimal <strong className="font-semibold text-stone-900">Rp 10.000</strong> serta mengunggah bukti transfer.
+                    </p>
                   </div>
-                  <h4 className="font-serif font-semibold text-stone-900 text-sm sm:text-base mb-1">
-                    Akses Penuh 96+ Makam &amp; Wasiat Rahasia
-                  </h4>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    Buka akses penuh ke seluruh catatan manuskrip, karomah lanjutan, dan wasiat rahasia melalui infaq literasi <strong className="font-semibold text-stone-900">Rp 15.000</strong> serta mengunggah bukti transfer.
-                  </p>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-800 mb-2">
+                      Pilih Nominal Infaq Khazanah (Min. Rp 10.000):
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[10000, 15000, 25000].map((nominal) => (
+                        <button
+                          key={nominal}
+                          type="button"
+                          onClick={() => setSelectedNominal(nominal)}
+                          className={`py-2.5 px-2 text-xs font-semibold rounded-xl border transition-colors cursor-pointer ${
+                            selectedNominal === nominal
+                              ? 'bg-stone-900 border-stone-900 text-white'
+                              : 'bg-[#FAF8F5] border-stone-200/80 text-stone-700 hover:border-stone-400'
+                          }`}
+                        >
+                          Rp {nominal.toLocaleString('id-ID')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -341,9 +445,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                   <>
                     <CheckCircle2 className="w-4 h-4" />
                     <span>
-                      {type === 'infaq'
-                        ? `Kirim Bukti & Konfirmasi Infaq (Rp ${amount.toLocaleString('id-ID')})`
-                        : 'Kirim Bukti Transfer & Buka Seluruh Khazanah'}
+                      {type === 'barokah_doa'
+                        ? `Buka Barokah & Doa Khusus (Rp ${amount.toLocaleString('id-ID')})`
+                        : type === 'infaq'
+                          ? `Kirim Bukti & Konfirmasi Infaq (Rp ${amount.toLocaleString('id-ID')})`
+                          : `Kirim Bukti Transfer & Buka Seluruh Khazanah (Rp ${amount.toLocaleString('id-ID')})`}
                     </span>
                   </>
                 )}

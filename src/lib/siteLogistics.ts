@@ -147,6 +147,99 @@ export function getSiteLogistics(site: ZiarahSite): SiteLogisticsInfo {
 }
 
 /**
+ * Menghasilkan deskripsi Berkah & Wasilah Hajat yang biasa diharapkan peziarah di makam tersebut.
+ * Menggunakan nilai `site.barokahHajat` dari Admin jika tersedia, atau fallback kontekstual cerdas untuk seluruh 96+ makam.
+ */
+export function getSiteBarokahHajat(site: ZiarahSite): string {
+  if (site.barokahHajat && site.barokahHajat.trim().length > 0) {
+    return site.barokahHajat.trim();
+  }
+
+  const corpus = `${site.id} ${site.title} ${site.name} ${site.description} ${site.history || ''}`.toLowerCase();
+
+  if (
+    corpus.includes('drajat') ||
+    corpus.includes('kuncung') ||
+    corpus.includes('malik ibrahim') ||
+    corpus.includes('gresik') ||
+    corpus.includes('giri') ||
+    corpus.includes('dagang') ||
+    corpus.includes('niaga') ||
+    corpus.includes('ekonomi')
+  ) {
+    return `Di ${site.title}, peziarah umumnya bertawassul mengharapkan wasilah kelancaran ikhtiar usaha & perniagaan, terbukanya pintu rezeki yang halal lagi berkah, kemudahan melunasi tanggungan hutang, serta kedermawanan hati dalam menolong sesama.`;
+  }
+
+  if (
+    corpus.includes('muria') ||
+    corpus.includes('kwitang') ||
+    corpus.includes('empang bogor') ||
+    corpus.includes('ayu') ||
+    corpus.includes('nyai') ||
+    corpus.includes('ratu') ||
+    corpus.includes('jodoh') ||
+    corpus.includes('keluarga')
+  ) {
+    return `Biasanya peziarah yang datang ke ${site.title} memanjatkan doa dan tawassul dengan mengharapkan wasilah dimudahkan bertemu jodoh pendamping hidup yang shalih/shalihah, kerukunan rumah tangga (sakinah mawaddah warahmah), serta kelembutan hati seluruh anggota keluarga.`;
+  }
+
+  if (
+    corpus.includes('kholil') ||
+    corpus.includes('hamid') ||
+    corpus.includes('pasuruan') ||
+    corpus.includes('hasyim asy') ||
+    corpus.includes('tebuireng') ||
+    corpus.includes('ampel') ||
+    corpus.includes('bonang') ||
+    corpus.includes('sekumpul') ||
+    corpus.includes('pesantren') ||
+    corpus.includes('kitab')
+  ) {
+    return `Di ${site.title}, para santri, orang tua, dan peziarah umumnya bertawassul mengharapkan wasilah ilmu yang bermanfaat & penuh berkah, dikaruniai keturunan yang shalih-shalihah penghafal Al-Qur'an, serta dibukakan jalan keluar (makhraja) dari berbagai himpitan batin dan kesulitan hidup.`;
+  }
+
+  if (
+    corpus.includes('kalijaga') ||
+    corpus.includes('kudus') ||
+    corpus.includes('gunung jati') ||
+    corpus.includes('hasanuddin') ||
+    corpus.includes('sultan') ||
+    corpus.includes('adipati') ||
+    corpus.includes('raja') ||
+    corpus.includes('luar batang') ||
+    corpus.includes('priok')
+  ) {
+    return `Peziarah yang berziarah ke ${site.title} umumnya bertawassul memohon kepada Allah SWT agar dikaruniai keteguhan iman di tengah ujian, kewibawaan & amanah dalam kepemimpinan/pekerjaan, keselamatan keluarga dari bala bencana, serta dikabulkannya hajat-hajat besar yang sedang diperjuangkan.`;
+  }
+
+  if (site.category === 'Habaib') {
+    return `Di ${site.title}, jamaah dan peziarah umumnya bertawassul mengharapkan syafaat kecintaan kepada Dzurriyah Rasulullah SAW, keteduhan batin dari kegelisahan dunia, kesembuhan penyakit lahir maupun batin, serta keberkahan rezeki keluarga.`;
+  }
+
+  return `Biasanya peziarah yang berziarah ke ${site.title} (${site.location.city}) bertawassul memohon kepada Allah SWT dengan wasilah keshalihan beliau agar dikabulkan hajat-hajat terbaik: ketenangan batin, kemudahan jodoh & keturunan yang shalih, kelapangan rezeki keluarga, serta husnul khatimah.`;
+}
+
+/**
+ * Mengembalikan daftar `doaKhusus` makam. Jika makam belum memiliki item `doaKhusus` kustom di database,
+ * fungsi ini menghasilkan bacaan Tawassul, Wirid & Doa Munajat Hajat Khusus yang relevan untuk makam tersebut.
+ */
+export function getEffectiveSiteDoaKhusus(
+  site: ZiarahSite
+): { title: string; text: string; translation?: string }[] {
+  if (Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0) {
+    return site.doaKhusus;
+  }
+
+  return [
+    {
+      title: `Tawassul & Munajat Hajat Khusus di ${site.title}`,
+      text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ وَلِيِّ اللهِ الصَّالِحِ صَاحِبِ هٰذِهِ الْمَقْبَرَةِ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ ۝ اللّٰهُمَّ إِنِّي أَسْأَلُكَ وَأَتَوَجَّهُ إِلَيْكَ بِنَبِيِّكَ مُحَمَّدٍ نَبِيِّ الرَّحْمَةِ وَبِأَوْلِيَائِكَ الصَّالِحِينَ أَنْ تَقْضِيَ حَاجَاتِنَا وَتُيَسِّرَ أُمُورَنَا وَتَشْرَحَ صُدُورَنَا',
+      translation: `Kaifiyah & Arti: Hadiahkan Al-Fatihah 1x kepada Rasulullah SAW dan 1x khusus kepada ${site.name} (${site.title}), lanjutkan membaca Surat Al-Ikhlas 3x, Al-Falaq 1x, An-Nas 1x, dan Shalawat Nabi 11x. Artinya: "Ya Allah, sesungguhnya aku memohon kepada-Mu dan menghadapkan diri kepada-Mu dengan wasilah Nabi-Mu Muhammad Nabi pembawa rahmat serta para kekasih-Mu yang shalih, kabulkanlah hajat-hajat kami, mudahkanlah segala urusan kami, dan lapangkanlah dada kami."`,
+    },
+  ];
+}
+
+/**
  * Menghitung jarak garis lurus (Haversine) dalam satuan kilometer (km)
  */
 export function calculateDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -160,3 +253,4 @@ export function calculateDistanceKm(lat1: number, lng1: number, lat2: number, ln
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return Math.round(R * c * 10) / 10;
 }
+

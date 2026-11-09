@@ -2,8 +2,31 @@ import { useState, useEffect } from 'react';
 import { collection, doc, getDoc, onSnapshot, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
-export const RUBRIK_DONATION_ID_KEY = 'zn_verified_rubrik_donation_id';
-export const SITE_DONATION_MAP_KEY = 'zn_verified_site_donation_map';
+export const RUBRIK_DONATION_ID_KEY = 'zn_verified_rubrik_donation_id_v3';
+export const SITE_DONATION_MAP_KEY = 'zn_verified_site_donation_map_v3';
+export const BAROKAH_DONATION_ID_KEY = 'zn_verified_barokah_donation_id_v3';
+export const BAROKAH_SITE_MAP_KEY = 'zn_verified_barokah_site_map_v3';
+
+const LEGACY_UNLOCK_KEYS = [
+  'hasDonatedRubrik',
+  'unlockedUntold',
+  'zn_verified_rubrik_donation_id',
+  'zn_verified_site_donation_map',
+  'zn_verified_rubrik_donation_id_v2',
+  'zn_verified_site_donation_map_v2',
+  'zn_verified_barokah_donation_id_v1',
+  'zn_verified_barokah_site_map_v1',
+];
+
+function purgeLegacyUnlockStorage(): void {
+  try {
+    for (const key of LEGACY_UNLOCK_KEYS) {
+      localStorage.removeItem(key);
+    }
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 export interface CompressedReceiptResult {
   dataUrl: string;
@@ -291,18 +314,62 @@ export function incrementStoredAamiin(itemId: string): Record<string, number> {
   }
 }
 
-export function saveVerifiedDonationRecord(donationId: string, siteId?: string): void {
-  try {
-    localStorage.removeItem('hasDonatedRubrik');
-    localStorage.removeItem('unlockedUntold');
-    localStorage.setItem(RUBRIK_DONATION_ID_KEY, donationId);
+export interface VerifiedDonationRecordInput {
+  donationId: string;
+  siteId?: string;
+  programId?: string;
+  amount?: number;
+}
 
-    if (siteId) {
-      const existingRaw = localStorage.getItem(SITE_DONATION_MAP_KEY);
-      const map: Record<string, string> = existingRaw ? JSON.parse(existingRaw) : {};
-      map[siteId] = donationId;
-      localStorage.setItem(SITE_DONATION_MAP_KEY, JSON.stringify(map));
+export function saveVerifiedDonationRecord(
+  donationIdOrRecord: string | VerifiedDonationRecordInput,
+  siteIdArg?: string,
+  programIdArg?: string,
+  amountArg?: number
+): void {
+  try {
+    purgeLegacyUnlockStorage();
+
+    const record: VerifiedDonationRecordInput =
+      typeof donationIdOrRecord === 'string'
+        ? {
+            donationId: donationIdOrRecord,
+            siteId: siteIdArg,
+            programId: programIdArg,
+            amount: amountArg,
+          }
+        : donationIdOrRecord;
+
+    const { donationId, siteId, programId = '', amount = 10000 } = record;
+    if (!donationId) return;
+
+    const isBarokahProgram =
+      programId === 'barokah-doa' || programId.startsWith('barokah-doa');
+
+    if (isBarokahProgram) {
+      localStorage.setItem(BAROKAH_DONATION_ID_KEY, donationId);
+      if (siteId) {
+        const existingBarokahRaw = localStorage.getItem(BAROKAH_SITE_MAP_KEY);
+        const barokahMap: Record<string, string> = existingBarokahRaw
+          ? JSON.parse(existingBarokahRaw)
+          : {};
+        barokahMap[siteId] = donationId;
+        localStorage.setItem(BAROKAH_SITE_MAP_KEY, JSON.stringify(barokahMap));
+      }
+      // Jangan simpan ke RUBRIK_DONATION_ID_KEY jika nominal < 10.000
+      if (amount >= 10000 && programId === 'rubrik-manuskrip') {
+        localStorage.setItem(RUBRIK_DONATION_ID_KEY, donationId);
+      }
+    } else if (programId === 'rubrik-manuskrip' || amount >= 10000) {
+      localStorage.setItem(RUBRIK_DONATION_ID_KEY, donationId);
+      if (siteId) {
+        const existingRaw = localStorage.getItem(SITE_DONATION_MAP_KEY);
+        const map: Record<string, string> = existingRaw ? JSON.parse(existingRaw) : {};
+        map[siteId] = donationId;
+        localStorage.setItem(SITE_DONATION_MAP_KEY, JSON.stringify(map));
+      }
     }
+
     window.dispatchEvent(new CustomEvent('zn-donation-proof-updated'));
   } catch (e) {
     console.error('Error saving donation proof ID:', e);
@@ -318,32 +385,40 @@ export interface DonationUnlockStatus {
   status: string | null;
 }
 
-export function useVerifiedDonationUnlock(
-  siteId?: string,
-  requireManualAdminVerification: boolean = false
-): DonationUnlockStatus {
-  const [donationId, setDonationId] = useState<string | null>(() => {
-    try {
-      localStorage.removeItem('hasDonatedRubrik');
-      localStorage.removeItem('unlockedUntold');
-
-      const globalId = localStorage.getItem(RUBRIK_DONATION_ID_KEY);
-      if (globalId) return globalId;
-
-      if (siteId) {
-        const rawMap = localStorage.getItem(SITE_DONATION_MAP_KEY);
-        if (rawMap) {
-          const parsed = JSON.parse(rawMap);
-          if (parsed && typeof parsed[siteId] === 'string' && parsed[siteId]) {
-            return parsed[siteId];
-          }
+function readStoredDonationId(
+  globalKey: string,
+  siteMapKey: string,
+  siteId?: string
+): string | null {
+  try {
+    purgeLegacyUnlockStorage();
+    if (siteId) {
+      const rawMap = localStorage.getItem(siteMapKey);
+      if (rawMap) {
+        const parsed = JSON.parse(rawMap);
+        if (parsed && typeof parsed[siteId] === 'string' && parsed[siteId]) {
+          return parsed[siteId];
         }
       }
       return null;
-    } catch {
-      return null;
     }
-  });
+    const globalId = localStorage.getItem(globalKey);
+    if (globalId) return globalId;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function useVerifiedScopedUnlock(
+  globalKey: string,
+  siteMapKey: string,
+  siteId?: string,
+  requireManualAdminVerification: boolean = false
+): DonationUnlockStatus {
+  const [donationId, setDonationId] = useState<string | null>(() =>
+    readStoredDonationId(globalKey, siteMapKey, siteId)
+  );
 
   const [unlockState, setUnlockState] = useState<{
     isUnlocked: boolean;
@@ -352,8 +427,8 @@ export function useVerifiedDonationUnlock(
     referenceCode: string | null;
     status: string | null;
   }>({
-    isUnlocked: Boolean(donationId) && !requireManualAdminVerification,
-    isPendingAdmin: Boolean(donationId) && requireManualAdminVerification,
+    isUnlocked: false,
+    isPendingAdmin: Boolean(donationId),
     isVerifying: Boolean(donationId),
     referenceCode: null,
     status: donationId ? 'pending' : null,
@@ -361,32 +436,17 @@ export function useVerifiedDonationUnlock(
 
   useEffect(() => {
     const syncFromStorage = () => {
-      try {
-        localStorage.removeItem('hasDonatedRubrik');
-        localStorage.removeItem('unlockedUntold');
-        let nextId: string | null = localStorage.getItem(RUBRIK_DONATION_ID_KEY);
-        if (!nextId && siteId) {
-          const rawMap = localStorage.getItem(SITE_DONATION_MAP_KEY);
-          if (rawMap) {
-            const parsed = JSON.parse(rawMap);
-            if (parsed && typeof parsed[siteId] === 'string' && parsed[siteId]) {
-              nextId = parsed[siteId];
-            }
-          }
-        }
-        setDonationId(nextId);
-      } catch {
-        setDonationId(null);
-      }
+      setDonationId(readStoredDonationId(globalKey, siteMapKey, siteId));
     };
 
+    syncFromStorage();
     window.addEventListener('zn-donation-proof-updated', syncFromStorage);
     window.addEventListener('storage', syncFromStorage);
     return () => {
       window.removeEventListener('zn-donation-proof-updated', syncFromStorage);
       window.removeEventListener('storage', syncFromStorage);
     };
-  }, [siteId]);
+  }, [globalKey, siteMapKey, siteId]);
 
   useEffect(() => {
     if (!donationId) {
@@ -402,6 +462,7 @@ export function useVerifiedDonationUnlock(
 
     setUnlockState((prev) => ({
       ...prev,
+      isUnlocked: false,
       isVerifying: true,
     }));
 
@@ -421,9 +482,13 @@ export function useVerifiedDonationUnlock(
 
         const data = snap.data();
         const docStatus = String(data.status || 'pending');
-        const refCode = typeof data.referenceCode === 'string' ? data.referenceCode : snap.id.slice(0, 8).toUpperCase();
+        const hasValidProof = data.hasProof === true;
+        const refCode =
+          typeof data.referenceCode === 'string'
+            ? data.referenceCode
+            : snap.id.slice(0, 8).toUpperCase();
 
-        if (docStatus === 'rejected') {
+        if (docStatus === 'rejected' || !hasValidProof) {
           setUnlockState({
             isUnlocked: false,
             isPendingAdmin: false,
@@ -445,7 +510,7 @@ export function useVerifiedDonationUnlock(
           return;
         }
 
-        // docStatus === 'pending'
+        // docStatus === 'pending' with hasValidProof === true
         if (requireManualAdminVerification) {
           setUnlockState({
             isUnlocked: false,
@@ -455,7 +520,6 @@ export function useVerifiedDonationUnlock(
             status: docStatus,
           });
         } else {
-          // Optimistic Unlock on the donor's own device while awaiting public moderation
           setUnlockState({
             isUnlocked: true,
             isPendingAdmin: true,
@@ -466,11 +530,14 @@ export function useVerifiedDonationUnlock(
         }
       },
       () => {
-        // Never unlock on Firestore permission or network error
-        setUnlockState((prev) => ({
-          ...prev,
+        // Strictly lock on any Firestore permission or network error
+        setUnlockState({
+          isUnlocked: false,
+          isPendingAdmin: false,
           isVerifying: false,
-        }));
+          referenceCode: null,
+          status: null,
+        });
       }
     );
 
@@ -482,3 +549,28 @@ export function useVerifiedDonationUnlock(
     donationId,
   };
 }
+
+export function useVerifiedDonationUnlock(
+  siteId?: string,
+  requireManualAdminVerification: boolean = false
+): DonationUnlockStatus {
+  return useVerifiedScopedUnlock(
+    RUBRIK_DONATION_ID_KEY,
+    SITE_DONATION_MAP_KEY,
+    siteId,
+    requireManualAdminVerification
+  );
+}
+
+export function useVerifiedBarokahUnlock(
+  siteId?: string,
+  requireManualAdminVerification: boolean = false
+): DonationUnlockStatus {
+  return useVerifiedScopedUnlock(
+    BAROKAH_DONATION_ID_KEY,
+    BAROKAH_SITE_MAP_KEY,
+    siteId,
+    requireManualAdminVerification
+  );
+}
+

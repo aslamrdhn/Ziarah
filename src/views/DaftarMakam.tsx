@@ -441,9 +441,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               onClick={() =>
                 document.getElementById('hikmah-ziarah-reel')?.scrollIntoView({ behavior: 'smooth' })
               }
-              className="px-3.5 py-2.5 rounded-xl bg-amber-50/80 hover:bg-amber-100/80 text-amber-950 border border-amber-300/60 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition cursor-pointer"
+              className="px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition cursor-pointer"
             >
-              <span>✨ Hikmah Ziarah · 5 Slide</span>
+              <span>Hikmah Ziarah · 5 Slide</span>
             </button>
           </div>
         </header>
@@ -650,7 +650,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               })}
             </div>
 
-            {/* Clean Text Chips for Emotional Intent (No Sparkles/Emojis) */}
+            {/* Clean Text Chips for Emotional Intent */}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2.5 lg:pb-2">
               {EMOTIONAL_INTENTS.map((intent) => {
                 const isSelected = emotionalFilter === intent.id;

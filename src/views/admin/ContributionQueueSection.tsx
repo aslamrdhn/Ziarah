@@ -86,7 +86,7 @@ export const ContributionQueueSection: React.FC<ContributionQueueSectionProps> =
                   </div>
                   <span className="text-xs text-slate-500">
                     Pengusul: <strong className="text-slate-800">{item.contributorName}</strong>{' '}
-                    {item.contributorContact ? `(🔒 ${item.contributorContact})` : ''}
+                    {item.contributorContact ? `(Privat: ${item.contributorContact})` : ''}
                   </span>
                 </div>
 

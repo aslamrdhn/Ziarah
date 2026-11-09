@@ -40,4 +40,21 @@ describe('siteCopy & cliffhanger utilities', () => {
       'Beliau kemudian membisikkan wasiat rahasia kepada sang murid.'
     );
   });
+
+  it('preserves 5 default storyReelSlides and merges custom slide overrides safely', () => {
+    expect(DEFAULT_SITE_COPY.storyReelSlides).toHaveLength(5);
+    expect(DEFAULT_SITE_COPY.storyReelSlides[2].arabicQuote).toContain('كُنْتُ نَهَيْتُكُمْ');
+
+    const customSlides = DEFAULT_SITE_COPY.storyReelSlides.map((s, idx) =>
+      idx === 0 ? { ...s, title: 'Judul Slide 1 Kustom Admin' } : s
+    );
+    const merged = mergeWithDefaultSiteCopy({
+      storyReelSectionTitle: 'Hikmah Ziarah Kustom',
+      storyReelSlides: customSlides,
+    });
+    expect(merged.storyReelSectionTitle).toBe('Hikmah Ziarah Kustom');
+    expect(merged.storyReelSlides).toHaveLength(5);
+    expect(merged.storyReelSlides[0].title).toBe('Judul Slide 1 Kustom Admin');
+  });
 });
+

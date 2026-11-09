@@ -76,6 +76,7 @@ function mergeLocalAndCloudSites(loadedLocalSites: ZiarahSite[], fetchedSites: Z
         untoldStory: 'untoldStory' in cloudSite ? cloudSite.untoldStory : baseLocal.untoldStory,
         haulSchedule: 'haulSchedule' in cloudSite ? cloudSite.haulSchedule : baseLocal.haulSchedule,
         localAdab: 'localAdab' in cloudSite ? cloudSite.localAdab : baseLocal.localAdab,
+        barokahHajat: 'barokahHajat' in cloudSite ? cloudSite.barokahHajat : baseLocal.barokahHajat,
       });
     } else if (cloudSite.name && cloudSite.location) {
       mergedMap.set(cloudSite.id, cloudSite);
