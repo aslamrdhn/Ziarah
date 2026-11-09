@@ -15,7 +15,7 @@ import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
 import { getSitePath } from '../lib/siteSlugs';
-import { extractShortEra } from '../lib/siteLogistics';
+import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { useSiteCopy } from '../lib/siteCopy';
 import { ZiarahStoryReel } from '../components/ZiarahStoryReel';
 
@@ -722,6 +722,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             const snippetText = (site.untoldStory || site.description || '')
               .replace(/<!--more-->/g, ' ')
               .trim();
+            const hajatText = getSiteBarokahHajat(site);
+            const karomahCount = Array.isArray(site.karomah) && site.karomah.length > 0 ? site.karomah.length : 1;
+            const doaCount = getEffectiveSiteDoaKhusus(site).length;
 
             return (
               <article key={site.id} className={index >= 3 ? 'group content-auto' : 'group'}>
@@ -732,7 +735,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                   className="block cursor-pointer space-y-3 focus:outline-none"
                 >
                   {/* 1. Foto Rasio 4:3 dengan sudut membulat (rounded-2xl) & 1 Label Sudut */}
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-stone-200">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-200">
                     <img
                       src={optimizedThumb}
                       srcSet={thumbSrcSet}
@@ -747,45 +750,60 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       referrerPolicy="no-referrer"
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
-                    <span className="absolute top-3 left-3 text-[11px] font-medium px-2.5 py-1 rounded-md bg-stone-950/80 text-white backdrop-blur-xs">
+                    <span className="absolute top-3 left-3 text-[11px] font-medium px-2.5 py-1 rounded-md bg-slate-950/80 text-white backdrop-blur-xs">
                       {badgeLabel}
                     </span>
                   </div>
 
-                  {/* 2. Konten di Bawah Foto: Kota/Provinsi, Judul Serif, Cuplikan 2 Baris */}
+                  {/* 2. Konten di Bawah Foto: Kota/Provinsi, Judul Serif, Kotak Ringkas Wasilah Hajat, Cuplikan */}
                   <div className="space-y-1 px-0.5">
-                    <div className="flex items-center justify-between gap-2 text-xs text-stone-600 font-medium">
+                    <div className="flex items-center justify-between gap-2 text-xs text-slate-600 font-medium">
                       <span className="truncate">
                         {site.location.city}, {site.location.province}
                       </span>
-                      {shortEra && <span className="shrink-0 text-stone-600">{shortEra}</span>}
+                      {shortEra && <span className="shrink-0 text-slate-600">{shortEra}</span>}
                     </div>
 
-                    <h2 className="font-serif text-xl text-stone-900 group-hover:text-emerald-900 transition-colors line-clamp-1">
+                    <h2 className="font-serif text-xl text-slate-900 group-hover:text-emerald-800 transition-colors line-clamp-1">
                       Makam {site.title}
                     </h2>
 
-                    <p className="text-sm text-stone-600 line-clamp-2 leading-relaxed">
+                    {/* Kotak Ringkas Wasilah Hajat */}
+                    <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-xl px-3 py-2 my-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+                          Wasilah Hajat &amp; Karomah
+                        </span>
+                        <span className="text-[10px] font-medium text-emerald-800">
+                          {karomahCount} Karomah · {doaCount} Doa
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-700 font-medium line-clamp-2 mt-0.5 leading-relaxed">
+                        {hajatText}
+                      </p>
+                    </div>
+
+                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
                       {snippetText}
                     </p>
                   </div>
                 </a>
 
-                {/* 3. Footer Aksi Terpisah (Mencegah <button> di dalam <a> dan memenuhi standar ukuran sentuh >= 36px) */}
-                <div className="pt-2.5 mt-3 border-t border-stone-200/70 flex items-center justify-between gap-3 px-0.5 text-xs text-stone-600">
+                {/* 3. Footer Aksi Terpisah */}
+                <div className="pt-2.5 mt-3 border-t border-slate-200 flex items-center justify-between gap-3 px-0.5 text-xs text-slate-600">
                   <button
                     type="button"
                     onClick={() => onSelectSite(site)}
-                    className="py-2 pr-3 min-h-[36px] inline-flex items-center hover:text-stone-950 underline underline-offset-4 cursor-pointer"
+                    className="py-2 pr-3 min-h-[36px] inline-flex items-center hover:text-slate-900 underline underline-offset-4 cursor-pointer"
                   >
                     {siteCopy.cardSecondaryMapCta}
                   </button>
                   <a
                     href={siteUrl}
                     onClick={(e) => handleOpenReaderModal(site, e)}
-                    className="py-2 pl-3 min-h-[36px] inline-flex items-center font-medium text-emerald-800 hover:text-emerald-950 group-hover:translate-x-0.5 transition-transform"
+                    className="py-2 pl-3 min-h-[36px] inline-flex items-center font-bold text-emerald-700 group-hover:text-emerald-800 group-hover:translate-x-0.5 transition-transform"
                   >
-                    {siteCopy.cardPrimaryCta} →
+                    Karomah &amp; Doa Khusus →
                   </a>
                 </div>
               </article>

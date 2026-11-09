@@ -128,6 +128,22 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   const [approvedCommunityRubrik, setApprovedCommunityRubrik] = useState<RubrikItem[]>([]);
   const [activeStoryModal, setActiveStoryModal] = useState<RubrikItem | null>(null);
   const [unlockModalArticle, setUnlockModalArticle] = useState<RubrikItem | null>(null);
+  const [readingFontSize, setReadingFontSize] = useState<'base' | 'lg' | 'xl'>('base');
+
+  const decreaseFontSize = () => {
+    setReadingFontSize(prev => (prev === 'xl' ? 'lg' : 'base'));
+  };
+
+  const increaseFontSize = () => {
+    setReadingFontSize(prev => (prev === 'base' ? 'lg' : 'xl'));
+  };
+
+  const readerParagraphFontClass =
+    readingFontSize === 'xl'
+      ? 'text-xl leading-relaxed'
+      : readingFontSize === 'lg'
+      ? 'text-lg leading-relaxed'
+      : 'text-base leading-relaxed';
 
   // Gate & Donation state
   const [gateSettings, setGateSettings] = useState<RubrikGateSettings>(DEFAULT_RUBRIK_GATE_SETTINGS);
@@ -1135,14 +1151,37 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                     <span>{activeStoryModal.siteName} — {activeStoryModal.location}</span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveStoryModal(null)}
-                  className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition-colors shrink-0 cursor-pointer"
-                  aria-label="Tutup naskah"
-                >
-                  ✕
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="inline-flex items-center bg-slate-50 border border-slate-200 rounded-xl p-1" role="group" aria-label="Pengatur ukuran teks bacaan">
+                    <span className="text-[11px] font-semibold text-slate-600 px-2 hidden sm:inline">Ukuran Teks Nyaman:</span>
+                    <button
+                      type="button"
+                      onClick={decreaseFontSize}
+                      disabled={readingFontSize === 'base'}
+                      className="px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200/70 disabled:opacity-40 rounded-lg transition-colors cursor-pointer"
+                      title="Kecilkan Ukuran Teks"
+                    >
+                      A-
+                    </button>
+                    <button
+                      type="button"
+                      onClick={increaseFontSize}
+                      disabled={readingFontSize === 'xl'}
+                      className="px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200/70 disabled:opacity-40 rounded-lg transition-colors cursor-pointer"
+                      title="Besarkan Ukuran Teks"
+                    >
+                      A+
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveStoryModal(null)}
+                    className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition-colors shrink-0 cursor-pointer"
+                    aria-label="Tutup naskah"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               {/* Isi Modal — Medium / Substack Reader Measure (max-w-[65ch] mx-auto) */}
@@ -1181,8 +1220,8 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                             key={`open-${pIdx}`}
                             className={
                               pIdx === 0
-                                ? 'font-serif text-lg sm:text-xl text-stone-900 leading-relaxed first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-emerald-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none'
-                                : 'text-[16px] sm:text-[18px] leading-[1.9] text-stone-800'
+                                ? `font-serif ${readerParagraphFontClass} text-stone-900 first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-emerald-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none`
+                                : `${readerParagraphFontClass} text-stone-800`
                             }
                           >
                             {para}
@@ -1197,7 +1236,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                             {continuationParas.map((para, cIdx) => (
                               <p
                                 key={`cont-${cIdx}`}
-                                className="text-[16px] sm:text-[18px] leading-[1.9] text-stone-800"
+                                className={`${readerParagraphFontClass} text-stone-800`}
                               >
                                 {para}
                               </p>

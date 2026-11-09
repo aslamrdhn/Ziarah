@@ -400,7 +400,9 @@ function readStoredDonationId(
           return parsed[siteId];
         }
       }
-      return null;
+      if (siteId !== 'barokah') {
+        return null;
+      }
     }
     const globalId = localStorage.getItem(globalKey);
     if (globalId) return globalId;

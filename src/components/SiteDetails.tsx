@@ -7,7 +7,7 @@ import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRec
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useVerifiedDonationUnlock, useVerifiedBarokahUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
-import { getSiteLogistics, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
+import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide } from '../lib/siteLogistics';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
 import { getSiteSlug } from '../lib/siteSlugs';
 import { useSiteCopy } from '../lib/siteCopy';
@@ -196,7 +196,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   onViewOnMap,
 }) => {
   const [activeTab, setActiveTab] = useState<'kisah_utama' | 'barokah_doa' | 'panduan_doa'>('kisah_utama');
-  const [largeReadingText, setLargeReadingText] = useState(false);
+  const [readingFontSize, setReadingFontSize] = useState<'base' | 'lg' | 'xl'>('base');
   const [authorName, setAuthorName] = useState('');
   const [newStory, setNewStory] = useState('');
   const [isSendingStory, setIsSendingStory] = useState(false);
@@ -319,9 +319,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   if (!site) return null;
 
   const hasKaromah = site.karomah && site.karomah.length > 0;
-  const effectiveDoaKhusus = getEffectiveSiteDoaKhusus(site);
+  const completeBarokahGuide = getSiteCompleteBarokahGuide(site);
+  const effectiveDoaKhusus = completeBarokahGuide.doaItems;
   const barokahHajatText = getSiteBarokahHajat(site);
-  const barokahHajatSplit = getShortLockedSplit(barokahHajatText, 120);
   const hasUntold = !!site.untoldStory;
   const currentUser = auth.currentUser;
   const isCurrentUserAdmin = isUserAdmin(currentUser);
@@ -331,8 +331,27 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   const logistics = getSiteLogistics(site);
   const pullQuoteText = extractPullQuote(site.description, logistics.localAdab);
 
-  const renderBarokahDoaSection = () => (
-    <section className="mt-8 pt-6 border-t border-slate-200 space-y-5">
+  const cycleFontSizeDown = () => {
+    setReadingFontSize((prev) => (prev === 'xl' ? 'lg' : 'base'));
+  };
+
+  const cycleFontSizeUp = () => {
+    setReadingFontSize((prev) => (prev === 'base' ? 'lg' : 'xl'));
+  };
+
+  const jumpToSectionInModal = (elementId: string) => {
+    if (activeTab !== 'kisah_utama') {
+      setActiveTab('kisah_utama');
+      window.setTimeout(() => {
+        document.getElementById(elementId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 90);
+    } else {
+      document.getElementById(elementId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const renderBarokahDoaSection = (sectionId?: string) => (
+    <section id={sectionId} className="mt-8 pt-6 border-t border-slate-200 space-y-5 scroll-mt-6">
       <div>
         <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
           <Lock className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} />
@@ -343,90 +362,165 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
         </h3>
       </div>
 
-      {/* Kalimat pengantar singkat (1 kalimat) */}
-      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+      {/* Bagian Terbuka: Narasi Hajat yang Menyentuh Hati */}
+      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
         <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
           Harapan &amp; Wasilah Hajat Jamaah
         </div>
-        <p className="text-sm sm:text-[15.5px] text-slate-900 leading-relaxed">
-          {isBarokahUnlocked ? barokahHajatText : barokahHajatSplit.preview}
+        <h4 className="font-serif text-lg sm:text-xl text-slate-900 leading-snug">
+          Mengapa Banyak Peziarah Membawa Hajat Ini ke Pusara {site.name}?
+        </h4>
+        <p className="text-sm sm:text-[15.5px] text-slate-700 leading-relaxed">
+          {barokahHajatText}
         </p>
       </div>
 
-      {/* Isi Bacaan Arab, Latin, Terjemahan & Tata Cara Amalan */}
+      {/* 3 Bagian Panduan Amalan Lengkap (Terbuka Penuh saat isBarokahUnlocked, atau BLUR saat Terkunci Rp 5.000) */}
       {isBarokahUnlocked ? (
-        <div className="space-y-4">
-          {effectiveDoaKhusus.map((doa, idx) => {
-            const dId = `${site.id}-doa-${idx}`;
-            const isSavedDoa = savedDoas.includes(dId);
+        <div className="space-y-5">
+          {/* 1) Tata Cara & Waktu Terbaik Bertawassul Hajat */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-3">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
+              Bagian 1 · Kaifiyah &amp; Adab Munajat
+            </span>
+            <h4 className="font-serif text-lg sm:text-xl text-slate-900">
+              1. Tata Cara &amp; Waktu Terbaik Bertawassul Hajat di {site.name}
+            </h4>
+            <ul className="space-y-2.5 text-sm text-slate-700 leading-relaxed">
+              {completeBarokahGuide.tataCaraWaktu.map((step, sIdx) => (
+                <li key={sIdx} className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    {sIdx + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            return (
-              <div
-                key={idx}
-                className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-4"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-800 block mb-0.5">
-                      Amalan &amp; Tawassul Makam #{idx + 1}
-                    </span>
-                    <h4 className="font-serif text-lg sm:text-xl text-slate-900">{doa.title}</h4>
-                  </div>
-                  {onToggleSaveDoa && (
-                    <button
-                      type="button"
-                      onClick={() => onToggleSaveDoa(dId)}
-                      title="Simpan Doa ke Koleksi"
-                      className={`p-2 transition-colors rounded-xl border cursor-pointer shrink-0 ${
-                        isSavedDoa
-                          ? 'text-emerald-800 bg-emerald-50 border-emerald-200'
-                          : 'text-slate-500 bg-slate-50 border-slate-200 hover:text-slate-900'
-                      }`}
-                    >
-                      {isSavedDoa ? (
-                        <BookmarkCheck className="w-4 h-4" strokeWidth={1.75} />
-                      ) : (
-                        <Bookmark className="w-4 h-4" strokeWidth={1.75} />
-                      )}
-                    </button>
-                  )}
-                </div>
+          {/* 2) Lafaz Bacaan Tawassul & Doa Khusus Hajat (Arab, Latin, Terjemahan) */}
+          <div className="space-y-4">
+            <div className="px-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
+                Bagian 2 · Bacaan Inti Maqbarah
+              </span>
+              <h4 className="font-serif text-lg sm:text-xl text-slate-900">
+                2. Lafaz Bacaan Tawassul &amp; Doa Khusus Hajat
+              </h4>
+            </div>
+            {effectiveDoaKhusus.map((doa, idx) => {
+              const dId = `${site.id}-doa-${idx}`;
+              const isSavedDoa = savedDoas.includes(dId);
 
-                <div className="space-y-4 pt-2 border-t border-slate-100">
-                  <p
-                    className="text-2xl sm:text-3xl font-arabic text-slate-900 leading-[2.6] text-right"
-                    dir="rtl"
-                  >
-                    {doa.text}
-                  </p>
-                  {doa.translation && (
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                      <p className="text-slate-600 italic text-xs sm:text-sm leading-relaxed">
-                        {doa.translation}
-                      </p>
+              return (
+                <div
+                  key={idx}
+                  className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-800 block mb-0.5">
+                        Amalan &amp; Tawassul Makam #{idx + 1}
+                      </span>
+                      <h5 className="font-serif text-lg sm:text-xl text-slate-900">{doa.title}</h5>
                     </div>
-                  )}
+                    {onToggleSaveDoa && (
+                      <button
+                        type="button"
+                        onClick={() => onToggleSaveDoa(dId)}
+                        title="Simpan Doa ke Koleksi"
+                        className={`p-2 transition-colors rounded-xl border cursor-pointer shrink-0 ${
+                          isSavedDoa
+                            ? 'text-emerald-800 bg-emerald-50 border-emerald-200'
+                            : 'text-slate-500 bg-slate-50 border-slate-200 hover:text-slate-900'
+                        }`}
+                      >
+                        {isSavedDoa ? (
+                          <BookmarkCheck className="w-4 h-4" strokeWidth={1.75} />
+                        ) : (
+                          <Bookmark className="w-4 h-4" strokeWidth={1.75} />
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-4 pt-2 border-t border-slate-100">
+                    <p
+                      className="text-2xl sm:text-3xl font-arabic text-slate-900 leading-[2.6] text-right"
+                      dir="rtl"
+                    >
+                      {doa.text}
+                    </p>
+                    {doa.latin && (
+                      <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200/70">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 mb-1">
+                          Transliterasi Latin
+                        </div>
+                        <p className="text-slate-800 italic text-xs sm:text-sm leading-relaxed">
+                          {doa.latin}
+                        </p>
+                      </div>
+                    )}
+                    {doa.translation && (
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                          Terjemahan &amp; Makna Doa
+                        </div>
+                        <p className="text-slate-700 italic text-xs sm:text-sm leading-relaxed">
+                          &ldquo;{doa.translation}&rdquo;
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
+          {/* 3) Wirid Penutup & Adab Pulang Ziarah */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-3">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
+              Bagian 3 · Penyempurna Wasilah
+            </span>
+            <h4 className="font-serif text-lg sm:text-xl text-slate-900">
+              3. Wirid Penutup &amp; Adab Pulang Ziarah
+            </h4>
+            <ul className="space-y-2.5 text-sm text-slate-700 leading-relaxed">
+              {completeBarokahGuide.wiridPenutupAdab.map((item, wIdx) => (
+                <li key={wIdx} className="flex items-start gap-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 mt-2 shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       ) : (
         <div className="relative rounded-2xl bg-white border border-slate-200 p-5 sm:p-6 overflow-hidden">
-          {/* Seluruh isi bacaan Arab, Latin, terjemahan, dan tata cara amalan dalam keadaan BLUR */}
+          {/* Seluruh 3 Bagian Panduan Amalan Lengkap dalam keadaan BLUR */}
           <div className="blur-[6px] select-none pointer-events-none opacity-50 space-y-5" aria-hidden="true">
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {barokahHajatSplit.remainder}
-            </p>
+            <div className="space-y-1.5">
+              <div className="text-xs font-bold text-slate-900">
+                1. Tata Cara &amp; Waktu Terbaik Bertawassul Hajat di {site.name}
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {completeBarokahGuide.tataCaraWaktu.join(' ')}
+              </p>
+            </div>
             {effectiveDoaKhusus.map((doa, idx) => (
-              <div key={idx} className="pt-3 border-t border-slate-200 space-y-2.5">
-                <div className="text-xs font-semibold text-slate-800">{doa.title}</div>
+              <div key={idx} className="pt-3 border-t border-slate-200 space-y-2">
+                <div className="text-xs font-semibold text-slate-800">
+                  2. {doa.title}
+                </div>
                 <p
                   className="text-xl sm:text-2xl font-arabic text-slate-900 leading-[2.2] text-right"
                   dir="rtl"
                 >
                   {doa.text}
                 </p>
+                {doa.latin && (
+                  <p className="text-xs text-slate-700 italic">{doa.latin}</p>
+                )}
                 {doa.translation && (
                   <p className="text-xs sm:text-sm text-slate-600 italic leading-relaxed">
                     {doa.translation}
@@ -434,6 +528,14 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 )}
               </div>
             ))}
+            <div className="pt-3 border-t border-slate-200 space-y-1">
+              <div className="text-xs font-bold text-slate-900">
+                3. Wirid Penutup &amp; Adab Pulang Ziarah
+              </div>
+              <p className="text-xs text-slate-600">
+                {completeBarokahGuide.wiridPenutupAdab.join(' ')}
+              </p>
+            </div>
           </div>
 
           {/* Overlay Kartu Gembok Bersih */}
@@ -446,7 +548,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
               Amalan &amp; Doa Khusus Hajat Terkunci
             </h4>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Buka bacaan Arab, Latin, terjemahan, dan tata cara amalan tawassul hajat di{' '}
+              Buka penuh <strong>3 Bagian Panduan Amalan</strong> (Tata Cara &amp; Waktu Mustajab, Lafaz Arab Naskh, Transliterasi Latin, Terjemahan Hajat, serta Wirid Penutup) di{' '}
               <strong className="font-semibold text-slate-900">{site.title}</strong> dengan infaq{' '}
               <strong className="font-semibold text-emerald-800">Rp 5.000</strong>.
             </p>
@@ -467,19 +569,25 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   );
 
   const historyParagraphs = splitIntoReadableParagraphs(site.history || site.description);
-  const bodyParagraphClass = largeReadingText
-    ? 'text-[17.5px] sm:text-[19px] text-stone-800 leading-[2.0] mb-5'
-    : 'text-[16px] sm:text-[17px] text-stone-800 leading-[1.9] mb-5';
+  const bodyParagraphClass =
+    readingFontSize === 'xl'
+      ? 'text-xl text-slate-800 leading-[2.0] mb-5'
+      : readingFontSize === 'lg'
+        ? 'text-lg text-slate-800 leading-[1.95] mb-5'
+        : 'text-base text-slate-800 leading-[1.9] mb-5';
 
-  const leadParagraphClass = largeReadingText
-    ? 'font-serif text-xl sm:text-2xl text-stone-900 leading-relaxed mb-6 first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-emerald-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none'
-    : 'font-serif text-lg sm:text-xl text-stone-900 leading-relaxed mb-5 first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-emerald-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none';
+  const leadParagraphClass =
+    readingFontSize === 'xl'
+      ? 'font-serif text-2xl text-slate-900 leading-relaxed mb-6 first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-emerald-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none'
+      : readingFontSize === 'lg'
+        ? 'font-serif text-xl sm:text-2xl text-slate-900 leading-relaxed mb-6 first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-emerald-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none'
+        : 'font-serif text-lg sm:text-xl text-slate-900 leading-relaxed mb-5 first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-emerald-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none';
 
   return (
     <>
       <AnimatePresence>
         {site && (
-          <div className="fixed inset-0 z-[2050] flex items-center justify-center p-0 sm:p-4 md:p-6 bg-stone-950/60 backdrop-blur-xs pointer-events-auto">
+          <div className="fixed inset-0 z-[2050] flex items-center justify-center p-0 sm:p-4 md:p-6 bg-slate-950/60 backdrop-blur-xs pointer-events-auto">
             <div
               className="absolute inset-0 cursor-pointer"
               onClick={onClose}
@@ -490,10 +598,10 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.98 }}
               transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-              className="relative z-10 w-full h-full sm:h-auto sm:max-w-3xl sm:max-h-[90vh] sm:rounded-3xl bg-[#FAF8F5] shadow-2xl overflow-hidden flex flex-col border border-stone-200/80 pointer-events-auto"
+              className="relative z-10 w-full h-full sm:h-auto sm:max-w-3xl sm:max-h-[90vh] sm:rounded-3xl bg-slate-50 shadow-2xl overflow-hidden flex flex-col border border-slate-200 pointer-events-auto"
             >
               {/* Compact Editorial Cover Header */}
-              <div className="relative shrink-0 h-36 sm:h-44 bg-stone-900">
+              <div className="relative shrink-0 h-36 sm:h-44 bg-slate-900">
                 <img
                   src={optimizeSiteImageUrl(site.imageUrl, 720, 78)}
                   onError={(e) => handleOptimizedImageError(e, site.imageUrl)}
@@ -503,21 +611,31 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                   decoding="async"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/50 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent pointer-events-none" />
 
                 <div className="absolute top-3.5 right-3.5 z-20 flex items-center space-x-1.5 pointer-events-auto">
                   <button
                     type="button"
-                    onClick={() => setLargeReadingText((prev) => !prev)}
-                    className={`px-2.5 py-2 backdrop-blur-md rounded-xl text-xs font-medium transition-colors border shadow-sm cursor-pointer flex items-center gap-1 ${
-                      largeReadingText
-                        ? 'bg-emerald-900/90 text-white border-emerald-500/40'
-                        : 'bg-stone-900/60 hover:bg-stone-900/85 text-white border-white/20'
+                    onClick={cycleFontSizeDown}
+                    disabled={readingFontSize === 'base'}
+                    className="px-2.5 py-2 backdrop-blur-md rounded-xl text-xs font-semibold transition-colors border shadow-sm cursor-pointer flex items-center gap-1 bg-slate-900/65 hover:bg-slate-900/85 text-white border-white/20 disabled:opacity-40"
+                    title="Perkecil Ukuran Teks (A-)"
+                  >
+                    <span>A-</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cycleFontSizeUp}
+                    disabled={readingFontSize === 'xl'}
+                    className={`px-2.5 py-2 backdrop-blur-md rounded-xl text-xs font-semibold transition-colors border shadow-sm cursor-pointer flex items-center gap-1 ${
+                      readingFontSize !== 'base'
+                        ? 'bg-emerald-700 text-white border-emerald-500/40'
+                        : 'bg-slate-900/65 hover:bg-slate-900/85 text-white border-white/20'
                     }`}
-                    title="Ubah Ukuran Teks Bacaan"
+                    title="Perbesar Ukuran Teks (A+)"
                   >
                     <Type className="w-3.5 h-3.5" strokeWidth={1.75} />
-                    <span className="text-[11px]">{largeReadingText ? 'A+' : 'A'}</span>
+                    <span>A+</span>
                   </button>
                   {onToggleSave && (
                     <motion.button
@@ -525,7 +643,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       whileTap={{ scale: 1.25 }}
                       transition={{ type: 'spring', stiffness: 450, damping: 15 }}
                       onClick={onToggleSave}
-                      className="p-2 bg-stone-900/60 hover:bg-stone-900/85 backdrop-blur-md rounded-xl text-white transition-colors border border-white/20 shadow-sm cursor-pointer"
+                      className="p-2 bg-slate-900/65 hover:bg-slate-900/85 backdrop-blur-md rounded-xl text-white transition-colors border border-white/20 shadow-sm cursor-pointer"
                       title={isSaved ? 'Hapus dari Rencana' : 'Simpan ke Rencana'}
                     >
                       <Heart className={`w-4 h-4 transition-colors ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-white'}`} strokeWidth={1.75} />
@@ -535,7 +653,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     type="button"
                     whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    className="p-2 bg-stone-900/60 hover:bg-stone-900/85 backdrop-blur-md rounded-xl text-white transition-colors border border-white/20 shadow-sm cursor-pointer"
+                    className="p-2 bg-slate-900/65 hover:bg-slate-900/85 backdrop-blur-md rounded-xl text-white transition-colors border border-white/20 shadow-sm cursor-pointer"
                     title="Tutup lembar bacaan"
                   >
                     <X className="w-4 h-4" strokeWidth={1.75} />
@@ -592,8 +710,57 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 </button>
               </div>
 
+              {/* Bar Pintasan Cepat ke 2 Produk Utama + Kontrol Ukuran Huruf (A- / A+ Ukuran Teks Nyaman) */}
+              <div className="px-6 sm:px-10 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[11px] font-semibold text-slate-500 mr-1 hidden sm:inline">
+                    Pintas Cepat:
+                  </span>
+                  {hasKaromah && (
+                    <button
+                      type="button"
+                      onClick={() => jumpToSectionInModal('seksi-karomah-makam')}
+                      className="px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-800 hover:text-emerald-800 border border-slate-200 text-[11px] font-semibold transition-colors cursor-pointer"
+                    >
+                      Kesaksian Karomah ↓
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => jumpToSectionInModal('seksi-barokah-doa-makam')}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] font-semibold transition-colors cursor-pointer"
+                  >
+                    Barokah &amp; Doa Khusus (Rp 5.000) ↓
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1 ml-auto">
+                  <span className="text-[11px] text-slate-500 mr-1 hidden md:inline">
+                    Ukuran Teks Nyaman:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={cycleFontSizeDown}
+                    disabled={readingFontSize === 'base'}
+                    className="px-2 py-1 rounded-md bg-white border border-slate-200 text-[11px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 cursor-pointer"
+                    title="Perkecil Ukuran Huruf (A-)"
+                  >
+                    A-
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cycleFontSizeUp}
+                    disabled={readingFontSize === 'xl'}
+                    className="px-2 py-1 rounded-md bg-white border border-slate-200 text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-40 cursor-pointer"
+                    title="Perbesar Ukuran Huruf (A+)"
+                  >
+                    A+
+                  </button>
+                </div>
+              </div>
+
               {/* Main Reader Scroll Area */}
-              <div className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-6 sm:px-10 md:px-12 py-7 sm:py-9 bg-[#FAF8F5]">
+              <div className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-6 sm:px-10 md:px-12 py-7 sm:py-9 bg-slate-50">
                 {activeTab === 'kisah_utama' && (
                   <motion.article
                     initial={{ opacity: 0 }}
@@ -601,23 +768,31 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     className="max-w-[65ch] mx-auto"
                   >
                     {/* Babak I — Jejak Kehidupan & Perjuangan */}
-                    <header className="mb-6 pb-5 border-b border-stone-200/70">
+                    <header className="mb-6 pb-5 border-b border-slate-200">
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <span className="text-[11px] font-medium uppercase tracking-widest text-emerald-800">
                           {site.era || 'Khazanah Sejarah Waliyullah'}
                         </span>
                         <button
                           type="button"
-                          onClick={() => setLargeReadingText((prev) => !prev)}
-                          className="text-xs text-stone-500 hover:text-stone-900 underline underline-offset-4 cursor-pointer"
+                          onClick={() =>
+                            setReadingFontSize((prev) =>
+                              prev === 'base' ? 'lg' : prev === 'lg' ? 'xl' : 'base'
+                            )
+                          }
+                          className="text-xs text-slate-600 hover:text-slate-900 underline underline-offset-4 cursor-pointer"
                         >
-                          {largeReadingText ? 'Ukuran Teks: Besar' : 'Perbesar Huruf (A+)'}
+                          {readingFontSize === 'base'
+                            ? 'Perbesar Huruf (A+)'
+                            : readingFontSize === 'lg'
+                              ? 'Ukuran Teks: Besar (A+)'
+                              : 'Ukuran Teks: Sangat Besar (Reset)'}
                         </button>
                       </div>
-                      <h1 className="font-serif text-2xl sm:text-3xl text-stone-900 leading-snug">
+                      <h1 className="font-serif text-2xl sm:text-3xl text-slate-900 leading-snug">
                         {site.name}
                       </h1>
-                      <p className="text-xs sm:text-sm text-stone-500 mt-1">
+                      <p className="text-xs sm:text-sm text-slate-600 mt-1">
                         Babak I — Jejak Kehidupan, Dakwah &amp; Perjuangan Beliau
                       </p>
                     </header>
@@ -671,7 +846,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
 
                     {/* Babak II — Kesaksian Karomah & Keajaiban Batin */}
                     {hasKaromah && (
-                      <section className="mt-8 pt-2">
+                      <section id="seksi-karomah-makam" className="mt-8 pt-2 scroll-mt-6">
                         <div className="text-[11px] font-medium uppercase tracking-widest text-emerald-800">
                           Keteladanan Spiritual
                         </div>
@@ -782,7 +957,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     )}
 
                     {/* Seksi Mengalir Tepat Setelah Karomah: Barokah Hajat & Doa Khusus (Rp 5.000) */}
-                    {renderBarokahDoaSection()}
+                    {renderBarokahDoaSection('seksi-barokah-doa-makam')}
 
                     {/* Babak III — Wasiat Rahasia & Naskah Khusus */}
                     {hasUntold && (

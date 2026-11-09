@@ -223,20 +223,140 @@ export function getSiteBarokahHajat(site: ZiarahSite): string {
  * Mengembalikan daftar `doaKhusus` makam. Jika makam belum memiliki item `doaKhusus` kustom di database,
  * fungsi ini menghasilkan bacaan Tawassul, Wirid & Doa Munajat Hajat Khusus yang relevan untuk makam tersebut.
  */
+export interface EnrichedDoaKhususItem {
+  title: string;
+  text: string;
+  latin: string;
+  translation: string;
+}
+
+export interface CompleteBarokahGuide {
+  tataCaraWaktu: string[];
+  doaItems: EnrichedDoaKhususItem[];
+  wiridPenutupAdab: string[];
+}
+
+/**
+ * Mengembalikan daftar `doaKhusus` makam yang dilengkapi transliterasi Latin dan doa hajat kontekstual.
+ */
 export function getEffectiveSiteDoaKhusus(
   site: ZiarahSite
-): { title: string; text: string; translation?: string }[] {
-  if (Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0) {
-    return site.doaKhusus;
+): { title: string; text: string; latin?: string; translation?: string }[] {
+  return getSiteCompleteBarokahGuide(site).doaItems;
+}
+
+/**
+ * Menghasilkan 3 Bagian Panduan Amalan Lengkap untuk seksi Barokah & Doa Khusus (Rp 5.000):
+ * 1) Tata Cara & Waktu Terbaik Bertawassul Hajat di {site.name}
+ * 2) Lafaz Bacaan Tawassul & Doa Khusus Hajat (Arab Naskh, Transliterasi Latin, Terjemahan Menyentuh Hati)
+ * 3) Wirid Penutup & Adab Pulang Ziarah
+ */
+export function getSiteCompleteBarokahGuide(site: ZiarahSite): CompleteBarokahGuide {
+  const corpus = `${site.id} ${site.title} ${site.name} ${site.description} ${site.history || ''}`.toLowerCase();
+
+  let contextualDoa: EnrichedDoaKhususItem = {
+    title: `Doa Munajat Wasilah Hajat & Keberkahan di ${site.title}`,
+    text: 'اللّٰهُمَّ إِنِّي أَسْأَلُكَ وَأَتَوَجَّهُ إِلَيْكَ بِنَبِيِّكَ مُحَمَّدٍ نَبِيِّ الرَّحْمَةِ، وَبِكَرَامَةِ أَوْلِيَائِكَ الصَّالِحِينَ أَهْلِ هٰذِهِ الْمَقْبَرَةِ، أَنْ تَقْضِيَ حَاجَاتِنَا وَتَفْتَحَ لَنَا أَبْوَابَ الْخَيْرِ وَالتَّيْسِيرِ وَالْبَرَكَةِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ',
+    latin:
+      "Allaahumma innii as-aluka wa atawajjahu ilaika bi nabiyyika Muhammadin nabiyyir-rahmah, wa bi karaamati auliyaa-ikash-shaalihiina ahli haadzihil-maqbarah, an taqdhiya haajaatinaa wa taftaha lanaa abwaabal-khairi wat-taisiiri wal-barakati fid-diini wad-dun-yaa wal-aakhirah.",
+    translation:
+      `Ya Allah, sesungguhnya aku memohon dan menghadapkan diri kepada-Mu dengan wasilah Nabi-Mu Muhammad pembawa rahmat, serta dengan kemuliaan para kekasih-Mu yang shalih penghuni maqbarah ini (${site.name}), kabulkanlah hajat-hajat kami, dan bukakanlah bagi kami pintu-pintu kebaikan, kemudahan, serta keberkahan dalam agama, dunia, dan akhirat.`,
+  };
+
+  if (
+    corpus.includes('drajat') ||
+    corpus.includes('kuncung') ||
+    corpus.includes('malik ibrahim') ||
+    corpus.includes('gresik') ||
+    corpus.includes('giri') ||
+    corpus.includes('dagang') ||
+    corpus.includes('niaga')
+  ) {
+    contextualDoa = {
+      title: `Doa Khusus Wasilah Kelapangan Rezeki, Perniagaan & Lunas Hutang di ${site.title}`,
+      text: 'اللّٰهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ، اللّٰهُمَّ يَا فَتَّاحُ يَا رَزَّاقُ بَارِكْ لَنَا فِي تِجَارَتِنَا وَأَرْزَاقِنَا كَمَا بَارَكْتَ لِأَوْلِيَائِكَ الصَّالِحِينَ وَاقْضِ عَنَّا الدَّيْنَ وَأَغْنِنَا مِنَ الْفَقْرِ',
+      latin:
+        "Allaahummakfinii bi halaalika 'an haraamik, wa aghninii bi fadhlika 'amman siwaak. Allaahumma yaa Fattaahu yaa Razzaaqu baarik lanaa fii tijaaratinaa wa arzaaqinaa kamaa baarakta li auliyaa-ikash-shaalihiin, waqdhi 'annad-daina wa aghninaa minal-faqr.",
+      translation:
+        'Ya Allah, cukupkanlah aku dengan rezeki halal-Mu sehingga terjaga dari yang haram, dan kayakanlah aku dengan karunia-Mu sehingga tidak bergantung kepada selain-Mu. Wahai Dzat Maha Pembuka pintu rezeki, berkahilah usaha dan perniagaan kami sebagaimana Engkau memberkahi para kekasih-Mu yang shalih, lunaskanlah seluruh tanggungan hutang kami, dan angkatlah kami dari kefakiran.',
+    };
+  } else if (
+    corpus.includes('muria') ||
+    corpus.includes('kwitang') ||
+    corpus.includes('empang bogor') ||
+    corpus.includes('ayu') ||
+    corpus.includes('nyai') ||
+    corpus.includes('ratu')
+  ) {
+    contextualDoa = {
+      title: `Doa Khusus Wasilah Kemudahan Jodoh Shalih & Keluarga Sakinah di ${site.title}`,
+      text: 'رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا ۝ اللّٰهُمَّ أَلِّفْ بَيْنَ قُلُوبِنَا وَأَصْلِحْ ذَاتَ بَيْنِنَا وَارْزُقْنَا زَوْجًا صَالِحًا وَمَوَدَّةً وَرَحْمَةً وَسَكِينَةً دَائِمَةً',
+      latin:
+        "Rabbanaa hab lanaa min azwaajinaa wa dzurriyyaatinaa qurrata a'yunin waj'alnaa lil-muttaqiina imaamaa. Allaahumma allif baina quluubinaa wa ashlih dzaata baininaa warzuqnaa zaujan shaalihan wa mawaddatan wa rahmatan wa sakiinatan daa-imah.",
+      translation:
+        'Ya Tuhan kami, anugerahkanlah kepada kami pasangan hidup dan keturunan yang menjadi penyejuk mata kami, dan jadikanlah kami pemimpin bagi orang-orang yang bertakwa. Ya Allah, tautkanlah hati kami dalam kasih sayang, damaikanlah rumah tangga kami, dan karuniakanlah pendamping hidup yang shalih/shalihah beserta ketenteraman batin yang abadi.',
+    };
+  } else if (
+    corpus.includes('kholil') ||
+    corpus.includes('hamid') ||
+    corpus.includes('pasuruan') ||
+    corpus.includes('hasyim asy') ||
+    corpus.includes('tebuireng') ||
+    corpus.includes('ampel') ||
+    corpus.includes('bonang') ||
+    corpus.includes('sekumpul')
+  ) {
+    contextualDoa = {
+      title: `Doa Khusus Wasilah Ilmu Bermanfaat, Keturunan Ahlul Qur'an & Jalan Keluar di ${site.title}`,
+      text: 'اللّٰهُمَّ انْفَعْنَا بِمَا عَلَّمْتَنَا وَعَلِّمْنَا مَا يَنْفَعُنَا وَزِدْنَا عِلْمًا نَافِعًا وَعَمَلًا مُتَقَبَّلًا، وَأَفِضْ عَلَيْنَا مِنْ بَرَكَاتِ عُلَمَائِكَ وَأَوْلِيَائِكَ الصَّالِحِينَ، وَاجْعَلْ لَنَا مِنْ كُلِّ هَمٍّ فَرَجًا وَمِنْ كُلِّ ضِيقٍ مَخْرَجًا',
+      latin:
+        "Allaahummanfa'naa bimaa 'allamtanaa wa 'allimnaa maa yanfa'unaa wa zidnaa 'ilman naafi'an wa 'amalan mutaqabbalaa, wa afidh 'alainaa min barakaati 'ulamaa-ika wa auliyaa-ikash-shaalihiin, waj'al lanaa min kulli hammin farajan wa min kulli dhiiqin makhrajaa.",
+      translation:
+        'Ya Allah, berikanlah kemanfaatan atas ilmu yang telah Engkau ajarkan kepada kami, ajarkanlah ilmu yang membawa maslahat bagi kami, limpahkanlah kepada keluarga dan keturunan kami keberkahan ilmu para ulama dan kekasih-Mu yang shalih, serta bukakanlah kelapangan dari setiap kesedihan dan jalan keluar dari setiap kesempitan hidup.',
+    };
   }
 
-  return [
-    {
-      title: `Tawassul & Munajat Hajat Khusus di ${site.title}`,
-      text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ وَلِيِّ اللهِ الصَّالِحِ صَاحِبِ هٰذِهِ الْمَقْبَرَةِ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ ۝ اللّٰهُمَّ إِنِّي أَسْأَلُكَ وَأَتَوَجَّهُ إِلَيْكَ بِنَبِيِّكَ مُحَمَّدٍ نَبِيِّ الرَّحْمَةِ وَبِأَوْلِيَائِكَ الصَّالِحِينَ أَنْ تَقْضِيَ حَاجَاتِنَا وَتُيَسِّرَ أُمُورَنَا وَتَشْرَحَ صُدُورَنَا',
-      translation: `Kaifiyah & Arti: Hadiahkan Al-Fatihah 1x kepada Rasulullah SAW dan 1x khusus kepada ${site.name} (${site.title}), lanjutkan membaca Surat Al-Ikhlas 3x, Al-Falaq 1x, An-Nas 1x, dan Shalawat Nabi 11x. Artinya: "Ya Allah, sesungguhnya aku memohon kepada-Mu dan menghadapkan diri kepada-Mu dengan wasilah Nabi-Mu Muhammad Nabi pembawa rahmat serta para kekasih-Mu yang shalih, kabulkanlah hajat-hajat kami, mudahkanlah segala urusan kami, dan lapangkanlah dada kami."`,
-    },
-  ];
+  const baseItems: EnrichedDoaKhususItem[] = [];
+
+  if (Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0) {
+    site.doaKhusus.forEach((d) => {
+      baseItems.push({
+        title: d.title,
+        text: d.text,
+        latin:
+          `Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhi waliyullaahish-shaalih ${site.name} (${site.title}), syai-un lillaahi lahumul-Faatihah. Allaahummaghfir lahu warhamhu wa'fu 'anhu wanfa'naa bi asraarihii wa anwaarihii wa 'uluumihii fid-diini wad-dun-yaa wal-aakhirah.`,
+        translation:
+          d.translation ||
+          `Ya Allah, ampunilah dan muliakanlah derajat beliau (${site.name}), serta limpahkanlah kepada kami keberkahan ilmu, keteladanan, dan rahasia keshalihan beliau di dunia hingga akhirat.`,
+      });
+    });
+  } else {
+    baseItems.push({
+      title: `Hadoroh & Tawassul Khusus di Pusara ${site.name}`,
+      text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ وَلِيِّ اللهِ الصَّالِحِ صَاحِبِ هٰذِهِ الْمَقْبَرَةِ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ ۝ اللّٰهُمَّ اغْفِرْ لَهُ وَارْحَمْهُ وَعَافِهِ وَاعْفُ عَنْهُ وَانْفَعْنَا بِأَسْرَارِهِ وَأَنْوَارِهِ وَعُلُومِهِ وَبَرَكَاتِهِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ',
+      latin:
+        `Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhi waliyullaahish-shaalih ${site.name} shaahibi haadzihil-maqbarah, syai-un lillaahi lahumul-Faatihah. Allaahummaghfir lahu warhamhu wa 'aafihi wa'fu 'anhu wanfa'naa bi asraarihii wa anwaarihii wa 'uluumihii wa barakaatihii fid-diini wad-dun-yaa wal-aakhirah.`,
+      translation:
+        `Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh kekasih Allah yang shalih penghuni maqbarah ini (${site.name}), Al-Fatihah. Ya Allah, muliakanlah beliau dan limpahkanlah kepada kami keberkahan ilmu, cahaya ketakwaan, dan kemuliaan akhlak beliau dalam urusan agama, dunia, dan akhirat.`,
+    });
+  }
+
+  if (baseItems.length === 1) {
+    baseItems.push(contextualDoa);
+  }
+
+  return {
+    tataCaraWaktu: [
+      `Waktu Utama Mustajab: Dianjurkan berziarah pada Kamis sore (malam Jumat), bakda Subuh ketika suasana maqbarah ${site.title} masih hening, atau sepertiga malam terakhir.`,
+      `Persiapan & Adab Masuk: Menjaga wudhu sejak dari rumah/tempat wudhu kompleks, mengucapkan salam ziarah kubur di ambang cungkup, kemudian duduk tenang menghadap kiblat atau ke arah pusara dengan penuh takzim.`,
+      `Urutan Pembacaan: Awali dengan Istighfar 3x, Shalawat Nabi 11x, Hadoroh Al-Fatihah kepada Rasulullah SAW, keluarga & sahabat beliau, lalu khususkan Al-Fatihah kepada ${site.name} sebelum membaca Yasin, Tahlil, dan Doa Khusus Hajat di bawah ini.`,
+    ],
+    doaItems: baseItems,
+    wiridPenutupAdab: [
+      `Wirid Penutup Hajat: Sebelum beranjak, baca "Yaa Hayyu Yaa Qayyuum bi rahmatika astaghiits" (11x), Shalawat Thibbil Qulub / Al-Fatih (7x), dan tutup dengan Al-Fatihah (1x) sambil menghadirkan hajat keluarga di dalam hati.`,
+      `Adab Pulang & Menjaga Keberkahan: Mundur perlahan dengan sopan tanpa membelakangi cungkup secara tergesa-gesa, sisihkan infaq seikhlasnya untuk pemeliharaan maqbarah atau fakir miskin di sekitar lokasi sebagai penyempurna wasilah doa.`,
+    ],
+  };
 }
 
 /**
