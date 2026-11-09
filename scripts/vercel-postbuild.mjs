@@ -8,24 +8,32 @@ const initCwd = process.env.INIT_CWD ? path.resolve(process.env.INIT_CWD) : cwd;
 const rootDist = path.resolve(cwd, 'dist');
 const rootPublic = path.resolve(cwd, 'public');
 
-if (!fs.existsSync(rootDist)) {
+if (!process.env.VITEST && !fs.existsSync(rootDist)) {
   console.error('[postbuild] Error: dist directory was not generated at', rootDist);
   process.exit(1);
 }
 
 // Strip temporary chat screenshot attachments from production dist/
 const tempAistudioAssets = path.join(rootDist, 'assets', 'aistudio');
-if (fs.existsSync(tempAistudioAssets)) {
+if (!process.env.VITEST && fs.existsSync(tempAistudioAssets)) {
   fs.rmSync(tempAistudioAssets, { recursive: true, force: true });
 }
 
-function escapeXml(str) {
+export function escapeXml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
+}
+
+export function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function slugifySiteText(input) {
@@ -45,15 +53,31 @@ function getSiteSlug(title, city, id) {
   return `${titleSlug}-${citySlug}`;
 }
 
-function extractSitesFromSource() {
-  const sitesFile = path.resolve(cwd, 'src', 'data', 'sites.ts');
+export function cleanSeoText(val) {
+  return String(val || '')
+    .replace(/\\'/g, "'")
+    .replace(/\\"/g, '"')
+    .replace(/<!--more-->/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function extractQuotedField(block, fieldName, fallback = '') {
+  const regex = new RegExp(`\\b${fieldName}:\\s*(['"])((?:\\\\.|(?!\\1).)*)\\1`);
+  const m = block.match(regex);
+  if (!m) return fallback;
+  return cleanSeoText(m[2]) || fallback;
+}
+
+export function extractSitesFromSource(customSitesFile) {
+  const sitesFile = customSitesFile || path.resolve(cwd, 'src', 'data', 'sites.ts');
   if (!fs.existsSync(sitesFile)) return [];
   const raw = fs.readFileSync(sitesFile, 'utf8');
-  const idRegex = /\bid:\s*["']([^"']+)["']/g;
+  const idRegex = /\bid:\s*(['"])((?:\\.|(?!\1).)*)\1/g;
   const positions = [];
   let match;
   while ((match = idRegex.exec(raw)) !== null) {
-    positions.push({ id: match[1].trim(), index: match.index });
+    positions.push({ id: cleanSeoText(match[2]), index: match.index });
   }
   const seen = new Set();
   const result = [];
@@ -63,16 +87,16 @@ function extractSitesFromSource() {
     seen.add(id);
     const nextIndex = i + 1 < positions.length ? positions[i + 1].index : raw.length;
     const block = raw.slice(index, nextIndex);
-    const name = block.match(/\bname:\s*["']([^"']+)["']/)?.[1]?.trim() || id;
-    const title = block.match(/\btitle:\s*["']([^"']+)["']/)?.[1]?.trim() || id;
-    const category = block.match(/\bcategory:\s*["']([^"']+)["']/)?.[1]?.trim() || 'Waliyullah Nusantara';
-    const description = block.match(/\bdescription:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
-    const history = block.match(/\bhistory:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
-    const address = block.match(/\baddress:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
-    const city = block.match(/\bcity:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
-    const province = block.match(/\bprovince:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
-    const era = block.match(/\bera:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
-    const sanad = block.match(/\bsanad:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
+    const name = extractQuotedField(block, 'name', id);
+    const title = extractQuotedField(block, 'title', id);
+    const category = extractQuotedField(block, 'category', 'Waliyullah Nusantara');
+    const description = extractQuotedField(block, 'description', '');
+    const history = extractQuotedField(block, 'history', '');
+    const address = extractQuotedField(block, 'address', '');
+    const city = extractQuotedField(block, 'city', '');
+    const province = extractQuotedField(block, 'province', '');
+    const era = extractQuotedField(block, 'era', '');
+    const sanad = extractQuotedField(block, 'sanad', '');
     const slug = getSiteSlug(title, city, id);
     result.push({
       id,
@@ -169,7 +193,7 @@ const staticRoutes = [
 
 function parseFirestoreStringField(fields, key, fallback = '') {
   const val = fields?.[key]?.stringValue;
-  return typeof val === 'string' && val.trim() ? val.trim() : fallback;
+  return typeof val === 'string' && val.trim() ? cleanSeoText(val) : fallback;
 }
 
 async function fetchCloudSitesForSeo(localSites) {
@@ -279,7 +303,7 @@ async function fetchCloudSitesForSeo(localSites) {
 }
 
 const localExtractedSites = extractSitesFromSource();
-const sites = await fetchCloudSitesForSeo(localExtractedSites);
+const sites = process.env.VITEST ? localExtractedSites : await fetchCloudSitesForSeo(localExtractedSites);
 
 function buildDirectoryLinksHtml() {
   const provinces = Array.from(new Set(sites.map((s) => s.province))).sort();
@@ -292,12 +316,12 @@ function buildDirectoryLinksHtml() {
           const provSites = sites.filter((s) => s.province === prov);
           return `
             <div>
-              <h3>Daftar Lokasi Ziarah Makam Wali di Provinsi ${escapeXml(prov)} (${provSites.length} Situs)</h3>
+              <h3>Daftar Lokasi Ziarah Makam Wali di Provinsi ${escapeHtml(prov)} (${provSites.length} Situs)</h3>
               <ul>
                 ${provSites
                   .map(
                     (s) =>
-                      `<li><a href="${SITE_ORIGIN}/situs/${escapeXml(s.slug)}">Panduan Rute dan Sejarah Makam ${escapeXml(s.title)} di Kota ${escapeXml(s.city)}, Provinsi ${escapeXml(s.province)}</a></li>`
+                      `<li><a href="${SITE_ORIGIN}/situs/${escapeHtml(s.slug)}">Panduan Rute dan Sejarah Makam ${escapeHtml(s.title)} di Kota ${escapeHtml(s.city)}, Provinsi ${escapeHtml(s.province)}</a></li>`
                   )
                   .join('\n                ')}
               </ul>
@@ -371,159 +395,137 @@ function buildPanduanRootHtml() {
 function buildSiteRootHtml(site) {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <article>
-          <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori Provinsi ${escapeXml(site.province)}</a> &rsaquo; Makam ${escapeXml(site.title)}</p>
-          <h1>Makam ${escapeXml(site.title)} (${escapeXml(site.name)}) — ${escapeXml(site.city)}, ${escapeXml(site.province)}</h1>
-          <p><strong>Kategori Tokoh:</strong> ${escapeXml(site.category)} ${site.era ? `| <strong>Periode Sejarah:</strong> ${escapeXml(site.era)}` : ''}</p>
-          <p><strong>Alamat Lokasi Pemakaman:</strong> ${escapeXml(site.address)}, Kota/Kabupaten ${escapeXml(site.city)}, Provinsi ${escapeXml(site.province)}, Indonesia.</p>
-          <h2>Profil, Riwayat Dakwah, dan Sejarah ${escapeXml(site.title)}</h2>
-          <p>${escapeXml(site.description)}</p>
-          <p>${escapeXml(site.history)}</p>
-          ${site.sanad ? `<h2>Sanad Keilmuan dan Jaringan Dakwah</h2><p>${escapeXml(site.sanad)}</p>` : ''}
+          <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori Provinsi ${escapeHtml(site.province)}</a> &rsaquo; Makam ${escapeHtml(site.title)}</p>
+          <h1>Makam ${escapeHtml(site.title)} (${escapeHtml(site.name)}) — ${escapeHtml(site.city)}, ${escapeHtml(site.province)}</h1>
+          <p><strong>Kategori Tokoh:</strong> ${escapeHtml(site.category)} ${site.era ? `| <strong>Periode Sejarah:</strong> ${escapeHtml(site.era)}` : ''}</p>
+          <p><strong>Alamat Lokasi Pemakaman:</strong> ${escapeHtml(site.address)}, Kota/Kabupaten ${escapeHtml(site.city)}, Provinsi ${escapeHtml(site.province)}, Indonesia.</p>
+          <h2>Profil, Riwayat Dakwah, dan Sejarah ${escapeHtml(site.title)}</h2>
+          <p>${escapeHtml(site.description)}</p>
+          <p>${escapeHtml(site.history)}</p>
+          ${site.sanad ? `<h2>Sanad Keilmuan dan Jaringan Dakwah</h2><p>${escapeHtml(site.sanad)}</p>` : ''}
           <p><a href="${SITE_ORIGIN}/panduan">Baca Panduan Doa Ziarah Kubur Lengkap (Arab, Latin, dan Artinya)</a> | <a href="${SITE_ORIGIN}/peta">Buka Peta Rute Perjalanan Ziarah</a></p>
         </article>
       </main>`;
 }
 
-// Build canonical URL list for XML, TXT, and RSS sitemaps
-const allEntries = [
-  ...staticRoutes.map((r) => ({
-    loc: `${SITE_ORIGIN}${r.path === '/' ? '/' : r.path}`,
-    canonicalLoc:
-      r.path === '/direktori'
-        ? `${SITE_ORIGIN}/`
-        : r.path === '/infaq'
-          ? `${SITE_ORIGIN}/donasi`
-          : `${SITE_ORIGIN}${r.path === '/' ? '/' : r.path}`,
-    isAliasRoute: r.path === '/direktori' || r.path === '/infaq',
-    changefreq: r.changefreq,
-    priority: r.priority,
-    title: r.title,
-    description: r.description,
-    path: r.path,
-    bodyHtml:
-      r.path === '/panduan'
-        ? buildPanduanRootHtml()
-        : r.path === '/direktori'
-          ? buildDirektoriRootHtml()
-          : buildHomepageRootHtml(),
-  })),
-  ...sites.map((s) => ({
-    loc: `${SITE_ORIGIN}/situs/${encodeURIComponent(s.slug)}`,
-    canonicalLoc: `${SITE_ORIGIN}/situs/${encodeURIComponent(s.slug)}`,
-    isAliasRoute: false,
-    changefreq: 'weekly',
-    priority: '0.8',
-    title: `Makam ${s.title} (${s.city}, ${s.province}) — Rute, Kisah Karomah & Doa Ziarah | Ziarah Nusantara`,
-    description: `${s.description} Lokasi: ${s.address}, ${s.city}, ${s.province}. Lengkap dengan peta rute, riwayat karomah, dan doa tawassul.`,
-    path: `/situs/${s.slug}`,
-    legacyPath: `/makam/${s.id}`,
-    bodyHtml: buildSiteRootHtml(s),
-  })),
-];
+function buildRouteJsonLd(entry) {
+  const canonicalHref = entry.canonicalLoc || entry.loc;
+  const fullImageUrl = `${SITE_ORIGIN}/pwa-512x512.png`;
+  const graphNodes = [
+    {
+      '@type': 'Organization',
+      '@id': `${SITE_ORIGIN}/#organization`,
+      name: 'Ziarah Nusantara',
+      legalName: 'Tim Kurator Arsip Ziarah Nusantara',
+      url: `${SITE_ORIGIN}/`,
+      logo: {
+        '@type': 'ImageObject',
+        '@id': `${SITE_ORIGIN}/#logo`,
+        url: fullImageUrl,
+        contentUrl: fullImageUrl,
+        width: 512,
+        height: 512,
+      },
+      image: { '@id': `${SITE_ORIGIN}/#logo` },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_ORIGIN}/#website`,
+      url: `${SITE_ORIGIN}/`,
+      name: 'Ziarah Nusantara',
+      description: cleanSeoText(entry.description),
+      inLanguage: 'id-ID',
+      publisher: { '@id': `${SITE_ORIGIN}/#organization` },
+    },
+    {
+      '@type': 'WebPage',
+      '@id': `${canonicalHref}#webpage`,
+      url: canonicalHref,
+      name: cleanSeoText(entry.title),
+      description: cleanSeoText(entry.description),
+      inLanguage: 'id-ID',
+      isPartOf: { '@id': `${SITE_ORIGIN}/#website` },
+      primaryImageOfPage: { '@id': `${SITE_ORIGIN}/#logo` },
+      thumbnailUrl: fullImageUrl,
+    },
+  ];
 
-const sitemapEntries = allEntries.filter((e) => !e.isAliasRoute);
-
-// 1. Generate standards-compliant sitemap XML
-const xmlLines = [
-  '<?xml version="1.0" encoding="UTF-8"?>',
-  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...sitemapEntries.map((entry) => `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n  </url>`),
-  '</urlset>',
-  '',
-];
-const sitemapXmlContent = xmlLines.join('\n');
-
-// 1b. Generate Sitemap Index file (sitemap_index.xml)
-const sitemapIndexLines = [
-  '<?xml version="1.0" encoding="UTF-8"?>',
-  '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  '  <sitemap>',
-  `    <loc>${SITE_ORIGIN}/sitemap.xml</loc>`,
-  '  </sitemap>',
-  '</sitemapindex>',
-  '',
-];
-const sitemapIndexContent = sitemapIndexLines.join('\n');
-
-// 2. Generate plain-text sitemap.txt
-const sitemapTxtContent = sitemapEntries.map((entry) => entry.loc).join('\n') + '\n';
-
-// 3. Generate RSS 2.0 feed (rss.xml) — also supported by Google Search Console as a Sitemap
-const rssLines = [
-  '<?xml version="1.0" encoding="UTF-8"?>',
-  '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
-  '  <channel>',
-  '    <title>Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali</title>',
-  `    <link>${SITE_ORIGIN}/</link>`,
-  '    <description>Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil &amp; Tawassul, serta peta rute &amp; kisah karomah 96 makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia.</description>',
-  '    <language>id-ID</language>',
-  `    <atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml" />`,
-  ...sitemapEntries.map(
-    (entry) =>
-      `    <item>\n      <title>${escapeXml(entry.title)}</title>\n      <link>${escapeXml(entry.loc)}</link>\n      <guid isPermaLink="true">${escapeXml(entry.loc)}</guid>\n      <description>${escapeXml(entry.description)}</description>\n    </item>`
-  ),
-  '  </channel>',
-  '</rss>',
-  '',
-];
-const rssXmlContent = rssLines.join('\n');
-
-// Write generated sitemaps to both public/ and dist/
-for (const targetFolder of [rootPublic, rootDist]) {
-  if (fs.existsSync(targetFolder)) {
-    fs.writeFileSync(path.join(targetFolder, 'sitemap.xml'), sitemapXmlContent, 'utf8');
-    fs.writeFileSync(path.join(targetFolder, 'peta-situs.xml'), sitemapXmlContent, 'utf8');
-    fs.writeFileSync(path.join(targetFolder, 'sitemap-utama.xml'), sitemapXmlContent, 'utf8');
-    fs.writeFileSync(path.join(targetFolder, 'sitemap_index.xml'), sitemapIndexContent, 'utf8');
-    fs.writeFileSync(path.join(targetFolder, 'sitemap.txt'), sitemapTxtContent, 'utf8');
-    fs.writeFileSync(path.join(targetFolder, 'rss.xml'), rssXmlContent, 'utf8');
+  if (entry.site) {
+    graphNodes.push({
+      '@type': 'TouristAttraction',
+      '@id': `${canonicalHref}#place`,
+      name: `Makam ${cleanSeoText(entry.site.title)} (${cleanSeoText(entry.site.name)})`,
+      description: cleanSeoText(entry.site.description),
+      url: canonicalHref,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: cleanSeoText(entry.site.address),
+        addressLocality: cleanSeoText(entry.site.city),
+        addressRegion: cleanSeoText(entry.site.province),
+        addressCountry: 'ID',
+      },
+    });
   }
+
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': graphNodes,
+  });
 }
 
-function renderCustomHtml(baseHtml, entry) {
+export function renderCustomHtml(baseHtml, entry) {
   const canonicalHref = entry.canonicalLoc || entry.loc;
+  const cleanTitle = cleanSeoText(entry.title);
+  const cleanDesc = cleanSeoText(entry.description);
   let html = baseHtml
-    .replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeXml(entry.title)}</title>`)
+    .replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(cleanTitle)}</title>`)
     .replace(
       /<meta name="description" content="[^"]*"\s*\/?>/i,
-      `<meta name="description" content="${escapeXml(entry.description)}" />`
+      `<meta name="description" content="${escapeHtml(cleanDesc)}" />`
     )
     .replace(
       /<link rel="canonical" id="canonical-link" href="[^"]*"\s*\/?>/i,
-      `<link rel="canonical" id="canonical-link" href="${escapeXml(canonicalHref)}" />`
+      `<link rel="canonical" id="canonical-link" href="${escapeHtml(canonicalHref)}" />`
     )
     .replace(
       /<link rel="alternate" hreflang="id-ID" id="hreflang-id" href="[^"]*"\s*\/?>/i,
-      `<link rel="alternate" hreflang="id-ID" id="hreflang-id" href="${escapeXml(canonicalHref)}" />`
+      `<link rel="alternate" hreflang="id-ID" id="hreflang-id" href="${escapeHtml(canonicalHref)}" />`
     )
     .replace(
       /<link rel="alternate" hreflang="id" id="hreflang-id-short" href="[^"]*"\s*\/?>/i,
-      `<link rel="alternate" hreflang="id" id="hreflang-id-short" href="${escapeXml(canonicalHref)}" />`
+      `<link rel="alternate" hreflang="id" id="hreflang-id-short" href="${escapeHtml(canonicalHref)}" />`
     )
     .replace(
       /<link rel="alternate" hreflang="x-default" id="hreflang-default" href="[^"]*"\s*\/?>/i,
-      `<link rel="alternate" hreflang="x-default" id="hreflang-default" href="${escapeXml(canonicalHref)}" />`
+      `<link rel="alternate" hreflang="x-default" id="hreflang-default" href="${escapeHtml(canonicalHref)}" />`
     )
     .replace(
       /<meta property="og:title" id="og-title" content="[^"]*"\s*\/?>/i,
-      `<meta property="og:title" id="og-title" content="${escapeXml(entry.title)}" />`
+      `<meta property="og:title" id="og-title" content="${escapeHtml(cleanTitle)}" />`
     )
     .replace(
       /<meta property="og:description" id="og-description" content="[^"]*"\s*\/?>/i,
-      `<meta property="og:description" id="og-description" content="${escapeXml(entry.description)}" />`
+      `<meta property="og:description" content="${escapeHtml(cleanDesc)}" />`
     )
     .replace(
       /<meta property="og:url" id="og-url" content="[^"]*"\s*\/?>/i,
-      `<meta property="og:url" id="og-url" content="${escapeXml(entry.loc)}" />`
+      `<meta property="og:url" id="og-url" content="${escapeHtml(entry.loc)}" />`
     )
     .replace(
       /<meta name="twitter:title" id="twitter-title" content="[^"]*"\s*\/?>/i,
-      `<meta name="twitter:title" id="twitter-title" content="${escapeXml(entry.title)}" />`
+      `<meta name="twitter:title" id="twitter-title" content="${escapeHtml(cleanTitle)}" />`
     )
     .replace(
       /<meta name="twitter:description" id="twitter-description" content="[^"]*"\s*\/?>/i,
-      `<meta name="twitter:description" id="twitter-description" content="${escapeXml(entry.description)}" />`
+      `<meta name="twitter:description" id="twitter-description" content="${escapeHtml(cleanDesc)}" />`
     );
+
+  if (entry.site) {
+    html = html.replace(
+      /<script type="application\/ld\+json" id="schema-jsonld">[\s\S]*?<\/script>/i,
+      `<script type="application/ld+json" id="schema-jsonld">${buildRouteJsonLd(entry)}</script>`
+    );
+  }
 
   if (entry.bodyHtml) {
     html = html.replace(
@@ -534,96 +536,211 @@ function renderCustomHtml(baseHtml, entry) {
   return html;
 }
 
-// 4. Pre-generate route-specific index.html files in dist/ with unique semantic body & metadata
-const baseIndexHtmlPath = path.join(rootDist, 'index.html');
-if (fs.existsSync(baseIndexHtmlPath)) {
-  let baseHtml = fs.readFileSync(baseIndexHtmlPath, 'utf8');
+if (!process.env.VITEST) {
+  // Build canonical URL list for XML, TXT, and RSS sitemaps
+  const allEntries = [
+    ...staticRoutes.map((r) => ({
+      loc: `${SITE_ORIGIN}${r.path === '/' ? '/' : r.path}`,
+      canonicalLoc:
+        r.path === '/direktori'
+          ? `${SITE_ORIGIN}/`
+          : r.path === '/infaq'
+            ? `${SITE_ORIGIN}/donasi`
+            : `${SITE_ORIGIN}${r.path === '/' ? '/' : r.path}`,
+      isAliasRoute: r.path === '/direktori' || r.path === '/infaq',
+      changefreq: r.changefreq,
+      priority: r.priority,
+      title: cleanSeoText(r.title),
+      description: cleanSeoText(r.description),
+      path: r.path,
+      bodyHtml:
+        r.path === '/panduan'
+          ? buildPanduanRootHtml()
+          : r.path === '/direktori'
+            ? buildDirektoriRootHtml()
+            : buildHomepageRootHtml(),
+    })),
+    ...sites.map((s) => {
+      const legacyApostropheSlug = s.title.includes("'")
+        ? getSiteSlug(s.title.split("'")[0], s.city, s.id)
+        : null;
+      return {
+        loc: `${SITE_ORIGIN}/situs/${encodeURIComponent(s.slug)}`,
+        canonicalLoc: `${SITE_ORIGIN}/situs/${encodeURIComponent(s.slug)}`,
+        isAliasRoute: false,
+        changefreq: 'weekly',
+        priority: '0.8',
+        title: cleanSeoText(`Makam ${s.title} (${s.city}, ${s.province}) — Rute, Kisah Karomah & Doa Ziarah | Ziarah Nusantara`),
+        description: cleanSeoText(`${s.description} Lokasi: ${s.address}, ${s.city}, ${s.province}. Lengkap dengan peta rute, riwayat karomah, dan doa tawassul.`),
+        path: `/situs/${s.slug}`,
+        legacyPath: `/makam/${s.id}`,
+        legacyApostrophePath:
+          legacyApostropheSlug && legacyApostropheSlug !== s.slug
+            ? `/situs/${legacyApostropheSlug}`
+            : null,
+        site: s,
+        bodyHtml: buildSiteRootHtml(s),
+      };
+    }),
+  ];
 
-  // Inline the primary blocking CSS file (<link rel="stylesheet" crossorigin href="/assets/index-*.css">)
-  // directly into <head> to eliminate the 190ms render-blocking stylesheet request on mobile 4G.
-  const cssLinkMatch = baseHtml.match(/<link\s+rel="stylesheet"[^>]*href="(\/assets\/index-[^"]+\.css)"[^>]*>/i);
-  if (cssLinkMatch) {
-    const cssHref = cssLinkMatch[1];
-    const cssFilePath = path.join(rootDist, cssHref.replace(/^\/+/, ''));
-    if (fs.existsSync(cssFilePath)) {
-      const cssContent = fs.readFileSync(cssFilePath, 'utf8').trim();
-      baseHtml = baseHtml.replace(
-        cssLinkMatch[0],
-        `<style id="zn-inlined-app-css">${cssContent}</style>`
+  const sitemapEntries = allEntries.filter((e) => !e.isAliasRoute);
+
+  // 1. Generate standards-compliant sitemap XML
+  const xmlLines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...sitemapEntries.map((entry) => `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n  </url>`),
+    '</urlset>',
+    '',
+  ];
+  const sitemapXmlContent = xmlLines.join('\n');
+
+  // 1b. Generate Sitemap Index file (sitemap_index.xml)
+  const sitemapIndexLines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    '  <sitemap>',
+    `    <loc>${SITE_ORIGIN}/sitemap.xml</loc>`,
+    '  </sitemap>',
+    '</sitemapindex>',
+    '',
+  ];
+  const sitemapIndexContent = sitemapIndexLines.join('\n');
+
+  // 2. Generate plain-text sitemap.txt
+  const sitemapTxtContent = sitemapEntries.map((entry) => entry.loc).join('\n') + '\n';
+
+  // 3. Generate RSS 2.0 feed (rss.xml) — also supported by Google Search Console as a Sitemap
+  const rssLines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
+    '  <channel>',
+    '    <title>Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali</title>',
+    `    <link>${SITE_ORIGIN}/</link>`,
+    '    <description>Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil &amp; Tawassul, serta peta rute &amp; kisah karomah 96 makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia.</description>',
+    '    <language>id-ID</language>',
+    `    <atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml" />`,
+    ...sitemapEntries.map(
+      (entry) =>
+        `    <item>\n      <title>${escapeXml(entry.title)}</title>\n      <link>${escapeXml(entry.loc)}</link>\n      <guid isPermaLink="true">${escapeXml(entry.loc)}</guid>\n      <description>${escapeXml(entry.description)}</description>\n    </item>`
+    ),
+    '  </channel>',
+    '</rss>',
+    '',
+  ];
+  const rssXmlContent = rssLines.join('\n');
+
+  // Write generated sitemaps to both public/ and dist/
+  for (const targetFolder of [rootPublic, rootDist]) {
+    if (fs.existsSync(targetFolder)) {
+      fs.writeFileSync(path.join(targetFolder, 'sitemap.xml'), sitemapXmlContent, 'utf8');
+      fs.writeFileSync(path.join(targetFolder, 'peta-situs.xml'), sitemapXmlContent, 'utf8');
+      fs.writeFileSync(path.join(targetFolder, 'sitemap-utama.xml'), sitemapXmlContent, 'utf8');
+      fs.writeFileSync(path.join(targetFolder, 'sitemap_index.xml'), sitemapIndexContent, 'utf8');
+      fs.writeFileSync(path.join(targetFolder, 'sitemap.txt'), sitemapTxtContent, 'utf8');
+      fs.writeFileSync(path.join(targetFolder, 'rss.xml'), rssXmlContent, 'utf8');
+    }
+  }
+
+  // 4. Pre-generate route-specific index.html files in dist/ with unique semantic body & metadata
+  const baseIndexHtmlPath = path.join(rootDist, 'index.html');
+  if (fs.existsSync(baseIndexHtmlPath)) {
+    let baseHtml = fs.readFileSync(baseIndexHtmlPath, 'utf8');
+
+    // Inline the primary blocking CSS file (<link rel="stylesheet" crossorigin href="/assets/index-*.css">)
+    // directly into <head> to eliminate the 190ms render-blocking stylesheet request on mobile 4G.
+    const cssLinkMatch = baseHtml.match(/<link\s+rel="stylesheet"[^>]*href="(\/assets\/index-[^"]+\.css)"[^>]*>/i);
+    if (cssLinkMatch) {
+      const cssHref = cssLinkMatch[1];
+      const cssFilePath = path.join(rootDist, cssHref.replace(/^\/+/, ''));
+      if (fs.existsSync(cssFilePath)) {
+        const cssContent = fs.readFileSync(cssFilePath, 'utf8').trim();
+        baseHtml = baseHtml.replace(
+          cssLinkMatch[0],
+          `<style id="zn-inlined-app-css">${cssContent}</style>`
+        );
+        console.log(`[postbuild] Inlined ${cssHref} (${(cssContent.length / 1024).toFixed(1)} KB) into <head> to eliminate render-blocking CSS.`);
+      }
+    }
+
+    // Inject <link rel="modulepreload"> for the main entry script right before </head> to flatten critical request chain
+    const entryScriptMatch = baseHtml.match(/<script\s+type="module"[^>]*src="(\/assets\/index-[^"]+\.js)"[^>]*>/i);
+    if (entryScriptMatch) {
+      const entryJsHref = entryScriptMatch[1];
+      if (!baseHtml.includes(`href="${entryJsHref}" rel="modulepreload"`) && !baseHtml.includes(`rel="modulepreload" crossorigin href="${entryJsHref}"`)) {
+        baseHtml = baseHtml.replace(
+          '</head>',
+          `    <link rel="modulepreload" crossorigin href="${entryJsHref}" />\n  </head>`
+        );
+      }
+    }
+
+    for (const entry of allEntries) {
+      const routeHtml = renderCustomHtml(baseHtml, entry);
+      if (entry.path === '/') {
+        fs.writeFileSync(baseIndexHtmlPath, routeHtml, 'utf8');
+        continue;
+      }
+      const relativeDir = entry.path.replace(/^\/+/, '');
+      const routeDir = path.join(rootDist, relativeDir);
+      fs.mkdirSync(routeDir, { recursive: true });
+      fs.writeFileSync(path.join(routeDir, 'index.html'), routeHtml, 'utf8');
+
+      // Also pre-generate /makam/<id>/index.html for legacy links
+      if (entry.legacyPath) {
+        const legacyDir = path.join(rootDist, entry.legacyPath.replace(/^\/+/, ''));
+        fs.mkdirSync(legacyDir, { recursive: true });
+        fs.writeFileSync(path.join(legacyDir, 'index.html'), routeHtml, 'utf8');
+      }
+
+      // Also pre-generate legacy apostrophe-truncated slug path (e.g. /situs/agh-muhammad-as-wajo/index.html)
+      if (entry.legacyApostrophePath) {
+        const legacyApostropheDir = path.join(rootDist, entry.legacyApostrophePath.replace(/^\/+/, ''));
+        fs.mkdirSync(legacyApostropheDir, { recursive: true });
+        fs.writeFileSync(path.join(legacyApostropheDir, 'index.html'), routeHtml, 'utf8');
+      }
+    }
+
+    // Sync the updated dist/index.html MD5 revision hash inside dist/sw.js so Workbox precache stays 100% valid
+    const swPath = path.join(rootDist, 'sw.js');
+    if (fs.existsSync(swPath)) {
+      const updatedIndexHtml = fs.readFileSync(baseIndexHtmlPath);
+      const newRevision = crypto.createHash('md5').update(updatedIndexHtml).digest('hex');
+      const swContent = fs.readFileSync(swPath, 'utf8');
+      const updatedSw = swContent.replace(
+        /(\{url:"index\.html",revision:")([a-f0-9]+)("\})/i,
+        `$1${newRevision}$3`
       );
-      console.log(`[postbuild] Inlined ${cssHref} (${(cssContent.length / 1024).toFixed(1)} KB) into <head> to eliminate render-blocking CSS.`);
+      if (updatedSw !== swContent) {
+        fs.writeFileSync(swPath, updatedSw, 'utf8');
+        console.log('[postbuild] Synced dist/sw.js precache revision for index.html:', newRevision);
+      }
     }
   }
 
-  // Inject <link rel="modulepreload"> for the main entry script right before </head> to flatten critical request chain
-  const entryScriptMatch = baseHtml.match(/<script\s+type="module"[^>]*src="(\/assets\/index-[^"]+\.js)"[^>]*>/i);
-  if (entryScriptMatch) {
-    const entryJsHref = entryScriptMatch[1];
-    if (!baseHtml.includes(`href="${entryJsHref}" rel="modulepreload"`) && !baseHtml.includes(`rel="modulepreload" crossorigin href="${entryJsHref}"`)) {
-      baseHtml = baseHtml.replace(
-        '</head>',
-        `    <link rel="modulepreload" crossorigin href="${entryJsHref}" />\n  </head>`
-      );
-    }
-  }
+  console.log(
+    `[postbuild] Generated sitemap.xml, sitemap.txt, rss.xml, and pre-rendered HTML for ${allEntries.length} canonical URLs at:`,
+    rootDist
+  );
 
-  for (const entry of allEntries) {
-    const routeHtml = renderCustomHtml(baseHtml, entry);
-    if (entry.path === '/') {
-      fs.writeFileSync(baseIndexHtmlPath, routeHtml, 'utf8');
-      continue;
-    }
-    const relativeDir = entry.path.replace(/^\/+/, '');
-    const routeDir = path.join(rootDist, relativeDir);
-    fs.mkdirSync(routeDir, { recursive: true });
-    fs.writeFileSync(path.join(routeDir, 'index.html'), routeHtml, 'utf8');
+  // Mirror dist if Vercel invoked the build from a subdirectory
+  if (process.env.VERCEL || initCwd !== cwd) {
+    const candidateDirs = new Set([
+      path.join(initCwd, 'dist'),
+      path.join(cwd, 'src', 'dist'),
+      path.join(cwd, 'public', 'dist'),
+    ]);
 
-    // Also pre-generate /makam/<id>/index.html for legacy links
-    if (entry.legacyPath) {
-      const legacyDir = path.join(rootDist, entry.legacyPath.replace(/^\/+/, ''));
-      fs.mkdirSync(legacyDir, { recursive: true });
-      fs.writeFileSync(path.join(legacyDir, 'index.html'), routeHtml, 'utf8');
-    }
-  }
-
-  // Sync the updated dist/index.html MD5 revision hash inside dist/sw.js so Workbox precache stays 100% valid
-  const swPath = path.join(rootDist, 'sw.js');
-  if (fs.existsSync(swPath)) {
-    const updatedIndexHtml = fs.readFileSync(baseIndexHtmlPath);
-    const newRevision = crypto.createHash('md5').update(updatedIndexHtml).digest('hex');
-    const swContent = fs.readFileSync(swPath, 'utf8');
-    const updatedSw = swContent.replace(
-      /(\{url:"index\.html",revision:")([a-f0-9]+)("\})/i,
-      `$1${newRevision}$3`
-    );
-    if (updatedSw !== swContent) {
-      fs.writeFileSync(swPath, updatedSw, 'utf8');
-      console.log('[postbuild] Synced dist/sw.js precache revision for index.html:', newRevision);
-    }
-  }
-}
-
-console.log(
-  `[postbuild] Generated sitemap.xml, sitemap.txt, rss.xml, and pre-rendered HTML for ${allEntries.length} canonical URLs at:`,
-  rootDist
-);
-
-// Mirror dist if Vercel invoked the build from a subdirectory
-if (process.env.VERCEL || initCwd !== cwd) {
-  const candidateDirs = new Set([
-    path.join(initCwd, 'dist'),
-    path.join(cwd, 'src', 'dist'),
-    path.join(cwd, 'public', 'dist'),
-  ]);
-
-  for (const targetDist of candidateDirs) {
-    if (path.resolve(targetDist) !== rootDist) {
-      try {
-        fs.mkdirSync(path.dirname(targetDist), { recursive: true });
-        fs.cpSync(rootDist, targetDist, { recursive: true, force: true });
-        console.log('[postbuild] Mirrored dist to:', targetDist);
-      } catch (err) {
-        console.warn('[postbuild] Skipped mirroring to', targetDist, err?.message);
+    for (const targetDist of candidateDirs) {
+      if (path.resolve(targetDist) !== rootDist) {
+        try {
+          fs.mkdirSync(path.dirname(targetDist), { recursive: true });
+          fs.cpSync(rootDist, targetDist, { recursive: true, force: true });
+          console.log('[postbuild] Mirrored dist to:', targetDist);
+        } catch (err) {
+          console.warn('[postbuild] Skipped mirroring to', targetDist, err?.message);
+        }
       }
     }
   }

@@ -253,43 +253,10 @@ export interface CuratedMunajatItem {
   dateLabel: string;
   createdAtMs: number;
   baseAamiinCount: number;
+  aamiinCount?: number;
 }
 
-export const FALLBACK_MUNAJAT_ITEMS: CuratedMunajatItem[] = [
-  {
-    id: 'curated-munajat-1',
-    donorName: 'Keluarga H. Ahmad Syukri',
-    amount: 50000,
-    programTitle: 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
-    siteName: 'Khazanah Wali Songo & Ulama Nusantara',
-    doaHajat: 'Mohon doa untuk kesembuhan orang tua kami serta keberkahan ilmu anak-anak di pesantren.',
-    dateLabel: 'Munajat Peziarah',
-    createdAtMs: Date.now() - 3600_000,
-    baseAamiinCount: 28,
-  },
-  {
-    id: 'curated-munajat-2',
-    donorName: 'Hamba Allah (Sidoarjo)',
-    amount: 25000,
-    programTitle: 'Infaq Penjaga Sanad & Khazanah Auliya',
-    siteName: 'Makam Sunan Ampel & Syaikhona Kholil',
-    doaHajat: 'Semoga Allah melapangkan rezeki usaha keluarga kami yang sedang diuji dan mengabulkan hajat ziarah tahun ini.',
-    dateLabel: 'Munajat Peziarah',
-    createdAtMs: Date.now() - 7200_000,
-    baseAamiinCount: 41,
-  },
-  {
-    id: 'curated-munajat-3',
-    donorName: 'Hj. Siti Khadijah & Keluarga',
-    amount: 50000,
-    programTitle: 'Infaq Jariyah Utama & Wasilah Keilmuan',
-    siteName: 'Makam Abah Guru Sekumpul & Sunan Kalijaga',
-    doaHajat: 'Al-Fatihah untuk almarhum ayahanda kami, semoga dilapangkan kuburnya dan kami dikumpulkan bersama para kekasih Allah.',
-    dateLabel: 'Munajat Peziarah',
-    createdAtMs: Date.now() - 10800_000,
-    baseAamiinCount: 53,
-  },
-];
+export const FALLBACK_MUNAJAT_ITEMS: CuratedMunajatItem[] = [];
 
 const AAMIIN_STORAGE_KEY = 'zn_munajat_aamiin_map';
 

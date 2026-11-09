@@ -29,11 +29,13 @@ import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
 import {
+  BAROKAH_DONATION_ID_KEY,
   CompressedReceiptResult,
   CuratedMunajatItem,
   FALLBACK_MUNAJAT_ITEMS,
   getStoredAamiinMap,
   incrementStoredAamiin,
+  RUBRIK_DONATION_ID_KEY,
   saveVerifiedDonationRecord,
   submitDonationWithPrivateProof,
   useVerifiedDonationUnlock,
@@ -233,11 +235,14 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     );
 
     const unsubDonations = onSnapshot(
-      query(collection(db, 'donations'), limit(25)),
+      query(collection(db, 'donations'), where('status', 'in', ['confirmed', 'verified']), limit(25)),
       (snapshot) => {
         let myId = '';
         try {
-          myId = localStorage.getItem('zn_verified_rubrik_donation_id_v3') || '';
+          myId =
+            localStorage.getItem(RUBRIK_DONATION_ID_KEY) ||
+            localStorage.getItem(BAROKAH_DONATION_ID_KEY) ||
+            '';
         } catch {}
         const fetched: CuratedMunajatItem[] = snapshot.docs
           .filter((docSnap) => {
@@ -263,7 +268,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               doaHajat: d.doaHajat || 'Semoga menjadi amal jariyah dan wasilah keberkahan keluarga.',
               dateLabel,
               createdAtMs: ts,
-              baseAamiinCount: 12 + (idx % 19),
+              baseAamiinCount: Number(d.aamiinCount) || 0,
             };
           })
           .sort((a, b) => b.createdAtMs - a.createdAtMs);
@@ -626,45 +631,51 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             Lihat Dinding Munajat →
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 divide-y md:divide-y-0 md:divide-x divide-stone-200/60">
-          {recentMunajat.slice(0, 3).map((item, idx) => {
-            const totalAamiin = (item.baseAamiinCount || 12) + (aamiinMap[item.id] || 0);
-            const hasClickedAamiin = Boolean(aamiinMap[item.id]);
-            return (
-              <div
-                key={item.id}
-                className={`flex flex-col justify-between gap-2.5 ${idx > 0 ? 'pt-3 md:pt-0 md:pl-4' : ''}`}
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-xs font-medium text-stone-900 truncate">{item.donorName}</span>
-                    <span className="text-xs text-emerald-800 font-medium shrink-0">
-                      Rp {item.amount.toLocaleString('id-ID')}
-                    </span>
+        {recentMunajat.length === 0 ? (
+          <div className="py-2 text-xs text-stone-600 font-serif italic">
+            &ldquo;Jadilah peziarah pertama yang menitipkan doa hajat di Dinding Munajat hari ini.&rdquo;
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 divide-y md:divide-y-0 md:divide-x divide-stone-200/60">
+            {recentMunajat.slice(0, 3).map((item, idx) => {
+              const totalAamiin = (item.baseAamiinCount || 0) + (aamiinMap[item.id] || 0);
+              const hasClickedAamiin = Boolean(aamiinMap[item.id]);
+              return (
+                <div
+                  key={item.id}
+                  className={`flex flex-col justify-between gap-2.5 ${idx > 0 ? 'pt-3 md:pt-0 md:pl-4' : ''}`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-xs font-medium text-stone-900 truncate">{item.donorName}</span>
+                      <span className="text-xs text-emerald-800 font-medium shrink-0">
+                        Rp {item.amount.toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-600 font-serif italic line-clamp-2 leading-relaxed">
+                      &ldquo;{item.doaHajat}&rdquo;
+                    </p>
                   </div>
-                  <p className="text-xs text-stone-600 font-serif italic line-clamp-2 leading-relaxed">
-                    &ldquo;{item.doaHajat}&rdquo;
-                  </p>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[11px] text-stone-400 truncate max-w-[120px]">{item.dateLabel}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleAamiinClick(item.id)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
+                        hasClickedAamiin
+                          ? 'bg-emerald-900 text-white border-emerald-900'
+                          : 'bg-white hover:bg-stone-50 text-stone-700 border-stone-200/80'
+                      }`}
+                    >
+                      <Heart className={`w-3 h-3 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
+                      <span>Aamiin{totalAamiin > 0 ? ` · ${totalAamiin}` : ''}</span>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-stone-400 truncate max-w-[120px]">{item.dateLabel}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleAamiinClick(item.id)}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
-                      hasClickedAamiin
-                        ? 'bg-emerald-900 text-white border-emerald-900'
-                        : 'bg-white hover:bg-stone-50 text-stone-700 border-stone-200/80'
-                    }`}
-                  >
-                    <Heart className={`w-3 h-3 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
-                    <span>Aamiin · {totalAamiin}</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Filter & Search */}
@@ -1025,6 +1036,9 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                           <p className="font-bold text-slate-900 text-xs">{bankDetails.bankName}</p>
                           <p className="text-slate-800 font-mono text-xs font-bold mt-0.5">{bankDetails.accountNumber}</p>
                           <p className="text-[10px] text-slate-500">a.n. {bankDetails.accountHolder}</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">
+                            (Rekening Bendahara Resmi Pengelola Arsip Ziarah Nusantara)
+                          </p>
                         </div>
                         <button
                           type="button"

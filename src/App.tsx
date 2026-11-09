@@ -159,8 +159,9 @@ export default function App() {
       }
 
       if (matchedSite) {
+        const cleanSiteDesc = (matchedSite.description || '').replace(/<!--more-->/g, ' ').replace(/\s+/g, ' ').trim();
         activeTitle = `Makam ${matchedSite.title} (${matchedSite.location.city}, ${matchedSite.location.province}) — Rute, Sejarah & Doa Ziarah | Ziarah Nusantara`;
-        activeDesc = `${matchedSite.description} Lokasi: ${matchedSite.location.address}, ${matchedSite.location.city}, ${matchedSite.location.province}. Lengkap dengan peta rute, riwayat karomah, dan doa tawassul.`;
+        activeDesc = `${cleanSiteDesc} Lokasi: ${matchedSite.location.address}, ${matchedSite.location.city}, ${matchedSite.location.province}. Lengkap dengan peta rute, riwayat karomah, dan doa tawassul.`;
         canonicalUrl = `${baseOrigin}${getSitePath(matchedSite)}`;
       }
 
@@ -255,11 +256,12 @@ export default function App() {
         ];
 
         if (matchedSite) {
+          const cleanSiteDesc = (matchedSite.description || '').replace(/<!--more-->/g, ' ').replace(/\s+/g, ' ').trim();
           graphNodes.push({
             '@type': 'TouristAttraction',
             '@id': `${canonicalUrl}#place`,
             name: `Makam ${matchedSite.title} (${matchedSite.name})`,
-            description: matchedSite.description,
+            description: cleanSiteDesc,
             url: canonicalUrl,
             address: {
               '@type': 'PostalAddress',

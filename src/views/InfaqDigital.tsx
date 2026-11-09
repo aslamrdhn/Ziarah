@@ -16,16 +16,18 @@ import {
   Heart
 } from 'lucide-react';
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
-import { collection, doc, onSnapshot, query, limit } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
 import {
+  BAROKAH_DONATION_ID_KEY,
   CompressedReceiptResult,
   CuratedMunajatItem,
   FALLBACK_MUNAJAT_ITEMS,
   getStoredAamiinMap,
   incrementStoredAamiin,
+  RUBRIK_DONATION_ID_KEY,
   saveVerifiedDonationRecord,
   submitDonationWithPrivateProof,
 } from '../lib/transferProof';
@@ -169,11 +171,14 @@ export const InfaqDigital: React.FC = () => {
     );
 
     const unsubDonations = onSnapshot(
-      query(collection(db, 'donations'), limit(30)),
+      query(collection(db, 'donations'), where('status', 'in', ['confirmed', 'verified']), limit(30)),
       (snapshot) => {
         let myId = '';
         try {
-          myId = localStorage.getItem('zn_verified_rubrik_donation_id') || '';
+          myId =
+            localStorage.getItem(RUBRIK_DONATION_ID_KEY) ||
+            localStorage.getItem(BAROKAH_DONATION_ID_KEY) ||
+            '';
         } catch {}
         const list: DonationRecord[] = snapshot.docs
           .filter((docSnap) => {
@@ -199,7 +204,7 @@ export const InfaqDigital: React.FC = () => {
               doaHajat: d.doaHajat || 'Semoga menjadi amal jariyah dan wasilah keberkahan keluarga.',
               dateLabel,
               createdAtMs: ts,
-              baseAamiinCount: 15 + (idx % 23),
+              baseAamiinCount: Number(d.aamiinCount) || 0,
             };
           });
         list.sort((a, b) => b.createdAtMs - a.createdAtMs);
@@ -299,9 +304,9 @@ export const InfaqDigital: React.FC = () => {
 
   const displayedMunajatList: CuratedMunajatItem[] =
     recentDonations.length > 0
-      ? recentDonations.map((d, idx) => ({
+      ? recentDonations.map((d) => ({
           ...d,
-          baseAamiinCount: d.baseAamiinCount ?? 15 + (idx % 23),
+          baseAamiinCount: d.baseAamiinCount ?? 0,
         }))
       : FALLBACK_MUNAJAT_ITEMS;
 
@@ -586,6 +591,9 @@ export const InfaqDigital: React.FC = () => {
                   <p className="font-bold text-slate-900 text-sm">{infaqSettings.bankName}</p>
                   <p className="text-slate-600 text-xs font-mono font-semibold mt-0.5">{infaqSettings.accountNumber}</p>
                   <p className="text-slate-500 text-[11px]">a.n. {infaqSettings.accountHolder}</p>
+                  <p className="text-slate-500 text-[10px] mt-0.5">
+                    (Rekening Bendahara Resmi Pengelola Arsip Ziarah Nusantara)
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -681,53 +689,64 @@ export const InfaqDigital: React.FC = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {displayedMunajatList.slice(0, 9).map((item) => {
-            const totalAamiin = (item.baseAamiinCount || 15) + (aamiinMap[item.id] || 0);
-            const hasClickedAamiin = Boolean(aamiinMap[item.id]);
-            return (
-              <div
-                key={item.id}
-                className="bg-white rounded-2xl p-5 border border-stone-200/70 shadow-2xs flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="text-sm font-medium text-stone-900">{item.donorName}</p>
-                      <p className="text-[11px] text-stone-400">{item.dateLabel}</p>
+        {displayedMunajatList.length === 0 ? (
+          <div className="bg-white rounded-2xl p-6 sm:p-8 border border-stone-200/70 shadow-2xs text-center">
+            <p className="font-serif italic text-sm sm:text-base text-stone-700">
+              &ldquo;Jadilah peziarah pertama yang menitipkan doa hajat di Dinding Munajat hari ini.&rdquo;
+            </p>
+            <p className="text-xs text-stone-500 mt-1.5">
+              Setiap doa hajat yang terverifikasi oleh Admin Kurator akan ditampilkan secara terbuka untuk diaminkan bersama para peziarah lainnya.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {displayedMunajatList.slice(0, 9).map((item) => {
+              const totalAamiin = (item.baseAamiinCount || 0) + (aamiinMap[item.id] || 0);
+              const hasClickedAamiin = Boolean(aamiinMap[item.id]);
+              return (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-2xl p-5 border border-stone-200/70 shadow-2xs flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-sm font-medium text-stone-900">{item.donorName}</p>
+                        <p className="text-[11px] text-stone-400">{item.dateLabel}</p>
+                      </div>
+                      <span className="text-xs font-semibold text-emerald-800 tabular-nums">
+                        Rp {item.amount.toLocaleString('id-ID')}
+                      </span>
                     </div>
-                    <span className="text-xs font-semibold text-emerald-800 tabular-nums">
-                      Rp {item.amount.toLocaleString('id-ID')}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-stone-500 mb-2 truncate">
-                    {item.siteName}
-                  </p>
-                  {item.doaHajat && (
-                    <p className="text-sm text-stone-700 font-serif italic leading-relaxed">
-                      &ldquo;{item.doaHajat}&rdquo;
+                    <p className="text-[11px] text-stone-500 mb-2 truncate">
+                      {item.siteName}
                     </p>
-                  )}
+                    {item.doaHajat && (
+                      <p className="text-sm text-stone-700 font-serif italic leading-relaxed">
+                        &ldquo;{item.doaHajat}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
+                    <span className="truncate max-w-[155px]">{item.programTitle}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleAamiinClick(item.id)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
+                        hasClickedAamiin
+                          ? 'bg-emerald-900 text-white border-emerald-900'
+                          : 'bg-[#FAF8F5] hover:bg-stone-100 text-stone-700 border-stone-200/80'
+                      }`}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
+                      <span>Aamiin{totalAamiin > 0 ? ` · ${totalAamiin}` : ''}</span>
+                    </button>
+                  </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
-                  <span className="truncate max-w-[155px]">{item.programTitle}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleAamiinClick(item.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
-                      hasClickedAamiin
-                        ? 'bg-emerald-900 text-white border-emerald-900'
-                        : 'bg-[#FAF8F5] hover:bg-stone-100 text-stone-700 border-stone-200/80'
-                    }`}
-                  >
-                    <Heart className={`w-3.5 h-3.5 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
-                    <span>Aamiin · {totalAamiin}</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Modal Konfirmasi Sukses */}

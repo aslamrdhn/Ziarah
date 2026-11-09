@@ -39,6 +39,9 @@ export function findSiteByParam(sites: ZiarahSite[], rawParam?: string | null): 
   const byAltSlug = sites.find((s) => {
     const tSlug = slugifySiteText(s.title);
     const cSlug = slugifySiteText(s.location?.city || '');
+    const preApostropheSlug = s.title.includes("'")
+      ? slugifySiteText(s.title.split("'")[0])
+      : '';
     const fullTitleSlug = s.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -47,7 +50,8 @@ export function findSiteByParam(sites: ZiarahSite[], rawParam?: string | null): 
       tSlug === normalizedParam ||
       `${tSlug}-${cSlug}` === normalizedParam ||
       fullTitleSlug === normalizedParam ||
-      `${fullTitleSlug}-${cSlug}` === normalizedParam
+      `${fullTitleSlug}-${cSlug}` === normalizedParam ||
+      (preApostropheSlug && (preApostropheSlug === normalizedParam || `${preApostropheSlug}-${cSlug}` === normalizedParam))
     );
   });
   if (byAltSlug) return byAltSlug;

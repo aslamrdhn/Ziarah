@@ -68,7 +68,8 @@ service cloud.firestore {
     function isValidDonationProof(data) {
       return data.donationId is string && data.donationId.size() >= 1 && data.donationId.size() <= 128 &&
         data.senderAccount is string && data.senderAccount.size() >= 2 && data.senderAccount.size() <= 100 &&
-        data.proofImageUrl is string && data.proofImageUrl.size() >= 500 && data.proofImageUrl.size() <= 500000;
+        data.proofImageUrl is string && data.proofImageUrl.size() >= 500 && data.proofImageUrl.size() <= 500000 &&
+        data.proofImageUrl.matches('^data:image/(jpeg|jpg|png|webp);base64,.*');
     }
 
     match /admins/{adminUid} {
@@ -109,14 +110,15 @@ service cloud.firestore {
     }
 
     match /stories/{storyId} {
-      allow read: if true;
+      allow read: if isAdmin() || resource.data.status in ['approved', 'published'];
       allow create: if isValidId(storyId) && isValidStory(incoming()) && incoming().status == 'pending';
       allow update: if isAdmin() && isValidId(storyId);
       allow delete: if isValidId(storyId) && (isAdmin() || (isSignedIn() && existing().authorUid == request.auth.uid));
     }
 
     match /donations/{donationId} {
-      allow read: if true;
+      allow get: if true;
+      allow list: if isAdmin() || resource.data.status in ['confirmed', 'verified'];
       allow create: if isValidId(donationId) && isValidDonation(incoming()) && incoming().status == 'pending';
       allow update: if isAdmin() && isValidId(donationId);
       allow delete: if isAdmin() && isValidId(donationId);
@@ -124,7 +126,7 @@ service cloud.firestore {
       match /private/{docId} {
         allow get: if isAdmin() || (isSignedIn() && existing().authorUid == request.auth.uid);
         allow list: if isAdmin();
-        allow create: if isValidId(donationId) && docId == 'proof' && isValidDonationProof(incoming()) && incoming().donationId == donationId;
+        allow create: if isValidId(donationId) && docId == 'proof' && isValidDonationProof(incoming()) && incoming().donationId == donationId && incoming().proofImageUrl is string && incoming().proofImageUrl.matches('^data:image/(jpeg|jpg|png|webp);base64,.*');
         allow update, delete: if isAdmin() && isValidId(donationId);
       }
     }

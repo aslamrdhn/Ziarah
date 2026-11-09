@@ -265,10 +265,10 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:gap-6">
-            {filteredList.map((item, index) => {
-              // Hanya item pertama (index === 0) yang terbuka penuh sebagai contoh gratis;
-              // seluruh item ke-2 dan seterusnya (index >= 1) terkunci Rp 5.000 kecuali sudah dibuka via useVerifiedBarokahUnlock
-              const isItemUnlocked = !lockEnabled || isBarokahUnlocked || index === 0;
+            {(lockEnabled && !isBarokahUnlocked ? filteredList.slice(0, 5) : filteredList).map((item, index) => {
+              // 2 doa pembuka gratis (index < 2) sebagai contoh kurasi,
+              // diikuti 3 kartu pratinjau blur (index 2..4) saat masih terkunci Rp 5.000
+              const isItemUnlocked = !lockEnabled || isBarokahUnlocked || index < 2;
 
               return (
                 <div
@@ -387,24 +387,14 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                         )}
                       </div>
 
-                      {/* Clean Lock Card above/below blurred content */}
-                      <div className="p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="space-y-1">
-                          <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
-                            <Lock className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} />
-                            <span>Khazanah Barokah &amp; Doa Khusus Terkunci</span>
-                          </div>
-                          <p className="text-xs text-slate-600 leading-relaxed">
-                            Buka seluruh bacaan Arab, transliterasi Latin, arti, dan fitur salin doa dengan infaq mulai <strong>Rp 5.000</strong>.
-                          </p>
-                        </div>
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-xs text-slate-500">
+                        <span>Pratinjau Terkunci · Infaq Rp 5.000 membuka seluruh {allDoaKaromah.length}+ doa &amp; wirid</span>
                         <button
                           type="button"
                           onClick={() => openBarokahUnlockModal(item)}
-                          className="w-full sm:w-auto shrink-0 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="font-semibold text-emerald-800 hover:text-emerald-950 underline underline-offset-4 cursor-pointer shrink-0"
                         >
-                          <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
-                          <span>Buka Seluruh Barokah &amp; Doa Khusus (Infaq Rp 5.000)</span>
+                          Buka Sekarang →
                         </button>
                       </div>
                     </div>
@@ -412,6 +402,31 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                 </div>
               );
             })}
+
+            {lockEnabled && !isBarokahUnlocked && filteredList.length > 2 && (
+              <div className="bg-white rounded-3xl border-2 border-emerald-700/30 p-6 sm:p-8 shadow-sm space-y-4 text-center">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold uppercase tracking-wider">
+                  <Lock className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} />
+                  <span>Akses Penuh Khazanah Barokah &amp; Doa Khusus</span>
+                </div>
+                <h3 className="font-serif text-xl sm:text-2xl text-slate-900 max-w-xl mx-auto leading-snug">
+                  Buka Seluruh {allDoaKaromah.length}+ Khazanah Doa &amp; Wirid Khusus Para Wali — Infaq Rp 5.000
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
+                  Dua amalan di atas dibuka gratis sebagai contoh kurasi. Cukup satu kali infaq jariyah <strong>Rp 5.000</strong> untuk membuka penuh seluruh lafaz Arab, transliterasi Latin, terjemahan makna hajat, serta fitur salin &amp; simpan doa di seluruh 96+ makam Auliya Nusantara pada perangkat ini.
+                </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => openBarokahUnlockModal(filteredList[2] || filteredList[0])}
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                  >
+                    <Lock className="w-4 h-4" strokeWidth={1.75} />
+                    <span>Buka Seluruh 250+ Khazanah Doa &amp; Wirid Khusus Para Wali — Infaq Rp 5.000</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

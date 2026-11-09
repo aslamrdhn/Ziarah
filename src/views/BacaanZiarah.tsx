@@ -569,19 +569,25 @@ export const BacaanZiarah: React.FC = () => {
                 Putaran Selesai: <strong className="text-stone-900 tabular-nums">{tasbihLoops}×</strong>
               </span>
 
-              <button
-                type="button"
-                onClick={() => setHapticEnabled(!hapticEnabled)}
-                aria-pressed={hapticEnabled}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition cursor-pointer border ${
-                  hapticEnabled
-                    ? 'bg-emerald-950/5 text-emerald-800 border-emerald-200/80'
-                    : 'bg-stone-100 text-stone-500 border-stone-200/70'
-                }`}
-              >
-                <Vibrate className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
-                <span>Getar Haptik: {hapticEnabled ? 'Aktif' : 'Nonaktif'}</span>
-              </button>
+              {typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function' ? (
+                <button
+                  type="button"
+                  onClick={() => setHapticEnabled(!hapticEnabled)}
+                  aria-pressed={hapticEnabled}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition cursor-pointer border ${
+                    hapticEnabled
+                      ? 'bg-emerald-950/5 text-emerald-800 border-emerald-200/80'
+                      : 'bg-stone-100 text-stone-500 border-stone-200/70'
+                  }`}
+                >
+                  <Vibrate className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
+                  <span>Getar Haptik: {hapticEnabled ? 'Aktif' : 'Nonaktif'}</span>
+                </button>
+              ) : (
+                <span className="text-[11px] text-stone-400">
+                  Ketukan Visual Aktif
+                </span>
+              )}
             </div>
           </div>
 

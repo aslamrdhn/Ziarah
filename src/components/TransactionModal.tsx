@@ -177,7 +177,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 pointer-events-auto">
+    <div className="fixed inset-0 z-[3500] flex items-center justify-center p-4 pointer-events-auto">
       <div className="absolute inset-0 bg-stone-950/60 backdrop-blur-xs cursor-pointer" onClick={onClose} />
       <motion.div 
         initial={{ opacity: 0, scale: 0.96, y: 20 }}
@@ -389,6 +389,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                     <p className="font-semibold text-stone-900 text-xs">{bankSettings.bankName}</p>
                     <p className="text-stone-700 font-mono text-xs font-semibold">{bankSettings.accountNumber}</p>
                     <p className="text-[10px] text-stone-500">a.n. {bankSettings.accountHolder}</p>
+                    <p className="text-[10px] text-stone-500 mt-0.5">
+                      (Rekening Bendahara Resmi Pengelola Arsip Ziarah Nusantara)
+                    </p>
                   </div>
                   <button
                     type="button"

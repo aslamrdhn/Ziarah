@@ -390,7 +390,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
   };
 
   return (
-    <div className="flex-1 w-full relative z-0 rounded-3xl overflow-hidden border border-stone-200/80 shadow-xs h-full flex flex-col bg-[#FAF8F5]">
+    <div className="flex-1 w-full relative z-0 rounded-3xl overflow-hidden border border-stone-200/80 shadow-xs h-full flex flex-col bg-[#FAF8F5] [&_.leaflet-bottom]:!bottom-24 sm:[&_.leaflet-bottom]:!bottom-4">
       {/* =====================================================================
           FLOATING TOP GIS PILL CONTROLS (Jalur Wali Songo & Radius GPS)
           ===================================================================== */}
@@ -542,7 +542,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
       {/* =====================================================================
           CATEGORY LEGEND PILL (Bottom Left, Compact)
           ===================================================================== */}
-      <div className="hidden sm:flex items-center gap-3 absolute bottom-3 left-14 z-[850] bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-stone-200/80 shadow-xs text-[11px] font-medium text-stone-700 pointer-events-auto">
+      <div className="hidden sm:flex items-center gap-3 absolute bottom-24 sm:bottom-6 left-14 z-[850] bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-stone-200/80 shadow-xs text-[11px] font-medium text-stone-700 pointer-events-auto">
         <span className="inline-flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-700" />
           Wali Songo
@@ -568,7 +568,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
         <div
           role="dialog"
           aria-label={`Ringkasan Lokasi ${previewSite.title}`}
-          className="absolute bottom-3 inset-x-3 sm:left-auto sm:right-4 sm:w-[410px] z-[950] bg-white/95 backdrop-blur-xl rounded-3xl p-4 sm:p-5 border border-stone-200/80 shadow-2xl pointer-events-auto animate-in slide-in-from-bottom-4 duration-200"
+          className="absolute bottom-24 sm:bottom-6 inset-x-3 sm:left-auto sm:right-4 sm:w-[410px] z-[950] bg-white/95 backdrop-blur-xl rounded-3xl p-4 sm:p-5 border border-stone-200/80 shadow-2xl pointer-events-auto animate-in slide-in-from-bottom-4 duration-200"
         >
           {/* Drag Handle Indicator on Mobile */}
           <div className="w-10 h-1 bg-stone-200 rounded-full mx-auto mb-3 sm:hidden" />

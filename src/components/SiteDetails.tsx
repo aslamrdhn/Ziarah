@@ -180,11 +180,6 @@ interface StoryItem {
   isDefault?: boolean;
 }
 
-const DEFAULT_STORIES: StoryItem[] = [
-  { id: 'default-1', name: 'Hamba Allah', text: `Tempatnya sangat sejuk dan nyaman untuk beri'tikaf dan berdzikir. Fasilitas juga sangat memadai. Masya Allah.`, date: 'Riwayat Peziarah', isDefault: true },
-  { id: 'default-2', name: 'Ahmad S.', text: `Alhamdulillah dimudahkan sampai ke makam beliau. Terasa ketenangan batin yang luar biasa saat bertawasul di sini.`, date: 'Riwayat Peziarah', isDefault: true }
-];
-
 export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   site,
   onClose,
@@ -222,22 +217,21 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       return;
     }
 
-    const q = query(collection(db, 'stories'), where('siteId', '==', site.id));
+    const adminActive = isUserAdmin(auth.currentUser);
+    const q = adminActive
+      ? query(collection(db, 'stories'), where('siteId', '==', site.id))
+      : query(
+          collection(db, 'stories'),
+          where('siteId', '==', site.id),
+          where('status', 'in', ['approved', 'published'])
+        );
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        let localPendingIds: string[] = [];
-        try {
-          localPendingIds = JSON.parse(localStorage.getItem('zn_my_pending_story_ids') || '[]');
-        } catch {}
-        const currentUid = auth.currentUser?.uid;
         const fetched: StoryItem[] = snapshot.docs
           .filter((docSnap) => {
             const d = docSnap.data();
-            const isPublicApproved = !d.status || d.status === 'approved' || d.status === 'published';
-            const isOwnPending =
-              (currentUid && d.authorUid === currentUid) || localPendingIds.includes(docSnap.id);
-            return isPublicApproved || isOwnPending;
+            return adminActive || d.status === 'approved' || d.status === 'published';
           })
           .map((docSnap) => {
             const d = docSnap.data();
@@ -266,7 +260,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
     return () => unsubscribe();
   }, [site?.id]);
 
-  const allStories = [...cloudStories, ...DEFAULT_STORIES];
+  const allStories = cloudStories;
 
   const handleAddStory = async () => {
     const cleanText = sanitizeMultilineText(newStory, 1000);
@@ -587,7 +581,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
     <>
       <AnimatePresence>
         {site && (
-          <div className="fixed inset-0 z-[2050] flex items-center justify-center p-0 sm:p-4 md:p-6 bg-slate-950/60 backdrop-blur-xs pointer-events-auto">
+          <div className="fixed inset-0 z-[3000] flex items-center justify-center p-0 sm:p-4 md:p-6 bg-slate-950/60 backdrop-blur-xs pointer-events-auto">
             <div
               className="absolute inset-0 cursor-pointer"
               onClick={onClose}
@@ -660,13 +654,25 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                   </motion.button>
                 </div>
 
-                <div className="absolute bottom-3.5 left-6 right-6 z-10 text-white pointer-events-none">
-                  <div className="text-[11px] font-medium uppercase tracking-widest text-emerald-200 mb-1">
-                    {site.category} · {site.location.city}, {site.location.province}
+                <div className="absolute bottom-3.5 left-6 right-6 z-10 text-white flex items-end justify-between gap-3 pointer-events-none">
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-medium uppercase tracking-widest text-emerald-200 mb-1 truncate">
+                      {site.category} · {site.location.city}, {site.location.province}
+                      {site.openingHours ? ` · ${site.openingHours}` : ''}
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-serif font-normal text-white leading-tight tracking-tight line-clamp-1">
+                      {site.title}
+                    </h2>
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-serif font-normal text-white leading-tight tracking-tight line-clamp-1">
-                    {site.title}
-                  </h2>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${site.location.lat},${site.location.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-700/95 hover:bg-emerald-600 text-white text-[11px] font-semibold border border-emerald-400/30 shadow-sm transition-colors"
+                  >
+                    <Navigation className="w-3 h-3" strokeWidth={1.75} />
+                    <span>Rute Google Maps</span>
+                  </a>
                 </div>
               </div>
 
@@ -713,16 +719,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
               {/* Bar Pintasan Cepat ke 2 Produk Utama + Kontrol Ukuran Huruf (A- / A+ Ukuran Teks Nyaman) */}
               <div className="px-6 sm:px-10 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 shrink-0">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[11px] font-semibold text-slate-500 mr-1 hidden sm:inline">
-                    Pintas Cepat:
-                  </span>
                   {hasKaromah && (
                     <button
                       type="button"
                       onClick={() => jumpToSectionInModal('seksi-karomah-makam')}
                       className="px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-800 hover:text-emerald-800 border border-slate-200 text-[11px] font-semibold transition-colors cursor-pointer"
                     >
-                      Kesaksian Karomah ↓
+                      Lompat ke: Kesaksian Karomah ↓
                     </button>
                   )}
                   <button
@@ -730,7 +733,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     onClick={() => jumpToSectionInModal('seksi-barokah-doa-makam')}
                     className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] font-semibold transition-colors cursor-pointer"
                   >
-                    Barokah &amp; Doa Khusus (Rp 5.000) ↓
+                    Barokah Hajat &amp; Doa Khusus ↓
                   </button>
                 </div>
 
@@ -794,6 +797,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       </h1>
                       <p className="text-xs sm:text-sm text-slate-600 mt-1">
                         Babak I — Jejak Kehidupan, Dakwah &amp; Perjuangan Beliau
+                      </p>
+                      <p className="text-[11px] text-slate-500 italic mt-1">
+                        Disusun dari rujukan sejarah &amp; hikmah tradisi tutur pesantren Nusantara
                       </p>
                     </header>
 
@@ -1234,46 +1240,54 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                         </div>
                       </div>
 
-                      <div className="divide-y divide-stone-200/70">
-                        {allStories.map((story) => {
-                          const canDelete =
-                            !story.isDefault && (isCurrentUserAdmin || (currentUser && story.authorUid === currentUser.uid));
-                          const storyWaUrl = buildWhatsAppCliffhangerUrl(site, story.text);
-                          return (
-                            <div key={story.id} className="py-5 first:pt-0">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="font-medium text-stone-900 text-sm sm:text-base">{story.name}</div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-stone-400">{story.date}</span>
-                                  {canDelete && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDeleteStory(story.id)}
-                                      title="Hapus cerita"
-                                      className="p-1 text-stone-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" strokeWidth={1.75} />
-                                    </button>
-                                  )}
+                      {allStories.length === 0 ? (
+                        <div className="p-5 rounded-2xl bg-slate-100/70 border border-slate-200 text-center">
+                          <p className="text-xs sm:text-sm text-slate-600 font-serif italic">
+                            Belum ada catatan peziarah yang dipublikasikan untuk makam ini. Jadilah peziarah pertama yang membagikan pengalaman ziarah atau informasi kondisi rute.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-stone-200/70">
+                          {allStories.map((story) => {
+                            const canDelete =
+                              !story.isDefault && (isCurrentUserAdmin || (currentUser && story.authorUid === currentUser.uid));
+                            const storyWaUrl = buildWhatsAppCliffhangerUrl(site, story.text);
+                            return (
+                              <div key={story.id} className="py-5 first:pt-0">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="font-medium text-stone-900 text-sm sm:text-base">{story.name}</div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-stone-400">{story.date}</span>
+                                    {canDelete && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteStory(story.id)}
+                                        title="Hapus cerita"
+                                        className="p-1 text-stone-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" strokeWidth={1.75} />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                                <p className="text-sm sm:text-[15.5px] text-stone-700 leading-[1.85]">
+                                  &ldquo;{story.text}&rdquo;
+                                </p>
+                                <div className="mt-2">
+                                  <a
+                                    href={storyWaUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-stone-500 hover:text-stone-800 underline underline-offset-4"
+                                  >
+                                    Bagikan via WhatsApp
+                                  </a>
                                 </div>
                               </div>
-                              <p className="text-sm sm:text-[15.5px] text-stone-700 leading-[1.85]">
-                                &ldquo;{story.text}&rdquo;
-                              </p>
-                              <div className="mt-2">
-                                <a
-                                  href={storyWaUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-stone-500 hover:text-stone-800 underline underline-offset-4"
-                                >
-                                  Bagikan via WhatsApp
-                                </a>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </section>
 
                     {/* Referensi Literatur & Dokumentasi Foto */}

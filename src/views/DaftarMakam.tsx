@@ -53,21 +53,28 @@ const EMOTIONAL_INTENTS: Array<{
   { id: 'ilmu', label: 'Sanad Keilmuan' },
 ];
 
-function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntentId): boolean {
+function extractCoreWasilahHajat(rawHajat: string): string {
+  const cleaned = (rawHajat || '').replace(/<!--more-->/g, ' ').replace(/\s+/g, ' ').trim();
+  const withoutPrefix = cleaned
+    .replace(
+      /^(?:Biasanya peziarah yang datang ke makam|Para peziarah dan santri yang berziarah ke pusara|Banyak jamaah dan peziarah datang ke makam)\s+[^,]+?(?:bertawassul mengharapkan wasilah|lazim bertawassul memohon wasilah|dengan hajat memohon wasilah)\s+/i,
+      ''
+    )
+    .trim();
+  if (!withoutPrefix) return cleaned;
+  return withoutPrefix.charAt(0).toUpperCase() + withoutPrefix.slice(1);
+}
+
+export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntentId): boolean {
   if (intent === 'all') return true;
 
-  const corpus = [
+  const primaryCorpus = [
     site.id,
     site.title,
     site.name,
     site.category,
     site.era || '',
-    site.description,
-    site.history,
-    site.sanad || '',
-    site.untoldStory || '',
-    ...(site.karomah || []),
-    ...(site.karya || []),
+    (site.description || '').replace(/<!--more-->/g, ' '),
   ]
     .join(' ')
     .toLowerCase();
@@ -75,33 +82,27 @@ function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntentId): bo
   switch (intent) {
     case 'keteduhan': {
       const keywords = [
-        'lembut',
         'kelembutan',
-        'seni',
-        'budaya',
         'wayang',
         'gamelan',
         'tembang',
         'suluk',
-        'tasawuf',
-        'kasih',
-        'sejuk',
-        'tenang',
         'ketenangan',
         'keteduhan',
-        'damai',
         'mahabbah',
         'sholawat',
-        'dzikir',
         'kalijaga',
         'bonang',
         'muria',
         'sekumpul',
         'sholeh tanggul',
         'hamid pasuruan',
+        'abu bakar',
+        'al-haddad',
+        'al-aydrus',
       ];
       return (
-        keywords.some((kw) => corpus.includes(kw)) ||
+        keywords.some((kw) => primaryCorpus.includes(kw)) ||
         site.category === 'Habaib' ||
         site.id === 'wali-4' ||
         site.id === 'wali-8' ||
@@ -118,25 +119,18 @@ function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntentId): bo
         'saudagar',
         'dermawan',
         'kedermawanan',
-        'sedekah',
-        'infaq',
-        'yatim',
-        'fakir',
-        'miskin',
-        'sosial',
         'pertanian',
         'nelayan',
         'kemakmuran',
         'drajat',
-        'ampel',
-        'gresik',
         'malik ibrahim',
         'kuncung',
         'luar batang',
-        'gunung jati',
+        'kwitang',
+        'empang bogor',
       ];
       return (
-        keywords.some((kw) => corpus.includes(kw)) ||
+        keywords.some((kw) => primaryCorpus.includes(kw)) ||
         site.id === 'wali-1' ||
         site.id === 'wali-2' ||
         site.id === 'wali-6' ||
@@ -145,14 +139,6 @@ function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntentId): bo
     }
     case 'keteguhan': {
       const keywords = [
-        'perjuangan',
-        'pejuang',
-        'ujian',
-        'sabar',
-        'kesabaran',
-        'tirakat',
-        'riyadhoh',
-        'uzlah',
         'penjajah',
         'kolonial',
         'perang',
@@ -161,16 +147,17 @@ function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntentId): bo
         'jihad',
         'keteguhan',
         'kesultanan',
+        'laskar',
         'giri',
         'kudus',
-        'kalijaga',
         'gunung jati',
         'yusuf',
-        'hasyim',
         'diponegoro',
+        'fatahillah',
+        'banten',
       ];
       return (
-        keywords.some((kw) => corpus.includes(kw)) ||
+        keywords.some((kw) => primaryCorpus.includes(kw)) ||
         site.category === 'Auliya Nusantara' ||
         site.id === 'wali-3' ||
         site.id === 'wali-5' ||
@@ -179,37 +166,28 @@ function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntentId): bo
     }
     case 'ilmu': {
       const keywords = [
-        'pesantren',
-        'sanad',
-        'guru',
-        'mahaguru',
-        'ulama',
         'kitab',
-        'santri',
-        'madrasah',
-        'ilmu',
+        'pengarang',
+        'mahaguru',
         'fikih',
         'hadits',
         'tafsir',
+        'nahwu',
+        'pesantren',
+        'madrasah',
         'kholil',
         'hasyim',
         'wahab',
         'bisri',
-        'mahrus',
-        'hamid',
-        'sekumpul',
         'nawawi',
         'arsyad',
-        'ampel',
-        'giri',
-        'bonang',
+        'mahfudz',
+        'sholeh darat',
+        'abdurrauf',
+        'hamzah fansuri',
+        'as\'ad',
       ];
-      return (
-        keywords.some((kw) => corpus.includes(kw)) ||
-        site.category === 'Ulama Nusantara' ||
-        Boolean(site.sanad && site.sanad.length > 20) ||
-        Boolean(site.karya && site.karya.length > 0)
-      );
+      return keywords.some((kw) => primaryCorpus.includes(kw));
     }
     default:
       return true;
@@ -320,8 +298,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         site.title,
         site.location.city,
         site.location.province,
-        site.description,
-        site.history,
+        (site.description || '').replace(/<!--more-->/g, ' '),
+        (site.history || '').replace(/<!--more-->/g, ' '),
         site.sanad || '',
         site.era || '',
       ]
@@ -341,9 +319,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
     return map;
   }, [ziarahSites]);
 
-  const filteredSites = useMemo(() => {
+  const baseFilteredSites = useMemo(() => {
     const q = deferredSearchQuery.toLowerCase().trim();
-    const baseFiltered = ziarahSites.filter((site: ZiarahSite) => {
+    return ziarahSites.filter((site: ZiarahSite) => {
       const indexed = siteSearchIndexMap.get(site.id);
       const matchesSearch = !q || (indexed ? indexed.searchCorpus.includes(q) : true);
       const matchesCategory = selectedCategory === 'Semua' || site.category === selectedCategory;
@@ -351,26 +329,37 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 
       return matchesSearch && matchesCategory && matchesProvince;
     });
+  }, [deferredSearchQuery, selectedCategory, selectedProvince, ziarahSites, siteSearchIndexMap]);
 
+  const intentCountMap = useMemo(() => {
+    const counts: Record<EmotionalIntentId, number> = {
+      all: baseFilteredSites.length,
+      keteduhan: 0,
+      ikhtiar: 0,
+      keteguhan: 0,
+      ilmu: 0,
+    };
+    for (const site of baseFilteredSites) {
+      const indexed = siteSearchIndexMap.get(site.id);
+      if (indexed ? indexed.intents.keteduhan : matchesEmotionalIntent(site, 'keteduhan')) counts.keteduhan++;
+      if (indexed ? indexed.intents.ikhtiar : matchesEmotionalIntent(site, 'ikhtiar')) counts.ikhtiar++;
+      if (indexed ? indexed.intents.keteguhan : matchesEmotionalIntent(site, 'keteguhan')) counts.keteguhan++;
+      if (indexed ? indexed.intents.ilmu : matchesEmotionalIntent(site, 'ilmu')) counts.ilmu++;
+    }
+    return counts;
+  }, [baseFilteredSites, siteSearchIndexMap]);
+
+  const filteredSites = useMemo(() => {
     if (emotionalFilter === 'all') {
-      return baseFiltered;
+      return baseFilteredSites;
     }
 
-    const intentMatches = baseFiltered.filter((site) => {
+    const intentMatches = baseFilteredSites.filter((site) => {
       const indexed = siteSearchIndexMap.get(site.id);
       return indexed ? indexed.intents[emotionalFilter] : matchesEmotionalIntent(site, emotionalFilter);
     });
-    if (intentMatches.length > 0) {
-      return intentMatches;
-    }
-
-    // Fallback logis berdasarkan category / era / id agar tab suasana hati tidak pernah kosong jika baseFiltered memiliki data
-    if (baseFiltered.length > 0) {
-      return baseFiltered.slice(0, Math.min(6, baseFiltered.length));
-    }
-
-    return [];
-  }, [deferredSearchQuery, selectedCategory, selectedProvince, emotionalFilter, ziarahSites, siteSearchIndexMap]);
+    return intentMatches;
+  }, [baseFilteredSites, emotionalFilter, siteSearchIndexMap]);
 
   const isFiltered =
     Boolean(searchQuery.trim()) ||
@@ -654,6 +643,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2.5 lg:pb-2">
               {EMOTIONAL_INTENTS.map((intent) => {
                 const isSelected = emotionalFilter === intent.id;
+                const count = intentCountMap[intent.id];
                 return (
                   <button
                     key={intent.id}
@@ -669,7 +659,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                         : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
                     }`}
                   >
-                    {intent.label}
+                    {intent.label} ({count})
                   </button>
                 );
               })}
@@ -722,9 +712,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             const snippetText = (site.untoldStory || site.description || '')
               .replace(/<!--more-->/g, ' ')
               .trim();
-            const hajatText = getSiteBarokahHajat(site);
+            const coreHajatText = extractCoreWasilahHajat(getSiteBarokahHajat(site));
             const karomahCount = Array.isArray(site.karomah) && site.karomah.length > 0 ? site.karomah.length : 1;
             const doaCount = getEffectiveSiteDoaKhusus(site).length;
+            const practicalInfo = site.haulSchedule
+              ? `Haul: ${site.haulSchedule}`
+              : site.openingHours
+                ? `Buka: ${site.openingHours}`
+                : 'Buka Setiap Hari';
 
             return (
               <article key={site.id} className={index >= 3 ? 'group content-auto' : 'group'}>
@@ -761,25 +756,31 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       <span className="truncate">
                         {site.location.city}, {site.location.province}
                       </span>
-                      {shortEra && <span className="shrink-0 text-slate-600">{shortEra}</span>}
+                      <span className="shrink-0 text-[11px] text-slate-500 truncate max-w-[140px]">
+                        {shortEra || practicalInfo}
+                      </span>
                     </div>
 
                     <h2 className="font-serif text-xl text-slate-900 group-hover:text-emerald-800 transition-colors line-clamp-1">
                       Makam {site.title}
                     </h2>
 
-                    {/* Kotak Ringkas Wasilah Hajat */}
-                    <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-xl px-3 py-2 my-2.5">
+                    <div className="text-[11px] text-slate-500 truncate">
+                      {practicalInfo}
+                    </div>
+
+                    {/* Kotak Ringkas Wasilah Hajat Spesifik */}
+                    <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-xl px-3 py-2 my-2">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
-                          Wasilah Hajat &amp; Karomah
+                          Wasilah Hajat Spesifik
                         </span>
                         <span className="text-[10px] font-medium text-emerald-800">
                           {karomahCount} Karomah · {doaCount} Doa
                         </span>
                       </div>
                       <p className="text-xs text-slate-700 font-medium line-clamp-2 mt-0.5 leading-relaxed">
-                        {hajatText}
+                        {coreHajatText}
                       </p>
                     </div>
 

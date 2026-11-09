@@ -112,7 +112,8 @@ export default defineConfig(({ command }) => {
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
-        globPatterns: ['index.html', 'manifest.webmanifest', 'favicon.svg', 'icon.svg'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globIgnores: [
           '**/assets/aistudio/**',
           '**/makam/**/index.html',
@@ -178,7 +179,7 @@ export default defineConfig(({ command }) => {
             },
           },
           {
-            urlPattern: /^https:\/\/(upload\.wikimedia\.org|wsrv\.nl|images\.unsplash\.com)\/.*/i,
+            urlPattern: /^https:\/\/(upload\.wikimedia\.org|images\.unsplash\.com)\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'ziarah-images-cache-v3',
