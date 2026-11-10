@@ -352,77 +352,90 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
         </div>
       </nav>
 
-      {/* Unified Floating Pill Dock for Mobile (4 Core Menus + Infaq & Munajat) */}
+      {/* Unified Floating Bottom Navigation Bar for Mobile (5-Column Vertical Grid for 320px-390px Precision) */}
       {typeof document !== 'undefined' &&
         createPortal(
           <nav
             aria-label="Navigasi Utama Mobile"
-            className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] inset-x-0 mx-auto w-fit max-w-[calc(100vw-1rem)] z-[2500] md:hidden px-2 pointer-events-none"
+            className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] inset-x-0 z-[2500] md:hidden px-3 pointer-events-none"
           >
-            <div className="flex items-center gap-1 px-2 py-1.5 rounded-full backdrop-blur-xl bg-white/95 shadow-lg border border-stone-200/80 pointer-events-auto overflow-x-auto no-scrollbar max-w-full">
+            <div className="grid grid-cols-5 items-center w-full max-w-[420px] mx-auto px-1.5 py-1.5 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_12px_32px_rgba(15,23,42,0.14)] pointer-events-auto">
               <Link
                 to="/"
                 aria-current={isNavActive('/') ? 'page' : undefined}
-                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl gap-1 min-h-[50px] transition-all ${
                   isNavActive('/')
-                    ? 'bg-stone-900 text-white shadow-xs'
-                    : 'text-stone-700 hover:text-stone-900'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-700 hover:text-slate-900'
                 }`}
               >
-                <Compass className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Beranda</span>
+                <Compass className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span className="text-[11px] font-semibold leading-none tracking-tight truncate max-w-full">
+                  Beranda
+                </span>
               </Link>
 
               <Link
                 to="/rubrik"
                 aria-current={isNavActive('/rubrik') ? 'page' : undefined}
-                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl gap-1 min-h-[50px] transition-all ${
                   isNavActive('/rubrik')
-                    ? 'bg-stone-900 text-white shadow-xs'
-                    : 'text-stone-700 hover:text-stone-900'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-700 hover:text-slate-900'
                 }`}
               >
-                <ScrollText className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Kisah</span>
+                <ScrollText className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span className="text-[11px] font-semibold leading-none tracking-tight truncate max-w-full">
+                  Kisah
+                </span>
               </Link>
 
               <Link
                 to="/peta"
                 aria-current={isNavActive('/peta') ? 'page' : undefined}
-                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl gap-1 min-h-[50px] transition-all ${
                   isNavActive('/peta')
-                    ? 'bg-stone-900 text-white shadow-xs'
-                    : 'text-stone-700 hover:text-stone-900'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-700 hover:text-slate-900'
                 }`}
               >
-                <MapIcon className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Peta</span>
+                <MapIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span className="text-[11px] font-semibold leading-none tracking-tight truncate max-w-full">
+                  Peta
+                </span>
               </Link>
 
               <Link
                 to="/panduan"
                 aria-current={isNavActive('/panduan') ? 'page' : undefined}
-                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl gap-1 min-h-[50px] transition-all ${
                   isNavActive('/panduan')
-                    ? 'bg-stone-900 text-white shadow-xs'
-                    : 'text-stone-700 hover:text-stone-900'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-700 hover:text-slate-900'
                 }`}
               >
-                <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Amalan</span>
+                <BookOpen className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span className="text-[11px] font-semibold leading-none tracking-tight truncate max-w-full">
+                  Amalan
+                </span>
               </Link>
 
               <Link
                 to="/donasi"
                 aria-current={isNavActive('/donasi') ? 'page' : undefined}
-                className={`px-3 py-2 rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl gap-1 min-h-[50px] transition-all ${
                   isNavActive('/donasi')
-                    ? 'bg-emerald-900 text-white shadow-xs'
-                    : 'text-emerald-900 bg-emerald-50/80 hover:bg-emerald-100'
+                    ? 'bg-emerald-800 text-white shadow-xs'
+                    : 'text-emerald-800 bg-emerald-50/80 hover:bg-emerald-100'
                 }`}
               >
-                <HeartHandshake className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
-                <span>Infaq</span>
+                <HeartHandshake
+                  className={`w-4 h-4 shrink-0 ${isNavActive('/donasi') ? 'text-white' : 'text-emerald-700'}`}
+                  aria-hidden="true"
+                />
+                <span className="text-[11px] font-semibold leading-none tracking-tight truncate max-w-full">
+                  Infaq
+                </span>
               </Link>
             </div>
           </nav>,

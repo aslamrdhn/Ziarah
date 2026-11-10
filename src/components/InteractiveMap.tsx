@@ -20,6 +20,7 @@ import {
   X,
   ExternalLink,
   LocateFixed,
+  Share2,
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
@@ -34,6 +35,7 @@ interface MapProps {
   sites: ZiarahSite[];
   selectedSite: ZiarahSite | null;
   onSelectSite: (site: ZiarahSite) => void;
+  onActiveRouteChange?: (route: CuratedZiarahRoute, routeSites: ZiarahSite[]) => void;
 }
 
 interface SiteCluster {
@@ -205,7 +207,7 @@ function ClusterLayer({
   );
 }
 
-export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedSite, onSelectSite }) => {
+export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedSite, onSelectSite, onActiveRouteChange }) => {
   const [zoomLevel, setZoomLevel] = useState<number>(5);
   const [activeRouteId, setActiveRouteId] = useState<CuratedZiarahRoute['id']>('off');
   const [radiusKm, setRadiusKm] = useState<'all' | 15 | 50 | 100>('all');
@@ -248,6 +250,26 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
     });
     return map;
   }, [activeRouteSites]);
+
+  useEffect(() => {
+    if (onActiveRouteChange) {
+      onActiveRouteChange(activeRouteObj, activeRouteSites);
+    }
+  }, [activeRouteObj, activeRouteSites, onActiveRouteChange]);
+
+  const waRouteShareUrl = useMemo(() => {
+    if (activeRouteObj.id === 'off' || activeRouteSites.length === 0) return '';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ziarahnusantara.my.id';
+    const siteListText = activeRouteSites
+      .map((s, idx) => `${idx + 1}. Makam ${s.title} (${s.location.city}, ${s.location.province})`)
+      .join('\n');
+    const message =
+      `Panduan Rute Rombongan — *${activeRouteObj.label}*\n` +
+      `${activeRouteObj.description}\n\n` +
+      `*Urutan Makam (${activeRouteSites.length} Titik):*\n${siteListText}\n\n` +
+      `Buka peta interaktif, jadwal haul & bacaan doa lengkap di:\n${origin}/peta`;
+    return `https://wa.me/?text=${encodeURIComponent(message)}`;
+  }, [activeRouteObj, activeRouteSites]);
 
   // Filter sites by active route OR GPS radius
   const filteredMapSites = useMemo(() => {
@@ -390,7 +412,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
   };
 
   return (
-    <div className="flex-1 w-full relative z-0 rounded-3xl overflow-hidden border border-stone-200/80 shadow-xs h-full flex flex-col bg-[#FAF8F5] [&_.leaflet-bottom]:!bottom-24 sm:[&_.leaflet-bottom]:!bottom-4">
+    <div className="flex-1 w-full relative z-0 rounded-3xl overflow-hidden border border-stone-200/80 shadow-xs h-full flex flex-col bg-[#FAF8F5] [&_.leaflet-bottom]:!bottom-24 md:[&_.leaflet-bottom]:!bottom-6">
       {/* =====================================================================
           FLOATING TOP GIS PILL CONTROLS (Jalur Wali Songo & Radius GPS)
           ===================================================================== */}
@@ -465,13 +487,26 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
           </div>
         </div>
 
-        {/* Active Route Summary Banner */}
+        {/* Active Route Summary Banner + WA Group Share Button */}
         {activeRouteObj.id !== 'off' && (
-          <div className="mx-auto bg-stone-900/90 text-white backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 shadow-md text-xs flex items-center gap-2.5 pointer-events-auto max-w-xl">
-            <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-[10px] font-bold uppercase tracking-wider shrink-0">
-              {activeRouteSites.length} Titik
-            </span>
-            <p className="text-stone-200 truncate">{activeRouteObj.description}</p>
+          <div className="mx-auto bg-slate-900/95 text-white backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/15 shadow-md text-xs flex flex-wrap items-center justify-between gap-2.5 pointer-events-auto max-w-2xl">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-[10px] font-bold uppercase tracking-wider shrink-0">
+                {activeRouteSites.length} Titik
+              </span>
+              <p className="text-slate-200 truncate">{activeRouteObj.description}</p>
+            </div>
+            {waRouteShareUrl && (
+              <a
+                href={waRouteShareUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-[11px] font-semibold inline-flex items-center gap-1.5 transition shrink-0"
+              >
+                <Share2 className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
+                <span>Bagikan Rute ke WA Rombongan</span>
+              </a>
+            )}
           </div>
         )}
       </div>
@@ -542,7 +577,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
       {/* =====================================================================
           CATEGORY LEGEND PILL (Bottom Left, Compact)
           ===================================================================== */}
-      <div className="hidden sm:flex items-center gap-3 absolute bottom-24 sm:bottom-6 left-14 z-[850] bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-stone-200/80 shadow-xs text-[11px] font-medium text-stone-700 pointer-events-auto">
+      <div className="hidden sm:flex items-center gap-3 absolute bottom-24 md:bottom-6 left-14 z-[850] bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-full border border-stone-200/80 shadow-xs text-[11px] font-medium text-stone-700 pointer-events-auto">
         <span className="inline-flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-700" />
           Wali Songo
@@ -568,7 +603,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
         <div
           role="dialog"
           aria-label={`Ringkasan Lokasi ${previewSite.title}`}
-          className="absolute bottom-24 sm:bottom-6 inset-x-3 sm:left-auto sm:right-4 sm:w-[410px] z-[950] bg-white/95 backdrop-blur-xl rounded-3xl p-4 sm:p-5 border border-stone-200/80 shadow-2xl pointer-events-auto animate-in slide-in-from-bottom-4 duration-200"
+          className="absolute bottom-24 md:bottom-6 inset-x-3 sm:left-auto sm:right-4 sm:w-[410px] z-[950] bg-white/95 backdrop-blur-xl rounded-3xl p-4 sm:p-5 border border-stone-200/80 shadow-2xl pointer-events-auto animate-in slide-in-from-bottom-4 duration-200"
         >
           {/* Drag Handle Indicator on Mobile */}
           <div className="w-10 h-1 bg-stone-200 rounded-full mx-auto mb-3 sm:hidden" />

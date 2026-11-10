@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle2, ScrollText, HeartHandshake, Loader2, Copy, MessageSquareHeart, Lock, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ZiarahSite } from '../data/sites';
@@ -178,22 +179,23 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[3500] flex items-center justify-center p-4 pointer-events-auto">
+  const modalNode = (
+    <div className="fixed inset-0 z-[3500] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
       <div className="absolute inset-0 bg-stone-950/60 backdrop-blur-xs cursor-pointer" onClick={onClose} />
       <motion.div 
         initial={{ opacity: 0, scale: 0.96, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 20 }}
         transition={{ type: "spring", damping: 26, stiffness: 320 }}
-        className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-stone-200/90 pointer-events-auto"
+        className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl max-h-[90dvh] overflow-y-auto flex flex-col border border-stone-200/90 pointer-events-auto"
       >
         {/* Header */}
         <div className="p-5 sm:p-6 bg-[#FAF8F5] border-b border-stone-200/80 text-stone-900 relative shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 rounded-full transition-colors cursor-pointer"
+            aria-label="Tutup modal donasi"
+            className="absolute top-3.5 right-3.5 z-20 w-10 h-10 flex items-center justify-center text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 rounded-full transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -233,7 +235,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         </div>
 
         {/* Content */}
-        <div className="p-5 sm:p-6 overflow-y-auto">
+        <div className="p-5 sm:p-6 pb-6 sm:pb-6 overflow-y-auto">
           {isSuccess ? (
             <div className="text-center py-3">
               <div className="w-14 h-14 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-emerald-200/80">
@@ -461,7 +463,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
               </button>
 
               {type === 'infaq' && (
-                <div className="text-center pt-1">
+                <div className="text-center pt-1 pb-2">
                   <Link 
                     to="/infaq" 
                     onClick={onClose}
@@ -477,4 +479,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       </motion.div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalNode, document.body) : modalNode;
 };

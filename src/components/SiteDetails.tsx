@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ZiarahSite } from '../data/sites';
 import { X, MapPin, Navigation, Clock, Heart, BookOpen, Bookmark, BookmarkCheck, QrCode, Send, ScrollText, Trash2, Loader2, Calendar, ShieldCheck, Type, Map as MapIcon, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -497,6 +498,12 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
         </div>
       ) : (
         <div className="relative rounded-2xl bg-white border border-slate-200 p-5 sm:p-6 overflow-hidden">
+          {/* 1 Baris Kalimat Pembuka Panduan Kaifiyah Secara Terbuka Sebelum Lafaz Arab yang Di-Blur */}
+          <div className="mb-4 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-xs sm:text-sm text-slate-800 leading-relaxed">
+            <strong className="font-semibold text-emerald-900">Panduan Kaifiyah Hajat:</strong>{' '}
+            Awali dengan hadiah Al-Fatihah khusus sebanyak 3 kali ke hadirat {site.name}, lalu bacalah wirid dan munajat berikut...
+          </div>
+
           {/* Seluruh 3 Bagian Panduan Amalan Lengkap dalam keadaan BLUR */}
           <div className="blur-[6px] select-none pointer-events-none opacity-50 space-y-5" aria-hidden="true">
             <div className="space-y-1.5">
@@ -583,7 +590,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
         ? 'font-serif text-xl sm:text-2xl text-slate-900 leading-relaxed mb-6 first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-emerald-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none'
         : 'font-serif text-lg sm:text-xl text-slate-900 leading-relaxed mb-5 first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-emerald-900 first-letter:float-left first-letter:mr-3 first-letter:leading-none';
 
-  return (
+  const modalContent = (
     <>
       <AnimatePresence>
         {site && (
@@ -613,54 +620,33 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent pointer-events-none" />
 
-                <div className="absolute top-3.5 right-3.5 z-20 flex items-center space-x-1.5 pointer-events-auto">
-                  <button
-                    type="button"
-                    onClick={cycleFontSizeDown}
-                    disabled={readingFontSize === 'base'}
-                    className="px-2.5 py-2 backdrop-blur-md rounded-xl text-xs font-semibold transition-colors border shadow-sm cursor-pointer flex items-center gap-1 bg-slate-900/65 hover:bg-slate-900/85 text-white border-white/20 disabled:opacity-40"
-                    title="Perkecil Ukuran Teks (A-)"
-                  >
-                    <span>A-</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cycleFontSizeUp}
-                    disabled={readingFontSize === 'xl'}
-                    className={`px-2.5 py-2 backdrop-blur-md rounded-xl text-xs font-semibold transition-colors border shadow-sm cursor-pointer flex items-center gap-1 ${
-                      readingFontSize !== 'base'
-                        ? 'bg-emerald-700 text-white border-emerald-500/40'
-                        : 'bg-slate-900/65 hover:bg-slate-900/85 text-white border-white/20'
-                    }`}
-                    title="Perbesar Ukuran Teks (A+)"
-                  >
-                    <Type className="w-3.5 h-3.5" strokeWidth={1.75} />
-                    <span>A+</span>
-                  </button>
+                <div className="absolute top-3 right-3 z-20 flex items-center gap-2 pointer-events-auto">
                   {onToggleSave && (
                     <motion.button
                       type="button"
-                      whileTap={{ scale: 1.25 }}
+                      whileTap={{ scale: 1.2 }}
                       transition={{ type: 'spring', stiffness: 450, damping: 15 }}
                       onClick={onToggleSave}
-                      className="p-2 bg-slate-900/65 hover:bg-slate-900/85 backdrop-blur-md rounded-xl text-white transition-colors border border-white/20 shadow-sm cursor-pointer"
+                      className="w-10 h-10 flex items-center justify-center bg-slate-900/70 hover:bg-slate-900/90 backdrop-blur-md rounded-xl text-white transition-colors border border-white/20 shadow-sm cursor-pointer"
                       title={isSaved ? 'Hapus dari Rencana' : 'Simpan ke Rencana'}
+                      aria-label={isSaved ? 'Hapus dari Rencana' : 'Simpan ke Rencana'}
                     >
                       <Heart className={`w-4 h-4 transition-colors ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-white'}`} strokeWidth={1.75} />
                     </motion.button>
                   )}
                   <motion.button
                     type="button"
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={{ scale: 0.92 }}
                     onClick={onClose}
-                    className="p-2 bg-slate-900/65 hover:bg-slate-900/85 backdrop-blur-md rounded-xl text-white transition-colors border border-white/20 shadow-sm cursor-pointer"
+                    className="w-10 h-10 flex items-center justify-center bg-slate-900/75 hover:bg-slate-900/95 backdrop-blur-md rounded-xl text-white transition-colors border border-white/25 shadow-sm cursor-pointer"
                     title="Tutup lembar bacaan"
+                    aria-label="Tutup lembar bacaan"
                   >
-                    <X className="w-4 h-4" strokeWidth={1.75} />
+                    <X className="w-5 h-5" strokeWidth={2} />
                   </motion.button>
                 </div>
 
-                <div className="absolute bottom-3.5 left-6 right-6 z-10 text-white flex items-end justify-between gap-3 pointer-events-none">
+                <div className="absolute bottom-3.5 left-4 right-4 sm:left-6 sm:right-6 z-10 text-white flex items-end justify-between gap-3 pointer-events-none">
                   <div className="min-w-0">
                     <div className="text-[11px] font-medium uppercase tracking-widest text-emerald-200 mb-1 truncate">
                       {site.category} · {site.location.city}, {site.location.province}
@@ -682,76 +668,76 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 </div>
               </div>
 
-              {/* 3 Internal Reader Tabs */}
-              <div className="relative z-20 flex px-6 sm:px-10 bg-white border-b border-slate-200 overflow-x-auto scrollbar-hide shrink-0 gap-5 sm:gap-7 pointer-events-auto">
+              {/* 3 Internal Reader Tabs (Grid 3 Kolom Presisi di Layar HP 360px) */}
+              <div className="relative z-20 grid grid-cols-3 gap-1 px-3 sm:px-8 py-2 bg-slate-50 border-b border-slate-200 shrink-0 pointer-events-auto">
                 <button
                   type="button"
                   onClick={() => setActiveTab('kisah_utama')}
-                  className={`shrink-0 flex items-center py-3.5 -mb-px text-xs sm:text-sm font-medium whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
+                  className={`text-xs sm:text-sm font-semibold text-center py-2.5 px-1.5 rounded-xl transition-all inline-flex items-center justify-center gap-1 cursor-pointer ${
                     activeTab === 'kisah_utama'
-                      ? 'border-emerald-700 text-slate-900 font-semibold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200/80'
                   }`}
                 >
-                  <ScrollText className="w-3.5 h-3.5 mr-2" strokeWidth={1.75} />
-                  Kisah &amp; Karomah
+                  <ScrollText className="w-3.5 h-3.5 hidden sm:inline shrink-0" strokeWidth={1.75} />
+                  <span className="truncate">Kisah &amp; Karomah</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('barokah_doa')}
-                  className={`shrink-0 flex items-center py-3.5 -mb-px text-xs sm:text-sm font-medium whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
+                  className={`text-xs sm:text-sm font-semibold text-center py-2.5 px-1.5 rounded-xl transition-all inline-flex items-center justify-center gap-1 cursor-pointer ${
                     activeTab === 'barokah_doa'
-                      ? 'border-emerald-700 text-slate-900 font-semibold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200/80'
                   }`}
                 >
-                  <Lock className="w-3.5 h-3.5 mr-1.5 text-emerald-700" strokeWidth={1.75} />
-                  Barokah &amp; Doa Khusus
+                  <Lock className={`w-3.5 h-3.5 hidden sm:inline shrink-0 ${activeTab === 'barokah_doa' ? 'text-white' : 'text-emerald-700'}`} strokeWidth={1.75} />
+                  <span className="truncate">Barokah &amp; Doa</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('panduan_doa')}
-                  className={`shrink-0 flex items-center py-3.5 -mb-px text-xs sm:text-sm font-medium whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
+                  className={`text-xs sm:text-sm font-semibold text-center py-2.5 px-1.5 rounded-xl transition-all inline-flex items-center justify-center gap-1 cursor-pointer ${
                     activeTab === 'panduan_doa'
-                      ? 'border-emerald-700 text-slate-900 font-semibold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200/80'
                   }`}
                 >
-                  <BookOpen className="w-3.5 h-3.5 mr-2" strokeWidth={1.75} />
-                  Panduan &amp; Adab Ziarah ({allStories.length})
+                  <BookOpen className="w-3.5 h-3.5 hidden sm:inline shrink-0" strokeWidth={1.75} />
+                  <span className="truncate">Panduan &amp; Adab</span>
                 </button>
               </div>
 
               {/* Bar Pintasan Cepat ke 2 Produk Utama + Kontrol Ukuran Huruf (A- / A+ Ukuran Teks Nyaman) */}
-              <div className="px-6 sm:px-10 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 shrink-0">
-                <div className="flex flex-wrap items-center gap-1.5">
+              <div className="px-3 sm:px-8 py-2 bg-white border-b border-slate-200 flex items-center justify-between gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar min-w-0">
                   {hasKaromah && (
                     <button
                       type="button"
                       onClick={() => jumpToSectionInModal('seksi-karomah-makam')}
-                      className="px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-800 hover:text-emerald-800 border border-slate-200 text-[11px] font-semibold transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-emerald-50 text-slate-800 hover:text-emerald-800 border border-slate-200 text-[11px] font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer"
                     >
-                      Lompat ke: Kesaksian Karomah ↓
+                      Kesaksian Karomah ↓
                     </button>
                   )}
                   <button
                     type="button"
                     onClick={() => jumpToSectionInModal('seksi-barokah-doa-makam')}
-                    className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] font-semibold transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer"
                   >
-                    Barokah Hajat &amp; Doa Khusus ↓
+                    Barokah &amp; Doa ↓
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1 ml-auto">
+                <div className="flex items-center gap-1 shrink-0 ml-auto">
                   <span className="text-[11px] text-slate-500 mr-1 hidden md:inline">
-                    Ukuran Teks Nyaman:
+                    Ukuran Teks:
                   </span>
                   <button
                     type="button"
                     onClick={cycleFontSizeDown}
                     disabled={readingFontSize === 'base'}
-                    className="px-2 py-1 rounded-md bg-white border border-slate-200 text-[11px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 cursor-pointer"
                     title="Perkecil Ukuran Huruf (A-)"
                   >
                     A-
@@ -760,10 +746,15 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     type="button"
                     onClick={cycleFontSizeUp}
                     disabled={readingFontSize === 'xl'}
-                    className="px-2 py-1 rounded-md bg-white border border-slate-200 text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-40 cursor-pointer"
+                    className={`px-2.5 py-1 rounded-lg border text-xs font-bold inline-flex items-center gap-1 cursor-pointer ${
+                      readingFontSize !== 'base'
+                        ? 'bg-emerald-700 text-white border-emerald-700'
+                        : 'bg-slate-50 border-slate-200 text-emerald-800 hover:bg-emerald-50'
+                    } disabled:opacity-40`}
                     title="Perbesar Ukuran Huruf (A+)"
                   >
-                    A+
+                    <Type className="w-3 h-3" strokeWidth={1.75} />
+                    <span>A+</span>
                   </button>
                 </div>
               </div>
@@ -1379,4 +1370,6 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       />
     </>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 });

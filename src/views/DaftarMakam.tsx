@@ -139,26 +139,26 @@ export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntent
     }
     case 'keteguhan': {
       const keywords = [
-        'penjajah',
-        'kolonial',
-        'perang',
-        'benteng',
         'pahlawan',
-        'jihad',
-        'keteguhan',
-        'kesultanan',
+        'perlawanan',
+        'benteng',
+        'pengasingan',
+        'diasingkan',
         'laskar',
-        'giri',
-        'kudus',
-        'gunung jati',
-        'yusuf',
+        'jihad',
         'diponegoro',
         'fatahillah',
-        'banten',
+        'faletehan',
+        'sultan agung',
+        'hasanuddin',
+        'imam bonjol',
+        'cik di tiro',
+        'antasari',
+        'yusuf al-makassari',
+        'abdul jalil',
       ];
       return (
         keywords.some((kw) => primaryCorpus.includes(kw)) ||
-        site.category === 'Auliya Nusantara' ||
         site.id === 'wali-3' ||
         site.id === 'wali-5' ||
         site.id === 'wali-7'
@@ -391,50 +391,50 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   }
 
   return (
-    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 px-4 py-6 sm:py-10 md:px-8 relative z-10">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 px-4 py-5 sm:py-10 md:px-8 relative z-10">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         {/* =====================================================================
-            1. EDITORIAL HEADER: Bersih, Tanpa Kapsul Berlapis atau Emoji/Bintang
+            1. EDITORIAL HEADER: Kompak di Ponsel (< 640px), Tanpa Kapsul Berlapis
             ===================================================================== */}
-        <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
-          <div className="space-y-2.5 max-w-2xl">
+        <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-3 sm:gap-5">
+          <div className="space-y-1.5 sm:space-y-2.5 max-w-2xl">
             <span className="block text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
               {copy.heroBadge}
             </span>
-            <h1 className="font-serif text-3xl sm:text-5xl font-normal tracking-tight text-stone-900 leading-[1.15]">
+            <h1 className="font-serif text-2xl sm:text-4xl font-normal tracking-tight text-stone-900 leading-snug">
               {copy.heroTitle}
             </h1>
-            <p className="text-sm sm:text-base text-stone-600 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-base text-stone-600 max-w-2xl leading-relaxed">
               {copy.heroSubtitle}
             </p>
           </div>
 
-          {/* Subtle Editorial Quick Actions */}
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {/* Subtle Editorial Quick Actions (1 Baris Geser Horizontal Kompak di HP) */}
+          <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1 items-center shrink-0">
             <Link
               to="/peta"
-              className="px-4 py-2.5 rounded-xl bg-stone-900 hover:bg-emerald-900 text-white text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition"
+              className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-stone-900 hover:bg-emerald-900 text-white text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition"
             >
-              <MapIcon className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
+              <MapIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
               <span>Peta &amp; Jalur Wali Songo</span>
             </Link>
             <Link
               to="/panduan"
-              className="px-4 py-2.5 rounded-xl bg-white hover:border-stone-400 text-stone-700 border border-stone-200/80 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition"
+              className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white hover:border-stone-400 text-stone-700 border border-stone-200/80 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition"
             >
-              <BookOpen className="w-3.5 h-3.5 text-emerald-800" strokeWidth={1.75} aria-hidden="true" />
+              <BookOpen className="w-3.5 h-3.5 text-emerald-800 shrink-0" strokeWidth={1.75} aria-hidden="true" />
               <span>Yasin, Tahlil &amp; Tasbih</span>
             </Link>
             <button
               type="button"
               onClick={() => setShowVisualShowcase(!showVisualShowcase)}
-              className={`px-3.5 py-2.5 rounded-xl text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition cursor-pointer border ${
+              className={`px-3.5 py-2 sm:py-2.5 rounded-xl text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer border ${
                 showVisualShowcase
                   ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
                   : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
               }`}
             >
-              <Film className="w-3.5 h-3.5 text-emerald-800" strokeWidth={1.75} aria-hidden="true" />
+              <Film className="w-3.5 h-3.5 text-emerald-800 shrink-0" strokeWidth={1.75} aria-hidden="true" />
               <span>{showVisualShowcase ? 'Tutup Eksplorasi Visual' : 'Buka Eksplorasi Visual Nusantara'}</span>
             </button>
             <button
@@ -442,7 +442,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               onClick={() =>
                 document.getElementById('hikmah-ziarah-reel')?.scrollIntoView({ behavior: 'smooth' })
               }
-              className="px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 transition cursor-pointer"
+              className="px-3.5 py-2 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer"
             >
               <span>Hikmah Ziarah · 5 Slide</span>
             </button>
