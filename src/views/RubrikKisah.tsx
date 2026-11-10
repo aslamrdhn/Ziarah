@@ -63,6 +63,7 @@ export interface RubrikGateSettings {
   bannerDescription: string;
   pinnedFreeArticleIds: string[];
   customArticles: RubrikItem[];
+  deletedArticleIds?: string[];
   requireManualVerification?: boolean;
 }
 
@@ -79,6 +80,7 @@ export const DEFAULT_RUBRIK_GATE_SETTINGS: RubrikGateSettings = {
     'rubrik-wali-songo-strategy',
   ],
   customArticles: [],
+  deletedArticleIds: [],
   requireManualVerification: false,
 };
 
@@ -115,7 +117,8 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   onOpenKontribusi
 }) => {
   const { sites } = useSites();
-  const siteCopy = useSiteCopy();
+  const { copy } = useSiteCopy();
+  const rubrikMinAmount = copy.rubrikLockAmount || 10000;
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
@@ -226,6 +229,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               bannerDescription: rg.bannerDescription || DEFAULT_RUBRIK_GATE_SETTINGS.bannerDescription,
               pinnedFreeArticleIds: Array.isArray(rg.pinnedFreeArticleIds) ? rg.pinnedFreeArticleIds : DEFAULT_RUBRIK_GATE_SETTINGS.pinnedFreeArticleIds,
               customArticles: Array.isArray(rg.customArticles) ? rg.customArticles : [],
+              deletedArticleIds: Array.isArray(rg.deletedArticleIds) ? rg.deletedArticleIds : [],
               requireManualVerification: Boolean(rg.requireManualVerification),
             });
           }
@@ -381,15 +385,16 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       }
     });
 
+    const deletedSet = new Set<string>(gateSettings.deletedArticleIds || []);
     const seenIds = new Set<string>();
     const deduped: RubrikItem[] = [];
     for (const item of rawList) {
-      if (!item || !item.id || seenIds.has(item.id)) continue;
+      if (!item || !item.id || seenIds.has(item.id) || deletedSet.has(item.id)) continue;
       seenIds.add(item.id);
       deduped.push(item);
     }
     return deduped;
-  }, [sites, approvedCommunityRubrik, gateSettings.customArticles]);
+  }, [sites, approvedCommunityRubrik, gateSettings.customArticles, gateSettings.deletedArticleIds]);
 
   const filteredArticles = useMemo(() => {
     const q = deferredSearchQuery.toLowerCase().trim();
@@ -447,12 +452,12 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   const activeEffectiveNominal = useMemo(() => {
     if (customNominalInput.trim()) {
       const parsed = Number(customNominalInput.replace(/[^0-9]/g, ''));
-      if (Number.isFinite(parsed) && parsed >= 10000) {
+      if (Number.isFinite(parsed) && parsed >= rubrikMinAmount) {
         return Math.min(parsed, 1000000000);
       }
     }
-    return selectedNominal;
-  }, [customNominalInput, selectedNominal]);
+    return Math.max(selectedNominal, rubrikMinAmount);
+  }, [customNominalInput, selectedNominal, rubrikMinAmount]);
 
   const handleConfirmUnlockDonation = async () => {
     if (isSubmittingDonation) return;
@@ -532,10 +537,10 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             Rubrik Khazanah Sejarah &amp; Manuskrip
           </div>
           <h1 className="text-2xl sm:text-4xl font-serif font-normal text-stone-900 tracking-tight">
-            Rubrik Ziarah Nusantara.
+            {copy.rubrikTitle}
           </h1>
           <p className="text-stone-600 text-xs sm:text-sm md:text-base leading-relaxed">
-            {siteCopy.rubrikHeaderSubtitle}
+            {copy.rubrikSubtitle}
           </p>
         </div>
         {onOpenKontribusi && (
@@ -895,7 +900,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       Alhamdulillah — Seluruh Khazanah Kini Terbuka!
                     </h4>
                     <p className="text-xs sm:text-sm text-stone-600 mb-4 leading-relaxed">
-                      {siteCopy.unlockSuccessMessage}
+                      {copy.unlockSuccessMessage}
                     </p>
 
                     {receipt && (
@@ -1065,7 +1070,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       <textarea
                         rows={2}
                         maxLength={200}
-                        placeholder={siteCopy.doaHajatPlaceholder}
+                        placeholder={copy.doaHajatPlaceholder}
                         value={prayerIntent}
                         onChange={(e) => setPrayerIntent(e.target.value)}
                         className="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 resize-none"

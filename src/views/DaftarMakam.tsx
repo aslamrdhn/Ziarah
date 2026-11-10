@@ -205,7 +205,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   onOpenKontribusi,
 }) => {
   const { sites: ziarahSites, isLoading, ensureFullSitesLoaded } = useSites();
-  const siteCopy = useSiteCopy();
+  const { copy } = useSiteCopy();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
@@ -263,13 +263,22 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 
   const categories = useMemo(
     () => [
-      { id: 'Semua', label: siteCopy.tabLabelAll },
-      { id: 'Walisongo', label: siteCopy.tabLabelWaliSongo },
-      { id: 'Ulama Nusantara', label: siteCopy.tabLabelUlama },
+      { id: 'Semua', label: copy.tabLabelAll },
+      { id: 'Walisongo', label: copy.tabLabelWaliSongo },
+      { id: 'Ulama Nusantara', label: copy.tabLabelUlama },
       { id: 'Habaib', label: 'Habaib' },
-      { id: 'Auliya Nusantara', label: siteCopy.tabLabelRaja },
+      { id: 'Auliya Nusantara', label: copy.tabLabelRaja },
     ],
-    [siteCopy.tabLabelAll, siteCopy.tabLabelWaliSongo, siteCopy.tabLabelUlama, siteCopy.tabLabelRaja]
+    [copy.tabLabelAll, copy.tabLabelWaliSongo, copy.tabLabelUlama, copy.tabLabelRaja]
+  );
+
+  const dynamicEmotionalIntents = useMemo(
+    () =>
+      EMOTIONAL_INTENTS.map((item) => ({
+        id: item.id,
+        label: copy.intentLabels?.[item.id] || item.label,
+      })),
+    [copy.intentLabels]
   );
 
   const provinces = useMemo(() => {
@@ -389,11 +398,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             ===================================================================== */}
         <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
           <div className="space-y-2.5 max-w-2xl">
+            <span className="block text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
+              {copy.heroBadge}
+            </span>
             <h1 className="font-serif text-3xl sm:text-5xl font-normal tracking-tight text-stone-900 leading-[1.15]">
-              {siteCopy.heroTitle}
+              {copy.heroTitle}
             </h1>
             <p className="text-sm sm:text-base text-stone-600 max-w-2xl leading-relaxed">
-              {siteCopy.heroSubtitle}
+              {copy.heroSubtitle}
             </p>
           </div>
 
@@ -501,7 +513,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         {isJumatMomentum ? (
           <div className="py-2.5 border-y border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
             <p className="font-serif italic text-stone-700 leading-relaxed">
-              {siteCopy.jumatBannerTitle} — {siteCopy.jumatBannerSubtitle}
+              {copy.jumatBannerTitle} — {copy.jumatBannerSubtitle}
             </p>
             <div className="flex items-center gap-4 shrink-0">
               <Link
@@ -559,7 +571,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               <input
                 id="site-search-input"
                 type="search"
-                placeholder={siteCopy.searchPlaceholder}
+                placeholder={copy.searchPlaceholder}
                 value={searchQuery}
                 onFocus={() => {
                   ensureFullSitesLoaded();
@@ -641,7 +653,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 
             {/* Clean Text Chips for Emotional Intent */}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2.5 lg:pb-2">
-              {EMOTIONAL_INTENTS.map((intent) => {
+              {dynamicEmotionalIntents.map((intent) => {
                 const isSelected = emotionalFilter === intent.id;
                 const count = intentCountMap[intent.id];
                 return (
@@ -678,7 +690,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             {selectedCategory !== 'Semua' && <span> · {selectedCategory}</span>}
             {selectedProvince !== 'Semua Provinsi' && <span> · {selectedProvince}</span>}
             {emotionalFilter !== 'all' && (
-              <span> · {EMOTIONAL_INTENTS.find((i) => i.id === emotionalFilter)?.label}</span>
+              <span> · {dynamicEmotionalIntents.find((i) => i.id === emotionalFilter)?.label}</span>
             )}
           </p>
           {isFiltered && (
@@ -797,14 +809,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                     onClick={() => onSelectSite(site)}
                     className="py-2 pr-3 min-h-[36px] inline-flex items-center hover:text-slate-900 underline underline-offset-4 cursor-pointer"
                   >
-                    {siteCopy.cardSecondaryMapCta}
+                    {copy.cardSecondaryMapCta}
                   </button>
                   <a
                     href={siteUrl}
                     onClick={(e) => handleOpenReaderModal(site, e)}
                     className="py-2 pl-3 min-h-[36px] inline-flex items-center font-bold text-emerald-700 group-hover:text-emerald-800 group-hover:translate-x-0.5 transition-transform"
                   >
-                    Karomah &amp; Doa Khusus →
+                    {copy.cardCtaLabel}
                   </a>
                 </div>
               </article>
@@ -894,10 +906,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               />
               <div className="space-y-0.5 min-w-0">
                 <span className="block text-[10px] font-semibold uppercase tracking-widest text-emerald-800">
-                  Ensiklopedia &amp; Tuntunan Resmi Peziarah Indonesia
+                  {copy.faqSectionSubtitle}
                 </span>
                 <h2 className="font-serif text-base sm:text-lg font-bold text-stone-900 leading-snug">
-                  Panduan Pengertian, Hukum, Adab, dan Urutan Doa Ziarah Kubur Sesuai Sunnah
+                  {copy.faqSectionTitle}
                 </h2>
               </div>
             </div>

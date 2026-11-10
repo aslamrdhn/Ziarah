@@ -19,6 +19,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { APP_BRAND } from '../config/brand';
+import { useSiteCopy } from '../lib/siteCopy';
 
 const DEFAULT_ADMIN_EMAILS = ['aslamramadhan08@gmail.com', 'agoraruangsemesta@gmail.com'];
 
@@ -40,6 +41,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) => {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { copy } = useSiteCopy();
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -113,10 +115,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
 
   // Unified 4 Core Navigation Items across Desktop, Mobile Web & Installed PWA
   const desktopNavItems = [
-    { id: '/', label: 'Beranda & Makam', shortLabel: 'Beranda', icon: Compass },
-    { id: '/rubrik', label: 'Kisah & Khazanah', shortLabel: 'Kisah', icon: ScrollText },
-    { id: '/peta', label: 'Peta Ziarah', shortLabel: 'Peta Ziarah', icon: MapIcon },
-    { id: '/panduan', label: 'Amalan & Doa', shortLabel: 'Amalan & Doa', icon: BookOpen },
+    { id: '/', label: copy.navHomeLabel, shortLabel: copy.navHomeLabel, icon: Compass },
+    { id: '/rubrik', label: copy.navRubrikLabel, shortLabel: copy.navRubrikLabel, icon: ScrollText },
+    { id: '/peta', label: copy.navMapLabel, shortLabel: copy.navMapLabel, icon: MapIcon },
+    { id: '/panduan', label: copy.navPrayerLabel, shortLabel: copy.navPrayerLabel, icon: BookOpen },
   ];
 
   const isNavActive = (id: string) => {
@@ -138,18 +140,18 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
         <Link to="/" className="group flex items-center gap-2.5 sm:gap-3 min-w-0 shrink-0">
           <img
             src="/favicon.svg"
-            alt="Logo Resmi Ziarah Nusantara — Kubah Emas ZN"
+            alt={`Logo Resmi ${copy.brandName || APP_BRAND.name} — Kubah Emas ZN`}
             width={36}
             height={36}
             className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-xs border border-stone-200/80 shrink-0"
           />
           <div className="flex flex-col justify-center min-w-0">
             <span className="font-serif font-semibold tracking-tight text-stone-900 group-hover:text-emerald-800 transition-colors text-base sm:text-lg lg:text-xl leading-tight whitespace-nowrap">
-              {APP_BRAND.name}
+              {copy.brandName || APP_BRAND.name}
             </span>
-            {APP_BRAND.tagline && (
+            {(copy.brandSubtitle || APP_BRAND.tagline) && (
               <span className="hidden xl:block text-[10px] font-medium tracking-wider uppercase text-stone-600 leading-tight truncate mt-0.5">
-                {APP_BRAND.tagline}
+                {copy.brandSubtitle || APP_BRAND.tagline}
               </span>
             )}
           </div>
@@ -190,7 +192,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
             }`}
           >
             <HeartHandshake className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Infaq &amp; Munajat</span>
+            <span>{copy.navDonateCtaLabel}</span>
           </Link>
 
           {/* Secondary Menu Dropdown */}

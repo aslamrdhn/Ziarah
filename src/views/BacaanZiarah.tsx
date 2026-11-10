@@ -134,7 +134,7 @@ const PRAYER_SECTIONS: PrayerSectionData[] = [
 ];
 
 export const BacaanZiarah: React.FC = () => {
-  const siteCopy = useSiteCopy();
+  const { copy } = useSiteCopy();
   // Load initial preferences & tasbih state from localStorage
   const [fontSize, setFontSize] = useState<'A' | 'A+' | 'A++'>(() => {
     try {
@@ -388,14 +388,14 @@ export const BacaanZiarah: React.FC = () => {
                 outdoorMode ? 'text-black font-bold' : 'text-stone-900'
               }`}
             >
-              {siteCopy.bacaanTitle}
+              {copy.bacaanTitle}
             </h1>
             <p
               className={`text-sm sm:text-base leading-relaxed ${
                 outdoorMode ? 'text-stone-900 font-medium' : 'text-stone-600'
               }`}
             >
-              {siteCopy.yasinHeaderSubtitle}
+              {copy.bacaanSubtitle}
             </p>
           </div>
 
@@ -753,14 +753,14 @@ export const BacaanZiarah: React.FC = () => {
                 outdoorMode ? 'text-black font-bold' : 'text-stone-900'
               }`}
             >
-              {siteCopy.tawassulTitle}
+              {copy.tawassulTitle}
             </label>
             <input
               id="tawassul-intent-input"
               type="text"
               value={tawassulIntent}
               onChange={(e) => handleTawassulIntentChange(e.target.value)}
-              placeholder={siteCopy.tawassulPlaceholder}
+              placeholder={copy.tawassulPlaceholder}
               className={`w-full border-b bg-transparent py-2 text-sm focus:outline-none transition-colors ${
                 outdoorMode
                   ? 'border-black text-black placeholder-stone-600 font-medium'
@@ -902,9 +902,14 @@ export const BacaanZiarah: React.FC = () => {
             4. CALM EDITORIAL CLOSING FOOTER (Tahap Desain 3)
             ===================================================================== */}
         <footer className="py-8 border-t border-stone-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <p className="font-serif italic text-base sm:text-lg text-stone-800 max-w-xl leading-relaxed">
-            {siteCopy.postPrayerTitle}
-          </p>
+          <div className="max-w-xl space-y-1.5">
+            <p className="font-serif italic text-base sm:text-lg text-stone-800 leading-relaxed">
+              {copy.postPrayerTitle}
+            </p>
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              {copy.postPrayerDescription}
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-4 shrink-0">
             <Link
               to="/infaq"

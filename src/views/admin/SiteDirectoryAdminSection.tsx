@@ -136,14 +136,14 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
       ...editingSite,
       doaKhusus: [
         ...doaKhususList,
-        { title: 'Amalan & Tawassul Khusus', text: '', translation: '' },
+        { title: 'Amalan & Tawassul Khusus', text: '', latin: '', translation: '' },
       ],
     });
   };
 
   const handleUpdateDoaKhusus = (
     idx: number,
-    field: 'title' | 'text' | 'translation',
+    field: 'title' | 'text' | 'latin' | 'translation',
     value: string
   ) => {
     const next = doaKhususList.map((item, i) =>
@@ -291,11 +291,21 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">URL Foto Makam</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1">URL Foto Makam (`imageUrl`)</label>
                 <input
                   type="text"
                   value={editingSite.imageUrl || ''}
                   onChange={(e) => onChangeEditingSite({ ...editingSite, imageUrl: e.target.value })}
+                  className="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-xs"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold text-stone-700 mb-1">Kredit / Sumber Foto (`imageSource` — Opsional)</label>
+                <input
+                  type="text"
+                  value={editingSite.imageSource || ''}
+                  onChange={(e) => onChangeEditingSite({ ...editingSite, imageSource: e.target.value })}
+                  placeholder="Contoh: Dokumentasi Arsip Ziarah Nusantara / Wikimedia Commons"
                   className="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-xs"
                 />
               </div>
@@ -443,7 +453,7 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
               </div>
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-1">
-                  Fasilitas Makam (Pisahkan dengan koma)
+                  Fasilitas Makam (`facilities` — Pisahkan dengan koma)
                 </label>
                 <textarea
                   rows={3}
@@ -458,6 +468,46 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                     })
                   }
                   placeholder="Masjid Jami, Tempat Wudhu, Area Parkir Bus, Pusat Oleh-Oleh"
+                  className="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-xs leading-relaxed"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">
+                  Warisan Karya &amp; Peninggalan (`karya` — Pisahkan dengan baris baru)
+                </label>
+                <textarea
+                  rows={3}
+                  value={(editingSite.karya || []).join('\n')}
+                  onChange={(e) =>
+                    onChangeEditingSite({
+                      ...editingSite,
+                      karya: e.target.value
+                        .split('\n')
+                        .map((k) => k.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                  placeholder="Satu karya / peninggalan per baris..."
+                  className="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-xs leading-relaxed"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">
+                  Sumber Referensi Sejarah (`references` — Pisahkan dengan baris baru)
+                </label>
+                <textarea
+                  rows={3}
+                  value={(editingSite.references || []).join('\n')}
+                  onChange={(e) =>
+                    onChangeEditingSite({
+                      ...editingSite,
+                      references: e.target.value
+                        .split('\n')
+                        .map((r) => r.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                  placeholder="Contoh: Atlas Wali Songo (Agus Sunyoto)..."
                   className="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-xs leading-relaxed"
                 />
               </div>
@@ -676,7 +726,7 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Teks Arab / Bacaan Wirid</label>
+                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Teks Arab / Bacaan Wirid (`text`)</label>
                       <textarea
                         rows={2}
                         dir="rtl"
@@ -687,7 +737,17 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Terjemahan / Keterangan Amalan</label>
+                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Transliterasi Latin (`latin` — Opsional)</label>
+                      <textarea
+                        rows={2}
+                        value={doa.latin || ''}
+                        onChange={(e) => handleUpdateDoaKhusus(idx, 'latin', e.target.value)}
+                        placeholder="Contoh: Bismillaahirrahmaanirrahiim. Ilaa hadhratin Nabiyyil Mushthafaa..."
+                        className="w-full px-3 py-1.5 bg-[#FAF8F5] border border-stone-200 rounded-lg text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Terjemahan / Keterangan Amalan (`translation`)</label>
                       <textarea
                         rows={2}
                         value={doa.translation || ''}

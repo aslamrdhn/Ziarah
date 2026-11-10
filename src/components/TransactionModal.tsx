@@ -21,9 +21,11 @@ interface TransactionModalProps {
 }
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, site, type, onSuccess }) => {
-  const siteCopy = useSiteCopy();
+  const { copy } = useSiteCopy();
+  const barokahMinAmount = copy.barokahLockAmount || 5000;
+  const rubrikMinAmount = copy.rubrikLockAmount || 10000;
   const [selectedNominal, setSelectedNominal] = useState(
-    type === 'barokah_doa' ? 5000 : type === 'untold' ? 10000 : 25000
+    type === 'barokah_doa' ? barokahMinAmount : type === 'untold' ? rubrikMinAmount : 25000
   );
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -48,7 +50,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       setReceipt(null);
       setAgreedToAkad(false);
       setSubmitError(null);
-      setSelectedNominal(type === 'barokah_doa' ? 5000 : type === 'untold' ? 10000 : 25000);
+      setSelectedNominal(type === 'barokah_doa' ? barokahMinAmount : type === 'untold' ? rubrikMinAmount : 25000);
       if (auth.currentUser?.displayName && !senderAccount) {
         setSenderAccount(auth.currentUser.displayName);
       }
@@ -67,11 +69,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         })
         .catch(() => {});
     }
-  }, [isOpen, type]);
+  }, [isOpen, type, barokahMinAmount, rubrikMinAmount]);
 
   if (!isOpen) return null;
 
-  const minAmount = type === 'barokah_doa' ? 5000 : 10000;
+  const minAmount = type === 'barokah_doa' ? barokahMinAmount : rubrikMinAmount;
   const amount =
     sanitizeDonationAmount(selectedNominal, minAmount, 1000000000) || minAmount;
   const cleanSender = sanitizePlainText(senderAccount, 80);
@@ -201,7 +203,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
               {type === 'barokah_doa' ? (
                 <>
                   <ScrollText className="w-3.5 h-3.5" strokeWidth={1.75} />
-                  <span>Khazanah Barokah &amp; Doa Khusus · Rp 5.000</span>
+                  <span>{copy.barokahSectionTitle} · Rp {barokahMinAmount.toLocaleString('id-ID')}</span>
                 </>
               ) : type === 'infaq' ? (
                 <>
@@ -211,21 +213,21 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
               ) : (
                 <>
                   <ScrollText className="w-3.5 h-3.5" strokeWidth={1.75} />
-                  <span>Arsip Khazanah &amp; Manuskrip</span>
+                  <span>{copy.paywallBadge}</span>
                 </>
               )}
             </div>
             <h2 className="text-lg sm:text-xl font-serif font-semibold text-stone-900 mb-1 leading-snug">
               {type === 'barokah_doa'
-                ? `Buka Barokah Hajat & Doa Khusus — ${site.name}`
+                ? `${copy.barokahPaywallButtonText} — ${site.name}`
                 : site.name}
             </h2>
             <p className="text-stone-600 text-xs leading-relaxed">
               {type === 'barokah_doa'
-                ? 'Sempurnakan ikhtiar hajat Anda dengan infaq Rp 5.000 untuk membuka bacaan tawassul, wirid, dan doa khusus di makam ini.'
+                ? copy.barokahPaywallDescription
                 : type === 'infaq' 
-                  ? 'Sedekah jariyah untuk pelestarian arsip sejarah & fasilitas peziarah.' 
-                  : 'Buka seluruh arsip naskah sejarah, karomah lanjutan, dan wasiat rahasia di perangkat Anda.'}
+                  ? copy.infaqSubtitle
+                  : copy.paywallDescription}
             </p>
           </div>
         </div>
@@ -248,7 +250,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
               <p className="text-xs sm:text-sm text-stone-600 mb-4 leading-relaxed">
                 {type === 'barokah_doa'
                   ? `Terima kasih atas infaq jariyah Anda. Seluruh bacaan tawassul, wirid, dan doa khusus di ${site.title} kini telah terbuka penuh di perangkat Anda.`
-                  : siteCopy.unlockSuccessMessage}
+                  : copy.unlockSuccessMessage}
               </p>
 
               {receipt && (
@@ -293,7 +295,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                       Wasilah Tawassul &amp; Doa Khusus Makam
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed">
-                      Infaq mulai <strong className="font-semibold text-slate-900">Rp 5.000</strong> untuk membuka penuh lafaz Arab, Latin, terjemahan, dan tata cara amalan hajat khusus di <strong>{site.title}</strong>.
+                      Infaq mulai <strong className="font-semibold text-slate-900">Rp {barokahMinAmount.toLocaleString('id-ID')}</strong> untuk membuka penuh lafaz Arab, Latin, terjemahan, dan tata cara amalan hajat khusus di <strong>{site.title}</strong>.
                     </p>
                   </div>
                   <div>
@@ -301,7 +303,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                       Pilih Nominal Infaq Barokah &amp; Doa:
                     </label>
                     <div className="grid grid-cols-3 gap-2">
-                      {[5000, 10000, 25000].map((nominal) => (
+                      {[barokahMinAmount, Math.max(10000, barokahMinAmount * 2), Math.max(25000, barokahMinAmount * 5)].map((nominal) => (
                         <button
                           key={nominal}
                           type="button"
@@ -348,15 +350,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                       Akses Penuh 96+ Makam &amp; Wasiat Rahasia
                     </h4>
                     <p className="text-xs text-stone-600 leading-relaxed">
-                      Buka akses penuh ke seluruh catatan manuskrip, karomah lanjutan, dan wasiat rahasia melalui infaq literasi minimal <strong className="font-semibold text-stone-900">Rp 10.000</strong> serta mengunggah bukti transfer.
+                      Buka akses penuh ke seluruh catatan manuskrip, karomah lanjutan, dan wasiat rahasia melalui infaq literasi minimal <strong className="font-semibold text-stone-900">Rp {rubrikMinAmount.toLocaleString('id-ID')}</strong> serta mengunggah bukti transfer.
                     </p>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-stone-800 mb-2">
-                      Pilih Nominal Infaq Khazanah (Min. Rp 10.000):
+                      Pilih Nominal Infaq Khazanah (Min. Rp {rubrikMinAmount.toLocaleString('id-ID')}):
                     </label>
                     <div className="grid grid-cols-3 gap-2">
-                      {[10000, 15000, 25000].map((nominal) => (
+                      {[rubrikMinAmount, Math.max(15000, rubrikMinAmount + 5000), Math.max(25000, rubrikMinAmount + 15000)].map((nominal) => (
                         <button
                           key={nominal}
                           type="button"

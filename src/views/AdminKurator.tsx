@@ -26,13 +26,17 @@ import {
   Download,
   Upload,
   Edit3,
-  Scissors
+  Scissors,
+  BookOpen,
+  RefreshCw,
+  Search
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { ziarahSites as localSites, ZiarahSite } from '../data/sites';
 import { DEFAULT_INFAQ_PROGRAMS, InfaqProgramItem } from './InfaqDigital';
 import { DEFAULT_RUBRIK_GATE_SETTINGS, RubrikGateSettings, RubrikItem } from './RubrikKisah';
+import { CuratedDoaItem } from './KumpulanDoa';
 import { useSites } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -45,6 +49,7 @@ import { ContributionQueueSection } from './admin/ContributionQueueSection';
 import { SiteDirectoryAdminSection } from './admin/SiteDirectoryAdminSection';
 import { DonationVerificationModal } from './admin/DonationVerificationModal';
 import { SiteCopyAdminSection } from './admin/SiteCopyAdminSection';
+import { DoaWiridAdminSection } from './admin/DoaWiridAdminSection';
 import {
   SiteCopyConfig,
   fetchSiteCopyFromCloud,
@@ -54,7 +59,7 @@ import {
 
 export const AdminKurator: React.FC = () => {
   const { sites, isSeededInCloud, cloudSiteCount, refreshCloudSites } = useSites();
-  const [activeTab, setActiveTab] = useState<'kontribusi' | 'makam' | 'rubrik' | 'teks_ui' | 'infaq'>('kontribusi');
+  const [activeTab, setActiveTab] = useState<'kontribusi' | 'makam' | 'rubrik' | 'doa' | 'teks_ui' | 'infaq'>('kontribusi');
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedMessage, setSeedMessage] = useState('');
   const [user, setUser] = useState<User | null>(null);
@@ -114,6 +119,10 @@ export const AdminKurator: React.FC = () => {
   });
   const [editingRubrikArticleId, setEditingRubrikArticleId] = useState<string | null>(null);
   const [isAddingCustomArticle, setIsAddingCustomArticle] = useState(false);
+  const [rubrikSearchQuery, setRubrikSearchQuery] = useState('');
+  const [curatedDoas, setCuratedDoas] = useState<CuratedDoaItem[]>([]);
+  const [deletedDoaIds, setDeletedDoaIds] = useState<string[]>([]);
+  const [isForceSyncing, setIsForceSyncing] = useState(false);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState('');
   const [donations, setDonations] = useState<any[]>([]);
@@ -361,8 +370,15 @@ export const AdminKurator: React.FC = () => {
               bannerDescription: d.rubrikGate.bannerDescription || DEFAULT_RUBRIK_GATE_SETTINGS.bannerDescription,
               pinnedFreeArticleIds: Array.isArray(d.rubrikGate.pinnedFreeArticleIds) ? d.rubrikGate.pinnedFreeArticleIds : DEFAULT_RUBRIK_GATE_SETTINGS.pinnedFreeArticleIds,
               customArticles: Array.isArray(d.rubrikGate.customArticles) ? d.rubrikGate.customArticles : [],
+              deletedArticleIds: Array.isArray(d.rubrikGate.deletedArticleIds) ? d.rubrikGate.deletedArticleIds : [],
               requireManualVerification: Boolean(d.rubrikGate.requireManualVerification),
             });
+          }
+          if (Array.isArray(d.curatedDoas)) {
+            setCuratedDoas(d.curatedDoas);
+          }
+          if (Array.isArray(d.deletedDoaIds)) {
+            setDeletedDoaIds(d.deletedDoaIds);
           }
         }
       })
@@ -540,7 +556,14 @@ export const AdminKurator: React.FC = () => {
     setSiteStatusMsg('');
 
     const cleanName = sanitizePlainText(editingSite.name, 160) || 'Tokoh Ulama';
-    const slug = (editingSite.id?.trim() || cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `site-${Date.now()}`).slice(0, 80);
+    const canonicalSiteId = (
+      editingSite.id?.trim() ||
+      cleanName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '') ||
+      `site-${Date.now()}`
+    ).slice(0, 80);
     const cleanImageUrl =
       sanitizeHttpUrl(editingSite.imageUrl, 1000) ||
       'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80';
@@ -551,12 +574,13 @@ export const AdminKurator: React.FC = () => {
       .map((d) => ({
         title: sanitizePlainText(d.title, 160),
         text: sanitizeMultilineText(d.text, 2500),
+        ...(d.latin ? { latin: sanitizeMultilineText(d.latin, 2500) } : {}),
         translation: sanitizeMultilineText(d.translation || '', 2500),
       }))
       .filter((d) => Boolean(d.title || d.text));
 
     const payload: ZiarahSite = {
-      id: slug,
+      id: canonicalSiteId,
       name: cleanName,
       title: sanitizePlainText(editingSite.title, 200) || `Makam ${cleanName}`,
       category: (editingSite.category as any) || 'Ulama Nusantara',
@@ -588,14 +612,19 @@ export const AdminKurator: React.FC = () => {
     };
 
     try {
-      await setDoc(doc(db, 'sites', slug), payload, { merge: true });
+      await setDoc(doc(db, 'sites', canonicalSiteId), payload, { merge: true });
+      try {
+        localStorage.removeItem('zn_cloud_sites_cache_v1');
+      } catch {
+        // Ignore storage error
+      }
       await refreshCloudSites(true);
       setSiteStatusMsg(`Berhasil menyimpan data "${payload.name}" ke Firestore.`);
       setIsSiteFormOpen(false);
     } catch (error: any) {
       setSiteStatusMsg(`Gagal menyimpan: ${error.message}`);
       try {
-        handleFirestoreError(error, OperationType.WRITE, `sites/${slug}`);
+        handleFirestoreError(error, OperationType.WRITE, `sites/${canonicalSiteId}`);
       } catch {}
     } finally {
       setIsSavingSite(false);
@@ -610,6 +639,11 @@ export const AdminKurator: React.FC = () => {
         { id: siteId, isDeleted: true, updatedAt: new Date().toISOString() },
         { merge: true }
       );
+      try {
+        localStorage.removeItem('zn_cloud_sites_cache_v1');
+      } catch {
+        // Ignore storage error
+      }
       await refreshCloudSites(true);
       setSiteStatusMsg(`Data makam (${siteId}) telah dinonaktifkan (soft-delete tombstone) di Cloud Firestore.`);
     } catch (error: any) {
@@ -625,12 +659,21 @@ export const AdminKurator: React.FC = () => {
     }
   };
 
-  const handleSaveInfaqSettings = async (e?: React.FormEvent) => {
+  const handleSaveInfaqSettings = async (
+    e?: React.FormEvent,
+    overrideRubrikGate?: RubrikGateSettings,
+    overrideCuratedDoas?: CuratedDoaItem[],
+    overrideDeletedDoaIds?: string[]
+  ) => {
     if (e) e.preventDefault();
     if (!isAdmin || isSavingSettings) return;
     setIsSavingSettings(true);
     setSettingsMsg('');
     const cleanedDomain = (customDomain.trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '') || 'ziarahnusantara.my.id').slice(0, 120);
+    const activeRubrikGate = overrideRubrikGate || rubrikGate;
+    const activeCuratedDoas = overrideCuratedDoas || curatedDoas;
+    const activeDeletedDoaIds = overrideDeletedDoaIds || deletedDoaIds;
+
     const payload = {
       bankName: bankName.trim().slice(0, 100),
       accountNumber: accountNumber.trim().slice(0, 60),
@@ -639,7 +682,9 @@ export const AdminKurator: React.FC = () => {
       qrisPayload: (qrisPayload.trim() || OFFICIAL_QRIS_STATIC_PAYLOAD).slice(0, 1000),
       customDomain: cleanedDomain,
       programs: infaqPrograms,
-      rubrikGate,
+      rubrikGate: activeRubrikGate,
+      curatedDoas: activeCuratedDoas,
+      deletedDoaIds: activeDeletedDoaIds,
     };
 
     try {
@@ -652,7 +697,7 @@ export const AdminKurator: React.FC = () => {
         updatedAt: serverTimestamp(),
       });
       setCustomDomain(cleanedDomain);
-      setSettingsMsg('Berhasil menyimpan seluruh pengaturan Program Kebaikan, Rekening/QRIS, Custom Domain (ziarahnusantara.my.id), dan Kunci Donasi Rubrik ke Firestore.');
+      setSettingsMsg('Berhasil menyimpan seluruh pengaturan Rubrik, Doa & Wirid, Program Kebaikan, Rekening/QRIS, dan Custom Domain ke Firestore.');
     } catch (error: any) {
       setCustomDomain(cleanedDomain);
       setSettingsMsg('Gagal menyimpan ke Cloud Firestore: ' + error.message);
@@ -661,6 +706,73 @@ export const AdminKurator: React.FC = () => {
       } catch {}
     } finally {
       setIsSavingSettings(false);
+    }
+  };
+
+  const handleSaveDoaSettings = async (
+    nextCuratedDoas?: CuratedDoaItem[],
+    nextDeletedDoaIds?: string[]
+  ) => {
+    await handleSaveInfaqSettings(
+      undefined,
+      rubrikGate,
+      nextCuratedDoas ?? curatedDoas,
+      nextDeletedDoaIds ?? deletedDoaIds
+    );
+  };
+
+  const handleForceSyncAndClearCache = async () => {
+    if (!isAdmin || isForceSyncing) return;
+    setIsForceSyncing(true);
+    setSettingsMsg('Membersihkan cache browser & menyinkronkan ulang data terbaru dari Cloud Firestore...');
+    try {
+      try {
+        localStorage.removeItem('zn_cloud_sites_cache_v1');
+        localStorage.removeItem('zn_site_copy_cache_v1');
+        localStorage.removeItem('ziarah_local_settings_cache');
+      } catch {}
+
+      const [, latestCopy, infaqSnap] = await Promise.all([
+        refreshCloudSites(true),
+        fetchSiteCopyFromCloud(),
+        getDoc(doc(db, 'settings', 'infaq')),
+      ]);
+
+      setRestoredSiteCopy(latestCopy);
+
+      if (infaqSnap.exists()) {
+        const d = infaqSnap.data();
+        if (d.bankName) setBankName(d.bankName);
+        if (d.accountNumber) setAccountNumber(d.accountNumber);
+        if (d.accountHolder) setAccountHolder(d.accountHolder);
+        if (d.qrisImageUrl !== undefined) setQrisImageUrl(d.qrisImageUrl);
+        if (d.qrisPayload) setQrisPayload(resolveOfficialQrisPayload(d.qrisPayload));
+        if (d.customDomain !== undefined) setCustomDomain(d.customDomain);
+        if (Array.isArray(d.programs) && d.programs.length > 0) setInfaqPrograms(d.programs);
+        if (Array.isArray(d.curatedDoas)) setCuratedDoas(d.curatedDoas);
+        if (Array.isArray(d.deletedDoaIds)) setDeletedDoaIds(d.deletedDoaIds);
+        if (d.rubrikGate) {
+          setRubrikGate({
+            lockEnabled: d.rubrikGate.lockEnabled !== undefined ? Boolean(d.rubrikGate.lockEnabled) : DEFAULT_RUBRIK_GATE_SETTINGS.lockEnabled,
+            freeSampleCount: typeof d.rubrikGate.freeSampleCount === 'number' ? d.rubrikGate.freeSampleCount : DEFAULT_RUBRIK_GATE_SETTINGS.freeSampleCount,
+            minDonationAmount: typeof d.rubrikGate.minDonationAmount === 'number' ? d.rubrikGate.minDonationAmount : DEFAULT_RUBRIK_GATE_SETTINGS.minDonationAmount,
+            bannerTitle: d.rubrikGate.bannerTitle || DEFAULT_RUBRIK_GATE_SETTINGS.bannerTitle,
+            bannerDescription: d.rubrikGate.bannerDescription || DEFAULT_RUBRIK_GATE_SETTINGS.bannerDescription,
+            pinnedFreeArticleIds: Array.isArray(d.rubrikGate.pinnedFreeArticleIds) ? d.rubrikGate.pinnedFreeArticleIds : DEFAULT_RUBRIK_GATE_SETTINGS.pinnedFreeArticleIds,
+            customArticles: Array.isArray(d.rubrikGate.customArticles) ? d.rubrikGate.customArticles : [],
+            deletedArticleIds: Array.isArray(d.rubrikGate.deletedArticleIds) ? d.rubrikGate.deletedArticleIds : [],
+            requireManualVerification: Boolean(d.rubrikGate.requireManualVerification),
+          });
+        }
+      }
+
+      setSettingsMsg(
+        'Seluruh cache browser (zn_cloud_sites_cache_v1 & zn_site_copy_cache_v1) berhasil dibersihkan dan data terbaru dari Cloud Firestore telah disinkronkan!'
+      );
+    } catch (err: any) {
+      setSettingsMsg('Gagal menyinkronkan ulang: ' + (err?.message || 'Error'));
+    } finally {
+      setIsForceSyncing(false);
     }
   };
 
@@ -705,68 +817,91 @@ export const AdminKurator: React.FC = () => {
   const handleTogglePinnedFreeArticle = (articleId: string) => {
     setRubrikGate((prev) => {
       const exists = prev.pinnedFreeArticleIds.includes(articleId);
-      return {
+      const nextGate: RubrikGateSettings = {
         ...prev,
         pinnedFreeArticleIds: exists
           ? prev.pinnedFreeArticleIds.filter((id) => id !== articleId)
           : [...prev.pinnedFreeArticleIds, articleId],
       };
+      void handleSaveInfaqSettings(undefined, nextGate);
+      return nextGate;
     });
   };
 
-  const getDefaultBuiltInRubrikArticles = (): RubrikItem[] => [
-    {
-      id: 'rubrik-wali-songo-strategy',
-      siteId: 'wali-7',
-      siteName: 'Sunan Kalijaga (Raden Sahid)',
-      location: 'Demak, Jawa Tengah',
-      category: 'Manuskrip',
-      title: 'Filosofi Gamelan & Tembang Lir-Ilir dalam Dakwah Kultural',
-      content:
-        'Pendekatan dakwah Sunan Kalijaga memadukan kearifan lokal Jawa dengan tauhid Islam. Melalui wayang kulit purwa dan tembang Ilir-Ilir, makna kebangkitan spiritual diajarkan secara metaforik tanpa konfrontasi fisik.<!--more--> Catatan serat kuno mencatat bagaimana beliau mendesain tata kota keraton dengan alun-alun, pohon beringin kembar, dan masjid agung sebagai simbol keterhubungan duniawi dan ukhrawi.',
-      source: 'Katalog Serat Centhini & Naskah Babad Demak',
-      readTime: '4 mnt',
-    },
-    {
-      id: 'rubrik-sekumpul-adab',
-      siteId: 'ulama-3',
-      siteName: 'KH. Muhammad Zaini Abdul Ghani (Abah Guru Sekumpul)',
-      location: 'Martapura, Kalimantan Selatan',
-      category: 'Hikmah & Karomah',
-      title: 'Adab Menghadiri Majelis Maulid & Keberkahan Jamuan Musafir',
-      content:
-        'Abah Guru Sekumpul sangat memuliakan tamu dan penuntut ilmu. Selama haul dan majelis mingguan, ribuan dapur umum warga di Martapura menyajikan makanan gratis bagi siapa saja tanpa memandang status sosial.<!--more--> Tradisi luhur ini terus berlanjut hingga kini, membuktikan buah tarbiyah akhlak yang meresap ke dalam sanubari masyarakat Banjar.',
-      source: 'Manuskrip Biografi & Kesaksian Para Habaib Martapura',
-      readTime: '3 mnt',
-    },
-    ...sites
-      .filter((s) => Boolean(s.untoldStory))
-      .slice(0, 12)
-      .map((s) => ({
-        id: `rubrik-${s.id}-untold`,
-        siteId: s.id,
-        siteName: s.name,
-        location: `${s.location.city}, ${s.location.province}`,
-        category: 'Kisah Rahasia' as const,
-        title: `Catatan Khusus: ${s.name}`,
-        content: s.untoldStory || s.history,
-        source: 'Manuskrip Lisan & Catatan Pengasuh Makam',
+  const getDefaultBuiltInRubrikArticles = (): RubrikItem[] => {
+    const list: RubrikItem[] = [
+      {
+        id: 'rubrik-wali-songo-strategy',
+        siteId: 'wali-7',
+        siteName: 'Sunan Kalijaga (Raden Sahid)',
+        location: 'Demak, Jawa Tengah',
+        category: 'Manuskrip',
+        title: 'Filosofi Gamelan & Tembang Lir-Ilir dalam Dakwah Kultural',
+        content:
+          'Pendekatan dakwah Sunan Kalijaga memadukan kearifan lokal Jawa dengan tauhid Islam. Melalui wayang kulit purwa dan tembang Ilir-Ilir, makna kebangkitan spiritual diajarkan secara metaforik tanpa konfrontasi fisik.<!--more--> Catatan serat kuno mencatat bagaimana beliau mendesain tata kota keraton dengan alun-alun, pohon beringin kembar, dan masjid agung sebagai simbol keterhubungan duniawi dan ukhrawi.',
+        source: 'Katalog Serat Centhini & Naskah Babad Demak',
+        readTime: '4 mnt',
+      },
+      {
+        id: 'rubrik-sekumpul-adab',
+        siteId: 'ulama-3',
+        siteName: 'KH. Muhammad Zaini Abdul Ghani (Abah Guru Sekumpul)',
+        location: 'Martapura, Kalimantan Selatan',
+        category: 'Hikmah & Karomah',
+        title: 'Adab Menghadiri Majelis Maulid & Keberkahan Jamuan Musafir',
+        content:
+          'Abah Guru Sekumpul sangat memuliakan tamu dan penuntut ilmu. Selama haul dan majelis mingguan, ribuan dapur umum warga di Martapura menyajikan makanan gratis bagi siapa saja tanpa memandang status sosial.<!--more--> Tradisi luhur ini terus berlanjut hingga kini, membuktikan buah tarbiyah akhlak yang meresap ke dalam sanubari masyarakat Banjar.',
+        source: 'Manuskrip Biografi & Kesaksian Para Habaib Martapura',
         readTime: '3 mnt',
-      })),
-  ];
+      },
+    ];
 
-  const handleLoadBuiltInRubrikArticlesToEditor = () => {
-    const builtIns = getDefaultBuiltInRubrikArticles();
-    setRubrikGate((prev) => {
-      const existingIds = new Set((prev.customArticles || []).map((a) => a.id));
-      const newClones = builtIns.filter((b) => !existingIds.has(b.id));
-      return {
-        ...prev,
-        customArticles: [...(prev.customArticles || []), ...newClones],
-      };
+    sites.forEach((s) => {
+      if (s.untoldStory) {
+        list.push({
+          id: `rubrik-${s.id}-untold`,
+          siteId: s.id,
+          siteName: s.name,
+          location: `${s.location.city}, ${s.location.province}`,
+          category: 'Kisah Rahasia',
+          title: `Catatan Khusus: ${s.name}`,
+          content: s.untoldStory,
+          source: 'Manuskrip Lisan & Catatan Pengasuh Makam',
+          readTime: '3 mnt',
+        });
+      }
+      if (Array.isArray(s.karomah) && s.karomah.length > 0) {
+        s.karomah.forEach((k, idx) => {
+          list.push({
+            id: `rubrik-${s.id}-karomah-${idx}`,
+            siteId: s.id,
+            siteName: s.name,
+            location: `${s.location.city}, ${s.location.province}`,
+            category: 'Hikmah & Karomah',
+            title: `Karomah & Jejak Dakwah: ${s.name} (Bagian ${idx + 1})`,
+            content: k,
+            source: 'Babad & Riwayat Tradisi Nusantara',
+            readTime: '2 mnt',
+          });
+        });
+      }
     });
+
+    return list;
+  };
+
+  const handleLoadBuiltInRubrikArticlesToEditor = async () => {
+    const builtIns = getDefaultBuiltInRubrikArticles();
+    const existingIds = new Set((rubrikGate.customArticles || []).map((a) => a.id));
+    const newClones = builtIns.filter((b) => !existingIds.has(b.id));
+    const nextGate: RubrikGateSettings = {
+      ...rubrikGate,
+      customArticles: [...(rubrikGate.customArticles || []), ...newClones],
+    };
+    setRubrikGate(nextGate);
+    await handleSaveInfaqSettings(undefined, nextGate);
     setSettingsMsg(
-      'Artikel bawaan telah dimuat ke daftar editor kustom! Klik "Edit Judul & Isi" pada artikel mana pun, lalu klik "Simpan Pengaturan Rubrik ke Firestore".'
+      `Seluruh ${builtIns.length} artikel bawaan telah dimuat ke daftar editor kustom dan disimpan ke Firestore! Anda kini dapat mengedit atau menghapus artikel mana pun.`
     );
   };
 
@@ -786,7 +921,7 @@ export const AdminKurator: React.FC = () => {
     setIsAddingCustomArticle(true);
   };
 
-  const handleAddCustomRubrikArticle = () => {
+  const handleAddCustomRubrikArticle = async () => {
     if (!newCustomArticle.title?.trim() || !newCustomArticle.content?.trim()) return;
     const targetId = editingRubrikArticleId || newCustomArticle.id?.trim() || `rubrik-custom-${Date.now()}`;
     const item: RubrikItem = {
@@ -800,21 +935,22 @@ export const AdminKurator: React.FC = () => {
       source: sanitizePlainText(newCustomArticle.source, 200) || 'Arsip Kurator Ziarah Nusantara',
       readTime: sanitizePlainText(newCustomArticle.readTime, 40) || '3 mnt',
     };
-    setRubrikGate((prev) => {
-      const existingList = prev.customArticles || [];
-      const existsIdx = existingList.findIndex((a) => a.id === targetId);
-      let nextList: RubrikItem[];
-      if (existsIdx >= 0) {
-        nextList = [...existingList];
-        nextList[existsIdx] = item;
-      } else {
-        nextList = [item, ...existingList];
-      }
-      return {
-        ...prev,
-        customArticles: nextList,
-      };
-    });
+    const existingList = rubrikGate.customArticles || [];
+    const existsIdx = existingList.findIndex((a) => a.id === targetId);
+    let nextList: RubrikItem[];
+    if (existsIdx >= 0) {
+      nextList = [...existingList];
+      nextList[existsIdx] = item;
+    } else {
+      nextList = [item, ...existingList];
+    }
+    const nextDeleted = (rubrikGate.deletedArticleIds || []).filter((id) => id !== targetId);
+    const nextGate: RubrikGateSettings = {
+      ...rubrikGate,
+      customArticles: nextList,
+      deletedArticleIds: nextDeleted,
+    };
+    setRubrikGate(nextGate);
     setNewCustomArticle({
       id: '',
       title: '',
@@ -827,17 +963,36 @@ export const AdminKurator: React.FC = () => {
     });
     setEditingRubrikArticleId(null);
     setIsAddingCustomArticle(false);
+    await handleSaveInfaqSettings(undefined, nextGate);
     setSettingsMsg(
-      `Artikel "${item.title}" siap disimpan. Jangan lupa klik tombol "Simpan Pengaturan Rubrik ke Firestore" di bawah.`
+      `Artikel "${item.title}" berhasil disimpan ke Firestore (settings/infaq) dan langsung diperbarui di halaman /rubrik!`
     );
   };
 
-  const handleDeleteCustomRubrikArticle = (id: string) => {
-    setRubrikGate((prev) => ({
-      ...prev,
-      customArticles: (prev.customArticles || []).filter((a) => a.id !== id),
-      pinnedFreeArticleIds: prev.pinnedFreeArticleIds.filter((pid) => pid !== id),
-    }));
+  const handleDeleteCustomRubrikArticle = async (id: string) => {
+    const builtIns = getDefaultBuiltInRubrikArticles();
+    const isBuiltIn = builtIns.some((b) => b.id === id);
+    const currentDeleted = rubrikGate.deletedArticleIds || [];
+    const isAlreadyDeleted = currentDeleted.includes(id);
+
+    let nextDeleted: string[];
+    let nextCustom = (rubrikGate.customArticles || []).filter((a) => a.id !== id);
+    if (isAlreadyDeleted) {
+      nextDeleted = currentDeleted.filter((did) => did !== id);
+    } else if (isBuiltIn) {
+      nextDeleted = Array.from(new Set([...currentDeleted, id]));
+    } else {
+      nextDeleted = currentDeleted;
+    }
+
+    const nextGate: RubrikGateSettings = {
+      ...rubrikGate,
+      customArticles: nextCustom,
+      deletedArticleIds: nextDeleted,
+      pinnedFreeArticleIds: rubrikGate.pinnedFreeArticleIds.filter((pid) => pid !== id),
+    };
+    setRubrikGate(nextGate);
+    await handleSaveInfaqSettings(undefined, nextGate);
   };
 
   const handleExportFullBackupJson = async () => {
@@ -845,7 +1000,7 @@ export const AdminKurator: React.FC = () => {
       const latestCopy = await fetchSiteCopyFromCloud().catch(() => getCachedSiteCopy());
       const backupPayload = {
         exportedAt: new Date().toISOString(),
-        version: 'zn-cms-backup-v1',
+        version: 'zn-cms-backup-v2',
         infaqSettings: {
           bankName,
           accountNumber,
@@ -855,6 +1010,8 @@ export const AdminKurator: React.FC = () => {
           customDomain,
           programs: infaqPrograms,
           rubrikGate,
+          curatedDoas,
+          deletedDoaIds,
         },
         siteCopy: latestCopy,
         sites,
@@ -893,6 +1050,8 @@ export const AdminKurator: React.FC = () => {
         if (inf.customDomain) setCustomDomain(inf.customDomain);
         if (Array.isArray(inf.programs)) setInfaqPrograms(inf.programs);
         if (inf.rubrikGate) setRubrikGate(inf.rubrikGate);
+        if (Array.isArray(inf.curatedDoas)) setCuratedDoas(inf.curatedDoas);
+        if (Array.isArray(inf.deletedDoaIds)) setDeletedDoaIds(inf.deletedDoaIds);
 
         await setDoc(
           doc(db, 'settings', 'infaq'),
@@ -1013,7 +1172,16 @@ export const AdminKurator: React.FC = () => {
                 }`}
               >
                 <ScrollText className="w-3.5 h-3.5 mr-1.5" />
-                Rubrik & Kunci Donasi
+                Rubrik &amp; Khazanah
+              </button>
+              <button
+                onClick={() => setActiveTab('doa')}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center cursor-pointer ${
+                  activeTab === 'doa' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 mr-1.5" />
+                Doa &amp; Wirid (/doa)
               </button>
               <button
                 onClick={() => setActiveTab('teks_ui')}
@@ -1022,7 +1190,7 @@ export const AdminKurator: React.FC = () => {
                 }`}
               >
                 <Type className="w-3.5 h-3.5 mr-1.5" />
-                Teks & Copywriting UI
+                Teks &amp; Pengaturan UI
               </button>
               <button
                 onClick={() => setActiveTab('infaq')}
@@ -1031,7 +1199,7 @@ export const AdminKurator: React.FC = () => {
                 }`}
               >
                 <HeartHandshake className="w-3.5 h-3.5 mr-1.5" />
-                Donasi & Domain
+                Donasi &amp; Domain
               </button>
             </div>
           )}
@@ -1043,6 +1211,19 @@ export const AdminKurator: React.FC = () => {
               Pusat Kendali Penuh (Full Headless CMS) — Seluruh perubahan langsung tersimpan di Cloud Firestore.
             </p>
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={handleForceSyncAndClearCache}
+                disabled={isForceSyncing}
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isForceSyncing ? 'animate-spin' : ''}`} />
+                <span>
+                  {isForceSyncing
+                    ? 'Menyinkronkan...'
+                    : 'Bersihkan Cache & Sinkronkan Ulang Sekarang'}
+                </span>
+              </button>
               <button
                 type="button"
                 onClick={handleExportFullBackupJson}
@@ -1230,12 +1411,16 @@ export const AdminKurator: React.FC = () => {
                     ...s,
                     era: s.era || '',
                     sanad: s.sanad || '',
+                    barokahHajat: s.barokahHajat || '',
                     untoldStory: s.untoldStory || '',
                     haulSchedule: s.haulSchedule || '',
                     localAdab: s.localAdab || '',
+                    imageSource: s.imageSource || '',
                     karomah: Array.isArray(s.karomah) ? [...s.karomah] : [],
                     doaKhusus: Array.isArray(s.doaKhusus) ? s.doaKhusus.map((d) => ({ ...d })) : [],
                     facilities: Array.isArray(s.facilities) ? [...s.facilities] : [],
+                    karya: Array.isArray(s.karya) ? [...s.karya] : [],
+                    references: Array.isArray(s.references) ? [...s.references] : [],
                   });
                   setIsSiteFormOpen(true);
                 }}
@@ -1368,7 +1553,7 @@ export const AdminKurator: React.FC = () => {
                           className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
-                          <span>Muat / Edit Artikel Bawaan di Editor Admin</span>
+                          <span>Muat &amp; Edit Seluruh Artikel Bawaan</span>
                         </button>
                         <button
                           type="button"
@@ -1404,7 +1589,7 @@ export const AdminKurator: React.FC = () => {
                           </span>
                           {editingRubrikArticleId && (
                             <span className="text-[11px] text-slate-500">
-                              Perubahan akan menimpa versi bawaan dengan ID yang sama
+                              Perubahan langsung menimpa artikel di halaman /rubrik
                             </span>
                           )}
                         </div>
@@ -1523,11 +1708,23 @@ export const AdminKurator: React.FC = () => {
                             onClick={handleAddCustomRubrikArticle}
                             className="px-4 py-1.5 bg-emerald-700 text-white text-xs font-bold rounded-xl cursor-pointer"
                           >
-                            {editingRubrikArticleId ? 'Simpan Perubahan Artikel' : 'Tambahkan ke Daftar'}
+                            {editingRubrikArticleId ? 'Simpan Perubahan Artikel' : 'Tambahkan & Simpan ke Cloud'}
                           </button>
                         </div>
                       </div>
                     )}
+
+                    {/* Pencarian Cepat Artikel Rubrik */}
+                    <div className="relative mb-3">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="search"
+                        value={rubrikSearchQuery}
+                        onChange={(e) => setRubrikSearchQuery(e.target.value)}
+                        placeholder="Cari judul artikel rubrik, nama wali, atau kategori..."
+                        className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-emerald-700"
+                      />
+                    </div>
 
                     {/* Daftar Artikel Kustom & Bawaan untuk Edit / Toggle Gratis / Kunci */}
                     <div className="max-h-96 overflow-y-auto bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100">
@@ -1540,11 +1737,26 @@ export const AdminKurator: React.FC = () => {
                         const builtIns = getDefaultBuiltInRubrikArticles()
                           .filter((b) => !customIds.has(b.id))
                           .map((b) => ({ ...b, isCustom: false }));
-                        return [...customList, ...builtIns];
+                        const allList = [...customList, ...builtIns];
+                        const q = rubrikSearchQuery.trim().toLowerCase();
+                        if (!q) return allList;
+                        return allList.filter(
+                          (a) =>
+                            a.title.toLowerCase().includes(q) ||
+                            a.siteName.toLowerCase().includes(q) ||
+                            a.category.toLowerCase().includes(q) ||
+                            a.location.toLowerCase().includes(q)
+                        );
                       })().map((art) => {
                         const isPinnedFree = rubrikGate.pinnedFreeArticleIds.includes(art.id);
+                        const isDeleted = (rubrikGate.deletedArticleIds || []).includes(art.id);
                         return (
-                          <div key={art.id} className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50">
+                          <div
+                            key={art.id}
+                            className={`p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 ${
+                              isDeleted ? 'opacity-50 bg-rose-50/30' : ''
+                            }`}
+                          >
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-1.5">
                                 <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">
@@ -1564,6 +1776,11 @@ export const AdminKurator: React.FC = () => {
                                     &lt;!--more--&gt; Aktif
                                   </span>
                                 )}
+                                {isDeleted && (
+                                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-rose-100 text-rose-800">
+                                    Disembunyikan
+                                  </span>
+                                )}
                               </div>
                               <p className="text-xs font-bold text-slate-900 truncate mt-1">{art.title}</p>
                               <p className="text-[11px] text-slate-500 truncate">
@@ -1577,7 +1794,7 @@ export const AdminKurator: React.FC = () => {
                                 className="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-stone-100 hover:bg-stone-200 text-stone-800 flex items-center gap-1 cursor-pointer"
                               >
                                 <Edit3 className="w-3 h-3 text-emerald-800" />
-                                <span>Edit Judul &amp; Isi</span>
+                                <span>Edit</span>
                               </button>
                               <button
                                 type="button"
@@ -1600,16 +1817,18 @@ export const AdminKurator: React.FC = () => {
                                   </>
                                 )}
                               </button>
-                              {art.isCustom && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteCustomRubrikArticle(art.id)}
-                                  className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg cursor-pointer"
-                                  title="Hapus versi kustom (kembalikan ke bawaan jika artikel bawaan)"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCustomRubrikArticle(art.id)}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg cursor-pointer"
+                                title={
+                                  isDeleted
+                                    ? 'Pulihkan artikel ke halaman /rubrik'
+                                    : 'Hapus / sembunyikan artikel dari halaman /rubrik'
+                                }
+                              >
+                                {isDeleted ? <RotateCcw className="w-4 h-4 text-emerald-700" /> : <Trash2 className="w-4 h-4" />}
+                              </button>
                             </div>
                           </div>
                         );
@@ -1630,6 +1849,24 @@ export const AdminKurator: React.FC = () => {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* TAB 4A: PUSAT KENDALI 4 — PENGELOLAAN DAFTAR DOA & WIRID (/doa) */}
+            {activeTab === 'doa' && (
+              <DoaWiridAdminSection
+                sites={sites}
+                curatedDoas={curatedDoas}
+                deletedDoaIds={deletedDoaIds}
+                contributions={contributions}
+                processingId={processingId}
+                isSavingSettings={isSavingSettings}
+                onChangeCuratedDoas={setCuratedDoas}
+                onChangeDeletedDoaIds={setDeletedDoaIds}
+                onSaveDoaSettings={handleSaveDoaSettings}
+                onApproveContribution={handleApproveContribution}
+                onRejectContribution={handleRejectContribution}
+                onDeleteContribution={handleDeleteContribution}
+              />
             )}
 
             {/* TAB 4B: PUSAT KENDALI TEKS & COPYWRITING UI */}

@@ -18,10 +18,12 @@ import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom'
 import type { User } from 'firebase/auth';
 import { SiteProvider } from './context/SiteContext';
 import { findSiteByParam, getSitePath } from './lib/siteSlugs';
+import { useSiteCopy } from './lib/siteCopy';
 
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { copy } = useSiteCopy();
   const [selectedSite, setSelectedSite] = useState<ZiarahSite | null>(null);
   const [isKontribusiOpen, setIsKontribusiOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -628,10 +630,10 @@ export default function App() {
               />
               <div>
                 <p className="font-serif font-bold text-stone-950 text-sm">
-                  Ziarah Nusantara — Panduan Ziarah Kubur &amp; Direktori Makam Wali Nusantara
+                  {copy.footerAboutText}
                 </p>
                 <p className="text-stone-700">
-                  Dikelola secara resmi oleh <strong>Tim Kurator Arsip Ziarah Nusantara</strong> •{' '}
+                  <span>{copy.footerCopyrightText}</span> •{' '}
                   <a href="https://ziarahnusantara.my.id" className="py-1 inline-block underline hover:text-stone-950">
                     Portal Resmi Ziarah Nusantara
                   </a>

@@ -14,10 +14,10 @@ import { useSiteCopy, DEFAULT_SITE_COPY } from '../lib/siteCopy';
 const AUTO_SLIDE_INTERVAL_MS = 7000;
 
 export const ZiarahStoryReel: React.FC = () => {
-  const siteCopy = useSiteCopy();
+  const { copy } = useSiteCopy();
   const slides =
-    Array.isArray(siteCopy.storyReelSlides) && siteCopy.storyReelSlides.length > 0
-      ? siteCopy.storyReelSlides
+    Array.isArray(copy.storyReelSlides) && copy.storyReelSlides.length > 0
+      ? copy.storyReelSlides
       : DEFAULT_SITE_COPY.storyReelSlides;
 
   const totalSlides = slides.length;
@@ -81,18 +81,18 @@ export const ZiarahStoryReel: React.FC = () => {
 
   return (
     <section
-      aria-label={siteCopy.storyReelSectionTitle || DEFAULT_SITE_COPY.storyReelSectionTitle}
+      aria-label={copy.storyReelSectionTitle || DEFAULT_SITE_COPY.storyReelSectionTitle}
       className="bg-slate-50 rounded-3xl p-5 sm:p-8 border border-slate-200 relative overflow-hidden"
     >
       {/* Top Header Row */}
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-2 pb-6 sm:pb-8">
         <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-800">
           <BookOpen className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
-          <span>{siteCopy.storyReelSectionSubtitle || DEFAULT_SITE_COPY.storyReelSectionSubtitle}</span>
+          <span>{copy.storyReelSectionSubtitle || DEFAULT_SITE_COPY.storyReelSectionSubtitle}</span>
         </div>
 
         <h2 className="font-serif text-2xl sm:text-3xl text-slate-900 text-center">
-          {siteCopy.storyReelSectionTitle || DEFAULT_SITE_COPY.storyReelSectionTitle}
+          {copy.storyReelSectionTitle || DEFAULT_SITE_COPY.storyReelSectionTitle}
         </h2>
 
         <div className="text-xs font-medium text-slate-600 tracking-tight">

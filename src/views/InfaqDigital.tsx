@@ -94,7 +94,7 @@ const ICON_MAP = {
 };
 
 export const InfaqDigital: React.FC = () => {
-  const siteCopy = useSiteCopy();
+  const { copy } = useSiteCopy();
   const [selectedProgram, setSelectedProgram] = useState<string>('riset-web');
   const [selectedSiteId, setSelectedSiteId] = useState<string>('web-riset');
   const [nominal, setNominal] = useState<number>(25000);
@@ -223,7 +223,7 @@ export const InfaqDigital: React.FC = () => {
 
   const programs = infaqSettings.programs;
 
-  const quickNominalPackages = siteCopy.quickNominalPackages;
+  const quickNominalPackages = copy.quickNominalPackages;
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text.replace(/[^0-9]/g, '') || text);
@@ -341,10 +341,10 @@ export const InfaqDigital: React.FC = () => {
               <span>Sedekah Jariyah &amp; Wasilah Kebaikan</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
-              {siteCopy.infaqHeadline}
+              {copy.infaqTitle}
             </h1>
             <p className="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed">
-              {siteCopy.infaqSubheadline}
+              {copy.infaqSubtitle}
             </p>
           </div>
           {recentDonations.length > 0 && (
@@ -435,7 +435,7 @@ export const InfaqDigital: React.FC = () => {
               <option value="all">Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)</option>
             </select>
             <p className="text-[11px] text-stone-500 mt-2">
-              {siteCopy.infaqTransparencyNote}
+              {copy.infaqTransparencyNote}
             </p>
           </div>
 
@@ -521,7 +521,7 @@ export const InfaqDigital: React.FC = () => {
               <textarea
                 rows={2}
                 maxLength={200}
-                placeholder={siteCopy.doaHajatPlaceholder}
+                placeholder={copy.doaHajatPlaceholder}
                 value={doaHajat}
                 onChange={(e) => setDoaHajat(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 resize-none"
@@ -678,10 +678,10 @@ export const InfaqDigital: React.FC = () => {
               Dinding Munajat Peziarah
             </div>
             <h2 className="text-xl sm:text-2xl font-serif text-stone-900 mt-0.5">
-              {siteCopy.munajatHeaderTitle}
+              {copy.munajatTitle}
             </h2>
             <p className="text-xs sm:text-sm text-stone-600 mt-1">
-              {siteCopy.munajatHeaderSubtitle}
+              {copy.munajatSubtitle}
             </p>
           </div>
           <span className="text-xs text-stone-500 font-medium">
@@ -770,7 +770,7 @@ export const InfaqDigital: React.FC = () => {
                 Alhamdulillah, Jazakumullahu Khairan
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                {siteCopy.unlockSuccessMessage}
+                {copy.unlockSuccessMessage}
               </p>
               
               <div className="my-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left text-xs space-y-2">

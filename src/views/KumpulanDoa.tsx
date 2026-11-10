@@ -15,27 +15,34 @@ interface KumpulanDoaProps {
   onToggleSaveDoa: (id: string) => void;
 }
 
-interface DoaKaromahItem {
+export interface CuratedDoaItem {
   id: string;
   siteId: string;
   siteName: string;
-  type: 'doa' | 'karomah';
+  type?: 'doa' | 'karomah';
   title: string;
   barokahHook: string;
   text: string;
   latin?: string;
   translation?: string;
+}
+
+interface DoaKaromahItem extends CuratedDoaItem {
+  type: 'doa' | 'karomah';
   siteRef?: ZiarahSite;
 }
 
 export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, onToggleSaveDoa }) => {
   const { sites: ziarahSites, isLoading } = useSites();
-  const siteCopy = useSiteCopy();
+  const { copy } = useSiteCopy();
+  const barokahAmount = copy.barokahLockAmount || 5000;
 
   const [activeTab, setActiveTab] = useState<'semua' | 'tersimpan'>('semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [approvedCommunityDoas, setApprovedCommunityDoas] = useState<DoaKaromahItem[]>([]);
+  const [curatedDoas, setCuratedDoas] = useState<CuratedDoaItem[]>([]);
+  const [deletedDoaIds, setDeletedDoaIds] = useState<string[]>([]);
   const [lockEnabled, setLockEnabled] = useState<boolean>(true);
   const [requireManualVerification, setRequireManualVerification] = useState<boolean>(false);
   const [unlockModalSite, setUnlockModalSite] = useState<ZiarahSite | null>(null);
@@ -53,6 +60,12 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
             if (d.rubrikGate.requireManualVerification !== undefined) {
               setRequireManualVerification(Boolean(d.rubrikGate.requireManualVerification));
             }
+          }
+          if (Array.isArray(d.curatedDoas)) {
+            setCuratedDoas(d.curatedDoas);
+          }
+          if (Array.isArray(d.deletedDoaIds)) {
+            setDeletedDoaIds(d.deletedDoaIds);
           }
         }
       },
@@ -96,16 +109,24 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Extract all Doa and Karomah from sites + approved community contributions
+  // Extract all Doa and Karomah from curated admin doas + approved community contributions + sites
+  // Deduplicate by id so Admin edits override built-in items, and filter out deletedDoaIds
   const allDoaKaromah = useMemo(() => {
-    const list: DoaKaromahItem[] = [...approvedCommunityDoas];
+    const rawList: DoaKaromahItem[] = [
+      ...curatedDoas.map((cd) => ({
+        ...cd,
+        type: (cd.type || 'doa') as 'doa' | 'karomah',
+        siteRef: ziarahSites.find((s) => s.id === cd.siteId),
+      })),
+      ...approvedCommunityDoas,
+    ];
 
     ziarahSites.forEach((site) => {
       const hajatSentence = getSiteBarokahHajat(site);
       const effectiveDoas = getEffectiveSiteDoaKhusus(site);
 
       effectiveDoas.forEach((doa, idx) => {
-        list.push({
+        rawList.push({
           id: `${site.id}-doa-${idx}`,
           siteId: site.id,
           siteName: site.name,
@@ -121,7 +142,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
 
       if (site.karomah) {
         site.karomah.forEach((karomah, idx) => {
-          list.push({
+          rawList.push({
             id: `${site.id}-karomah-${idx}`,
             siteId: site.id,
             siteName: site.name,
@@ -135,8 +156,17 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
       }
     });
 
-    return list;
-  }, [ziarahSites, approvedCommunityDoas]);
+    const deletedSet = new Set(deletedDoaIds);
+    const seenIds = new Set<string>();
+    const deduped: DoaKaromahItem[] = [];
+    for (const item of rawList) {
+      if (!item || !item.id || seenIds.has(item.id) || deletedSet.has(item.id)) continue;
+      seenIds.add(item.id);
+      deduped.push(item);
+    }
+
+    return deduped;
+  }, [ziarahSites, approvedCommunityDoas, curatedDoas, deletedDoaIds]);
 
   const filteredList = useMemo(() => {
     let result = allDoaKaromah;
@@ -202,10 +232,10 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
 
           <div className="mb-4">
             <h1 className="text-2xl sm:text-4xl font-serif font-normal text-slate-900 tracking-tight mb-1.5">
-              {siteCopy.doaKhususTitle}
+              {copy.doaKhususTitle}
             </h1>
             <p className="text-slate-600 text-xs sm:text-sm">
-              {siteCopy.doaHeaderSubtitle}
+              {copy.doaKhususSubtitle}
             </p>
           </div>
 
@@ -388,7 +418,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                       </div>
 
                       <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-xs text-slate-500">
-                        <span>Pratinjau Terkunci · Infaq Rp 5.000 membuka seluruh {allDoaKaromah.length}+ doa &amp; wirid</span>
+                        <span>Pratinjau Terkunci · Infaq Rp {barokahAmount.toLocaleString('id-ID')} membuka seluruh {allDoaKaromah.length}+ doa &amp; wirid</span>
                         <button
                           type="button"
                           onClick={() => openBarokahUnlockModal(item)}
@@ -407,13 +437,13 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
               <div className="bg-white rounded-3xl border-2 border-emerald-700/30 p-6 sm:p-8 shadow-sm space-y-4 text-center">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold uppercase tracking-wider">
                   <Lock className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} />
-                  <span>Akses Penuh Khazanah Barokah &amp; Doa Khusus</span>
+                  <span>{copy.barokahSectionTitle}</span>
                 </div>
                 <h3 className="font-serif text-xl sm:text-2xl text-slate-900 max-w-xl mx-auto leading-snug">
-                  Buka Seluruh {allDoaKaromah.length}+ Khazanah Doa &amp; Wirid Khusus Para Wali — Infaq Rp 5.000
+                  Buka Seluruh {allDoaKaromah.length}+ Khazanah Doa &amp; Wirid Khusus Para Wali — Infaq Rp {barokahAmount.toLocaleString('id-ID')}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-                  Dua amalan di atas dibuka gratis sebagai contoh kurasi. Cukup satu kali infaq jariyah <strong>Rp 5.000</strong> untuk membuka penuh seluruh lafaz Arab, transliterasi Latin, terjemahan makna hajat, serta fitur salin &amp; simpan doa di seluruh 96+ makam Auliya Nusantara pada perangkat ini.
+                  {copy.barokahPaywallDescription} Dua amalan di atas dibuka gratis sebagai contoh kurasi. Cukup satu kali infaq jariyah <strong>Rp {barokahAmount.toLocaleString('id-ID')}</strong> untuk membuka penuh seluruh lafaz Arab, transliterasi Latin, terjemahan makna hajat, serta fitur salin &amp; simpan doa di seluruh 96+ makam Auliya Nusantara pada perangkat ini.
                 </p>
                 <div className="pt-2">
                   <button
@@ -422,7 +452,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                     className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                   >
                     <Lock className="w-4 h-4" strokeWidth={1.75} />
-                    <span>Buka Seluruh 250+ Khazanah Doa &amp; Wirid Khusus Para Wali — Infaq Rp 5.000</span>
+                    <span>Buka Seluruh 250+ Khazanah Doa &amp; Wirid Khusus Para Wali — Infaq Rp {barokahAmount.toLocaleString('id-ID')}</span>
                   </button>
                 </div>
               </div>
@@ -445,7 +475,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
               onClick={() => openBarokahUnlockModal()}
               className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
             >
-              Buka Seluruh Barokah &amp; Doa Khusus (Infaq Rp 5.000)
+              {copy.barokahPaywallButtonText} (Infaq Rp {barokahAmount.toLocaleString('id-ID')})
             </button>
             <Link
               to="/rubrik"

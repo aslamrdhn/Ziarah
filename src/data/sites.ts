@@ -28,6 +28,7 @@ export interface ZiarahSite {
   doaKhusus?: {
     title: string;
     text: string;
+    latin?: string;
     translation?: string;
   }[];
   isDeleted?: boolean;

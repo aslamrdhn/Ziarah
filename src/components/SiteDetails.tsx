@@ -146,7 +146,11 @@ export function getShortLockedSplit(text: string, maxChars: number = 120): { pre
   };
 }
 
-function buildWhatsAppCliffhangerUrl(site: ZiarahSite, rawStoryText: string): string {
+function buildWhatsAppCliffhangerUrl(
+  site: ZiarahSite,
+  rawStoryText: string,
+  sharePrefix = 'Merinding membaca cuplikan kisah & karomah'
+): string {
   const { preview } = getShortLockedSplit(rawStoryText, 120);
   const cuplikanCliffhanger = preview.replace(/\.\.\.\s*$/, '').trim();
   const locationLabel =
@@ -154,7 +158,7 @@ function buildWhatsAppCliffhangerUrl(site: ZiarahSite, rawStoryText: string): st
       ? site.location
       : [site.location?.city, site.location?.province].filter(Boolean).join(', ');
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ziarahnusantara.my.id';
-  const shareText = `Merinding membaca cuplikan kisah & karomah *${site.name}* (${locationLabel}):\n\n"${cuplikanCliffhanger}..."\n\nBaca kelanjutan kisah rahasia & panduan ziarahnya di sini:\n${origin}/situs/${getSiteSlug(site)}`;
+  const shareText = `${sharePrefix} *${site.name}* (${locationLabel}):\n\n"${cuplikanCliffhanger}..."\n\nBaca kelanjutan kisah rahasia & panduan ziarahnya di sini:\n${origin}/situs/${getSiteSlug(site)}`;
   return `https://wa.me/?text=${encodeURIComponent(shareText)}`;
 }
 
@@ -199,7 +203,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   const [transactionType, setTransactionType] = useState<'infaq' | 'untold' | 'barokah_doa' | null>(null);
   const { isUnlocked: isDonationVerified } = useVerifiedDonationUnlock(site?.id);
   const { isUnlocked: isBarokahDonationVerified } = useVerifiedBarokahUnlock(site?.id);
-  const siteCopy = useSiteCopy();
+  const { copy } = useSiteCopy();
+  const barokahAmount = copy.barokahLockAmount || 5000;
+  const rubrikAmount = copy.rubrikLockAmount || 10000;
 
   // Pre-fill author name if logged in
   useEffect(() => {
@@ -349,7 +355,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       <div>
         <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
           <Lock className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} />
-          <span>Barokah Hajat &amp; Doa Khusus Peziarah</span>
+          <span>{copy.barokahSectionTitle}</span>
         </div>
         <h3 className="font-serif text-2xl text-slate-900 mt-1">
           Wasilah Hajat &amp; Amalan Tawassul di {site.title}
@@ -359,7 +365,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       {/* Bagian Terbuka: Narasi Hajat yang Menyentuh Hati */}
       <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
         <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
-          Harapan &amp; Wasilah Hajat Jamaah
+          {copy.barokahHookPrefix}
         </div>
         <h4 className="font-serif text-lg sm:text-xl text-slate-900 leading-snug">
           Mengapa Banyak Peziarah Membawa Hajat Ini ke Pusara {site.name}?
@@ -536,15 +542,15 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           <div className="mt-4 pt-4 border-t border-slate-200 bg-white space-y-3">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
               <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
-              <span>Khazanah Doa Khusus · Rp 5.000</span>
+              <span>Khazanah Doa Khusus · Rp {barokahAmount.toLocaleString('id-ID')}</span>
             </div>
             <h4 className="font-serif text-xl text-slate-900">
-              Amalan &amp; Doa Khusus Hajat Terkunci
+              {copy.barokahPaywallTitle}
             </h4>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Buka penuh <strong>3 Bagian Panduan Amalan</strong> (Tata Cara &amp; Waktu Mustajab, Lafaz Arab Naskh, Transliterasi Latin, Terjemahan Hajat, serta Wirid Penutup) di{' '}
+              {copy.barokahPaywallDescription} Buka penuh <strong>3 Bagian Panduan Amalan</strong> di{' '}
               <strong className="font-semibold text-slate-900">{site.title}</strong> dengan infaq{' '}
-              <strong className="font-semibold text-emerald-800">Rp 5.000</strong>.
+              <strong className="font-semibold text-emerald-800">Rp {barokahAmount.toLocaleString('id-ID')}</strong>.
             </p>
             <div className="pt-1">
               <button
@@ -553,7 +559,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Lock className="w-4 h-4" strokeWidth={1.75} />
-                <span>Buka Barokah &amp; Doa Khusus (Rp 5.000)</span>
+                <span>{copy.barokahPaywallButtonText} (Rp {barokahAmount.toLocaleString('id-ID')})</span>
               </button>
             </div>
           </div>
@@ -857,7 +863,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                           Keteladanan Spiritual
                         </div>
                         <h3 className="font-serif text-2xl text-slate-900 mt-1 mb-4">
-                          Babak II — Kesaksian Karomah &amp; Keajaiban Batin
+                          {copy.karomahSectionTitle}
                         </h3>
 
                         <div className="space-y-8">
@@ -867,7 +873,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                             // Strict lock on ALL karomah items (including idx === 0) until Rp 10.000 donation is verified
                             const isItemUnlocked = isSiteUnlocked;
                             const cliffhanger = getShortLockedSplit(item, 120);
-                            const waShareUrl = buildWhatsAppCliffhangerUrl(site, item);
+                            const waShareUrl = buildWhatsAppCliffhangerUrl(site, item, copy.whatsappSharePrefix);
 
                             return (
                               <div key={idx} className="border-b border-slate-200 pb-7 last:border-b-0">
@@ -926,13 +932,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                       <div className="p-6 rounded-2xl bg-white border border-slate-200">
                                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
                                           <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
-                                          <span>{siteCopy.paywallBadge}</span>
+                                          <span>{copy.paywallBadge}</span>
                                         </div>
                                         <h4 className="font-serif text-xl text-slate-900 mt-2">
-                                          {siteCopy.paywallTitle}
+                                          {copy.paywallTitle}
                                         </h4>
                                         <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                                          {siteCopy.paywallSubtitle}
+                                          {copy.paywallDescription}
                                         </p>
                                         <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                                           <button
@@ -940,7 +946,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                             onClick={() => setTransactionType('untold')}
                                             className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium transition-colors cursor-pointer"
                                           >
-                                            Buka Seluruh Kisah &amp; Wasiat (Rp 10.000)
+                                            {copy.paywallButtonText} (Rp {rubrikAmount.toLocaleString('id-ID')})
                                           </button>
                                           <a
                                             href={waShareUrl}
@@ -977,7 +983,11 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
 
                         {(() => {
                           const untoldCliffhanger = getShortLockedSplit(site.untoldStory || '', 120);
-                          const untoldWaUrl = buildWhatsAppCliffhangerUrl(site, site.untoldStory || site.history);
+                          const untoldWaUrl = buildWhatsAppCliffhangerUrl(
+                            site,
+                            site.untoldStory || site.history,
+                            copy.whatsappSharePrefix
+                          );
 
                           return isSiteUnlocked ? (
                             <div>
@@ -1016,13 +1026,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                               <div className="p-6 rounded-2xl bg-white border border-slate-200">
                                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
                                   <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
-                                  <span>{siteCopy.paywallBadge}</span>
+                                  <span>{copy.paywallBadge}</span>
                                 </div>
                                 <h4 className="font-serif text-xl text-slate-900 mt-2">
-                                  {siteCopy.paywallTitle}
+                                  {copy.paywallTitle}
                                 </h4>
                                 <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                                  {siteCopy.paywallSubtitle}
+                                  {copy.paywallDescription}
                                 </p>
                                 <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                                   <button
@@ -1031,7 +1041,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                     className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
                                   >
                                     <Lock className="w-4 h-4" strokeWidth={1.75} />
-                                    <span>Buka Seluruh Kisah &amp; Wasiat (Rp 10.000)</span>
+                                    <span>{copy.paywallButtonText} (Rp {rubrikAmount.toLocaleString('id-ID')})</span>
                                   </button>
                                   <a
                                     href={untoldWaUrl}
@@ -1251,7 +1261,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                           {allStories.map((story) => {
                             const canDelete =
                               !story.isDefault && (isCurrentUserAdmin || (currentUser && story.authorUid === currentUser.uid));
-                            const storyWaUrl = buildWhatsAppCliffhangerUrl(site, story.text);
+                            const storyWaUrl = buildWhatsAppCliffhangerUrl(site, story.text, copy.whatsappSharePrefix);
                             return (
                               <div key={story.id} className="py-5 first:pt-0">
                                 <div className="flex items-center justify-between mb-2">

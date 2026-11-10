@@ -1,250 +1,347 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo, startTransition } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ZiarahSite } from '../data/sites';
 import { initialSites } from '../data/initialSites';
-
-const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v1';
-const CLOUD_SITES_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes TTL
+import { getSiteSlug } from '../lib/siteSlugs';
 
 interface SiteContextType {
   sites: ZiarahSite[];
   isLoading: boolean;
+  isFullCatalogLoaded: boolean;
   isSeededInCloud: boolean;
   cloudSiteCount: number;
   ensureFullSitesLoaded: () => Promise<ZiarahSite[]>;
-  refreshCloudSites: (forceNetwork?: boolean) => Promise<void>;
+  refreshCloudSites: (forceRefresh?: boolean) => Promise<void>;
 }
 
 const SiteContext = createContext<SiteContextType>({
   sites: initialSites,
   isLoading: false,
+  isFullCatalogLoaded: false,
   isSeededInCloud: false,
   cloudSiteCount: 0,
   ensureFullSitesLoaded: async () => initialSites,
   refreshCloudSites: async () => {},
 });
 
-export const useSites = () => useContext(SiteContext);
+const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v1';
 
-function scheduleIdleTask(cb: () => void, timeoutMs = 1500): number {
-  if (typeof window === 'undefined') return 0;
-  const win = window as Window & {
-    requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-  };
-  if (typeof win.requestIdleCallback === 'function') {
-    return win.requestIdleCallback(cb, { timeout: timeoutMs });
-  }
-  return window.setTimeout(cb, 250);
+interface CachedCloudSitesPayload {
+  ts: number;
+  sites: Array<ZiarahSite & { isDeleted?: boolean }>;
 }
 
-function mergeLocalAndCloudSites(loadedLocalSites: ZiarahSite[], fetchedSites: ZiarahSite[]): ZiarahSite[] {
-  const localMap = new Map<string, ZiarahSite>();
-  loadedLocalSites.forEach((s) => localMap.set(s.id, s));
-
+/**
+ * Merges static local sites with Firestore `/sites` documents.
+ * - Matches each `cloudSite` against `localSites` by `s.id === cloudSite.id`
+ *   OR `getSiteSlug(s) === cloudSite.id` OR `getSiteSlug(s) === getSiteSlug(cloudSite)`.
+ * - Preserves canonical `id` (`baseLocal.id`) and overrides ALL fields from `cloudSite`
+ *   so edits in Admin Kurator immediately replace static fields.
+ * - Supports soft-delete (`isDeleted: true`) tombstones by ID or slug.
+ */
+export function mergeLocalAndCloudSites(
+  localSites: ZiarahSite[],
+  cloudSites: Array<ZiarahSite & { isDeleted?: boolean }>
+): ZiarahSite[] {
   const mergedMap = new Map<string, ZiarahSite>();
-  loadedLocalSites.forEach((s) => mergedMap.set(s.id, s));
+  for (const s of localSites) {
+    mergedMap.set(s.id, s);
+  }
 
-  const legacyPlaceholder =
-    'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80';
+  for (const cloudSite of cloudSites) {
+    if (!cloudSite || !cloudSite.id) continue;
 
-  fetchedSites.forEach((cloudSite) => {
-    if (!cloudSite || !cloudSite.id) return;
+    const cloudSlug = getSiteSlug({
+      id: cloudSite.id,
+      title: cloudSite.title || '',
+      location: cloudSite.location || {
+        lat: 0,
+        lng: 0,
+        address: '',
+        city: '',
+        province: '',
+      },
+    });
+
+    const baseLocal = localSites.find(
+      (s) =>
+        s.id === cloudSite.id ||
+        getSiteSlug(s) === cloudSite.id ||
+        (Boolean(cloudSlug) && getSiteSlug(s) === cloudSlug)
+    );
+
+    const canonicalId = baseLocal ? baseLocal.id : cloudSite.id;
+
     if (cloudSite.isDeleted === true) {
+      mergedMap.delete(canonicalId);
       mergedMap.delete(cloudSite.id);
-      return;
+      continue;
     }
 
-    const baseLocal = localMap.get(cloudSite.id);
     if (baseLocal) {
-      const effectiveImageUrl =
-        cloudSite.imageUrl &&
-        cloudSite.imageUrl.trim() !== '' &&
-        cloudSite.imageUrl.trim() !== legacyPlaceholder
-          ? cloudSite.imageUrl.trim()
-          : baseLocal.imageUrl;
+      const mergedLocation = {
+        address:
+          cloudSite.location?.address !== undefined
+            ? cloudSite.location.address
+            : baseLocal.location.address,
+        city:
+          cloudSite.location?.city !== undefined
+            ? cloudSite.location.city
+            : baseLocal.location.city,
+        province:
+          cloudSite.location?.province !== undefined
+            ? cloudSite.location.province
+            : baseLocal.location.province,
+        lat:
+          typeof cloudSite.location?.lat === 'number' && !Number.isNaN(cloudSite.location.lat)
+            ? cloudSite.location.lat
+            : baseLocal.location.lat,
+        lng:
+          typeof cloudSite.location?.lng === 'number' && !Number.isNaN(cloudSite.location.lng)
+            ? cloudSite.location.lng
+            : baseLocal.location.lng,
+      };
 
-      mergedMap.set(cloudSite.id, {
+      const mergedSite: ZiarahSite = {
         ...baseLocal,
         ...cloudSite,
-        imageUrl: effectiveImageUrl,
-        imageSource: 'imageSource' in cloudSite ? cloudSite.imageSource : baseLocal.imageSource,
-        era: 'era' in cloudSite ? cloudSite.era : baseLocal.era,
-        sanad: 'sanad' in cloudSite ? cloudSite.sanad : baseLocal.sanad,
+        id: baseLocal.id,
+        name: cloudSite.name !== undefined ? cloudSite.name : baseLocal.name,
+        title: cloudSite.title !== undefined ? cloudSite.title : baseLocal.title,
+        category: cloudSite.category !== undefined ? cloudSite.category : baseLocal.category,
+        era: cloudSite.era !== undefined ? cloudSite.era : baseLocal.era,
+        location: mergedLocation,
+        description:
+          cloudSite.description !== undefined ? cloudSite.description : baseLocal.description,
+        history: cloudSite.history !== undefined ? cloudSite.history : baseLocal.history,
+        karomah:
+          Array.isArray(cloudSite.karomah) ? cloudSite.karomah : baseLocal.karomah,
+        untoldStory:
+          cloudSite.untoldStory !== undefined ? cloudSite.untoldStory : baseLocal.untoldStory,
+        barokahHajat:
+          cloudSite.barokahHajat !== undefined ? cloudSite.barokahHajat : baseLocal.barokahHajat,
+        doaKhusus:
+          Array.isArray(cloudSite.doaKhusus) ? cloudSite.doaKhusus : baseLocal.doaKhusus,
+        haulSchedule:
+          cloudSite.haulSchedule !== undefined ? cloudSite.haulSchedule : baseLocal.haulSchedule,
+        localAdab:
+          cloudSite.localAdab !== undefined ? cloudSite.localAdab : baseLocal.localAdab,
+        sanad: cloudSite.sanad !== undefined ? cloudSite.sanad : baseLocal.sanad,
         karya: Array.isArray(cloudSite.karya) ? cloudSite.karya : baseLocal.karya,
-        references: Array.isArray(cloudSite.references) ? cloudSite.references : baseLocal.references,
-        karomah: Array.isArray(cloudSite.karomah) ? cloudSite.karomah : baseLocal.karomah,
-        doaKhusus: Array.isArray(cloudSite.doaKhusus) ? cloudSite.doaKhusus : baseLocal.doaKhusus,
-        untoldStory: 'untoldStory' in cloudSite ? cloudSite.untoldStory : baseLocal.untoldStory,
-        haulSchedule: 'haulSchedule' in cloudSite ? cloudSite.haulSchedule : baseLocal.haulSchedule,
-        localAdab: 'localAdab' in cloudSite ? cloudSite.localAdab : baseLocal.localAdab,
-        barokahHajat: 'barokahHajat' in cloudSite ? cloudSite.barokahHajat : baseLocal.barokahHajat,
-      });
-    } else if (cloudSite.name && cloudSite.location) {
+        openingHours:
+          cloudSite.openingHours !== undefined ? cloudSite.openingHours : baseLocal.openingHours,
+        facilities:
+          Array.isArray(cloudSite.facilities) ? cloudSite.facilities : baseLocal.facilities,
+        imageUrl: cloudSite.imageUrl !== undefined ? cloudSite.imageUrl : baseLocal.imageUrl,
+        imageSource:
+          cloudSite.imageSource !== undefined ? cloudSite.imageSource : baseLocal.imageSource,
+        references:
+          Array.isArray(cloudSite.references) ? cloudSite.references : baseLocal.references,
+      };
+      mergedMap.set(baseLocal.id, mergedSite);
+    } else if (
+      cloudSite.name &&
+      cloudSite.title &&
+      cloudSite.location &&
+      typeof cloudSite.location.lat === 'number' &&
+      typeof cloudSite.location.lng === 'number'
+    ) {
       mergedMap.set(cloudSite.id, cloudSite);
     }
-  });
+  }
 
   return Array.from(mergedMap.values());
 }
 
 export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sites, setSites] = useState<ZiarahSite[]>(initialSites);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSeededInCloud, setIsSeededInCloud] = useState(false);
+  const [isFullCatalogLoaded, setIsFullCatalogLoaded] = useState(false);
   const [cloudSiteCount, setCloudSiteCount] = useState(0);
-  const fullLocalSitesRef = useRef<ZiarahSite[]>(initialSites);
-  const hasLoadedLocalRef = useRef(false);
-  const hasConnectedCloudRef = useRef(false);
+  const fullLocalSitesRef = useRef<ZiarahSite[] | null>(null);
+  const fullLoadPromiseRef = useRef<Promise<ZiarahSite[]> | null>(null);
+  const cloudLoadedRef = useRef(false);
 
   const ensureFullSitesLoaded = useCallback(async (): Promise<ZiarahSite[]> => {
-    if (hasLoadedLocalRef.current) {
+    if (fullLocalSitesRef.current) {
       return fullLocalSitesRef.current;
     }
-    hasLoadedLocalRef.current = true;
-    try {
-      const { ziarahSites } = await import('../data/sites');
-      fullLocalSitesRef.current = ziarahSites;
-      startTransition(() => {
-        setSites((prev) => (prev.length <= initialSites.length ? ziarahSites : prev));
+    if (!fullLoadPromiseRef.current) {
+      fullLoadPromiseRef.current = import('../data/sites').then((mod) => {
+        fullLocalSitesRef.current = mod.ziarahSites;
+        setIsFullCatalogLoaded(true);
+        setSites((prev) => {
+          const prevMap = new Map(prev.map((s) => [s.id, s]));
+          return mod.ziarahSites.map((s) => prevMap.get(s.id) || s);
+        });
+        return mod.ziarahSites;
       });
-      return ziarahSites;
-    } catch {
-      hasLoadedLocalRef.current = false;
-      return fullLocalSitesRef.current;
     }
+    return fullLoadPromiseRef.current;
   }, []);
 
-  const refreshCloudSites = useCallback(async (forceNetwork = false) => {
-    try {
-      const loadedLocalSites = await ensureFullSitesLoaded();
+  /**
+   * Stale-While-Revalidate Cloud Sync:
+   * - If `forceRefresh === true`, clears `zn_cloud_sites_cache_v1` first.
+   * - If `!forceRefresh` and `localStorage` has cached cloud sites, immediately renders
+   *   the merged cached state (0ms instant paint) WITHOUT returning early, then always
+   *   fetches fresh `/sites` from Firestore in the background so Admin changes appear immediately.
+   */
+  const refreshCloudSites = useCallback(
+    async (forceRefresh = false) => {
+      const localCatalog = await ensureFullSitesLoaded();
 
-      // Check local TTL cache first for public visitors to save Firestore read quota (F-05)
-      if (!forceNetwork && typeof window !== 'undefined') {
-        try {
-          const cachedRaw = localStorage.getItem(CLOUD_SITES_CACHE_KEY);
-          if (cachedRaw) {
-            const parsed = JSON.parse(cachedRaw) as { ts: number; data: ZiarahSite[] };
-            if (parsed && Array.isArray(parsed.data) && Date.now() - parsed.ts < CLOUD_SITES_CACHE_TTL_MS) {
-              if (parsed.data.length > 0) {
-                const mergedCached = mergeLocalAndCloudSites(loadedLocalSites, parsed.data);
-                startTransition(() => {
-                  setSites(mergedCached);
-                  setIsSeededInCloud(true);
-                  setCloudSiteCount(parsed.data.length);
-                  setIsLoading(false);
-                });
-                return;
-              }
-            }
-          }
-        } catch {
-          // Ignore cache parse error and proceed to Firestore getDocs
-        }
-      }
-
-      if (forceNetwork && typeof window !== 'undefined') {
+      if (forceRefresh) {
         try {
           localStorage.removeItem(CLOUD_SITES_CACHE_KEY);
-        } catch {}
-      }
-
-      const [{ db }, { collection, getDocs }] = await Promise.all([
-        import('../lib/firebase'),
-        import('firebase/firestore'),
-      ]);
-
-      const snapshot = await getDocs(collection(db, 'sites'));
-      if (!snapshot.empty) {
-        const fetchedSites = snapshot.docs.map((docSnap) => docSnap.data() as ZiarahSite);
-        const mergedCloud = mergeLocalAndCloudSites(loadedLocalSites, fetchedSites);
-        startTransition(() => {
-          setSites(mergedCloud);
-          setIsSeededInCloud(true);
-          setCloudSiteCount(fetchedSites.length);
-          setIsLoading(false);
-        });
-        try {
-          localStorage.setItem(
-            CLOUD_SITES_CACHE_KEY,
-            JSON.stringify({ ts: Date.now(), data: fetchedSites })
-          );
         } catch {
-          // Ignore storage quota warning
+          // Ignore storage error
         }
       } else {
         try {
-          localStorage.removeItem(CLOUD_SITES_CACHE_KEY);
-        } catch {}
-        startTransition(() => {
-          setSites(loadedLocalSites);
-          setIsSeededInCloud(false);
-          setCloudSiteCount(0);
-          setIsLoading(false);
-        });
+          const rawCached = localStorage.getItem(CLOUD_SITES_CACHE_KEY);
+          if (rawCached) {
+            const parsed = JSON.parse(rawCached) as CachedCloudSitesPayload;
+            if (parsed && Array.isArray(parsed.sites)) {
+              setSites(mergeLocalAndCloudSites(localCatalog, parsed.sites));
+            }
+          }
+        } catch {
+          // Ignore malformed cache and proceed to network revalidation
+        }
       }
-    } catch {
-      setIsLoading(false);
-    }
-  }, [ensureFullSitesLoaded]);
 
-  const connectCloudSites = useCallback(async () => {
-    if (hasConnectedCloudRef.current) return;
-    hasConnectedCloudRef.current = true;
-    await refreshCloudSites(false);
-  }, [refreshCloudSites]);
+      try {
+        const [{ db }, { collection, getDocs }] = await Promise.all([
+          import('../lib/firebase'),
+          import('firebase/firestore'),
+        ]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+        const snapshot = await getDocs(collection(db, 'sites'));
+        const cloudSites: Array<ZiarahSite & { isDeleted?: boolean }> = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() as ZiarahSite & { isDeleted?: boolean };
+          cloudSites.push({ ...data, id: docSnap.id });
+        });
 
-    const path = window.location.pathname;
-    if (path !== '/' && path !== '/direktori') {
-      ensureFullSitesLoaded();
-    }
-    if (path.startsWith('/admin') || path.startsWith('/kurator')) {
-      connectCloudSites();
-    }
+        try {
+          const payload: CachedCloudSitesPayload = {
+            ts: Date.now(),
+            sites: cloudSites,
+          };
+          localStorage.setItem(CLOUD_SITES_CACHE_KEY, JSON.stringify(payload));
+        } catch {
+          // Ignore quota error
+        }
 
-    let cloudTimerId: number | undefined;
-    const onFirstInteraction = (e: Event) => {
-      if (e.type === 'scroll' && window.scrollY < 48) return;
-      cleanupListeners();
-      scheduleIdleTask(() => {
-        ensureFullSitesLoaded();
-      }, 800);
-      cloudTimerId = window.setTimeout(() => {
-        scheduleIdleTask(() => {
-          connectCloudSites();
-        }, 2500);
-      }, 2200);
-    };
+        const activeCloudCount = cloudSites.filter((s) => !s.isDeleted).length;
+        setCloudSiteCount(activeCloudCount);
 
-    const events: (keyof WindowEventMap)[] = ['pointerdown', 'keydown'];
-    const cleanupListeners = () => {
-      events.forEach((evt) => window.removeEventListener(evt, onFirstInteraction));
-      window.removeEventListener('scroll', onFirstInteraction);
-    };
-
-    events.forEach((evt) => window.addEventListener(evt, onFirstInteraction, { passive: true }));
-    window.addEventListener('scroll', onFirstInteraction, { passive: true });
-
-    return () => {
-      cleanupListeners();
-      if (cloudTimerId !== undefined) window.clearTimeout(cloudTimerId);
-    };
-  }, [ensureFullSitesLoaded, connectCloudSites]);
-
-  const contextValue = useMemo<SiteContextType>(
-    () => ({
-      sites,
-      isLoading,
-      isSeededInCloud,
-      cloudSiteCount,
-      ensureFullSitesLoaded,
-      refreshCloudSites,
-    }),
-    [sites, isLoading, isSeededInCloud, cloudSiteCount, ensureFullSitesLoaded, refreshCloudSites]
+        if (cloudSites.length > 0) {
+          setSites(mergeLocalAndCloudSites(localCatalog, cloudSites));
+        } else {
+          setSites(localCatalog);
+        }
+      } catch {
+        // Fallback silently to local/cached catalog when offline
+      }
+    },
+    [ensureFullSitesLoaded]
   );
 
-  return <SiteContext.Provider value={contextValue}>{children}</SiteContext.Provider>;
+  useEffect(() => {
+    let mounted = true;
+    let unsubSnapshot: (() => void) | null = null;
+
+    const connectCloudSites = async () => {
+      if (cloudLoadedRef.current) return;
+      cloudLoadedRef.current = true;
+      await refreshCloudSites(false);
+
+      // Subscribe to real-time updates on /sites so any save in AdminKurator propagates live
+      try {
+        const [{ db }, { collection, onSnapshot }] = await Promise.all([
+          import('../lib/firebase'),
+          import('firebase/firestore'),
+        ]);
+        if (!mounted) return;
+        unsubSnapshot = onSnapshot(
+          collection(db, 'sites'),
+          async (snapshot) => {
+            if (!mounted) return;
+            const localCatalog = await ensureFullSitesLoaded();
+            const cloudSites: Array<ZiarahSite & { isDeleted?: boolean }> = [];
+            snapshot.forEach((docSnap) => {
+              const data = docSnap.data() as ZiarahSite & { isDeleted?: boolean };
+              cloudSites.push({ ...data, id: docSnap.id });
+            });
+            try {
+              const payload: CachedCloudSitesPayload = {
+                ts: Date.now(),
+                sites: cloudSites,
+              };
+              localStorage.setItem(CLOUD_SITES_CACHE_KEY, JSON.stringify(payload));
+            } catch {
+              // Ignore storage quota error
+            }
+            const activeCloudCount = cloudSites.filter((s) => !s.isDeleted).length;
+            setCloudSiteCount(activeCloudCount);
+            if (cloudSites.length > 0) {
+              setSites(mergeLocalAndCloudSites(localCatalog, cloudSites));
+            } else {
+              setSites(localCatalog);
+            }
+          },
+          () => {
+            // Ignore snapshot listener error when offline
+          }
+        );
+      } catch {
+        // Ignore offline import error
+      }
+    };
+
+    // Hydrate full local catalog + stale-while-revalidate cloud sites immediately after mount
+    const timer = window.setTimeout(() => {
+      if (!mounted) return;
+      ensureFullSitesLoaded().then(() => {
+        if (mounted) {
+          connectCloudSites();
+        }
+      });
+    }, 150);
+
+    const handleFirstInteraction = () => {
+      ensureFullSitesLoaded();
+      connectCloudSites();
+    };
+
+    const events = ['pointerdown', 'keydown', 'scroll', 'touchstart'] as const;
+    events.forEach((evt) =>
+      window.addEventListener(evt, handleFirstInteraction, { once: true, passive: true })
+    );
+
+    return () => {
+      mounted = false;
+      window.clearTimeout(timer);
+      if (unsubSnapshot) unsubSnapshot();
+      events.forEach((evt) => window.removeEventListener(evt, handleFirstInteraction));
+    };
+  }, [ensureFullSitesLoaded, refreshCloudSites]);
+
+  return (
+    <SiteContext.Provider
+      value={{
+        sites,
+        isLoading: false,
+        isFullCatalogLoaded,
+        isSeededInCloud: cloudSiteCount > 0,
+        cloudSiteCount,
+        ensureFullSitesLoaded,
+        refreshCloudSites,
+      }}
+    >
+      {children}
+    </SiteContext.Provider>
+  );
 };
 
-
+export const useSites = () => useContext(SiteContext);
