@@ -55,14 +55,9 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
     let cancelled = false;
     let initialized = false;
 
-    const hasStoredSession = (): boolean => {
+    const hasAdminSessionFlag = (): boolean => {
       try {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith('firebase:authUser:')) {
-            return true;
-          }
-        }
+        return localStorage.getItem('zn_has_admin_session') === '1';
       } catch {}
       return false;
     };
@@ -79,6 +74,9 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
         unsubscribe = onAuthStateChanged(auth, (currentUser) => {
           setUser(currentUser);
           if (currentUser && (isUserAdmin(currentUser) || checkIsUserAdmin(currentUser))) {
+            try {
+              localStorage.setItem('zn_has_admin_session', '1');
+            } catch {}
             ensureAdminUidRegistered(currentUser).catch(() => {});
           }
         });
@@ -88,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
     if (
       currentPath.startsWith('/admin') ||
       currentPath.startsWith('/kurator') ||
-      hasStoredSession()
+      hasAdminSessionFlag()
     ) {
       loadAuthSession();
     }
@@ -101,6 +99,9 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
 
   const handleLogout = async () => {
     try {
+      try {
+        localStorage.removeItem('zn_has_admin_session');
+      } catch {}
       const [{ auth }, { signOut }] = await Promise.all([
         import('../lib/firebase'),
         import('firebase/auth'),
@@ -338,9 +339,9 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                           window.open(window.location.href, '_blank');
                           setDropdownOpen(false);
                         }}
-                        className="w-full text-left px-3 py-1.5 text-xs text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl flex items-center transition-colors cursor-pointer"
+                        className="w-full text-left px-3 py-1.5 text-xs text-stone-700 hover:text-stone-900 hover:bg-stone-100 rounded-xl flex items-center transition-colors cursor-pointer"
                       >
-                        <ExternalLink className="w-3.5 h-3.5 mr-2.5 text-stone-500" aria-hidden="true" />
+                        <ExternalLink className="w-3.5 h-3.5 mr-2.5 text-stone-600" aria-hidden="true" />
                         <span>Buka di Tab Baru</span>
                       </button>
                     )}

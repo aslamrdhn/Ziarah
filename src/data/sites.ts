@@ -1,3 +1,30 @@
+export type SourceClassification =
+  | 'catatan_sejarah'
+  | 'inskripsi_primer'
+  | 'tradisi_lisan'
+  | 'hikmah_keagamaan'
+  | 'narasi_editorial';
+
+export function getSourceClassificationLabel(
+  type?: SourceClassification,
+  fallback: SourceClassification = 'catatan_sejarah'
+): string {
+  const effective = type || fallback;
+  switch (effective) {
+    case 'inskripsi_primer':
+      return 'Inskripsi & Sumber Primer';
+    case 'tradisi_lisan':
+      return 'Riwayat Tradisi Lisan';
+    case 'hikmah_keagamaan':
+      return 'Tradisi Keagamaan & Hikmah';
+    case 'narasi_editorial':
+      return 'Narasi Editorial Redaksi';
+    case 'catatan_sejarah':
+    default:
+      return 'Catatan Sejarah & Literatur';
+  }
+}
+
 export interface ZiarahSite {
   id: string;
   name: string;
@@ -14,6 +41,7 @@ export interface ZiarahSite {
   imageUrl: string;
   imageSource?: string;
   history: string;
+  historySourceType?: SourceClassification;
   facilities: string[];
   openingHours: string;
   era?: string;
@@ -21,6 +49,7 @@ export interface ZiarahSite {
   karya?: string[];
   references?: string[];
   karomah?: string[];
+  karomahSourceType?: SourceClassification;
   untoldStory?: string;
   haulSchedule?: string;
   localAdab?: string;

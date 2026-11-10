@@ -48,11 +48,14 @@ export interface SubmitDonationPayload {
   senderAccount: string;
   receipt: CompressedReceiptResult;
   doaHajat: string;
+  isAnonymous?: boolean;
+  showPublicly?: boolean;
 }
 
 export interface PrivateProofData {
   donationId: string;
   senderAccount: string;
+  realDonorName?: string;
   proofImageUrl: string;
   referenceCode: string;
   fileName?: string;
@@ -168,12 +171,17 @@ export async function validateAndCompressReceipt(file: File): Promise<Compressed
 
 /**
  * Stores lightweight public donation metadata in `/donations/{id}` (~1 KB) with initial `status: 'pending'`
- * and isolates the compressed Base64 transfer receipt in `/donations/{id}/private/proof` atomically via `writeBatch`.
+ * (masking `donorName` as `'Hamba Allah'` whenever `isAnonymous === true` or `showPublicly === false`)
+ * and isolates the real sender identity + compressed Base64 receipt in `/donations/{id}/private/proof` atomically via `writeBatch`.
  */
 export async function submitDonationWithPrivateProof(payload: SubmitDonationPayload): Promise<string> {
   const donationRef = doc(collection(db, 'donations'));
   const donationId = donationRef.id;
   const authorUid = auth.currentUser?.uid || 'guest';
+  const hideIdentityPublicly = payload.isAnonymous === true || payload.showPublicly === false;
+  const publicDonorName = hideIdentityPublicly
+    ? 'Hamba Allah'
+    : (payload.donorName || 'Hamba Allah').trim().slice(0, 100) || 'Hamba Allah';
 
   const proofRef = doc(db, 'donations', donationId, 'private', 'proof');
   const batch = writeBatch(db);
@@ -185,7 +193,8 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
     siteId: payload.siteId,
     siteName: payload.siteName,
     amount: payload.amount,
-    donorName: payload.donorName,
+    donorName: publicDonorName,
+    isAnonymous: hideIdentityPublicly,
     paymentMethod: payload.paymentMethod,
     hasProof: true,
     referenceCode: payload.receipt.referenceCode,
@@ -198,6 +207,7 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
   batch.set(proofRef, {
     donationId,
     senderAccount: payload.senderAccount,
+    realDonorName: (payload.donorName || payload.senderAccount || 'Hamba Allah').slice(0, 100),
     proofImageUrl: payload.receipt.dataUrl,
     referenceCode: payload.receipt.referenceCode,
     fileName: (payload.receipt.fileName || 'receipt.jpg').slice(0, 150),
@@ -220,6 +230,7 @@ export async function fetchDonationPrivateProof(donationDoc: Record<string, any>
     return {
       donationId: donationDoc.id,
       senderAccount: donationDoc.senderAccount || donationDoc.donorName || 'Hamba Allah',
+      realDonorName: donationDoc.donorName || 'Hamba Allah',
       proofImageUrl: donationDoc.proofImageUrl,
       referenceCode: donationDoc.referenceCode || donationDoc.id.slice(0, 8).toUpperCase(),
     };
@@ -231,6 +242,7 @@ export async function fetchDonationPrivateProof(donationDoc: Record<string, any>
       return {
         donationId: donationDoc.id,
         senderAccount: data.senderAccount || donationDoc.donorName || 'Hamba Allah',
+        realDonorName: data.realDonorName || data.senderAccount || donationDoc.donorName || 'Hamba Allah',
         proofImageUrl: data.proofImageUrl || '',
         referenceCode: data.referenceCode || donationDoc.referenceCode || donationDoc.id.slice(0, 8).toUpperCase(),
         fileName: data.fileName,

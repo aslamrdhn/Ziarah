@@ -39,7 +39,7 @@ import { DEFAULT_RUBRIK_GATE_SETTINGS, RubrikGateSettings, RubrikItem } from './
 import { CuratedDoaItem } from './KumpulanDoa';
 import { useSites } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
-import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, browserPopupRedirectResolver, User } from 'firebase/auth';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD, resolveOfficialQrisPayload } from '../lib/qris';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
@@ -56,6 +56,35 @@ import {
   saveSiteCopyToCloud,
   getCachedSiteCopy,
 } from '../lib/siteCopy';
+
+export function extractCoordinatesFromMapsUrl(url?: string): { lat: number; lng: number } | null {
+  if (!url) return null;
+  const decoded = decodeURIComponent(url.trim());
+  const patterns = [
+    /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /[?&](?:q|ll|query|destination)=(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+    /(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/,
+  ];
+  for (const regex of patterns) {
+    const match = decoded.match(regex);
+    if (match) {
+      const lat = parseFloat(match[1]);
+      const lng = parseFloat(match[2]);
+      if (
+        Number.isFinite(lat) &&
+        Number.isFinite(lng) &&
+        lat >= -11.5 &&
+        lat <= 6.5 &&
+        lng >= 94.5 &&
+        lng <= 141.5
+      ) {
+        return { lat, lng };
+      }
+    }
+  }
+  return null;
+}
 
 export const AdminKurator: React.FC = () => {
   const { sites, isSeededInCloud, cloudSiteCount, refreshCloudSites } = useSites();
@@ -96,6 +125,7 @@ export const AdminKurator: React.FC = () => {
   });
   const [isSavingSite, setIsSavingSite] = useState(false);
   const [siteStatusMsg, setSiteStatusMsg] = useState('');
+  const [pendingContributionIdToApprove, setPendingContributionIdToApprove] = useState<string | null>(null);
 
   // Infaq settings, programs, rubrik gate & donations state
   const [bankName, setBankName] = useState('Bank BCA');
@@ -132,6 +162,9 @@ export const AdminKurator: React.FC = () => {
   const [isRestoringBackup, setIsRestoringBackup] = useState(false);
 
   const donationAnalytics = useMemo(() => {
+    const isVerifiedStatus = (d: any) => d.status === 'verified' || d.status === 'confirmed';
+    const isPendingStatus = (d: any) => !d.status || d.status === 'pending';
+
     const barokahDonations = donations.filter((d) => d.programId === 'barokah-doa');
     const rubrikDonations = donations.filter((d) => d.programId === 'rubrik-manuskrip');
     const otherDonations = donations.filter(
@@ -144,6 +177,7 @@ export const AdminKurator: React.FC = () => {
     const buildSiteRanking = (items: any[]) => {
       const map = new Map<string, { key: string; siteId: string; siteName: string; count: number; totalAmount: number }>();
       for (const item of items) {
+        if (item.status === 'rejected') continue;
         const siteId = String(item.siteId || '').trim();
         const rawSiteName = String(item.siteName || '').trim();
         const fallbackTitle = String(item.programTitle || '')
@@ -159,7 +193,9 @@ export const AdminKurator: React.FC = () => {
           totalAmount: 0,
         };
         current.count += 1;
-        current.totalAmount += Number(item.amount) || 0;
+        if (isVerifiedStatus(item)) {
+          current.totalAmount += Number(item.amount) || 0;
+        }
         map.set(key, current);
       }
       return Array.from(map.values()).sort(
@@ -167,20 +203,36 @@ export const AdminKurator: React.FC = () => {
       );
     };
 
+    const barokahVerified = barokahDonations.filter(isVerifiedStatus);
+    const barokahPending = barokahDonations.filter(isPendingStatus);
+    const rubrikVerified = rubrikDonations.filter(isVerifiedStatus);
+    const rubrikPending = rubrikDonations.filter(isPendingStatus);
+    const otherVerified = otherDonations.filter(isVerifiedStatus);
+    const otherPending = otherDonations.filter(isPendingStatus);
+
     return {
       barokah: {
         count: barokahDonations.length,
-        total: sumAmount(barokahDonations),
+        verifiedCount: barokahVerified.length,
+        total: sumAmount(barokahVerified),
+        pendingCount: barokahPending.length,
+        pendingTotal: sumAmount(barokahPending),
         ranking: buildSiteRanking(barokahDonations),
       },
       rubrik: {
         count: rubrikDonations.length,
-        total: sumAmount(rubrikDonations),
+        verifiedCount: rubrikVerified.length,
+        total: sumAmount(rubrikVerified),
+        pendingCount: rubrikPending.length,
+        pendingTotal: sumAmount(rubrikPending),
         ranking: buildSiteRanking(rubrikDonations),
       },
       other: {
         count: otherDonations.length,
-        total: sumAmount(otherDonations),
+        verifiedCount: otherVerified.length,
+        total: sumAmount(otherVerified),
+        pendingCount: otherPending.length,
+        pendingTotal: sumAmount(otherPending),
       },
     };
   }, [donations]);
@@ -248,11 +300,19 @@ export const AdminKurator: React.FC = () => {
       if (isUserAdmin(currentUser)) {
         setIsAdmin(true);
         setLoginError(null);
+        try {
+          localStorage.setItem('zn_has_admin_session', '1');
+        } catch {}
         await ensureAdminUidRegistered(currentUser);
       } else if (currentUser) {
         const isUidAdmin = await ensureAdminUidRegistered(currentUser);
         setIsAdmin(isUidAdmin);
-        if (isUidAdmin) setLoginError(null);
+        if (isUidAdmin) {
+          setLoginError(null);
+          try {
+            localStorage.setItem('zn_has_admin_session', '1');
+          } catch {}
+        }
       } else {
         setIsAdmin(false);
       }
@@ -420,6 +480,9 @@ export const AdminKurator: React.FC = () => {
 
   const handleSwitchAccount = async () => {
     try {
+      try {
+        localStorage.removeItem('zn_has_admin_session');
+      } catch {}
       await signOut(auth);
       setLoginError(null);
     } catch {}
@@ -433,6 +496,9 @@ export const AdminKurator: React.FC = () => {
       for (const site of localSites) {
         await setDoc(doc(db, 'sites', site.id), { ...site, isDeleted: false }, { merge: true });
       }
+      try {
+        localStorage.setItem('zn_admin_dirty_ts', String(Date.now()));
+      } catch {}
       await refreshCloudSites(true);
       setSeedMessage('Berhasil mensinkronisasi ' + localSites.length + ' data makam ke Firestore.');
     } catch (e: any) {
@@ -450,35 +516,53 @@ export const AdminKurator: React.FC = () => {
     if (!isAdmin || processingId) return;
     setProcessingId(item.id);
     try {
-      // If it's a new site proposal, also create a site entry in /sites if desired
+      // Usulan makam baru ('baru') TIDAK pernah diterbitkan otomatis dengan koordinat default -6.95, 110.42.
+      // Wajib melewati pratinjau Form Editor Makam + cek duplikasi ID + verifikasi koordinat oleh kurator.
       if (item.type === 'baru') {
-        const slug = item.targetName
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-|-$/g, '')
-          .slice(0, 60) || `makam-${Date.now()}`;
+        const baseSlug =
+          item.targetName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '')
+            .slice(0, 50) || `makam-${Date.now()}`;
 
-        const newSite: ZiarahSite = {
-          id: slug,
+        let candidateId = baseSlug;
+        if (sites.some((s) => s.id.toLowerCase() === candidateId)) {
+          candidateId = `${baseSlug}-${item.id.slice(0, 5).toLowerCase()}`;
+        }
+
+        const extractedCoords = extractCoordinatesFromMapsUrl(item.mapsUrl);
+        setEditingSite({
+          id: candidateId,
           name: item.targetName,
           title: item.targetName.startsWith('Makam') ? item.targetName : `Makam ${item.targetName}`,
           category: (item.category as any) || 'Ulama Nusantara',
           description: item.content.slice(0, 220),
           history: item.content,
+          historySourceType: 'tradisi_lisan',
+          karomahSourceType: 'tradisi_lisan',
           imageUrl: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80',
           openingHours: 'Buka 24 Jam',
           facilities: ['Masjid / Musholla', 'Tempat Wudhu', 'Area Parkir'],
           location: {
-            lat: -6.95,
-            lng: 110.42,
+            lat: extractedCoords ? extractedCoords.lat : 0,
+            lng: extractedCoords ? extractedCoords.lng : 0,
             address: item.mapsUrl || `${item.city || 'Nusantara'}`,
             city: item.city || 'Nusantara',
             province: item.province || 'Indonesia',
           },
-          isDeleted: false,
-        };
-        await setDoc(doc(db, 'sites', slug), newSite, { merge: true });
-        await refreshCloudSites(true);
+          karomah: [],
+          doaKhusus: [],
+        });
+        setPendingContributionIdToApprove(item.id);
+        setActiveTab('makam');
+        setIsSiteFormOpen(true);
+        setSiteStatusMsg(
+          extractedCoords
+            ? `Pratinjau Usulan Makam Baru "${item.targetName}" dibuka (ID: ${candidateId}). Koordinat (${extractedCoords.lat}, ${extractedCoords.lng}) berhasil diekstrak dari tautan Maps. Silakan periksa data lalu klik "Simpan Seluruh Data Makam ke Firestore" untuk menerbitkan secara atomik.`
+            : `Pratinjau Usulan Makam Baru "${item.targetName}" dibuka (ID: ${candidateId}). Tautan Maps belum memuat koordinat presisi — mohon isi Latitude & Longitude yang valid sebelum mengeklik "Simpan Seluruh Data Makam ke Firestore".`
+        );
+        return;
       }
 
       await updateDoc(doc(db, 'contributions', item.id), {
@@ -552,6 +636,24 @@ export const AdminKurator: React.FC = () => {
   const handleSaveSite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAdmin || isSavingSite) return;
+
+    const rawLat = Number(editingSite.location?.lat);
+    const rawLng = Number(editingSite.location?.lng);
+    const isPlaceholderCoord =
+      !Number.isFinite(rawLat) ||
+      !Number.isFinite(rawLng) ||
+      (rawLat === 0 && rawLng === 0) ||
+      (Math.abs(rawLat - -6.95) < 0.0001 && Math.abs(rawLng - 110.42) < 0.0001);
+    const isWithinIndonesiaBounds =
+      rawLat >= -11.5 && rawLat <= 6.5 && rawLng >= 94.5 && rawLng <= 141.5;
+
+    if (isPlaceholderCoord || !isWithinIndonesiaBounds) {
+      setSiteStatusMsg(
+        'Gagal menyimpan: Koordinat Latitude & Longitude wajib diisi dengan titik lokasi makam yang valid di wilayah Indonesia (bukan koordinat placeholder 0, 0 atau -6.95, 110.42).'
+      );
+      return;
+    }
+
     setIsSavingSite(true);
     setSiteStatusMsg('');
 
@@ -588,18 +690,20 @@ export const AdminKurator: React.FC = () => {
       sanad: sanitizeMultilineText(editingSite.sanad, 3000),
       description: cleanDesc,
       history: cleanHistory,
+      historySourceType: editingSite.historySourceType || 'catatan_sejarah',
       imageUrl: cleanImageUrl,
       imageSource: sanitizePlainText(editingSite.imageSource, 400),
       openingHours: sanitizePlainText(editingSite.openingHours, 120) || 'Buka 24 Jam',
       facilities: (editingSite.facilities || ['Masjid / Musholla', 'Area Parkir']).map((f) => sanitizePlainText(f, 80)).filter(Boolean),
       location: {
-        lat: Number(editingSite.location?.lat) || -6.9,
-        lng: Number(editingSite.location?.lng) || 110.4,
+        lat: rawLat,
+        lng: rawLng,
         address: sanitizePlainText(editingSite.location?.address, 400),
         city: sanitizePlainText(editingSite.location?.city, 120),
         province: sanitizePlainText(editingSite.location?.province, 120),
       },
       karomah: (editingSite.karomah || []).map((k) => sanitizeMultilineText(k, 3000)).filter(Boolean),
+      karomahSourceType: editingSite.karomahSourceType || 'tradisi_lisan',
       barokahHajat: sanitizeMultilineText(editingSite.barokahHajat, 2000),
       doaKhusus: cleanDoaKhusus,
       untoldStory: sanitizeMultilineText(editingSite.untoldStory, 6000),
@@ -612,9 +716,18 @@ export const AdminKurator: React.FC = () => {
     };
 
     try {
-      await setDoc(doc(db, 'sites', canonicalSiteId), payload, { merge: true });
+      const batch = writeBatch(db);
+      batch.set(doc(db, 'sites', canonicalSiteId), payload, { merge: true });
+      if (pendingContributionIdToApprove) {
+        batch.update(doc(db, 'contributions', pendingContributionIdToApprove), {
+          status: 'approved',
+        });
+      }
+      await batch.commit();
+      setPendingContributionIdToApprove(null);
       try {
         localStorage.removeItem('zn_cloud_sites_cache_v1');
+        localStorage.setItem('zn_admin_dirty_ts', String(Date.now()));
       } catch {
         // Ignore storage error
       }
@@ -641,6 +754,7 @@ export const AdminKurator: React.FC = () => {
       );
       try {
         localStorage.removeItem('zn_cloud_sites_cache_v1');
+        localStorage.setItem('zn_admin_dirty_ts', String(Date.now()));
       } catch {
         // Ignore storage error
       }
@@ -2373,7 +2487,7 @@ export const AdminKurator: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* a) 3 Kartu Ringkasan Kategori Donasi */}
+                  {/* a) 3 Kartu Ringkasan Kategori Donasi (Memisahkan Dana Terverifikasi vs Menunggu Pemeriksaan Bukti) */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                     <div className="bg-white border border-amber-200 rounded-xl p-4 shadow-xs">
                       <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -2383,14 +2497,19 @@ export const AdminKurator: React.FC = () => {
                         <span className="text-xs font-bold text-amber-800">Rp 5.000</span>
                       </div>
                       <h4 className="text-xs font-bold text-slate-800">
-                        1. Donasi Barokah &amp; Doa Khusus
+                        1. Donasi Barokah &amp; Doa Khusus (Terverifikasi)
                       </h4>
                       <p className="text-xl font-black font-mono tabular-nums text-amber-800 mt-1">
                         Rp {donationAnalytics.barokah.total.toLocaleString('id-ID')}
                       </p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Total <strong>{donationAnalytics.barokah.count}</strong> transaksi pembuka doa
+                      <p className="text-[11px] text-slate-600 mt-0.5">
+                        Terverifikasi: <strong>{donationAnalytics.barokah.verifiedCount}</strong> transaksi
                       </p>
+                      {donationAnalytics.barokah.pendingCount > 0 && (
+                        <p className="text-[10px] text-amber-800 bg-amber-50 border border-amber-200/80 rounded px-2 py-0.5 mt-1.5">
+                          Menunggu Pemeriksaan Bukti (Belum Terverifikasi): <strong>{donationAnalytics.barokah.pendingCount}</strong> (Rp {donationAnalytics.barokah.pendingTotal.toLocaleString('id-ID')})
+                        </p>
+                      )}
                     </div>
 
                     <div className="bg-white border border-emerald-200 rounded-xl p-4 shadow-xs">
@@ -2401,14 +2520,19 @@ export const AdminKurator: React.FC = () => {
                         <span className="text-xs font-bold text-emerald-800">Rp 10.000</span>
                       </div>
                       <h4 className="text-xs font-bold text-slate-800">
-                        2. Donasi Rubrik &amp; Khazanah
+                        2. Donasi Rubrik &amp; Khazanah (Terverifikasi)
                       </h4>
                       <p className="text-xl font-black font-mono tabular-nums text-emerald-800 mt-1">
                         Rp {donationAnalytics.rubrik.total.toLocaleString('id-ID')}
                       </p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Total <strong>{donationAnalytics.rubrik.count}</strong> transaksi pembuka kisah
+                      <p className="text-[11px] text-slate-600 mt-0.5">
+                        Terverifikasi: <strong>{donationAnalytics.rubrik.verifiedCount}</strong> transaksi
                       </p>
+                      {donationAnalytics.rubrik.pendingCount > 0 && (
+                        <p className="text-[10px] text-amber-800 bg-amber-50 border border-amber-200/80 rounded px-2 py-0.5 mt-1.5">
+                          Menunggu Pemeriksaan Bukti (Belum Terverifikasi): <strong>{donationAnalytics.rubrik.pendingCount}</strong> (Rp {donationAnalytics.rubrik.pendingTotal.toLocaleString('id-ID')})
+                        </p>
+                      )}
                     </div>
 
                     <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
@@ -2419,14 +2543,19 @@ export const AdminKurator: React.FC = () => {
                         <span className="text-xs font-bold text-slate-600">Bebas</span>
                       </div>
                       <h4 className="text-xs font-bold text-slate-800">
-                        3. Donasi Pemeliharaan / Infaq Umum
+                        3. Donasi Pemeliharaan / Infaq Umum (Terverifikasi)
                       </h4>
                       <p className="text-xl font-black font-mono tabular-nums text-slate-900 mt-1">
                         Rp {donationAnalytics.other.total.toLocaleString('id-ID')}
                       </p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Total <strong>{donationAnalytics.other.count}</strong> transaksi infaq umum
+                      <p className="text-[11px] text-slate-600 mt-0.5">
+                        Terverifikasi: <strong>{donationAnalytics.other.verifiedCount}</strong> transaksi
                       </p>
+                      {donationAnalytics.other.pendingCount > 0 && (
+                        <p className="text-[10px] text-amber-800 bg-amber-50 border border-amber-200/80 rounded px-2 py-0.5 mt-1.5">
+                          Menunggu Pemeriksaan Bukti (Belum Terverifikasi): <strong>{donationAnalytics.other.pendingCount}</strong> (Rp {donationAnalytics.other.pendingTotal.toLocaleString('id-ID')})
+                        </p>
+                      )}
                     </div>
                   </div>
 

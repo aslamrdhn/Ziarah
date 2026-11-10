@@ -398,9 +398,6 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             ===================================================================== */}
         <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-3 sm:gap-5">
           <div className="space-y-1.5 sm:space-y-2.5 max-w-2xl">
-            <span className="block text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
-              {copy.heroBadge}
-            </span>
             <h1 className="font-serif text-2xl sm:text-4xl font-normal tracking-tight text-stone-900 leading-snug">
               {copy.heroTitle}
             </h1>
@@ -564,7 +561,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 Cari nama tokoh, makam, atau kota
               </label>
               <Search
-                className="w-4 h-4 text-stone-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                className="w-4 h-4 text-stone-600 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
                 strokeWidth={1.75}
                 aria-hidden="true"
               />
@@ -580,14 +577,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                   ensureFullSitesLoaded();
                   setSearchQuery(e.target.value);
                 }}
-                className="w-full pl-11 pr-10 py-3 bg-transparent text-sm text-stone-900 placeholder-stone-500 focus:outline-none"
+                className="w-full pl-11 pr-10 py-3 bg-transparent text-sm text-stone-900 placeholder-stone-600 focus:outline-none"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
                   aria-label="Hapus pencarian"
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-800 cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-600 hover:text-stone-900 cursor-pointer"
                 >
                   <X className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
                 </button>
@@ -618,7 +615,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 ))}
               </select>
               <Filter
-                className="w-3.5 h-3.5 text-stone-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                className="w-3.5 h-3.5 text-stone-600 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
                 strokeWidth={1.75}
                 aria-hidden="true"
               />
@@ -720,7 +717,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             const siteUrl = getSitePath(site);
             const shortEra = extractShortEra(site.era);
             const badgeLabel = site.category === 'Walisongo' ? 'Wali Songo' : site.category;
-            const isLcpCandidate = index === 0;
+            const isLcpCandidate = index < 3;
             const snippetText = (site.untoldStory || site.description || '')
               .replace(/<!--more-->/g, ' ')
               .trim();
@@ -764,11 +761,11 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 
                   {/* 2. Konten di Bawah Foto: Kota/Provinsi, Judul Serif, Kotak Ringkas Wasilah Hajat, Cuplikan */}
                   <div className="space-y-1 px-0.5">
-                    <div className="flex items-center justify-between gap-2 text-xs text-slate-600 font-medium">
+                    <div className="flex items-center justify-between gap-2 text-xs text-slate-700 font-medium">
                       <span className="truncate">
                         {site.location.city}, {site.location.province}
                       </span>
-                      <span className="shrink-0 text-[11px] text-slate-500 truncate max-w-[140px]">
+                      <span className="shrink-0 text-[11px] text-slate-700 font-semibold truncate max-w-[140px]">
                         {shortEra || practicalInfo}
                       </span>
                     </div>
@@ -777,7 +774,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       Makam {site.title}
                     </h2>
 
-                    <div className="text-[11px] text-slate-500 truncate">
+                    <div className="text-[11px] text-slate-700 font-medium truncate">
                       {practicalInfo}
                     </div>
 
@@ -829,7 +826,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 <Compass className="w-6 h-6" strokeWidth={1.75} aria-hidden="true" />
               </div>
               <h3 className="text-lg font-serif font-semibold text-stone-900 mb-1">Situs Tidak Ditemukan</h3>
-              <p className="text-xs sm:text-sm text-stone-500 max-w-sm mx-auto mb-5">
+              <p className="text-xs sm:text-sm text-stone-600 max-w-sm mx-auto mb-5">
                 Silakan gunakan kata kunci lain, atau sesuaikan filter kategori dan provinsi di atas.
               </p>
               <button

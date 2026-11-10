@@ -516,9 +516,25 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
 
           {/* 3. Deskripsi & Sejarah Babak I */}
           <div className="space-y-4 pt-4 border-t border-stone-200">
-            <h5 className="text-xs font-bold uppercase tracking-wider text-stone-700">
-              3. Ringkasan Katalog &amp; Babak I: Sejarah Lengkap
-            </h5>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <h5 className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                3. Ringkasan Katalog &amp; Babak I: Sejarah Lengkap
+              </h5>
+              <div className="flex items-center gap-2">
+                <label className="text-[11px] font-semibold text-stone-600">Klasifikasi Sumber Sejarah:</label>
+                <select
+                  value={editingSite.historySourceType || 'catatan_sejarah'}
+                  onChange={(e) => onChangeEditingSite({ ...editingSite, historySourceType: e.target.value as any })}
+                  className="px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-xs text-stone-800"
+                >
+                  <option value="catatan_sejarah">Catatan Sejarah &amp; Literatur</option>
+                  <option value="inskripsi_primer">Inskripsi &amp; Sumber Primer</option>
+                  <option value="tradisi_lisan">Riwayat Tradisi Lisan</option>
+                  <option value="hikmah_keagamaan">Tradisi Keagamaan &amp; Hikmah</option>
+                  <option value="narasi_editorial">Narasi Editorial Redaksi</option>
+                </select>
+              </div>
+            </div>
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1">Deskripsi Ringkas Katalog *</label>
               <textarea
@@ -553,14 +569,27 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                   Karomah #1 tampil terbuka gratis. Karomah #2 dst. dapat diberi titik potong <code className="bg-white px-1 rounded border border-stone-200">&lt;!--more--&gt;</code> untuk efek gembok penasaran.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleAddKaromahItem}
-                className="px-3 py-1.5 bg-white hover:bg-stone-100 text-stone-800 border border-stone-300 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Tambah Kisah Karomah</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={editingSite.karomahSourceType || 'tradisi_lisan'}
+                  onChange={(e) => onChangeEditingSite({ ...editingSite, karomahSourceType: e.target.value as any })}
+                  className="px-2.5 py-1.5 bg-white border border-stone-300 rounded-xl text-xs text-stone-800"
+                  title="Klasifikasi Sumber Karomah"
+                >
+                  <option value="tradisi_lisan">Sumber: Riwayat Tradisi Lisan</option>
+                  <option value="hikmah_keagamaan">Sumber: Tradisi Keagamaan &amp; Hikmah</option>
+                  <option value="catatan_sejarah">Sumber: Catatan Sejarah &amp; Literatur</option>
+                  <option value="narasi_editorial">Sumber: Narasi Editorial Redaksi</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={handleAddKaromahItem}
+                  className="px-3 py-1.5 bg-white hover:bg-stone-100 text-stone-800 border border-stone-300 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Kisah Karomah</span>
+                </button>
+              </div>
             </div>
 
             <div className="space-y-3">

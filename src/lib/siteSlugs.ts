@@ -34,9 +34,9 @@ export function findSiteByParam(sites: ZiarahSite[], rawParam?: string | null): 
   const byCanonicalSlug = sites.find((s) => getSiteSlug(s) === param);
   if (byCanonicalSlug) return byCanonicalSlug;
 
-  // 3. Title-only slug or title+city slug match (e.g. "sunan-ampel" or "sunan-gresik-gresik")
+  // 3. Title-only slug or title+city slug match (only if non-ambiguous: altMatches.length === 1)
   const normalizedParam = slugifySiteText(param);
-  const byAltSlug = sites.find((s) => {
+  const altMatches = sites.filter((s) => {
     const tSlug = slugifySiteText(s.title);
     const cSlug = slugifySiteText(s.location?.city || '');
     const preApostropheSlug = s.title.includes("'")
@@ -51,16 +51,15 @@ export function findSiteByParam(sites: ZiarahSite[], rawParam?: string | null): 
       `${tSlug}-${cSlug}` === normalizedParam ||
       fullTitleSlug === normalizedParam ||
       `${fullTitleSlug}-${cSlug}` === normalizedParam ||
-      (preApostropheSlug && (preApostropheSlug === normalizedParam || `${preApostropheSlug}-${cSlug}` === normalizedParam))
+      Boolean(
+        preApostropheSlug &&
+          (preApostropheSlug === normalizedParam || `${preApostropheSlug}-${cSlug}` === normalizedParam)
+      )
     );
   });
-  if (byAltSlug) return byAltSlug;
+  if (altMatches.length === 1) {
+    return altMatches[0];
+  }
 
-  // 4. Prefix/substring fallback
-  return (
-    sites.find((s) => {
-      const slug = getSiteSlug(s);
-      return slug.startsWith(normalizedParam) || normalizedParam.startsWith(slug);
-    }) || null
-  );
+  return null;
 }

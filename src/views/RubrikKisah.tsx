@@ -29,13 +29,11 @@ import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
 import {
-  BAROKAH_DONATION_ID_KEY,
   CompressedReceiptResult,
   CuratedMunajatItem,
   FALLBACK_MUNAJAT_ITEMS,
   getStoredAamiinMap,
   incrementStoredAamiin,
-  RUBRIK_DONATION_ID_KEY,
   saveVerifiedDonationRecord,
   submitDonationWithPrivateProof,
   useVerifiedDonationUnlock,
@@ -241,21 +239,10 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     const unsubDonations = onSnapshot(
       query(collection(db, 'donations'), where('status', 'in', ['confirmed', 'verified']), limit(25)),
       (snapshot) => {
-        let myId = '';
-        try {
-          myId =
-            localStorage.getItem(RUBRIK_DONATION_ID_KEY) ||
-            localStorage.getItem(BAROKAH_DONATION_ID_KEY) ||
-            '';
-        } catch {}
         const fetched: CuratedMunajatItem[] = snapshot.docs
           .filter((docSnap) => {
             const d = docSnap.data();
-            return (
-              d.status === 'verified' ||
-              d.status === 'confirmed' ||
-              (myId && docSnap.id === myId && d.status !== 'rejected')
-            );
+            return d.status === 'verified' || d.status === 'confirmed';
           })
           .map((docSnap, idx) => {
             const d = docSnap.data();
@@ -265,7 +252,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
               : 'Baru saja';
             return {
               id: docSnap.id,
-              donorName: d.donorName || 'Hamba Allah',
+              donorName: d.isAnonymous ? 'Hamba Allah' : (d.donorName || 'Hamba Allah'),
               amount: Number(d.amount) || 25000,
               programTitle: d.programTitle || 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
               siteName: d.siteName || 'Khazanah Auliya Nusantara',

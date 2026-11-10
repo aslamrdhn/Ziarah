@@ -119,7 +119,7 @@ service cloud.firestore {
     match /donations/{donationId} {
       allow get: if true;
       allow list: if isAdmin() || resource.data.status in ['confirmed', 'verified'];
-      allow create: if isValidId(donationId) && isValidDonation(incoming()) && incoming().status == 'pending';
+      allow create: if isValidId(donationId) && isValidDonation(incoming()) && incoming().status == 'pending' && (incoming().hasProof == false || existsAfter(/databases/$(database)/documents/donations/$(donationId)/private/proof));
       allow update: if isAdmin() && isValidId(donationId);
       allow delete: if isAdmin() && isValidId(donationId);
 

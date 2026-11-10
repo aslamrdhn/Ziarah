@@ -310,7 +310,9 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
 };
 
 const SITE_COPY_CACHE_KEY = 'zn_site_copy_cache_v1';
-const SITE_COPY_EVENT = 'zn_site_copy_updated';
+const SITE_COPY_EVENT = 'zn-site-copy-updated';
+const SITE_COPY_LEGACY_EVENT = 'zn_site_copy_updated';
+const ADMIN_DIRTY_TS_KEY = 'zn_admin_dirty_ts';
 
 function sanitizePackages(raw: unknown): QuickNominalPackage[] {
   if (!Array.isArray(raw) || raw.length === 0) {
@@ -660,12 +662,16 @@ export function getCachedSiteCopy(): SiteCopyConfig {
   }
 }
 
-export function setCachedSiteCopy(copy: SiteCopyConfig): void {
+export function setCachedSiteCopy(copy: SiteCopyConfig, markAdminDirty = false): void {
   if (typeof window === 'undefined') return;
   try {
     const merged = mergeWithDefaultSiteCopy(copy);
     localStorage.setItem(SITE_COPY_CACHE_KEY, JSON.stringify(merged));
+    if (markAdminDirty) {
+      localStorage.setItem(ADMIN_DIRTY_TS_KEY, String(Date.now()));
+    }
     window.dispatchEvent(new CustomEvent(SITE_COPY_EVENT, { detail: merged }));
+    window.dispatchEvent(new CustomEvent(SITE_COPY_LEGACY_EVENT, { detail: merged }));
   } catch {
     // Ignore storage quota errors
   }
@@ -687,7 +693,7 @@ export async function fetchSiteCopyFromCloud(force = false): Promise<SiteCopyCon
       const snap = await getDoc(doc(db, 'settings', 'site_copy'));
       if (snap.exists()) {
         const merged = mergeWithDefaultSiteCopy(snap.data() as Partial<SiteCopyConfig>);
-        setCachedSiteCopy(merged);
+        setCachedSiteCopy(merged, false);
         return merged;
       }
     } catch {
@@ -701,7 +707,7 @@ export async function fetchSiteCopyFromCloud(force = false): Promise<SiteCopyCon
 
 export async function saveSiteCopyToCloud(newCopy: SiteCopyConfig): Promise<SiteCopyConfig> {
   const merged = mergeWithDefaultSiteCopy(newCopy);
-  setCachedSiteCopy(merged);
+  setCachedSiteCopy(merged, true);
   const [{ db, handleFirestoreError, OperationType }, { doc, setDoc, serverTimestamp }] =
     await Promise.all([import('./firebase'), import('firebase/firestore')]);
   try {
@@ -717,6 +723,12 @@ export async function saveSiteCopyToCloud(newCopy: SiteCopyConfig): Promise<Site
   }
 }
 
+export const saveSiteCopyConfig = saveSiteCopyToCloud;
+
+export async function resetSiteCopyConfig(): Promise<SiteCopyConfig> {
+  return saveSiteCopyToCloud(DEFAULT_SITE_COPY);
+}
+
 export type UseSiteCopyReturn = SiteCopyConfig & {
   copy: SiteCopyConfig;
   siteCopy: SiteCopyConfig;
@@ -729,37 +741,46 @@ export function useSiteCopy(): UseSiteCopyReturn {
 
   useEffect(() => {
     let mounted = true;
-    let unsubSnapshot: (() => void) | null = null;
+    let fetchedOnce = false;
 
-    // Subscribe to real-time updates on /settings/site_copy via onSnapshot
-    // so changes saved by Admin in Portal Kurasi appear immediately on all public pages
-    const connectLiveSiteCopy = async () => {
+    const fetchLatestSiteCopy = async (force = false) => {
+      if (!force && fetchedOnce) return;
+      fetchedOnce = true;
       try {
-        const [{ db }, { doc, onSnapshot }] = await Promise.all([
-          import('./firebase'),
-          import('firebase/firestore'),
-        ]);
-        if (!mounted) return;
-        unsubSnapshot = onSnapshot(
-          doc(db, 'settings', 'site_copy'),
-          (snap) => {
-            if (!mounted) return;
-            if (snap.exists()) {
-              const merged = mergeWithDefaultSiteCopy(snap.data() as Partial<SiteCopyConfig>);
-              setCachedSiteCopy(merged);
-              setSiteCopy(merged);
-            }
-          },
-          () => {
-            // Fallback silently to cached/default copy if offline
-          }
-        );
+        const latest = await fetchSiteCopyFromCloud(force);
+        if (mounted) {
+          setSiteCopy(latest);
+        }
       } catch {
-        // Fallback silently if offline
+        // Fallback silently to cached/default copy if offline
       }
     };
 
-    connectLiveSiteCopy();
+    const isAdminRoute =
+      typeof window !== 'undefined' &&
+      (window.location.pathname.startsWith('/admin') ||
+        window.location.pathname.startsWith('/kurator'));
+    let hasAdminDirtyFlag = false;
+    try {
+      hasAdminDirtyFlag = Boolean(localStorage.getItem(ADMIN_DIRTY_TS_KEY));
+    } catch {}
+
+    const interactionEvents = ['pointerdown', 'scroll', 'keydown', 'touchstart'] as const;
+
+    const handleFirstInteraction = () => {
+      interactionEvents.forEach((evt) =>
+        window.removeEventListener(evt, handleFirstInteraction)
+      );
+      void fetchLatestSiteCopy(false);
+    };
+
+    if (isAdminRoute || hasAdminDirtyFlag) {
+      void fetchLatestSiteCopy(true);
+    } else if (typeof window !== 'undefined') {
+      interactionEvents.forEach((evt) =>
+        window.addEventListener(evt, handleFirstInteraction, { once: true, passive: true })
+      );
+    }
 
     const handleCustomUpdate = (e: Event) => {
       const customEvt = e as CustomEvent<SiteCopyConfig>;
@@ -771,18 +792,36 @@ export function useSiteCopy(): UseSiteCopyReturn {
     };
 
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === SITE_COPY_CACHE_KEY && mounted) {
+      if (!mounted) return;
+      if (e.key === SITE_COPY_CACHE_KEY) {
         setSiteCopy(getCachedSiteCopy());
+      } else if (e.key === ADMIN_DIRTY_TS_KEY) {
+        void fetchLatestSiteCopy(true);
       }
     };
 
+    const handleFocus = () => {
+      if (!mounted) return;
+      try {
+        if (localStorage.getItem(ADMIN_DIRTY_TS_KEY)) {
+          void fetchLatestSiteCopy(true);
+        }
+      } catch {}
+    };
+
     window.addEventListener(SITE_COPY_EVENT, handleCustomUpdate);
+    window.addEventListener(SITE_COPY_LEGACY_EVENT, handleCustomUpdate);
     window.addEventListener('storage', handleStorage);
+    window.addEventListener('focus', handleFocus);
     return () => {
       mounted = false;
-      if (unsubSnapshot) unsubSnapshot();
+      interactionEvents.forEach((evt) =>
+        window.removeEventListener(evt, handleFirstInteraction)
+      );
       window.removeEventListener(SITE_COPY_EVENT, handleCustomUpdate);
+      window.removeEventListener(SITE_COPY_LEGACY_EVENT, handleCustomUpdate);
       window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('focus', handleFocus);
     };
   }, []);
 

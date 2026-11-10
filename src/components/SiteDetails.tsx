@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ZiarahSite } from '../data/sites';
+import { ZiarahSite, getSourceClassificationLabel } from '../data/sites';
 import { X, MapPin, Navigation, Clock, Heart, BookOpen, Bookmark, BookmarkCheck, QrCode, Send, ScrollText, Trash2, Loader2, Calendar, ShieldCheck, Type, Map as MapIcon, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransactionModal } from './TransactionModal';
@@ -795,9 +795,14 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       <p className="text-xs sm:text-sm text-slate-600 mt-1">
                         Babak I — Jejak Kehidupan, Dakwah &amp; Perjuangan Beliau
                       </p>
-                      <p className="text-[11px] text-slate-500 italic mt-1">
-                        Disusun dari rujukan sejarah &amp; hikmah tradisi tutur pesantren Nusantara
-                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-medium">
+                          Klasifikasi Sumber: {getSourceClassificationLabel(site.historySourceType, 'catatan_sejarah')}
+                        </span>
+                        <span className="text-[11px] text-slate-500 italic">
+                          Disusun dari rujukan sejarah &amp; hikmah tradisi tutur pesantren Nusantara
+                        </span>
+                      </div>
                     </header>
 
                     <div>
@@ -850,8 +855,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     {/* Babak II — Kesaksian Karomah & Keajaiban Batin */}
                     {hasKaromah && (
                       <section id="seksi-karomah-makam" className="mt-8 pt-2 scroll-mt-6">
-                        <div className="text-[11px] font-medium uppercase tracking-widest text-emerald-800">
-                          Keteladanan Spiritual
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="text-[11px] font-medium uppercase tracking-widest text-emerald-800">
+                            Keteladanan Spiritual
+                          </div>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-medium">
+                            Klasifikasi Sumber: {getSourceClassificationLabel(site.karomahSourceType, 'tradisi_lisan')}
+                          </span>
                         </div>
                         <h3 className="font-serif text-2xl text-slate-900 mt-1 mb-4">
                           {copy.karomahSectionTitle}
@@ -1190,7 +1200,10 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                         {onContribute && (
                           <button
                             type="button"
-                            onClick={onContribute}
+                            onClick={() => {
+                              onClose();
+                              onContribute();
+                            }}
                             className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 cursor-pointer"
                           >
                             Koreksi data makam →

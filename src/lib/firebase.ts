@@ -59,12 +59,18 @@ try {
 
 export const db = firestoreInstance;
 
-// Use initializeAuth with browserLocalPersistence first (synchronous) to prevent popup-blocked errors on click
+// Only attach browserPopupRedirectResolver at startup on /admin or /kurator routes
+// so public pages never load pro-cumulus-xmvz5.firebaseapp.com/__/auth/iframe.js
+const isAuthRouteOnBoot =
+  typeof window !== 'undefined' &&
+  (window.location.pathname.startsWith('/admin') ||
+    window.location.pathname.startsWith('/kurator'));
+
 let authInstance;
 try {
   authInstance = initializeAuth(app, {
     persistence: [browserLocalPersistence, indexedDBLocalPersistence, inMemoryPersistence],
-    popupRedirectResolver: browserPopupRedirectResolver,
+    ...(isAuthRouteOnBoot ? { popupRedirectResolver: browserPopupRedirectResolver } : {}),
   });
 } catch {
   // If already initialized
@@ -97,10 +103,20 @@ export function isUserAdmin(user: User | null): boolean {
 export async function ensureAdminUidRegistered(user: User | null): Promise<boolean> {
   if (!user) return false;
   const isEmailAllowed = isUserAdmin(user);
+  if (isEmailAllowed && typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('zn_has_admin_session', '1');
+    } catch {}
+  }
   try {
     const adminRef = doc(db, 'admins', user.uid);
     const snap = await getDoc(adminRef);
     if (snap.exists()) {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('zn_has_admin_session', '1');
+        } catch {}
+      }
       return true;
     }
     if (isEmailAllowed) {

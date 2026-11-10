@@ -18,6 +18,7 @@ export default defineConfig(({ command }) => {
       outDir: 'dist',
       emptyOutDir: true,
       target: 'es2020',
+      sourcemap: true,
       cssMinify: true,
       chunkSizeWarningLimit: 650,
       rollupOptions: {
