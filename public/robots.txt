@@ -1,6 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ziarahnusantara.my.id/sitemap-utama.xml
 Sitemap: https://ziarahnusantara.my.id/sitemap.xml
-Sitemap: https://ziarahnusantara.my.id/sitemap.txt

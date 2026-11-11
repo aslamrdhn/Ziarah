@@ -585,12 +585,16 @@ if (!process.env.VITEST) {
   ];
 
   const sitemapEntries = allEntries.filter((e) => !e.isAliasRoute);
+  const todayIsoDate = new Date().toISOString().split('T')[0];
 
-  // 1. Generate standards-compliant sitemap XML
+  // 1. Generate standards-compliant sitemap XML with W3C <lastmod> YYYY-MM-DD
   const xmlLines = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...sitemapEntries.map((entry) => `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n  </url>`),
+    ...sitemapEntries.map(
+      (entry) =>
+        `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n    <lastmod>${todayIsoDate}</lastmod>\n  </url>`
+    ),
     '</urlset>',
     '',
   ];
@@ -602,14 +606,22 @@ if (!process.env.VITEST) {
     '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     '  <sitemap>',
     `    <loc>${SITE_ORIGIN}/sitemap.xml</loc>`,
+    `    <lastmod>${todayIsoDate}</lastmod>`,
     '  </sitemap>',
     '</sitemapindex>',
     '',
   ];
   const sitemapIndexContent = sitemapIndexLines.join('\n');
 
-  // 2. Generate plain-text sitemap.txt
+  // 2. Generate plain-text sitemap.txt & clean robots.txt with single canonical Sitemap line
   const sitemapTxtContent = sitemapEntries.map((entry) => entry.loc).join('\n') + '\n';
+  const robotsTxtContent = [
+    'User-agent: *',
+    'Allow: /',
+    '',
+    `Sitemap: ${SITE_ORIGIN}/sitemap.xml`,
+    '',
+  ].join('\n');
 
   // 3. Generate RSS 2.0 feed (rss.xml) — also supported by Google Search Console as a Sitemap
   const rssLines = [
@@ -631,7 +643,7 @@ if (!process.env.VITEST) {
   ];
   const rssXmlContent = rssLines.join('\n');
 
-  // Write generated sitemaps to both public/ and dist/
+  // Write generated sitemaps and robots.txt to both public/ and dist/
   for (const targetFolder of [rootPublic, rootDist]) {
     if (fs.existsSync(targetFolder)) {
       fs.writeFileSync(path.join(targetFolder, 'sitemap.xml'), sitemapXmlContent, 'utf8');
@@ -640,6 +652,7 @@ if (!process.env.VITEST) {
       fs.writeFileSync(path.join(targetFolder, 'sitemap_index.xml'), sitemapIndexContent, 'utf8');
       fs.writeFileSync(path.join(targetFolder, 'sitemap.txt'), sitemapTxtContent, 'utf8');
       fs.writeFileSync(path.join(targetFolder, 'rss.xml'), rssXmlContent, 'utf8');
+      fs.writeFileSync(path.join(targetFolder, 'robots.txt'), robotsTxtContent, 'utf8');
     }
   }
 
