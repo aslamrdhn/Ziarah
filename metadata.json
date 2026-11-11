@@ -1,6 +1,6 @@
 {
   "name": "Ziarah Nusantara",
-  "description": "Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil & Tawassul, serta peta rute & kisah karomah 96 makam Walisongo, Ulama & Habaib di 18 provinsi Indonesia.",
+  "description": "Panduan lengkap ziarah kubur dan direktori 96 makam Wali Songo & Ulama Nusantara. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

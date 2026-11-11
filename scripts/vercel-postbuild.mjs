@@ -121,9 +121,9 @@ const staticRoutes = [
     path: '/',
     priority: '1.0',
     changefreq: 'daily',
-    title: 'Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil & Jejak Batin 96 Makam Wali',
+    title: 'Ziarah Kubur & Makam Wali Nusantara: Doa, Yasin, Tahlil & Peta 96 Wali | Ziarah Nusantara',
     description:
-      'Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil & Tawassul, serta peta rute & kisah karomah 96 makam Walisongo, Ulama & Habaib di 18 provinsi Indonesia.',
+      'Panduan lengkap ziarah kubur dan direktori 96 makam Wali Songo & Ulama Nusantara. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.',
   },
   {
     path: '/direktori',
@@ -334,8 +334,8 @@ function buildDirectoryLinksHtml() {
 function buildHomepageRootHtml() {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <header>
-          <h1>Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali</h1>
-          <p><strong>Hati sedang rindu keteduhan atau hendak berziarah?</strong> Temukan urutan doa ziarah kubur lengkap (teks Arab, Latin, dan artinya), bacaan Yasin, Tahlil, dan Tawassul, serta peta rute perjalanan dan kisah karomah 96 makam Walisongo, Ulama Nusantara, dan Habaib di 18 provinsi Indonesia.</p>
+          <h1>Ziarah Kubur &amp; Makam Wali Nusantara: Doa, Yasin, Tahlil &amp; Peta 96 Wali | Ziarah Nusantara</h1>
+          <p><strong>Panduan lengkap ziarah kubur dan direktori 96 makam Wali Songo &amp; Ulama Nusantara.</strong> Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS di 18 provinsi Indonesia.</p>
         </header>
         <section>
           <h2>Apa Tujuan dan Hukum Ziarah Kubur dalam Islam?</h2>
@@ -393,6 +393,16 @@ function buildPanduanRootHtml() {
 }
 
 function buildSiteRootHtml(site) {
+  const sameProvince = sites.filter((s) => s.id !== site.id && s.province === site.province);
+  const otherSites = sites.filter((s) => s.id !== site.id && s.province !== site.province);
+  const relatedSites = [...sameProvince, ...otherSites].slice(0, 6);
+  const relatedLinksHtml = relatedSites
+    .map(
+      (rel) =>
+        `<li><a href="${SITE_ORIGIN}/situs/${escapeHtml(rel.slug)}">Makam ${escapeHtml(rel.title)} (${escapeHtml(rel.city)}, ${escapeHtml(rel.province)})</a></li>`
+    )
+    .join('\n              ');
+
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <article>
           <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori Provinsi ${escapeHtml(site.province)}</a> &rsaquo; Makam ${escapeHtml(site.title)}</p>
@@ -403,7 +413,15 @@ function buildSiteRootHtml(site) {
           <p>${escapeHtml(site.description)}</p>
           <p>${escapeHtml(site.history)}</p>
           ${site.sanad ? `<h2>Sanad Keilmuan dan Jaringan Dakwah</h2><p>${escapeHtml(site.sanad)}</p>` : ''}
-          <p><a href="${SITE_ORIGIN}/panduan">Baca Panduan Doa Ziarah Kubur Lengkap (Arab, Latin, dan Artinya)</a> | <a href="${SITE_ORIGIN}/peta">Buka Peta Rute Perjalanan Ziarah</a></p>
+          <nav aria-label="Makam Wali Terkait">
+            <h2>Makam Wali Terkait &amp; Panduan Bacaan Ziarah</h2>
+            <ul>
+              <li><a href="${SITE_ORIGIN}/panduan">Bacaan Yasin &amp; Doa Ziarah Kubur</a></li>
+              <li><a href="${SITE_ORIGIN}/doa">Doa Khusus &amp; Wasilah Hajat</a></li>
+              <li><a href="${SITE_ORIGIN}/peta">Buka Peta Rute Perjalanan Ziarah</a></li>
+              ${relatedLinksHtml}
+            </ul>
+          </nav>
         </article>
       </main>`;
 }
@@ -628,9 +646,9 @@ if (!process.env.VITEST) {
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
     '  <channel>',
-    '    <title>Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil &amp; Jejak Batin 96 Makam Wali</title>',
+    '    <title>Ziarah Kubur &amp; Makam Wali Nusantara: Doa, Yasin, Tahlil &amp; Peta 96 Wali | Ziarah Nusantara</title>',
     `    <link>${SITE_ORIGIN}/</link>`,
-    '    <description>Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil &amp; Tawassul, serta peta rute &amp; kisah karomah 96 makam Walisongo, Ulama &amp; Habaib di 18 provinsi Indonesia.</description>',
+    '    <description>Panduan lengkap ziarah kubur dan direktori 96 makam Wali Songo &amp; Ulama Nusantara. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.</description>',
     '    <language>id-ID</language>',
     `    <atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml" />`,
     ...sitemapEntries.map(
@@ -700,18 +718,31 @@ if (!process.env.VITEST) {
       fs.mkdirSync(routeDir, { recursive: true });
       fs.writeFileSync(path.join(routeDir, 'index.html'), routeHtml, 'utf8');
 
-      // Also pre-generate /makam/<id>/index.html for legacy links
+      // Also write dist/${relativeDir}.html so Vercel cleanUrls: true serves the prerendered HTML directly
+      const flatHtmlPath = path.join(rootDist, `${relativeDir}.html`);
+      fs.mkdirSync(path.dirname(flatHtmlPath), { recursive: true });
+      fs.writeFileSync(flatHtmlPath, routeHtml, 'utf8');
+
+      // Also pre-generate /makam/<id>/index.html and /makam/<id>.html for legacy links
       if (entry.legacyPath) {
-        const legacyDir = path.join(rootDist, entry.legacyPath.replace(/^\/+/, ''));
+        const legacyRel = entry.legacyPath.replace(/^\/+/, '');
+        const legacyDir = path.join(rootDist, legacyRel);
         fs.mkdirSync(legacyDir, { recursive: true });
         fs.writeFileSync(path.join(legacyDir, 'index.html'), routeHtml, 'utf8');
+        const legacyFlatHtml = path.join(rootDist, `${legacyRel}.html`);
+        fs.mkdirSync(path.dirname(legacyFlatHtml), { recursive: true });
+        fs.writeFileSync(legacyFlatHtml, routeHtml, 'utf8');
       }
 
-      // Also pre-generate legacy apostrophe-truncated slug path (e.g. /situs/agh-muhammad-as-wajo/index.html)
+      // Also pre-generate legacy apostrophe-truncated slug path (.html and /index.html)
       if (entry.legacyApostrophePath) {
-        const legacyApostropheDir = path.join(rootDist, entry.legacyApostrophePath.replace(/^\/+/, ''));
+        const legacyApostropheRel = entry.legacyApostrophePath.replace(/^\/+/, '');
+        const legacyApostropheDir = path.join(rootDist, legacyApostropheRel);
         fs.mkdirSync(legacyApostropheDir, { recursive: true });
         fs.writeFileSync(path.join(legacyApostropheDir, 'index.html'), routeHtml, 'utf8');
+        const legacyApostropheFlatHtml = path.join(rootDist, `${legacyApostropheRel}.html`);
+        fs.mkdirSync(path.dirname(legacyApostropheFlatHtml), { recursive: true });
+        fs.writeFileSync(legacyApostropheFlatHtml, routeHtml, 'utf8');
       }
     }
 

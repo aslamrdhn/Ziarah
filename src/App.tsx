@@ -104,8 +104,8 @@ export default function App() {
 
     const routeSeoMap: Record<string, { title: string; desc: string }> = {
       '/': {
-        title: 'Ziarah Nusantara: Panduan Ziarah Kubur, Doa Tahlil & Jejak Batin 96 Makam Wali',
-        desc: 'Hati sedang rindu keteduhan atau hendak berziarah? Temukan urutan doa ziarah kubur lengkap (Arab, Latin, Artinya), Tahlil & Tawassul, serta peta rute & kisah karomah 96 makam Walisongo, Ulama & Habaib di 18 provinsi Indonesia.',
+        title: 'Ziarah Kubur & Makam Wali Nusantara: Doa, Yasin, Tahlil & Peta 96 Wali | Ziarah Nusantara',
+        desc: 'Panduan lengkap ziarah kubur dan direktori 96 makam Wali Songo & Ulama Nusantara. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.',
       },
       '/direktori': {
         title: 'Direktori 96 Makam Walisongo, Ulama & Habaib di 18 Provinsi — Ziarah Nusantara',
