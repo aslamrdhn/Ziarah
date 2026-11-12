@@ -1,13 +1,29 @@
-import { ZiarahSite } from '../data/sites';
+import type { ZiarahSite } from '../data/sites';
+
+export interface SiteDoaKhususEntry {
+  title: string;
+  text: string;
+  arab?: string;
+  latin?: string;
+  translation?: string;
+  terjemahan?: string;
+  kaifiyah?: string;
+}
 
 export interface SiteLogisticsInfo {
   haulSchedule: string;
   localAdab: string;
-  shortEra: string;
+  barokahHajat: string[];
+  doaKhusus: SiteDoaKhususEntry[];
+  karomah?: string[];
+  untoldStory?: string;
 }
 
+export const HONEST_UNVERIFIED_LOGISTICS_FALLBACK =
+  'Informasi fadhilah wasilah dan jadwal haul spesifik untuk lokasi ini sedang dalam proses verifikasi literatur oleh Tim Kurator Ziarah Nusantara.';
+
 export interface CuratedZiarahRoute {
-  id: 'off' | 'jatim' | 'jateng' | 'jabar' | 'walisongo';
+  id: 'off' | 'walisongo-pantura' | 'habaib-jabodetabek' | 'jawa-timur-madura' | 'mataram-kedu';
   label: string;
   shortLabel: string;
   description: string;
@@ -18,245 +34,350 @@ export interface CuratedZiarahRoute {
 export const CURATED_ZIARAH_ROUTES: CuratedZiarahRoute[] = [
   {
     id: 'off',
-    label: 'Semua Titik (Tanpa Jalur)',
-    shortLabel: 'Semua Titik',
-    description: 'Menampilkan seluruh titik makam terverifikasi di Nusantara.',
-    color: '#047857',
+    label: 'Semua Makam (Tanpa Jalur Rute)',
+    shortLabel: 'Semua Makam',
+    description: 'Menampilkan seluruh titik lokasi makam Waliyullah di kepulauan Nusantara.',
+    color: '#065f46',
     siteIds: [],
   },
   {
-    id: 'jatim',
-    label: 'Jalur Wali Songo Jawa Timur',
-    shortLabel: 'Jalur Jatim (5 Wali)',
-    description: 'Rute berurutan: Sunan Ampel (Surabaya) → Sunan Giri (Gresik) → Sunan Gresik → Sunan Drajat (Lamongan) → Sunan Bonang (Tuban).',
+    id: 'walisongo-pantura',
+    label: 'Jalur Ziarah Wali Songo (Cirebon – Gresik – Surabaya)',
+    shortLabel: 'Rute Wali Songo',
+    description:
+      'Rute klasik ziarah 9 Wali Songo menyusuri pesisir utara Jawa mulai dari Cirebon, Demak, Kudus, Muria, Tuban, Lamongan, Gresik, hingga Ampel Surabaya.',
     color: '#047857',
-    siteIds: ['wali-2', 'wali-6', 'wali-1', 'wali-4', 'wali-3'],
+    siteIds: [
+      'sunan-gunung-jati',
+      'sunan-kalijaga',
+      'sunan-kudus',
+      'sunan-muria',
+      'sunan-bonang',
+      'sunan-drajat',
+      'syekh-maulana-malik-ibrahim',
+      'sunan-giri',
+      'sunan-ampel',
+    ],
   },
   {
-    id: 'jateng',
-    label: 'Jalur Wali Songo Jawa Tengah',
-    shortLabel: 'Jalur Jateng (3 Wali)',
-    description: 'Rute berurutan: Sunan Muria (Kudus) → Sunan Kudus → Sunan Kalijaga (Kadilangu, Demak).',
+    id: 'habaib-jabodetabek',
+    label: 'Jalur Auliya & Habaib Betawi – Banten – Bogor',
+    shortLabel: 'Rute Betawi & Banten',
+    description:
+      'Rute ziarah maqbarah para Habaib dan Ulama besar di Jakarta (Luar Batang, Tanjung Priok, Kwitang, Condet), Empang Bogor, hingga Kesultanan Banten.',
     color: '#0f766e',
-    siteIds: ['wali-8', 'wali-5', 'wali-7'],
+    siteIds: [
+      'habib-husein-luar-batang',
+      'mbah-priok',
+      'habib-ali-kwitang',
+      'habib-ahmad-bin-alwi-al-haddad',
+      'pangeran-jayakarta',
+      'guru-marzuki-cipinang',
+      'habib-abdullah-empang-bogor',
+      'sultan-maulana-hasanuddin',
+      'syekh-asnawi-caringin',
+    ],
   },
   {
-    id: 'jabar',
-    label: 'Jalur Kesultanan Cirebon & Banten',
-    shortLabel: 'Jalur Jabar & Banten',
-    description: 'Rute berurutan: Sunan Gunung Jati (Cirebon) → Syekh Datuk Kahfi (Cirebon) → Sultan Maulana Hasanuddin (Banten).',
-    color: '#b45309',
-    siteIds: ['wali-9', 'ulama-19', 'auliya-1'],
+    id: 'jawa-timur-madura',
+    label: 'Jalur Masyayikh Pesantren Jawa Timur & Madura',
+    shortLabel: 'Rute Jatim & Madura',
+    description:
+      'Rute ziarah ulama besar dan pendiri pesantren di Bangkalan Madura, Surabaya, Pasuruan, Jombang (Tebuireng), hingga Lirboyo Kediri.',
+    color: '#1e40af',
+    siteIds: [
+      'syaichona-kholil-bangkalan',
+      'sunan-ampel',
+      'kh-abdul-hamid-pasuruan',
+      'kh-hasyim-asyari-tebuireng',
+      'kh-wahab-chasbullah',
+      'kh-bisri-syansuri',
+      'kh-romly-tamim-rejoso',
+      'kh-abdul-karim-lirboyo',
+      'gus-miek-ploso-kediri',
+    ],
   },
   {
-    id: 'walisongo',
-    label: 'Jalur Lengkap 9 Wali Songo (Pantura Jawa)',
-    shortLabel: '9 Wali Songo Lengkap',
-    description: 'Lintasan penuh 9 Wali Songo dari Surabaya, Gresik, Lamongan, Tuban, Kudus, Demak, hingga Cirebon.',
-    color: '#065f46',
-    siteIds: ['wali-2', 'wali-6', 'wali-1', 'wali-4', 'wali-3', 'wali-8', 'wali-5', 'wali-7', 'wali-9'],
+    id: 'mataram-kedu',
+    label: 'Jalur Auliya Tanah Jawa Tengah & Mataram',
+    shortLabel: 'Rute Jateng & DIY',
+    description:
+      'Rute ziarah poros tengah Jawa: Semarang, Demak, Gunung Tidar Magelang, Watucongol, Bayat Klaten, hingga pesisir selatan Yogyakarta.',
+    color: '#92400e',
+    siteIds: [
+      'kh-sholeh-darat-semarang',
+      'raden-patah-demak',
+      'syekh-subakir-tidar',
+      'kh-dalhar-watucongol',
+      'kyai-nur-iman-mlangi',
+      'kh-munawwir-krapyak',
+      'syekh-maulana-maghribi-parangtritis',
+      'sunan-pandanaran-bayat',
+    ],
   },
 ];
 
-const HISTORICAL_LOGISTICS_BY_ID: Record<string, { haulSchedule: string; localAdab: string }> = {
-  'wali-1': {
-    haulSchedule: '12 Rabiul Awal (Puncak Haul Akbar Syekh Maulana Malik Ibrahim Gresik)',
-    localAdab: 'Berpakaian sopan menutup aurat, menjaga ketenangan di pendopo maqbarah, dan mengikuti arahan juru kunci Gapuro Sukolilo.',
-  },
-  'wali-2': {
-    haulSchedule: 'Pertengahan Bulan Sya’ban (Haul Agung Sunan Ampel Surabaya)',
-    localAdab: 'Peziarah pria & wanita menempati jalur terpisah di area pagar cungkup; dilarang melangkahi makam pengikut di pelataran.',
-  },
-  'wali-3': {
-    haulSchedule: '10 Muharram / Asyura (Haul Akbar Sunan Bonang Kutorejo Tuban)',
-    localAdab: 'Melepas alas kaki sejak gapura paduraksa kedua dan menjaga kekhusyukan dzikir di sekitar cungkup utama.',
-  },
-  'wali-4': {
-    haulSchedule: '10 Dzulhijjah / Bakda Idul Adha (Haul Agung Sunan Drajat Lamongan)',
-    localAdab: 'Menjaga adab di tangga bukit Dalem Duwur serta menghormati tata tertib kompleks Museum & Pesantren Sunan Drajat.',
-  },
-  'wali-5': {
-    haulSchedule: '10 Muharram / Buka Luwur Sunan Kudus (Menara Kudus)',
-    localAdab: 'Wajib menjaga kesopanan pakaian, menghormati tradisi lokal Kudus (tidak membawa olahan daging sapi di area inti), dan tertib antrean cungkup.',
-  },
-  'wali-6': {
-    haulSchedule: '24 Rabiul Awal (Haul Agung Sunan Giri Kebomas Gresik)',
-    localAdab: 'Meniti anak tangga bukit Giri Kedaton dengan tenang dan melepas alas kaki sebelum memasuki serambi cungkup kayu ukir.',
-  },
-  'wali-7': {
-    haulSchedule: '10 Dzulhijjah / Tradisi Penjamasan & Haul Sunan Kalijaga Kadilangu Demak',
-    localAdab: 'Mengikuti giliran bukaan pintu cungkup oleh juru kunci Kadilangu serta tidak mengambil benda apa pun dari area maqbarah.',
-  },
-  'wali-8': {
-    haulSchedule: '15 Muharram (Haul Akbar & Buka Luwur Sunan Muria Colo Kudus)',
-    localAdab: 'Siapkan fisik untuk jalur tangga/ojek pegunungan Muria, jaga kebersihan mata air gentong, dan patuhi arahan pengurus yayasan.',
-  },
-  'wali-9': {
-    haulSchedule: '10 Dzulhijjah / Grebeg Agung Idul Adha & Syawal (Astana Gunung Sembung Cirebon)',
-    localAdab: 'Peziarah umum berdoa di depan Pintu Pasujudan (tingkat ke-3); area dalam hanya dibuka bagi keluarga keraton & izin khusus juru kunci (jeneng).',
-  },
-};
+export function calculateDistanceKm(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 export function extractShortEra(era?: string): string {
-  if (!era) return 'Warisan Nusantara';
-  const match = era.match(/Abad\s+ke-\d+(?:\s*[–-]\s*(?:Abad\s+ke-)?\d+)?/i);
-  if (match) return match[0];
-  if (era.length <= 22) return era;
-  return era.split('(')[0].trim().slice(0, 22);
+  if (!era) return '';
+  const cleaned = era.trim();
+  const parenIndex = cleaned.indexOf('(');
+  if (parenIndex > 0) {
+    return cleaned.slice(0, parenIndex).trim();
+  }
+  return cleaned.length > 28 ? `${cleaned.slice(0, 26).trim()}…` : cleaned;
 }
 
-export const HONEST_UNVERIFIED_LOGISTICS_FALLBACK =
-  'Informasi fadhilah wasilah dan jadwal haul spesifik untuk lokasi ini sedang dalam proses verifikasi literatur oleh Tim Kurator Ziarah Nusantara.';
-
-export function getSiteLogistics(site: ZiarahSite): SiteLogisticsInfo {
-  const preset = HISTORICAL_LOGISTICS_BY_ID[site.id] || (site.legacyId ? HISTORICAL_LOGISTICS_BY_ID[site.legacyId] : undefined);
-
-  const fallbackHaul = HONEST_UNVERIFIED_LOGISTICS_FALLBACK;
-  const fallbackAdab =
-    'Berwudhu sebelum memasuki area maqbarah, mengenakan pakaian muslim/muslimah yang sopan dan menutup aurat, melepas alas kaki di batas suci cungkup, serta mematuhi tata tertib juru kunci setempat.';
-
-  const explicitAdab = Array.isArray(site.localAdab)
-    ? site.localAdab.map((item) => item.trim()).filter(Boolean).join(' • ')
-    : site.localAdab?.trim();
-
-  return {
-    haulSchedule: site.haulSchedule?.trim() || preset?.haulSchedule || fallbackHaul,
-    localAdab: explicitAdab || preset?.localAdab || fallbackAdab,
-    shortEra: extractShortEra(site.era),
-  };
+function normalizeStringOrArray(value?: string | string[]): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || '').trim()).filter(Boolean);
+  }
+  const trimmed = String(value).trim();
+  return trimmed ? [trimmed] : [];
 }
 
 /**
- * Menghasilkan deskripsi Berkah & Wasilah Hajat yang biasa diharapkan peziarah di makam tersebut.
- * Menggunakan nilai eksplisit `site.barokahHajat` yang telah terkurasi, atau mengembalikan pemberitahuan
- * jujur tanpa menebak klaim sejarah berdasar kata kunci kota.
+ * Menyusun narasi wasilah & hajat ziarah yang spesifik berdasarkan peran sejarah tokoh
+ * apabila field eksplisit `site.barokahHajat` belum diisi pada objek makam.
+ * Bebas dari pencocokan kata kunci dangkal ("habib" -> jodoh, "sultan" -> hutang).
  */
-export function getSiteBarokahHajat(site: ZiarahSite): string {
-  if (Array.isArray(site.barokahHajat)) {
-    const items = site.barokahHajat.map((item) => item.trim()).filter(Boolean);
-    if (items.length > 0) {
-      return items.join(' • ');
-    }
-  } else if (typeof site.barokahHajat === 'string' && site.barokahHajat.trim().length > 0) {
-    return site.barokahHajat.trim();
+export function buildRoleBasedBarokahHajat(
+  site: Pick<ZiarahSite, 'name' | 'title' | 'category' | 'city' | 'province' | 'location'>
+): string {
+  const name = (site.name || site.title || 'Waliyullah').trim();
+  const city = (site.city || site.location?.city || 'Nusantara').trim();
+  const province = (site.province || site.location?.province || 'Indonesia').trim();
+  const roleContext = `${site.name || ''} ${site.title || ''} ${site.category || ''}`.toLowerCase();
+
+  const isSultanOrHero =
+    /\b(sultan|raja|pangeran|panembahan|adipati|ratu|pahlawan|diponegoro|imam bonjol|raden intan|sentot|mangkurat|cakraningrat|baabullah|hasanuddin|iskandar muda|ageng tirtayasa|malikussaleh|suriansyah)\b/i.test(
+      roleContext
+    );
+
+  if (isSultanOrHero) {
+    return `Peziarah yang mengunjungi kompleks makam ${name} di ${city}, ${province} umumnya bertawassul dan berdoa memohon kepada Allah SWT keteguhan iman dalam membela kebenaran, keberanian dan amanah dalam kepemimpinan, keadilan sosial, serta keselamatan bangsa dan negeri dari segala marabahaya.`;
   }
 
-  return HONEST_UNVERIFIED_LOGISTICS_FALLBACK;
+  const isHabibOrTarekat =
+    site.category === 'Habaib' ||
+    /\b(habib|habaib|sayyid|syarif|syarifah|al-haddad|al-idrus|alaydrus|al-attas|al-jufri|alkadrie|assegaf|bafaqih|ba'abud|bahasyim|bin yahya|al-habsyi|syadziliyah|naqsyabandiyah|qadiriyah|syattariyah|sammaniyah|khalwatiyah|tijaniyah|alawiyyin|mursyid|tarekat|thariqah)\b/i.test(
+      roleContext
+    );
+
+  if (isHabibOrTarekat) {
+    return `Peziarah yang berziarah ke maqbarah ${name} di ${city}, ${province} umumnya bertawassul memohon kepada Allah SWT keberkahan ilmu agama yang bermanfaat, kecintaan (mahabbah) kepada Rasulullah SAW beserta Ahlul Bait dan ulama shalihin, keteguhan iman, serta keberkahan hidup keluarga dunia dan akhirat.`;
+  }
+
+  return `Para santri, penuntut ilmu, dan peziarah yang datang ke maqbarah ${name} di ${city}, ${province} umumnya bertawassul memohon kepada Allah SWT terbukanya kefahaman ilmu yang berkah (futuhul 'arifin), keistiqamahan dalam beribadah, keshalihan keturunan, serta kelapangan jalan keluar dari berbagai kesulitan hidup.`;
 }
 
 /**
- * Mengembalikan daftar `doaKhusus` makam. Jika makam belum memiliki item `doaKhusus` kustom di database,
- * fungsi ini menghasilkan bacaan Tawassul & Doa Munajat Ziarah Kubur umum Ahlussunnah wal Jamaah.
+ * Mengembalikan kalimat ringkasan ikhtiar batin & fadhilah wasilah (`barokahHajat`)
+ * langsung dari properti eksplisit pada objek makam, atau menyusun narasi spesifik
+ * berbasis peran sejarah tokoh bila belum tersedia.
  */
-export interface EnrichedDoaKhususItem {
-  title: string;
-  text: string;
-  latin: string;
-  translation: string;
+export function getSiteBarokahHajat(
+  site: Pick<ZiarahSite, 'id' | 'name' | 'title' | 'category' | 'location' | 'city' | 'province' | 'barokahHajat'>
+): string {
+  if (typeof site.barokahHajat === 'string' && site.barokahHajat.trim()) {
+    return site.barokahHajat.trim();
+  }
+  if (Array.isArray(site.barokahHajat) && site.barokahHajat.length > 0 && site.barokahHajat[0]?.trim()) {
+    return site.barokahHajat[0].trim();
+  }
+  return buildRoleBasedBarokahHajat(site);
+}
+
+/**
+ * Mengembalikan daftar amalan & doa khusus (`doaKhusus`) langsung dari data eksplisit makam.
+ * Memastikan lafaz Arab, Latin, dan Terjemahan senantiasa menyertakan nama tokoh `site.name` secara spesifik.
+ */
+export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[] {
+  const siteName = (site.name || site.title || 'Waliyullah').trim();
+  const siteTitle = (site.title || siteName).trim();
+
+  if (Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0) {
+    const validEntries = site.doaKhusus
+      .map((d) => {
+        const rawArab = (d.text || d.arab || '').trim();
+        const rawLatin = (d.latin || '').trim();
+        const rawTranslation = (d.translation || d.terjemahan || '').trim();
+        const rawKaifiyah = (d.kaifiyah || '').trim();
+
+        const arabWithPerson = rawArab.includes(siteName)
+          ? rawArab
+          : `${rawArab} (إِلَى حَضْرَةِ ${siteName})`;
+        const latinWithPerson = rawLatin
+          ? rawLatin.includes(siteName)
+            ? rawLatin
+            : `Ilâ hadhrati ${siteName}, al-Fâtihah. ${rawLatin}`
+          : `Ilâ hadhrati ${siteName}, syai-ul lillâhi lahumul Fâtihah.`;
+        const translationWithPerson = rawTranslation
+          ? rawTranslation.includes(siteName)
+            ? rawTranslation
+            : `Khusus ke hadirat ${siteName}: ${rawTranslation}`
+          : `Khusus ke hadirat ${siteName} (${siteTitle}), kami bertawassul memohon keberkahan ilmu, keteguhan iman, dan ridha Allah SWT.`;
+
+        return {
+          title: d.title || `Tawassul & Munajat Khusus di Maqbarah ${siteName}`,
+          text: arabWithPerson,
+          arab: arabWithPerson,
+          latin: latinWithPerson,
+          translation: translationWithPerson,
+          terjemahan: translationWithPerson,
+          ...(rawKaifiyah ? { kaifiyah: rawKaifiyah } : {}),
+        };
+      })
+      .filter((d) => Boolean(d.text));
+
+    if (validEntries.length > 0) {
+      return validEntries;
+    }
+  }
+
+  const fallbackArab = `اِلَى حَضْرَةِ الْوَلِيِّ الصَّالِحِ ${siteName} شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اَللّٰهُمَّ إِنِّيْ أَسْأَلُكَ وَأَتَوَجَّهُ إِلَيْكَ بِنَبِيِّكَ مُحَمَّدٍ نَبِيِّ الرَّحْمَةِ، وَبِكَرَامَةِ أَوْلِيَائِكَ الصَّالِحِيْنَ خُصُوْصًا ${siteName}، أَنْ تَقْضِيَ حَاجَاتِنَا وَتُفَرِّجَ كُرُبَاتِنَا وَتَرْزُقَنَا عِلْمًا نَافِعًا وَرِزْقًا حَلَالًا طَيِّبًا مُبَارَكًا يَا أَرْحَمَ الرَّاحِمِيْنَ`;
+  const fallbackLatin = `Ilâ hadhratil waliyyish shâlih ${siteName}, syai-ul lillâhi lahumul Fâtihah. Allâhumma innî as-aluka wa atawajjahu ilaika bi nabiyyika Muhammadin nabiyyir rahmah, wa bi karâmati auliyâ-ikash shâlihîn khushûshan ${siteName}, an taqdhiya hâjâtinâ wa tufarrija kurubâtinâ wa tarzuqanâ 'ilman nâfi'an wa rizqan halâlan thayyiban mubârakan yâ Arhamar Râhimîn.`;
+  const fallbackTranslation = `Khusus ke hadirat waliyullah yang shalih ${siteName}, segala sesuatu milik Allah, untuk beliau Al-Fatihah. Ya Allah, sesungguhnya aku memohon dan menghadap kepada-Mu dengan wasilah Nabi-Mu Muhammad Nabi pembawa rahmat, serta dengan berkah karomah para wali-Mu yang shalih khususnya ${siteName} (${siteTitle}), kabulkanlah hajat-hajat kami, lapangkanlah kesulitan kami, dan karuniakanlah ilmu yang bermanfaat serta rezeki yang halal, baik, dan penuh berkah, wahai Dzat Yang Maha Pengasih.`;
+
+  return [
+    {
+      title: `Doa Tawassul & Munajat di Maqbarah ${siteName}`,
+      text: fallbackArab,
+      arab: fallbackArab,
+      latin: fallbackLatin,
+      translation: fallbackTranslation,
+      terjemahan: fallbackTranslation,
+      kaifiyah: `1) Hadiahkan bacaan Surah Al-Fatihah kepada Nabi Muhammad SAW, para Sahabat, dan khusus kepada ${siteName}. 2) Bacalah Surah Yasin, Tahlil, dan shalawat Nabi dengan khusyuk. 3) Panjatkan doa munajat ini dengan penuh ketawadhuan seraya memohon ridha Allah SWT.`,
+    },
+  ];
 }
 
 export interface CompleteBarokahGuide {
+  hajatUtama: string;
+  doaTitle: string;
+  arabic: string;
+  latin: string;
+  translation: string;
+  kaifiyah: string[];
   tataCaraWaktu: string[];
-  doaItems: EnrichedDoaKhususItem[];
   wiridPenutupAdab: string[];
-  isSpecificBarokah: boolean;
-  isSpecificDoa: boolean;
+  allDoas: SiteDoaKhususEntry[];
+  doaItems: SiteDoaKhususEntry[];
   isCuratedSpecific: boolean;
   curationStatusLabel: string;
 }
 
 /**
- * Mengembalikan daftar `doaKhusus` makam yang dilengkapi transliterasi Latin dan terjemahan.
- */
-export function getEffectiveSiteDoaKhusus(
-  site: ZiarahSite
-): { title: string; text: string; latin?: string; translation?: string }[] {
-  return getSiteCompleteBarokahGuide(site).doaItems;
-}
-
-/**
- * Menghasilkan 3 Bagian Panduan Amalan Lengkap untuk seksi Barokah & Doa Khusus (Rp 5.000):
- * 1) Tata Cara & Waktu Terbaik Bertawassul Hajat di {site.name}
- * 2) Lafaz Bacaan Tawassul & Doa Khusus Hajat (Arab Naskh, Transliterasi Latin, Terjemahan Menyentuh Hati)
- * 3) Wirid Penutup & Adab Pulang Ziarah
+ * Mengembalikan paket panduan Barokah, Hajat & Doa Khusus lengkap untuk `SiteDetails.tsx` dan `KumpulanDoa.tsx`.
  */
 export function getSiteCompleteBarokahGuide(site: ZiarahSite): CompleteBarokahGuide {
-  const contextualDoa: EnrichedDoaKhususItem = {
-    title: `Doa Munajat Wasilah Hajat & Keberkahan di ${site.title}`,
-    text: 'اللّٰهُمَّ إِنِّي أَسْأَلُكَ وَأَتَوَجَّهُ إِلَيْكَ بِنَبِيِّكَ مُحَمَّدٍ نَبِيِّ الرَّحْمَةِ، وَبِكَرَامَةِ أَوْلِيَائِكَ الصَّالِحِينَ أَهْلِ هٰذِهِ الْمَقْبَرَةِ، أَنْ تَقْضِيَ حَاجَاتِنَا وَتَفْتَحَ لَنَا أَبْوَابَ الْخَيْرِ وَالتَّيْسِيرِ وَالْبَرَكَةِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ',
-    latin:
-      'Allaahumma innii as-aluka wa atawajjahu ilaika bi nabiyyika Muhammadin nabiyyir-rahmah, wa bi karaamati auliyaa-ikash-shaalihiina ahli haadzihil-maqbarah, an taqdhiya haajaatinaa wa taftaha lanaa abwaabal-khairi wat-taisiiri wal-barakati fid-diini wad-dun-yaa wal-aakhirah.',
-    translation: `Ya Allah, sesungguhnya aku memohon dan menghadapkan diri kepada-Mu dengan wasilah Nabi-Mu Muhammad pembawa rahmat, serta dengan kemuliaan para kekasih-Mu yang shalih penghuni maqbarah ini (${site.name}), kabulkanlah hajat-hajat kami, dan bukakanlah bagi kami pintu-pintu kebaikan, kemudahan, serta keberkahan dalam agama, dunia, dan akhirat.`,
-  };
+  const hasExplicitHajat = Boolean(
+    site.barokahHajat &&
+      (typeof site.barokahHajat === 'string'
+        ? site.barokahHajat.trim().length > 0
+        : Array.isArray(site.barokahHajat) && site.barokahHajat.some((h) => String(h || '').trim().length > 0))
+  );
+  const hasExplicitDoa = Boolean(Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0);
+  const isCuratedSpecific = hasExplicitHajat && hasExplicitDoa;
+  const curationStatusLabel = isCuratedSpecific
+    ? 'Khazanah Doa & Wasilah Terkurasi Khusus Makam Ini'
+    : 'Tawassul & Munajat Waliyullah (Menunggu Kurasi Spesifik Makam)';
 
-  const baseItems: EnrichedDoaKhususItem[] = [];
+  const hajatUtama = getSiteBarokahHajat(site);
+  const effectiveDoas = getEffectiveSiteDoaKhusus(site);
+  const primary = effectiveDoas[0];
 
-  const isSpecificBarokah = Array.isArray(site.barokahHajat)
-    ? site.barokahHajat.some((item) => item.trim().length > 0)
-    : Boolean(typeof site.barokahHajat === 'string' && site.barokahHajat.trim().length > 0);
-  const isSpecificDoa = Boolean(Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0);
-  const isCuratedSpecific = isSpecificBarokah && isSpecificDoa;
+  const customKaifiyah = primary.kaifiyah
+    ? primary.kaifiyah
+        .split(/\n+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [
+        `Mengucapkan salam penghormatan ahli kubur saat memasuki area maqbarah ${site.name} dalam keadaan suci berwudhu.`,
+        `Membaca Istighfar 3x, Syahadat, dan Shalawat Nabi, kemudian menghadiahkan Surah Al-Fatihah khusus kepada ${site.name} (${site.title}).`,
+        `Membaca Surah Yasin, Tahlil singkat, lalu memanjatkan Doa Tawassul & Munajat di atas dengan khusyuk semata-mata memohon ridha Allah SWT.`,
+      ];
 
-  if (isSpecificDoa && Array.isArray(site.doaKhusus)) {
-    site.doaKhusus.forEach((d) => {
-      baseItems.push({
-        title: d.title,
-        text: d.text,
-        latin:
-          (d.latin && d.latin.trim()) ||
-          `Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhi waliyullaahish-shaalih ${site.name} (${site.title}), syai-un lillaahi lahumul-Faatihah. Allaahummaghfir lahu warhamhu wa'fu 'anhu wanfa'naa bi asraarihii wa anwaarihii wa 'uluumihii fid-diini wad-dun-yaa wal-aakhirah.`,
-        translation:
-          d.translation ||
-          `Ya Allah, ampunilah dan muliakanlah derajat beliau (${site.name}), serta limpahkanlah kepada kami keberkahan ilmu, keteladanan, dan rahasia keshalihan beliau di dunia hingga akhirat.`,
-      });
-    });
-  } else {
-    baseItems.push({
-      title: `Hadoroh & Tawassul Khusus di Pusara ${site.name}`,
-      text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ وَلِيِّ اللهِ الصَّالِحِ صَاحِبِ هٰذِهِ الْمَقْبَرَةِ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ ۝ اللّٰهُمَّ اغْفِرْ لَهُ وَارْحَمْهُ وَعَافِهِ وَاعْفُ عَنْهُ وَانْفَعْنَا بِأَسْرَارِهِ وَأَنْوَارِهِ وَعُلُومِهِ وَبَرَكَاتِهِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ',
-      latin:
-        `Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhi waliyullaahish-shaalih ${site.name} shaahibi haadzihil-maqbarah, syai-un lillaahi lahumul-Faatihah. Allaahummaghfir lahu warhamhu wa 'aafihi wa'fu 'anhu wanfa'naa bi asraarihii wa anwaarihii wa 'uluumihii wa barakaatihii fid-diini wad-dun-yaa wal-aakhirah.`,
-      translation:
-        `Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh kekasih Allah yang shalih penghuni maqbarah ini (${site.name}), Al-Fatihah. Ya Allah, muliakanlah beliau dan limpahkanlah kepada kami keberkahan ilmu, cahaya ketakwaan, dan kemuliaan akhlak beliau dalam urusan agama, dunia, dan akhirat.`,
-    });
-  }
-
-  if (baseItems.length === 1) {
-    baseItems.push(contextualDoa);
-  }
+  const wiridPenutupAdab = [
+    `Menutup doa munajat di maqbarah ${site.name} dengan membaca Shalawat Nabi 11 kali dan Surah Al-Fatihah.`,
+    'Menjaga ketenangan, tidak melangkahi pusara, serta mundur secara perlahan dengan penuh adab saat meninggalkan area cungkup makam.',
+    'Menyempurnakan ikhtiar batin dengan sedekah kepada fakir miskin atau kotak pemeliharaan maqbarah setempat.',
+  ];
 
   return {
-    tataCaraWaktu: [
-      `Waktu Utama Mustajab: Dianjurkan berziarah pada Kamis sore (malam Jumat), bakda Subuh ketika suasana maqbarah ${site.title} masih hening, atau sepertiga malam terakhir.`,
-      `Persiapan & Adab Masuk: Menjaga wudhu sejak dari rumah/tempat wudhu kompleks, mengucapkan salam ziarah kubur di ambang cungkup, kemudian duduk tenang menghadap kiblat atau ke arah pusara dengan penuh takzim.`,
-      `Urutan Pembacaan: Awali dengan Istighfar 3x, Shalawat Nabi 11x, Hadoroh Al-Fatihah kepada Rasulullah SAW, keluarga & sahabat beliau, lalu khususkan Al-Fatihah kepada ${site.name} sebelum membaca Yasin, Tahlil, dan Doa Khusus Hajat di bawah ini.`,
-    ],
-    doaItems: baseItems,
-    wiridPenutupAdab: [
-      `Wirid Penutup Hajat: Sebelum beranjak, baca "Yaa Hayyu Yaa Qayyuum bi rahmatika astaghiits" (11x), Shalawat Thibbil Qulub / Al-Fatih (7x), dan tutup dengan Al-Fatihah (1x) sambil menghadirkan hajat keluarga di dalam hati.`,
-      `Adab Pulang & Menjaga Keberkahan: Mundur perlahan dengan sopan tanpa membelakangi cungkup secara tergesa-gesa, sisihkan infaq seikhlasnya untuk pemeliharaan maqbarah atau fakir miskin di sekitar lokasi sebagai penyempurna wasilah doa.`,
-    ],
-    isSpecificBarokah,
-    isSpecificDoa,
+    hajatUtama,
+    doaTitle: primary.title,
+    arabic: primary.text,
+    latin: primary.latin || '',
+    translation: primary.translation || '',
+    kaifiyah: customKaifiyah,
+    tataCaraWaktu: customKaifiyah,
+    wiridPenutupAdab,
+    allDoas: effectiveDoas,
+    doaItems: effectiveDoas,
     isCuratedSpecific,
-    curationStatusLabel: isCuratedSpecific
-      ? 'Khazanah Doa & Wasilah Terkurasi Khusus Makam Ini'
-      : 'Tuntunan Tawassul & Doa Hajat Umum Ziarah Auliya — Menunggu Kurasi Spesifik Makam',
+    curationStatusLabel,
   };
 }
 
 /**
- * Menghitung jarak garis lurus (Haversine) dalam satuan kilometer (km)
+ * Mengembalikan informasi logistik ziarah (Jadwal Haul, Adab Lokal, Barokah Hajat, Doa Khusus,
+ * serta Karomah dan Untold Story langsung dari objek `site` tanpa template generik Pesisir Jawa).
  */
-export function calculateDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const R = 6371; // Radius bumi dalam km
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return Math.round(R * c * 10) / 10;
-}
+export function getSiteLogistics(
+  site: Pick<
+    ZiarahSite,
+    | 'id'
+    | 'legacyId'
+    | 'name'
+    | 'title'
+    | 'category'
+    | 'location'
+    | 'city'
+    | 'province'
+    | 'haulSchedule'
+    | 'localAdab'
+    | 'barokahHajat'
+    | 'doaKhusus'
+    | 'karomah'
+    | 'untoldStory'
+  >
+): SiteLogisticsInfo {
+  const explicitHaul = site.haulSchedule?.trim();
+  const explicitAdab = normalizeStringOrArray(site.localAdab);
+  const explicitHajat = normalizeStringOrArray(site.barokahHajat);
+  const explicitKaromah = normalizeStringOrArray(site.karomah);
 
+  const resolvedDoas = getEffectiveSiteDoaKhusus(site as ZiarahSite);
+
+  return {
+    haulSchedule: explicitHaul || HONEST_UNVERIFIED_LOGISTICS_FALLBACK,
+    localAdab:
+      explicitAdab.length > 0
+        ? explicitAdab.join(' ')
+        : `Berpakaian muslim/muslimah yang sopan dan menutup aurat saat memasuki kompleks pemakaman ${site.name}. Menjaga ketenangan, ketertiban, serta meluruskan niat ziarah dan tawassul semata-mata mengharap ridha Allah SWT.`,
+    barokahHajat: explicitHajat.length > 0 ? explicitHajat : [getSiteBarokahHajat(site)],
+    doaKhusus: resolvedDoas,
+    karomah: explicitKaromah,
+    untoldStory: site.untoldStory ? String(site.untoldStory) : '',
+  };
+}

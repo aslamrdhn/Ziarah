@@ -92,6 +92,8 @@ function parseSiteBlocksFromRawTs(raw) {
     const province = extractQuotedField(block, 'province', '');
     const era = extractQuotedField(block, 'era', '');
     const sanad = extractQuotedField(block, 'sanad', '');
+    const karomah = extractQuotedField(block, 'karomah', '');
+    const untoldStory = extractQuotedField(block, 'untoldStory', '');
     const slug = getSiteSlug(title, city, id);
     extracted.push({
       id,
@@ -106,6 +108,8 @@ function parseSiteBlocksFromRawTs(raw) {
       province,
       era,
       sanad,
+      karomah,
+      untoldStory,
     });
   }
   return extracted;
@@ -276,6 +280,8 @@ export function extractSitesFromSource(customTarget) {
             province: item.province || prev.province,
             era: item.era || prev.era,
             sanad: item.sanad || prev.sanad,
+            karomah: item.karomah || prev.karomah || '',
+            untoldStory: item.untoldStory || prev.untoldStory || '',
           };
           if (prevByLegacyId && legacyTargetId && legacyTargetId !== item.id) {
             const rebuilt = new Map();
@@ -455,6 +461,8 @@ async function fetchCloudSitesForSeo(localSites) {
       const province = parseFirestoreStringField(locFields, 'province', base?.province || 'Indonesia');
       const era = parseFirestoreStringField(f, 'era', base?.era || '');
       const sanad = parseFirestoreStringField(f, 'sanad', base?.sanad || '');
+      const karomah = parseFirestoreStringField(f, 'karomah', base?.karomah || '');
+      const untoldStory = parseFirestoreStringField(f, 'untoldStory', base?.untoldStory || '');
 
       if (!base) addedCloudCount++;
       const mergedEntry = {
@@ -470,6 +478,8 @@ async function fetchCloudSitesForSeo(localSites) {
         province,
         era,
         sanad,
+        karomah,
+        untoldStory,
       };
       mergedById.set(targetId, mergedEntry);
       slugToId.set(mergedEntry.slug, targetId);
@@ -555,7 +565,7 @@ function buildDirektoriRootHtml() {
       </main>`;
 }
 
-function buildPanduanRootHtml() {
+export function buildPanduanRootHtml() {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <header>
           <h1>Panduan Ziarah Kubur Lengkap: Urutan Doa (Arab, Latin, Artinya), Tahlil, Yasin &amp; Adab</h1>
@@ -573,6 +583,41 @@ function buildPanduanRootHtml() {
           <li><strong>Membaca Dzikir Tahlil dan Tasbih:</strong> Melantunkan kalimat tauhid tahlil, tasbih, tahmid, dan shalawat kepada Nabi Muhammad SAW dengan khusyuk.</li>
           <li><strong>Membaca Doa Ziarah Kubur (Doa Arwah):</strong> Menutup rangkaian ziarah dengan memohonkan ampunan, kelapangan kubur, dan rahmat Allah SWT bagi almarhum maupun almarhumah.</li>
         </ol>
+      </main>`;
+}
+
+export function buildRubrikRootHtml() {
+  const featuredSites = (Array.isArray(sites) ? sites : [])
+    .filter((s) => s && (s.untoldStory || s.karomah))
+    .slice(0, 24);
+  const itemsHtml = featuredSites
+    .map((s) => {
+      const safeTitle = escapeHtml(s.title || s.name || s.id || 'Makam Waliyullah');
+      const safeName = escapeHtml(s.name || s.title || s.id || 'Waliyullah');
+      const safeCity = escapeHtml(s.city || 'Nusantara');
+      const safeProv = escapeHtml(s.province || 'Indonesia');
+      const safeSlug = escapeHtml(s.slug || s.id || '');
+      const safeStory = escapeHtml(s.untoldStory || s.karomah || s.history || s.description || '');
+      return `<li>
+              <article>
+                <h3><a href="${SITE_ORIGIN}/situs/${safeSlug}">Kisah &amp; Keteladanan ${safeTitle} (${safeName}) — ${safeCity}, ${safeProv}</a></h3>
+                <p>${safeStory}</p>
+              </article>
+            </li>`;
+    })
+    .join('\n          ');
+
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
+        <header>
+          <h1>Rubrik Sejarah, Kisah Karomah &amp; Wasiat Batin Para Wali — Ziarah Nusantara</h1>
+          <p>Kisah nyata keteladanan, wasiat batin, sanad keilmuan, dan sejarah dakwah ${sites.length} Waliyullah Nusantara di ${uniqueProvinces.length} provinsi berbasis naskah babad dan rujukan akademik.</p>
+        </header>
+        <section>
+          <h2>Indeks Kisah Keteladanan &amp; Karomah Waliyullah Nusantara</h2>
+          <ul>
+            ${itemsHtml}
+          </ul>
+        </section>
       </main>`;
 }
 
@@ -596,6 +641,8 @@ function buildSiteRootHtml(site) {
           <h2>Profil, Riwayat Dakwah, dan Sejarah ${escapeHtml(site.title)}</h2>
           <p>${escapeHtml(site.description)}</p>
           <p>${escapeHtml(site.history)}</p>
+          ${site.karomah ? `<h2>Kisah Keteladanan dan Karomah ${escapeHtml(site.name)}</h2><p>${escapeHtml(site.karomah)}</p>` : ''}
+          ${site.untoldStory ? `<h2>Jejak Batin dan Kisah di Balik Layar ${escapeHtml(site.name)}</h2><p>${escapeHtml(site.untoldStory)}</p>` : ''}
           ${site.sanad ? `<h2>Sanad Keilmuan dan Jaringan Dakwah</h2><p>${escapeHtml(site.sanad)}</p>` : ''}
           <nav aria-label="Makam Wali Terkait">
             <h2>Makam Wali Terkait &amp; Panduan Bacaan Ziarah</h2>
@@ -762,9 +809,11 @@ if (!process.env.VITEST) {
       bodyHtml:
         r.path === '/panduan'
           ? buildPanduanRootHtml()
-          : r.path === '/direktori'
-            ? buildDirektoriRootHtml()
-            : buildHomepageRootHtml(),
+          : r.path === '/rubrik'
+            ? buildRubrikRootHtml()
+            : r.path === '/direktori'
+              ? buildDirektoriRootHtml()
+              : buildHomepageRootHtml(),
     })),
     ...sites.map((s) => {
       const legacyApostropheSlug = s.title.includes("'")

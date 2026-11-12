@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeDonationAmount } from './sanitize';
-import { SITES } from '../data/sites';
+import { TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/initialSites';
 
-const DYNAMIC_SITE_COUNT = SITES.length;
-const DYNAMIC_PROVINCE_COUNT = new Set(SITES.map((s) => s.province)).size;
+const DYNAMIC_SITE_COUNT = TOTAL_SITE_COUNT;
+const DYNAMIC_PROVINCE_COUNT = TOTAL_PROVINCES_COUNT;
 
 export const ADMIN_WHATSAPP_NUMBER =
   (typeof import.meta !== 'undefined' &&

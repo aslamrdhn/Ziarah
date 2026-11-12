@@ -512,7 +512,8 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
       expect(site.localAdab, `Missing localAdab on ${site.id}`).toBeTruthy();
     }
 
-    // Pastikan fallback siteLogistics mengembalikan teks jujur jika ada makam usulan baru yang belum memiliki barokahHajat / haulSchedule
+    // Pastikan fallback siteLogistics menyusun narasi spesifik berbasis peran sejarah (nama, kota, provinsi)
+    // dan jadwal haul jujur jika ada makam usulan baru yang belum memiliki barokahHajat / haulSchedule eksplisit
     const unverifiedNewSite = {
       ...SITES[0],
       id: 'usulan-pengunjung-baru',
@@ -520,9 +521,10 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
       barokahHajat: undefined,
       haulSchedule: undefined,
     };
-    expect(getSiteBarokahHajat(unverifiedNewSite)).toBe(
-      'Informasi fadhilah wasilah dan jadwal haul spesifik untuk lokasi ini sedang dalam proses verifikasi literatur oleh Tim Kurator Ziarah Nusantara.'
-    );
+    const fallbackHajat = getSiteBarokahHajat(unverifiedNewSite);
+    expect(fallbackHajat).toContain(unverifiedNewSite.name);
+    expect(fallbackHajat).toContain(unverifiedNewSite.location.city);
+    expect(fallbackHajat).toContain(unverifiedNewSite.location.province);
     expect(getSiteLogistics(unverifiedNewSite).haulSchedule).toBe(
       HONEST_UNVERIFIED_LOGISTICS_FALLBACK
     );

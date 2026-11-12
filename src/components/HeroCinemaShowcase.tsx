@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Film, Compass, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
-import { ziarahSites } from '../data/sites';
+import { initialSites as ziarahSites } from '../data/initialSites';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
 
 interface CinemaScene {

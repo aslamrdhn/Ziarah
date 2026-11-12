@@ -19,7 +19,7 @@ export const BALI_NUSA_MALUKU_PAPUA_SITES: ZiarahSite[] = [
     description:
       'Kompleks Maqbarah Pondok Pesantren Syamsul Huda Loloan Barat, tempat peristirahatan Al-Allamah Al-Habib Ali bin Umar bin Abu Bakar Bafaqih (Wali Pitu Bali Barat) di Kelurahan Loloan Barat, Kecamatan Negara, Kabupaten Jembrana, Provinsi Bali.',
     category: 'Habaib',
-    era: 'Abad ke-20 M (Lahir di Banyuwangi 1890 M – Wafat di Loloan, Jembrana 24 Oktober 1997 M / Usia 107 Tahun)',
+    era: 'Abad ke-20 M (Lahir di Banyuwangi 1890 M – Wafat di Loloan, Jembrana 24 Oktober 1997 M / 1998 M dalam Usia 107 Tahun)',
     province: 'Bali',
     city: 'Jembrana',
     district: 'Kec. Negara',
@@ -621,7 +621,7 @@ export const BALI_NUSA_MALUKU_PAPUA_SITES: ZiarahSite[] = [
     imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Zainuddin_Abdul_Madjid.jpg',
     imageSource: 'Wikimedia Commons — Pahlawan Nasional Maulana Syaikh TGKH. Muhammad Zainuddin Abdul Madjid (Pancor, Selong, Lombok Timur)',
     sanad:
-      'Al-Allamah Maulana Syaikh TGKH. Muhammad Zainuddin Abdul Madjid (Syaikh Muhammad Shaggaf Al-Ampanani); lulusan terbaik Madrasah Ash-Shaulatiyah Makkah (1923–1934 M) dengan predikat Mumtaz dan kata pengantar langsung dari Syaikh Hasan Muhammad Al-Masysyath; murid kesayangan Syaikh Salim Rahmatullah, Sayyid Amin Al-Kutbi, Syaikh Umar Hamdan Al-Mahrisi, dan Syaikh Ali Al-Maliki.',
+      'Al-Allamah Maulana Syaikh TGKH. Muhammad Zainuddin Abdul Madjid (Syaikh Muhammad Shaggaf Al-Ampanani); lulusan terbaik Madrasah Ash-Shaulatiyah (Sholatihiyah) Makkah (1923–1934 M) dengan predikat Mumtaz dan kata pengantar langsung dari Syaikh Hasan Muhammad Al-Masysyath; murid kesayangan Syaikh Salim Rahmatullah, Sayyid Amin Al-Kutbi, Syaikh Umar Hamdan Al-Mahrisi, dan Syaikh Ali Al-Maliki.',
     karya: [
       'Pendirian Pesantren Al-Mujahidin (1934 M), Madrasah Nahdlatul Wathan Diniyah Islamiyah / NWDI (17 Agustus 1937 M), Madrasah Nahdlatul Banat Diniyah Islamiyah / NBDI khusus perempuan (21 April 1943 M), dan organisasi Nahdlatul Wathan (1 Maret 1953 M)',
       'Penulisan kitab berbahasa Arab, Melayu, dan Sasak: Risalah at-Tauhid, Sullamul Hija Syarah Safinatun Naja, Tuhfatul Ampenaniyah Syarah Matan al-Bina, Mi’rajush Shibyan ilaa Sama’i ’Ilmil Bayan, Hizib Nahdlatul Wathan, dan Wasiat Renungan Masa',
@@ -1352,7 +1352,7 @@ export const BALI_NUSA_MALUKU_PAPUA_SITES: ZiarahSite[] = [
     untoldStory:
       'Makam **Sultan Baabullah Datu Syah** terletak di puncak **Bukit Foramadiahi**, sebuah perkampungan tua di lereng Gunung Gamalama, Kecamatan Pulau Ternate, yang dahulu berfungsi sebagai benteng pertahanan alam dan kedaton peristirahatan kesultanan.<!--more-->\n\nDari pelataran makam Sultan Baabullah di Bukit Foramadiahi, peziarah dapat memandang langsung hamparan laut biru Maluku, Pulau Maitara, dan Pulau Tidore yang dahulu menjadi saksi kejayaan armada Islam *Moloku Kie Raha*.',
     barokahHajat:
-      'Peziarah yang berziarah ke Makam Sultan Baabullah di Bukit Foramadiahi Ternate umumnya bertawassul memohon kepada Allah SWT keberanian dan keteguhan hati dalam membela kehormatan agama dan bangsa, kewibawaan dalam kepemimpinan, serta kemuliaan bakti seorang anak kepada orang tua.',
+      'Wasilah keteguhan iman, keberanian menjaga kedaulatan bangsa dan kehormatan agama dari kezaliman, kepemimpinan yang adil dan berwibawa, serta persatuan umat di kepulauan Nusantara.',
     doaKhusus: [
       {
         title: 'Hadoroh & Tawassul Khusus Sultan Baabullah Datu Syah & Sultan Khairun (Foramadiahi Ternate)',

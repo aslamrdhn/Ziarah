@@ -146,8 +146,8 @@ export const JAWA_TENGAH_DIY_SITES: ZiarahSite[] = [
   {
     id: 'sunan-muria',
     legacyId: 'wali-8',
-    name: 'Makam Sunan Muria (Raden Umar Said)',
-    title: 'Wali Songo Penjaga Ekologi Pegunungan & Pendakwah Kaum Jelata di Puncak Gunung Muria',
+    name: 'Raden Umar Said (Sunan Muria)',
+    title: 'Sunan Muria',
     description:
       'Kompleks Cagar Budaya Masjid dan Maqbarah Sunan Muria (Raden Umar Said, abad ke-16 M) di puncak Bukit Colo, Kecamatan Dawe, Kabupaten Kudus—putra Sunan Kalijaga yang memilih berdakwah di tengah petani, nelayan, dan peladang lereng Gunung Muria.',
     category: 'Walisongo',
@@ -164,7 +164,7 @@ export const JAWA_TENGAH_DIY_SITES: ZiarahSite[] = [
       city: 'Kudus',
       province: 'Jawa Tengah',
     },
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d7/Masjid_Menara_Kudus.jpg',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Wisata_Religi.jpg',
     imageSource: 'Wikimedia Commons — Kompleks Masjid & Maqbarah Sunan Muria di Puncak Colo Gunung Muria Kudus',
     sanad:
       'Putra dari Sunan Kalijaga (Raden Mas Said) dan Dewi Saroh binti Syekh Maulana Ishaq (adik kandung Sunan Giri); murid dari ayahandanya Sunan Kalijaga dan Sunan Ngerang (Juwana, Pati).',
@@ -174,7 +174,7 @@ export const JAWA_TENGAH_DIY_SITES: ZiarahSite[] = [
       'Pembinaan spiritual masyarakat peladang, petani, dan nelayan di kawasan eks-Selat Muria (Kudus, Jepara, Pati)',
     ],
     history:
-      '**Sunan Muria**—yang memiliki nama asli **Raden Umar Said** atau *Raden Prawoto* (abad ke-16 M)—adalah putra dari pasangan **Sunan Kalijaga** dan **Dewi Saroh binti Syekh Maulana Ishaq**. Dengan demikian, dari jalur ibu beliau adalah keponakan kandung Sunan Giri di Gresik. Sejak muda, Raden Umar Said berguru ilmu syariat dan hakikat kepada ayahandanya sendiri, kepada pamannya Sunan Giri, serta kepada waliyullah sepuh di pesisir timur Muria, yakni **Sunan Ngerang (Ki Ageng Ngerang)** di Juwana, Pati, bersama sahabat seperguruannya Sunan Kudus dan Adipati Pathak Warak.\n\nBerbeda dengan para wali lain yang berdakwah di pusat-pusat ibu kota kesultanan atau pelabuhan ramai, Sunan Muria memilih membangun pusat dakwah dan pesantrennya di puncak perbukitan **Desa Colo, Kecamatan Dawe, Kabupaten Kudus**, pada ketinggian sekitar 1.600 meter di atas permukaan laut di lereng selatan Gunung Muria. Dari puncak gunung yang sejuk dan hening inilah beliau turun menyapa kaum petani, penyadap nira, pedagang kecil, dan nelayan di sepanjang pesisir Kudus, Pati, dan Jepara (yang pada abad ke-16 masih dipisahkan dari daratan Jawa oleh *Selat Muria*).\n\nMelalui pendekatan kesenian rakyat—menciptakan tembang *Sinom* dan *Kinanthi*—serta pengajaran bercocok tanam yang menjaga kelestarian mata air pegunungan, Sunan Muria sangat dicintai oleh rakyat jelata. Beliau menikah dengan **Dewi Sujinah** (putri Sunan Ngudung / kakak perempuan Sunan Kudus) serta Dewi Roroyono (putri Sunan Ngerang). Setelah wafat pada pertengahan abad ke-16 M, beliau dimakamkan tepat di belakang Masjid Sunan Muria di puncak Bukit Colo, Kecamatan Dawe, Kabupaten Kudus.',
+      '**Sunan Muria**—yang memiliki nama asli **Raden Umar Said** (abad ke-16 M)—adalah putra dari pasangan **Sunan Kalijaga** dan **Dewi Saroh binti Syekh Maulana Ishaq**. Dengan demikian, dari jalur ibu beliau adalah keponakan kandung Sunan Giri di Gresik. Sejak muda, Raden Umar Said berguru ilmu syariat dan hakikat kepada ayahandanya sendiri, kepada pamannya Sunan Giri, serta kepada waliyullah sepuh di pesisir timur Muria, yakni **Sunan Ngerang (Ki Ageng Ngerang)** di Juwana, Pati, bersama sahabat seperguruannya Sunan Kudus dan Adipati Pathak Warak.\n\nBerbeda dengan para wali lain yang berdakwah di pusat-pusat ibu kota kesultanan atau pelabuhan ramai, Sunan Muria memilih membangun pusat dakwah dan pesantrennya di puncak perbukitan **Desa Colo, Kecamatan Dawe, Kabupaten Kudus**, pada ketinggian sekitar 1.600 meter di atas permukaan laut di lereng selatan Gunung Muria. Dari puncak gunung yang sejuk dan hening inilah beliau turun menyapa kaum petani, penyadap nira, pedagang kecil, dan nelayan di sepanjang pesisir Kudus, Pati, dan Jepara (yang pada abad ke-16 masih dipisahkan dari daratan Jawa oleh *Selat Muria*).\n\nMelalui pendekatan kesenian rakyat—menciptakan tembang *Sinom* dan *Kinanthi*—serta pengajaran bercocok tanam yang menjaga kelestarian mata air pegunungan, Sunan Muria sangat dicintai oleh rakyat jelata. Beliau menikah dengan **Dewi Sujinah** (putri Sunan Ngudung / kakak perempuan Sunan Kudus) serta Dewi Roroyono (putri Sunan Ngerang). Setelah wafat pada pertengahan abad ke-16 M, beliau dimakamkan tepat di belakang Masjid Sunan Muria di puncak Bukit Colo, Kecamatan Dawe, Kabupaten Kudus.',
     karomah: [
       'Dalam tradisi lisan masyarakat lereng Gunung Muria dan naskah babad Jawa, Sunan Muria dikenal memiliki fisik yang sangat kuat dan karomah *melipat jarak* (*thayyul ardh*): beliau sanggup naik-turun lereng terjal Gunung Muria setinggi 1.600 mdpl setiap hari untuk menghadiri sidang Wali Songo di Masjid Agung Demak maupun membimbing nelayan di pesisir Juwana dan Jepara.<!--more-->\n\nDi serambi depan Kompleks Makam Sunan Muria terdapat **Gentong Air Keramat Sunan Muria** yang dialiri mata air pegunungan Muria yang tak pernah kering sepanjang abad; air ini diminum oleh ribuan peziarah sebagai wasilah kesembuhan dan kesegaran fisik setelah mendaki ratusan anak tangga Bukit Colo.',
     ],

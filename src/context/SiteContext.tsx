@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ZiarahSite } from '../data/sites';
-import { initialSites } from '../data/initialSites';
+import { INITIAL_FIRST_PAGE_SITES } from '../data/initialSites';
 import { getSiteSlug } from '../lib/siteSlugs';
+
+export { INITIAL_FIRST_PAGE_SITES };
 
 interface SiteContextType {
   sites: ZiarahSite[];
@@ -14,16 +16,16 @@ interface SiteContextType {
 }
 
 const SiteContext = createContext<SiteContextType>({
-  sites: initialSites,
+  sites: INITIAL_FIRST_PAGE_SITES,
   isLoading: false,
   isFullCatalogLoaded: false,
   isSeededInCloud: false,
   cloudSiteCount: 0,
-  ensureFullSitesLoaded: async () => initialSites,
+  ensureFullSitesLoaded: async () => INITIAL_FIRST_PAGE_SITES,
   refreshCloudSites: async () => {},
 });
 
-const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v1';
+export const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v1';
 const ADMIN_DIRTY_TS_KEY = 'zn_admin_dirty_ts';
 
 interface CachedCloudSitesPayload {
@@ -34,14 +36,14 @@ interface CachedCloudSitesPayload {
 /**
  * Merges static local sites with Firestore `/sites` documents.
  * - Matches each `cloudSite` against `localSites` by `s.id === cloudSite.id`
- *   OR `getSiteSlug(s) === cloudSite.id` OR `getSiteSlug(s) === getSiteSlug(cloudSite)`.
+ *   OR `s.legacyId === cloudSite.id` OR `getSiteSlug(s) === cloudSite.id` OR `getSiteSlug(s) === getSiteSlug(cloudSite)`.
  * - Preserves canonical `id` (`baseLocal.id`) and overrides ALL fields from `cloudSite`
  *   so edits in Admin Kurator immediately replace static fields.
  * - Supports soft-delete (`isDeleted: true`) tombstones by ID or slug.
  */
 export function mergeLocalAndCloudSites(
   localSites: ZiarahSite[],
-  cloudSites: Array<ZiarahSite & { isDeleted?: boolean }>
+  cloudSites: Array<ZiarahSite & { isDeleted?: boolean; summary?: string }>
 ): ZiarahSite[] {
   const mergedMap = new Map<string, ZiarahSite>();
   for (const s of localSites) {
@@ -57,9 +59,9 @@ export function mergeLocalAndCloudSites(
       location: cloudSite.location || {
         lat: 0,
         lng: 0,
-        address: '',
-        city: '',
-        province: '',
+        address: cloudSite.address || '',
+        city: cloudSite.city || '',
+        province: cloudSite.province || '',
       },
     });
 
@@ -81,19 +83,32 @@ export function mergeLocalAndCloudSites(
     }
 
     if (baseLocal) {
+      const resolvedAddress =
+        cloudSite.address ??
+        cloudSite.location?.address ??
+        baseLocal.address ??
+        baseLocal.location.address;
+      const resolvedDistrict =
+        cloudSite.district ??
+        cloudSite.location?.district ??
+        baseLocal.district ??
+        baseLocal.location.district;
+      const resolvedCity =
+        cloudSite.city ??
+        cloudSite.location?.city ??
+        baseLocal.city ??
+        baseLocal.location.city;
+      const resolvedProvince =
+        cloudSite.province ??
+        cloudSite.location?.province ??
+        baseLocal.province ??
+        baseLocal.location.province;
+
       const mergedLocation = {
-        address:
-          cloudSite.location?.address !== undefined
-            ? cloudSite.location.address
-            : baseLocal.location.address,
-        city:
-          cloudSite.location?.city !== undefined
-            ? cloudSite.location.city
-            : baseLocal.location.city,
-        province:
-          cloudSite.location?.province !== undefined
-            ? cloudSite.location.province
-            : baseLocal.location.province,
+        address: resolvedAddress,
+        district: resolvedDistrict,
+        city: resolvedCity,
+        province: resolvedProvince,
         lat:
           typeof cloudSite.location?.lat === 'number' && !Number.isNaN(cloudSite.location.lat)
             ? cloudSite.location.lat
@@ -104,6 +119,30 @@ export function mergeLocalAndCloudSites(
             : baseLocal.location.lng,
       };
 
+      const resolvedDescription =
+        cloudSite.description !== undefined
+          ? cloudSite.description
+          : cloudSite.summary !== undefined
+            ? cloudSite.summary
+            : baseLocal.description;
+
+      const resolvedKaromah = Array.isArray(cloudSite.karomah)
+        ? cloudSite.karomah
+        : typeof cloudSite.karomah === 'string' && String(cloudSite.karomah).trim()
+          ? [String(cloudSite.karomah).trim()]
+          : baseLocal.karomah;
+
+      const resolvedDoaKhusus = Array.isArray(cloudSite.doaKhusus)
+        ? cloudSite.doaKhusus.map((d) => ({
+            ...d,
+            title: d.title || `Doa Tawassul & Munajat ${cloudSite.name || baseLocal.name}`,
+            text: d.text || d.arab || '',
+            ...(d.translation || d.terjemahan
+              ? { translation: d.translation || d.terjemahan }
+              : {}),
+          }))
+        : baseLocal.doaKhusus;
+
       const mergedSite: ZiarahSite = {
         ...baseLocal,
         ...cloudSite,
@@ -112,18 +151,23 @@ export function mergeLocalAndCloudSites(
         title: cloudSite.title !== undefined ? cloudSite.title : baseLocal.title,
         category: cloudSite.category !== undefined ? cloudSite.category : baseLocal.category,
         era: cloudSite.era !== undefined ? cloudSite.era : baseLocal.era,
+        address: resolvedAddress,
+        district: resolvedDistrict,
+        city: resolvedCity,
+        province: resolvedProvince,
         location: mergedLocation,
-        description:
-          cloudSite.description !== undefined ? cloudSite.description : baseLocal.description,
+        googleMapsUrl:
+          cloudSite.googleMapsUrl !== undefined
+            ? cloudSite.googleMapsUrl
+            : baseLocal.googleMapsUrl,
+        description: resolvedDescription,
         history: cloudSite.history !== undefined ? cloudSite.history : baseLocal.history,
-        karomah:
-          Array.isArray(cloudSite.karomah) ? cloudSite.karomah : baseLocal.karomah,
+        karomah: resolvedKaromah,
         untoldStory:
           cloudSite.untoldStory !== undefined ? cloudSite.untoldStory : baseLocal.untoldStory,
         barokahHajat:
           cloudSite.barokahHajat !== undefined ? cloudSite.barokahHajat : baseLocal.barokahHajat,
-        doaKhusus:
-          Array.isArray(cloudSite.doaKhusus) ? cloudSite.doaKhusus : baseLocal.doaKhusus,
+        doaKhusus: resolvedDoaKhusus,
         haulSchedule:
           cloudSite.haulSchedule !== undefined ? cloudSite.haulSchedule : baseLocal.haulSchedule,
         localAdab:
@@ -139,6 +183,10 @@ export function mergeLocalAndCloudSites(
           cloudSite.imageSource !== undefined ? cloudSite.imageSource : baseLocal.imageSource,
         references:
           Array.isArray(cloudSite.references) ? cloudSite.references : baseLocal.references,
+        verifiedBy:
+          cloudSite.verifiedBy !== undefined ? cloudSite.verifiedBy : baseLocal.verifiedBy,
+        lastVerified:
+          cloudSite.lastVerified !== undefined ? cloudSite.lastVerified : baseLocal.lastVerified,
       };
       mergedMap.set(baseLocal.id, mergedSite);
     } else if (
@@ -148,26 +196,35 @@ export function mergeLocalAndCloudSites(
       typeof cloudSite.location.lat === 'number' &&
       typeof cloudSite.location.lng === 'number'
     ) {
-      mergedMap.set(cloudSite.id, cloudSite);
+      mergedMap.set(cloudSite.id, {
+        ...cloudSite,
+        address: cloudSite.address || cloudSite.location.address,
+        district: cloudSite.district || cloudSite.location.district,
+        city: cloudSite.city || cloudSite.location.city,
+        province: cloudSite.province || cloudSite.location.province,
+        description: cloudSite.description || cloudSite.summary || '',
+      });
     }
   }
 
   return Array.from(mergedMap.values());
 }
 
+export const mergeSites = mergeLocalAndCloudSites;
+
 function getInitialHydratedSites(): ZiarahSite[] {
-  if (typeof window === 'undefined') return initialSites;
+  if (typeof window === 'undefined') return INITIAL_FIRST_PAGE_SITES;
   try {
     const rawCached = localStorage.getItem(CLOUD_SITES_CACHE_KEY);
-    if (!rawCached) return initialSites;
+    if (!rawCached) return INITIAL_FIRST_PAGE_SITES;
     const parsed = JSON.parse(rawCached) as CachedCloudSitesPayload;
     if (parsed && Array.isArray(parsed.sites) && parsed.sites.length > 0) {
-      return mergeLocalAndCloudSites(initialSites, parsed.sites);
+      return mergeLocalAndCloudSites(INITIAL_FIRST_PAGE_SITES, parsed.sites);
     }
   } catch {
     // Ignore malformed cache
   }
-  return initialSites;
+  return INITIAL_FIRST_PAGE_SITES;
 }
 
 export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

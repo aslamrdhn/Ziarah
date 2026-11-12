@@ -235,7 +235,7 @@ export const SUMATERA_SITES: ZiarahSite[] = [
     sanad:
       'Sultan Iskandar Muda Johan Pahlawan Meukuta Alam (cucu Sultan Alauddin Riayat Syah Sayyidil Mukammil dari jalur ibu Putri Raja Indra Bangsa); berguru ilmu agama dan tasawuf kepada Syaikh Syamsuddin As-Sumatrani (Qadhi Malikul Adil Aceh) dan Syaikh Ibrahim bin Abdullah Asy-Syami.',
     karya: [
-      'Kodifikasi hukum adat dan syariat Kesultanan Aceh Adat Meukuta Alam (dengan adagium masyhur: Adat bak Poteu Meureuhom, Hukom bak Syiah Kuala)',
+      'Kodifikasi hukum adat dan syariat Kesultanan Aceh Adat Meukuta Alam / Adat Makuta Alam (dengan adagium masyhur: Adat bak Poteu Meureuhom, Hukom bak Syiah Kuala)',
       'Pembangunan dan perluasan Masjid Raya Baiturrahman Banda Aceh serta penataan Taman Ghairah / Gunongan dan aliran Krueng Daroy',
       'Kejayaan armada maritim Selat Malaka yang menempatkan Aceh sebagai salah satu dari 5 Kerajaan Islam Terbesar di Dunia abad ke-17',
     ],
@@ -644,7 +644,7 @@ export const SUMATERA_SITES: ZiarahSite[] = [
       'Dalam naskah *Silsilah Syattariyah Minangkabau* dan tradisi lisan Pariaman, dikisahkan karomah kesabaran dan kelembutan dakwah Syekh Burhanuddin ketika pertama kali kembali dari Aceh ke Ulakan: beliau mendidik anak-anak nagari bermain sambil mengajarkan kalimat syahadat dan adab berwudhu, hingga para tetua adat yang semula curiga justru takjub melihat perubahan akhlak anak-anak mereka dan berbondong-bondong masuk Islam.<!--more-->\n\nDi Nagari Ulakan masih berdiri **Masjid Tuo Kayu Jao / Masjid Tuo Syekh Burhanuddin** di Manggopoh Ulakan dengan tiang-tiang kayu kuno tanpa paku dan mushaf-mushaf manuskrip abad ke-17 peninggalan masa beliau.',
     ],
     untoldStory:
-      'Tradisi **Basapa (Bersafar)** di Makam Syekh Burhanuddin Ulakan telah ditetapkan sebagai **Warisan Budaya Takbenda Nasional Indonesia**: setiap hari **Rabu setelah tanggal 10 bulan Safar** (dalam perhitungan takwim *khamsiah* Syattariyah), ratusan ribu jamaah dari Sumatera Barat, Riau, Jambi, dan Bengkulu memenuhi pantai dan kompleks makam Ulakan untuk melaksanakan *Basapa Gadang* (dan sepekan kemudian *Basapa Ketek*).<!--more-->\n\nHubungan persaudaraan spiritual antara **Syekh Burhanuddin Ulakan (Padang Pariaman)**, **Syekh Abdurrauf As-Singkili (Banda Aceh)**, dan **Syekh Abdul Muhyi Pamijahan (Tasikmalaya)** merupakan bukti nyata betapa eratnya jaringan sanad keilmuan antara Sumatera dan Jawa sejak abad ke-17 M.',
+      'Tradisi **Basapa (Basafa / Bersafar)** di Makam Syekh Burhanuddin Ulakan telah ditetapkan sebagai **Warisan Budaya Takbenda Nasional Indonesia**: setiap hari **Rabu setelah tanggal 10 bulan Safar** (dalam perhitungan takwim *khamsiah* Syattariyah), ratusan ribu jamaah dari Sumatera Barat, Riau, Jambi, dan Bengkulu memenuhi pantai dan kompleks makam Ulakan untuk melaksanakan *Basapa Gadang* (dan sepekan kemudian *Basapa Ketek*).<!--more-->\n\nHubungan persaudaraan spiritual antara **Syekh Burhanuddin Ulakan (Padang Pariaman)**, **Syekh Abdurrauf As-Singkili (Banda Aceh)**, dan **Syekh Abdul Muhyi Pamijahan (Tasikmalaya)** merupakan bukti nyata betapa eratnya jaringan sanad keilmuan antara Sumatera dan Jawa sejak abad ke-17 M.',
     barokahHajat:
       'Peziarah dan jamaah *Basapa* yang berziarah ke maqbarah Syekh Burhanuddin di Ulakan Padang Pariaman umumnya bertawassul memohon kepada Allah SWT keteguhan iman dan keselarasan hidup antara adat dan syariat, keberkahan menuntut ilmu di surau/pesantren, serta keselamatan merantau dan mencari nafkah.',
     doaKhusus: [

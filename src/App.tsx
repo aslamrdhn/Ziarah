@@ -13,15 +13,13 @@ const KumpulanDoa = lazy(() => import('./views/KumpulanDoa').then((m) => ({ defa
 const RubrikKisah = lazy(() => import('./views/RubrikKisah').then((m) => ({ default: m.RubrikKisah })));
 const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })));
 
-import { SITES, type ZiarahSite } from './data/sites';
+import type { ZiarahSite } from './data/sites';
+import { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from './data/initialSites';
 import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { SiteProvider } from './context/SiteContext';
 import { findSiteByParam, getSitePath } from './lib/siteSlugs';
 import { useSiteCopy } from './lib/siteCopy';
-
-const TOTAL_SITES_COUNT = SITES.length;
-const TOTAL_PROVINCES_COUNT = new Set(SITES.map((s) => s.province)).size;
 
 export default function App() {
   const location = useLocation();

@@ -1,18 +1,51 @@
-import { SITES, TOTAL_PROVINCES_COUNT, type ZiarahSite } from './sites';
+import type { ZiarahSite } from './sites';
 
-export const TOTAL_SITE_COUNT: number = SITES.length;
-export { TOTAL_PROVINCES_COUNT };
+export const TOTAL_SITE_COUNT = 183;
+export const TOTAL_SITES_COUNT = 183;
+export const TOTAL_PROVINCES_COUNT = 34;
 
 export const ALL_PROVINCES: string[] = [
   'Semua Provinsi',
-  ...Array.from(
-    new Set(SITES.map((s) => s.province || s.location.province).filter((p): p is string => Boolean(p)))
-  ).sort(),
+  'Aceh',
+  'Bali',
+  'Banten',
+  'Bengkulu',
+  'DI Yogyakarta',
+  'DKI Jakarta',
+  'Gorontalo',
+  'Jambi',
+  'Jawa Barat',
+  'Jawa Tengah',
+  'Jawa Timur',
+  'Kalimantan Barat',
+  'Kalimantan Selatan',
+  'Kalimantan Tengah',
+  'Kalimantan Timur',
+  'Kalimantan Utara',
+  'Kepulauan Bangka Belitung',
+  'Kepulauan Riau',
+  'Lampung',
+  'Maluku',
+  'Maluku Utara',
+  'Nusa Tenggara Barat',
+  'Nusa Tenggara Timur',
+  'Papua Barat',
+  'Papua Barat Daya',
+  'Riau',
+  'Sulawesi Barat',
+  'Sulawesi Selatan',
+  'Sulawesi Tengah',
+  'Sulawesi Tenggara',
+  'Sulawesi Utara',
+  'Sumatera Barat',
+  'Sumatera Selatan',
+  'Sumatera Utara',
 ];
 
 export const initialSites: ZiarahSite[] = [
   {
-    id: 'wali-1',
+    id: 'syekh-maulana-malik-ibrahim',
+    legacyId: 'wali-1',
     name: 'Syekh Maulana Malik Ibrahim (Makdum Ibrahim As-Samarqandi)',
     title: 'Sunan Gresik (Syekh Maghribi)',
     description:
@@ -61,7 +94,8 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'wali-2',
+    id: 'sunan-ampel',
+    legacyId: 'wali-2',
     name: 'Sayyid Ali Rahmatullah (Raden Rahmat)',
     title: 'Sunan Ampel',
     description:
@@ -110,7 +144,8 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'wali-3',
+    id: 'sunan-bonang',
+    legacyId: 'wali-3',
     name: 'Syekh Maulana Makhdum Ibrahim',
     title: 'Sunan Bonang',
     description: "Maestro suluk sastra pesisir, pencipta gending dakwah 'Tombo Ati', dan pengarang Suluk Wujil.",
@@ -158,7 +193,8 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'wali-4',
+    id: 'sunan-drajat',
+    legacyId: 'wali-4',
     name: 'Raden Qasim (Syarifuddin)',
     title: 'Sunan Drajat',
     description:
@@ -207,7 +243,8 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'wali-5',
+    id: 'sunan-kudus',
+    legacyId: 'wali-5',
     name: "Sayyid Ja'far Shadiq Azmatkhan",
     title: 'Sunan Kudus',
     description:
@@ -256,7 +293,8 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'wali-6',
+    id: 'sunan-giri',
+    legacyId: 'wali-6',
     name: 'Raden Paku (Sultan Abdul Faqih / Prabu Satmata)',
     title: 'Sunan Giri',
     description:
@@ -305,7 +343,8 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'wali-7',
+    id: 'sunan-kalijaga',
+    legacyId: 'wali-7',
     name: 'Raden Mas Said (Syekh Malaya)',
     title: 'Sunan Kalijaga',
     description:
@@ -355,8 +394,9 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'wali-8',
-    name: 'Raden Umar Said (Raden Prawoto)',
+    id: 'sunan-muria',
+    legacyId: 'wali-8',
+    name: 'Raden Umar Said (Sunan Muria)',
     title: 'Sunan Muria',
     description:
       'Putra Sunan Kalijaga yang berdakwah di lereng Gunung Muria, membimbing petani, nelayan, dan pelestari ekologi hutan.',
@@ -404,7 +444,8 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'wali-9',
+    id: 'sunan-gunung-jati',
+    legacyId: 'wali-9',
     name: 'Syarif Hidayatullah (Sayyid Al-Kamil)',
     title: 'Sunan Gunung Jati',
     description:
@@ -453,7 +494,8 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'habib-1',
+    id: 'habib-ali-kwitang',
+    legacyId: 'habib-1',
     name: 'Al-Habib Ali bin Abdurrahman Al-Habsyi',
     title: 'Habib Ali Kwitang',
     description:
@@ -502,7 +544,8 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'habib-2',
+    id: 'habib-husein-luar-batang',
+    legacyId: 'habib-2',
     name: 'Al-Habib Husein bin Abubakar Alaydrus',
     title: 'Habib Husein Luar Batang',
     description:
@@ -552,7 +595,8 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
   {
-    id: 'habib-3',
+    id: 'mbah-priok',
+    legacyId: 'habib-3',
     name: 'Al-Habib Hasan bin Muhammad Al-Haddad',
     title: 'Mbah Priok (Tanjung Priok)',
     description:
@@ -602,3 +646,106 @@ export const initialSites: ZiarahSite[] = [
     ],
   },
 ];
+
+export const INITIAL_SITES: ZiarahSite[] = initialSites;
+export const INITIAL_FIRST_PAGE_SITES: ZiarahSite[] = initialSites;
+
+export const REGIONAL_ID_TO_LEGACY_ID: Record<string, string> = {
+  'sunan-gunung-jati': 'wali-9',
+  'syekh-datuk-kahfi': 'auliya-19',
+  'syekh-quro-karawang': 'ulama-10',
+  'syekh-abdul-muhyi-pamijahan': 'ulama-8',
+  'sultan-maulana-hasanuddin': 'auliya-2',
+  'sultan-maulana-yusuf': 'auliya-18',
+  'syekh-asnawi-caringin': 'ulama-7',
+  'syekh-nawawi-al-bantani': 'ulama-6',
+  'habib-husein-luar-batang': 'habib-2',
+  'mbah-priok': 'habib-3',
+  'pangeran-jayakarta': 'auliya-1',
+  'habib-ahmad-bin-alwi-al-haddad': 'habib-4',
+  'habib-ali-kwitang': 'habib-1',
+  'habib-utsman-bin-yahya': 'habib-5',
+  'guru-marzuki-cipinang': 'ulama-5',
+  'habib-abdullah-empang-bogor': 'habib-6',
+  'mama-falak-pagentongan-bogor': 'ulama-9',
+  'eyang-dalem-abdul-manaf-mahmud': 'auliya-3',
+  'kh-noer-ali-bekasi': 'ulama-30',
+  'sunan-kalijaga': 'wali-7',
+  'sunan-kudus': 'wali-5',
+  'sunan-muria': 'wali-8',
+  'raden-patah-demak': 'auliya-6',
+  'syekh-jangkung-pati': 'auliya-7',
+  'syekh-mutamakkin-kajen': 'ulama-11',
+  'habib-ahmad-sapuro': 'habib-7',
+  'sunan-pandanaran-bayat': 'auliya-5',
+  'kh-sholeh-darat-semarang': 'ulama-13',
+  'syekh-subakir-tidar': 'auliya-4',
+  'kh-dalhar-watucongol': 'ulama-12',
+  'syekh-maulana-maghribi-parangtritis': 'auliya-9',
+  'kh-munawwir-krapyak': 'ulama-33',
+  'kyai-nur-iman-mlangi': 'auliya-8',
+  'kh-arwani-amin-kudus': 'ulama-14',
+  'mbah-maimoen-zubair-sarang': 'ulama-31',
+  'masyayikh-lasem-rembang': 'ulama-32',
+  'habib-hasyim-bin-yahya-pekalongan': 'habib-14',
+  'kh-ahmad-rifai-kalisalak': 'ulama-40',
+  'syekh-maulana-malik-ibrahim': 'wali-1',
+  'sunan-ampel': 'wali-2',
+  'sunan-bonang': 'wali-3',
+  'sunan-drajat': 'wali-4',
+  'sunan-giri': 'wali-6',
+  'syekh-maulana-ishaq': 'auliya-20',
+  'syekh-ibrahim-asmorokondi': 'auliya-11',
+  'habib-abu-bakar-gresik': 'habib-8',
+  'kh-abdul-hamid-pasuruan': 'ulama-19',
+  'kh-asad-syamsul-arifin': 'ulama-20',
+  'kh-hasyim-asyari-tebuireng': 'ulama-1',
+  'kh-wahab-chasbullah': 'ulama-16',
+  'kh-bisri-syansuri': 'ulama-17',
+  'kh-romly-tamim-rejoso': 'ulama-18',
+  'syekh-jumadil-kubro-troloyo': 'auliya-10',
+  'kh-abdul-karim-lirboyo': 'ulama-21',
+  'gus-miek-ploso-kediri': 'ulama-22',
+  'syekh-ihsan-jampes-kediri': 'ulama-34',
+  'kh-hasan-besari-tegalsari': 'auliya-30',
+  'masyayikh-tremas-pacitan': 'ulama-41',
+  'habib-sholeh-tanggul-jember': 'habib-9',
+  'guru-bangil-pasuruan': 'ulama-35',
+  'sunan-bejagung-tuban': 'auliya-21',
+  'syaichona-kholil-bangkalan': 'ulama-15',
+  'sayyid-yusuf-talango': 'auliya-12',
+  'syekh-abdurrauf-as-singkili': 'ulama-3',
+  'syekh-hamzah-fansuri': 'ulama-24',
+  'sultan-malikussaleh': 'auliya-25',
+  'teungku-di-anjong-banda-aceh': 'habib-15',
+  'syekh-abdul-wahab-rokan-besilam': 'ulama-26',
+  'makam-papan-tinggi-mahligai-barus': 'ulama-36',
+  'syekh-burhanuddin-ulakan': 'ulama-25',
+  'kiai-marogan-palembang': 'ulama-27',
+  'kompleks-kawah-tengkurep-palembang': 'auliya-26',
+  'syekh-muhammad-arsyad-al-banjari': 'ulama-28',
+  'guru-sekumpul-martapura': 'ulama-2',
+  'sultan-suriansyah-banjarmasin': 'auliya-16',
+  'habib-basirih-banjarmasin': 'habib-12',
+  'syekh-kasyful-anwar-martapura': 'ulama-37',
+  'datu-abulung-sungai-batang': 'ulama-38',
+  'habib-husein-alkadrie-mempawah': 'habib-16',
+  'syekh-yusuf-al-makassari': 'ulama-4',
+  'datuk-ri-bandang': 'auliya-17',
+  'datuk-patimang-luwu': 'auliya-27',
+  'datuk-ri-tiro': 'auliya-28',
+  'agh-muhammad-asad-sengkang': 'ulama-39',
+  'habib-idrus-bin-salim-al-jufri-palu': 'habib-13',
+  'kyai-mojo-tondano': 'ulama-29',
+  'habib-ali-bafaqih-negara': 'habib-11',
+  'habib-ali-kusamba': 'habib-10',
+  'karangrupit-buleleng': 'auliya-22',
+  'pangeran-mas-sepuh-seseh': 'auliya-13',
+  'siti-khotijah-denpasar': 'auliya-23',
+  'habib-umar-bedugul-tabanan': 'auliya-14',
+  'wali-kembar-karangasem': 'auliya-24',
+  'tgkh-zainuddin-abdul-madjid': 'ulama-23',
+  'makam-loang-baloq': 'auliya-15',
+  'sultan-baabullah-ternate': 'auliya-29',
+};
+

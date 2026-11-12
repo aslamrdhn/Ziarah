@@ -22,7 +22,7 @@ import {
   ArrowDown
 } from 'lucide-react';
 import { useSites } from '../context/SiteContext';
-import { SITES } from '../data/sites';
+import { TOTAL_SITES_COUNT } from '../data/initialSites';
 import { Link } from 'react-router-dom';
 import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc, limit } from 'firebase/firestore';
@@ -94,7 +94,7 @@ const RUBRIK_DECOY_PACKAGES = [
     amount: 25000,
     title: 'Infaq Operasional & Pemeliharaan Digital',
     badge: 'Paling Banyak Dipilih',
-    description: `Membuka SELURUH kisah rahasia, karomah & manuskrip di semua ${SITES.length}+ makam pada perangkat ini`,
+    description: `Membuka SELURUH kisah rahasia, karomah & manuskrip di semua ${TOTAL_SITES_COUNT}+ makam pada perangkat ini`,
   },
   {
     amount: 50000,
@@ -115,8 +115,12 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   onToggleSaveArticle,
   onOpenKontribusi
 }) => {
-  const { sites } = useSites();
+  const { sites, ensureFullSitesLoaded } = useSites();
   const { copy } = useSiteCopy();
+
+  useEffect(() => {
+    void ensureFullSitesLoaded();
+  }, [ensureFullSitesLoaded]);
   const rubrikMinAmount = copy.rubrikLockAmount || 10000;
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -342,33 +346,49 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       readTime: '3 mnt'
     });
 
-    sites.forEach(site => {
-      if (site.untoldStory) {
+    (sites || []).forEach((site) => {
+      if (!site || !site.id) return;
+      const city = site.city || site.location?.city || 'Nusantara';
+      const province = site.province || site.location?.province || 'Indonesia';
+      const locationLabel = `${city}, ${province}`;
+      const untoldText = String(site.untoldStory || '').trim();
+
+      if (untoldText) {
         rawList.push({
           id: `rubrik-${site.id}-untold`,
           siteId: site.id,
-          siteName: site.name,
-          location: `${site.location.city}, ${site.location.province}`,
+          siteName: site.name || site.title || site.id,
+          location: locationLabel,
           category: 'Kisah Rahasia',
-          title: `Catatan Khusus: ${site.name}`,
-          content: site.untoldStory,
-          source: 'Manuskrip Lisan & Catatan Pengasuh Makam',
-          readTime: '3 mnt'
+          title: `Catatan Khusus: ${site.name || site.title}`,
+          content: untoldText,
+          source:
+            (Array.isArray(site.references) && site.references[0]) ||
+            'Manuskrip Lisan & Catatan Pengasuh Makam',
+          readTime: '3 mnt',
         });
       }
 
-      if (site.karomah && site.karomah.length > 0) {
-        site.karomah.forEach((k, idx) => {
+      const karomahList = Array.isArray(site.karomah)
+        ? site.karomah.map((k) => String(k || '').trim()).filter(Boolean)
+        : typeof site.karomah === 'string' && String(site.karomah).trim()
+          ? [String(site.karomah).trim()]
+          : [];
+
+      if (karomahList.length > 0) {
+        karomahList.forEach((k, idx) => {
           rawList.push({
             id: `rubrik-${site.id}-karomah-${idx}`,
             siteId: site.id,
-            siteName: site.name,
-            location: `${site.location.city}, ${site.location.province}`,
+            siteName: site.name || site.title || site.id,
+            location: locationLabel,
             category: 'Hikmah & Karomah',
-            title: `Karomah & Jejak Dakwah: ${site.name} (Bagian ${idx + 1})`,
+            title: `Karomah & Jejak Dakwah: ${site.name || site.title} (Bagian ${idx + 1})`,
             content: k,
-            source: 'Babad & Riwayat Tradisi Nusantara',
-            readTime: '2 mnt'
+            source:
+              (Array.isArray(site.references) && site.references[0]) ||
+              'Babad & Riwayat Tradisi Nusantara',
+            readTime: '2 mnt',
           });
         });
       }

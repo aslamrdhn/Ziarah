@@ -33,9 +33,13 @@ interface DoaKaromahItem extends CuratedDoaItem {
 }
 
 export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, onToggleSaveDoa }) => {
-  const { sites: ziarahSites, isLoading } = useSites();
+  const { sites: ziarahSites, isLoading, ensureFullSitesLoaded } = useSites();
   const { copy } = useSiteCopy();
   const barokahAmount = copy.barokahLockAmount || 5000;
+
+  useEffect(() => {
+    void ensureFullSitesLoaded();
+  }, [ensureFullSitesLoaded]);
 
   const [activeTab, setActiveTab] = useState<'semua' | 'tersimpan'>('semua');
   const [searchQuery, setSearchQuery] = useState('');
@@ -112,16 +116,18 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   // Extract all Doa and Karomah from curated admin doas + approved community contributions + sites
   // Deduplicate by id so Admin edits override built-in items, and filter out deletedDoaIds
   const allDoaKaromah = useMemo(() => {
+    const safeSites = ziarahSites || [];
     const rawList: DoaKaromahItem[] = [
       ...curatedDoas.map((cd) => ({
         ...cd,
         type: (cd.type || 'doa') as 'doa' | 'karomah',
-        siteRef: ziarahSites.find((s) => s.id === cd.siteId),
+        siteRef: safeSites.find((s) => s.id === cd.siteId),
       })),
       ...approvedCommunityDoas,
     ];
 
-    ziarahSites.forEach((site) => {
+    safeSites.forEach((site) => {
+      if (!site || !site.id) return;
       const hajatSentence = getSiteBarokahHajat(site);
       const effectiveDoas = getEffectiveSiteDoaKhusus(site);
 
@@ -140,20 +146,25 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
         });
       });
 
-      if (site.karomah) {
-        site.karomah.forEach((karomah, idx) => {
-          rawList.push({
-            id: `${site.id}-karomah-${idx}`,
-            siteId: site.id,
-            siteName: site.name,
-            type: 'karomah',
-            title: `Kesaksian Karomah #${idx + 1} — ${site.name}`,
-            barokahHook: hajatSentence,
-            text: karomah,
-            siteRef: site,
-          });
+      const karomahList = Array.isArray(site.karomah)
+        ? site.karomah
+        : typeof site.karomah === 'string' && String(site.karomah).trim()
+          ? [String(site.karomah).trim()]
+          : [];
+
+      karomahList.forEach((karomah, idx) => {
+        if (!karomah) return;
+        rawList.push({
+          id: `${site.id}-karomah-${idx}`,
+          siteId: site.id,
+          siteName: site.name,
+          type: 'karomah',
+          title: `Kesaksian Karomah #${idx + 1} — ${site.name}`,
+          barokahHook: hajatSentence,
+          text: karomah,
+          siteRef: site,
         });
-      }
+      });
     });
 
     const deletedSet = new Set(deletedDoaIds);

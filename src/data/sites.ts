@@ -39,6 +39,7 @@ export interface DoaKhususEntry {
   translation?: string;
   arab?: string;
   terjemahan?: string;
+  kaifiyah?: string;
 }
 
 export interface ZiarahSite {
@@ -47,6 +48,7 @@ export interface ZiarahSite {
   name: string;
   title: string; // e.g. "Sunan Ampel"
   description: string;
+  summary?: string;
   location: {
     lat: number;
     lng: number;
@@ -580,7 +582,7 @@ export const BASE_SITES: ZiarahSite[] = [
   },
   {
     id: "wali-8",
-    name: "Raden Umar Said (Raden Prawoto)",
+    name: "Raden Umar Said (Sunan Muria)",
     title: "Sunan Muria",
     description: "Putra Sunan Kalijaga yang berdakwah di lereng Gunung Muria, membimbing petani, nelayan, dan pelestari ekologi hutan.",
     location: {
@@ -3784,6 +3786,21 @@ function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
   };
 }
 
+const LOCAL_THUMB_WIKIMEDIA_URLS = new Set<string>([
+  'https://upload.wikimedia.org/wikipedia/commons/c/ca/Makam_Maulana_Malik_Ibrahim_Tomb_Complex.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/1/1f/Makam_Sunan_Ampel.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/2/20/Sunan_Bonang-BW.png',
+  'https://upload.wikimedia.org/wikipedia/commons/1/1c/Makam_Sunan_Drajat_Lamongan.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/e/e6/Masjid_Menara_Kudus_Tampak_Depan.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/4/4c/Makam_Sunan_Giri_Gapura_Undakan_Pertama.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/4/41/Sisi_Depan_Serambi_Masjid_Agung_Demak_Kab.Demak_Prop.Jateng_Indonesia.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/3/3f/Wisata_Religi.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/e/e8/Entrance_to_Makam_Sunan_Gunung_Jati.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/d/d6/Habib_ali_kwitang.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/9/98/COLLECTIE_TROPENMUSEUM_Moskee_Luar_Batang_%28Batavia%29_TMnr_60046455.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/a/a9/COLLECTIE_TROPENMUSEUM_De_haven_van_Tandjoengpriok_op_de_achtergrond_het_station_Batavia_Java_TMnr_10008011.jpg',
+]);
+
 /**
  * Menggabungkan BASE_SITES dengan seluruh file regional di `src/data/regions/`
  * dan melakukan deduplikasi berdasarkan `id` (maupun pemetaan `legacyId`). Jika sebuah makam
@@ -3805,18 +3822,33 @@ export function mergeAndDeduplicateSites(
     const prevByLegacyId = legacyTargetId ? byId.get(legacyTargetId) : undefined;
     const prev = prevBySameId || prevByLegacyId;
 
+    const normalizedItem = normalizeSiteRecord(item);
+    const mergedDoaKhusus =
+      prev &&
+      Array.isArray(prev.doaKhusus) &&
+      prev.doaKhusus.length > 1 &&
+      Array.isArray(normalizedItem.doaKhusus) &&
+      normalizedItem.doaKhusus.length === 1
+        ? [...normalizedItem.doaKhusus, ...prev.doaKhusus.slice(1)]
+        : normalizedItem.doaKhusus || prev?.doaKhusus;
+
     const merged = prev
       ? normalizeSiteRecord({
           ...prev,
           ...item,
           id: item.id,
           legacyId: legacyTargetId || prev.legacyId,
+          doaKhusus: mergedDoaKhusus,
+          imageUrl:
+            prev.imageUrl && LOCAL_THUMB_WIKIMEDIA_URLS.has(prev.imageUrl)
+              ? prev.imageUrl
+              : item.imageUrl || prev.imageUrl,
           location: {
             ...(prev.location || {}),
             ...(item.location || {}),
           },
         })
-      : normalizeSiteRecord(item);
+      : normalizedItem;
 
     if (prevByLegacyId && legacyTargetId && legacyTargetId !== item.id) {
       // Replace in-place at the original Map position so ordering of Wali Songo etc. is preserved

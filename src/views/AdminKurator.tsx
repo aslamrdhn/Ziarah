@@ -39,7 +39,7 @@ import { DEFAULT_RUBRIK_GATE_SETTINGS, RubrikGateSettings, RubrikItem } from './
 import { CuratedDoaItem } from './KumpulanDoa';
 import { useSites } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
-import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, browserPopupRedirectResolver, User } from 'firebase/auth';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD, resolveOfficialQrisPayload } from '../lib/qris';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
@@ -669,16 +669,44 @@ export const AdminKurator: React.FC = () => {
     const cleanImageUrl =
       sanitizeHttpUrl(editingSite.imageUrl, 1000) ||
       'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80';
-    const cleanDesc = sanitizeMultilineText(editingSite.description, 1500);
+    const cleanDesc = sanitizeMultilineText(
+      editingSite.description || editingSite.summary,
+      1500
+    );
     const cleanHistory = sanitizeMultilineText(editingSite.history, 8000) || cleanDesc;
+    const cleanAddress = sanitizePlainText(
+      editingSite.address || editingSite.location?.address,
+      400
+    );
+    const cleanDistrict = sanitizePlainText(
+      editingSite.district || editingSite.location?.district,
+      160
+    );
+    const cleanCity = sanitizePlainText(
+      editingSite.city || editingSite.location?.city,
+      120
+    );
+    const cleanProvince = sanitizePlainText(
+      editingSite.province || editingSite.location?.province,
+      120
+    );
+    const cleanMapsUrl = sanitizeHttpUrl(editingSite.googleMapsUrl, 1000);
 
     const cleanDoaKhusus = (editingSite.doaKhusus || [])
-      .map((d) => ({
-        title: sanitizePlainText(d.title, 160),
-        text: sanitizeMultilineText(d.text, 2500),
-        ...(d.latin ? { latin: sanitizeMultilineText(d.latin, 2500) } : {}),
-        translation: sanitizeMultilineText(d.translation || '', 2500),
-      }))
+      .map((d) => {
+        const arabText = sanitizeMultilineText(d.text || d.arab, 2500);
+        const transText = sanitizeMultilineText(d.translation || d.terjemahan || '', 2500);
+        const kaifiyahText = sanitizeMultilineText(d.kaifiyah || '', 2000);
+        return {
+          title: sanitizePlainText(d.title, 160),
+          text: arabText,
+          arab: arabText,
+          ...(d.latin ? { latin: sanitizeMultilineText(d.latin, 2500) } : {}),
+          translation: transText,
+          terjemahan: transText,
+          ...(kaifiyahText ? { kaifiyah: kaifiyahText } : {}),
+        };
+      })
       .filter((d) => Boolean(d.title || d.text));
 
     const payload: ZiarahSite = {
@@ -689,18 +717,25 @@ export const AdminKurator: React.FC = () => {
       era: sanitizePlainText(editingSite.era, 160),
       sanad: sanitizeMultilineText(editingSite.sanad, 3000),
       description: cleanDesc,
+      summary: cleanDesc,
       history: cleanHistory,
       historySourceType: editingSite.historySourceType || 'catatan_sejarah',
       imageUrl: cleanImageUrl,
       imageSource: sanitizePlainText(editingSite.imageSource, 400),
       openingHours: sanitizePlainText(editingSite.openingHours, 120) || 'Buka 24 Jam',
       facilities: (editingSite.facilities || ['Masjid / Musholla', 'Area Parkir']).map((f) => sanitizePlainText(f, 80)).filter(Boolean),
+      address: cleanAddress,
+      district: cleanDistrict,
+      city: cleanCity,
+      province: cleanProvince,
+      ...(cleanMapsUrl ? { googleMapsUrl: cleanMapsUrl } : {}),
       location: {
         lat: rawLat,
         lng: rawLng,
-        address: sanitizePlainText(editingSite.location?.address, 400),
-        city: sanitizePlainText(editingSite.location?.city, 120),
-        province: sanitizePlainText(editingSite.location?.province, 120),
+        address: cleanAddress,
+        district: cleanDistrict,
+        city: cleanCity,
+        province: cleanProvince,
       },
       karomah: (editingSite.karomah || []).map((k) => sanitizeMultilineText(k, 3000)).filter(Boolean),
       karomahSourceType: editingSite.karomahSourceType || 'tradisi_lisan',
@@ -721,19 +756,23 @@ export const AdminKurator: React.FC = () => {
       ),
       karya: (editingSite.karya || []).map((k) => sanitizePlainText(k, 240)).filter(Boolean),
       references: (editingSite.references || []).map((r) => sanitizePlainText(r, 400)).filter(Boolean),
+      verifiedBy:
+        sanitizePlainText(editingSite.verifiedBy, 240) ||
+        'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
+      lastVerified:
+        sanitizePlainText(editingSite.lastVerified, 40) ||
+        new Date().toISOString().slice(0, 10),
       isDeleted: false,
       updatedAt: new Date().toISOString(),
     };
 
     try {
-      const batch = writeBatch(db);
-      batch.set(doc(db, 'sites', canonicalSiteId), payload, { merge: true });
+      await setDoc(doc(db, 'sites', canonicalSiteId), payload, { merge: true });
       if (pendingContributionIdToApprove) {
-        batch.update(doc(db, 'contributions', pendingContributionIdToApprove), {
+        await updateDoc(doc(db, 'contributions', pendingContributionIdToApprove), {
           status: 'approved',
         });
       }
-      await batch.commit();
       setPendingContributionIdToApprove(null);
       try {
         localStorage.removeItem('zn_cloud_sites_cache_v1');
@@ -1287,7 +1326,7 @@ export const AdminKurator: React.FC = () => {
                 }`}
               >
                 <Database className="w-3.5 h-3.5 mr-1.5" />
-                Direktori ({sites.length})
+                Kelola &amp; Edit Katalog Makam ({sites.length}+ Makam)
               </button>
               <button
                 onClick={() => setActiveTab('rubrik')}
@@ -1533,6 +1572,12 @@ export const AdminKurator: React.FC = () => {
                 onSelectEditSite={(s) => {
                   setEditingSite({
                     ...s,
+                    summary: s.summary || s.description || '',
+                    address: s.address || s.location?.address || '',
+                    district: s.district || s.location?.district || '',
+                    city: s.city || s.location?.city || '',
+                    province: s.province || s.location?.province || '',
+                    googleMapsUrl: s.googleMapsUrl || '',
                     era: s.era || '',
                     sanad: s.sanad || '',
                     barokahHajat: Array.isArray(s.barokahHajat)
@@ -1549,6 +1594,9 @@ export const AdminKurator: React.FC = () => {
                     facilities: Array.isArray(s.facilities) ? [...s.facilities] : [],
                     karya: Array.isArray(s.karya) ? [...s.karya] : [],
                     references: Array.isArray(s.references) ? [...s.references] : [],
+                    verifiedBy:
+                      s.verifiedBy || 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
+                    lastVerified: s.lastVerified || '2026-11-11',
                   });
                   setIsSiteFormOpen(true);
                 }}

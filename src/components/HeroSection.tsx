@@ -1,14 +1,13 @@
 import React from 'react';
-import { SITES } from '../data/sites';
+import { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from '../data/initialSites';
 import { useSiteCopy } from '../lib/siteCopy';
 
-export const TOTAL_SITES_COUNT = SITES.length;
-export const TOTAL_PROVINCES_COUNT = new Set(SITES.map((s) => s.province)).size;
+export { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT };
 
 export const HeroSection: React.FC = () => {
   const { copy } = useSiteCopy();
-  const totalSites = SITES.length;
-  const totalProvinces = new Set(SITES.map((s) => s.province)).size;
+  const totalSites = TOTAL_SITES_COUNT;
+  const totalProvinces = TOTAL_PROVINCES_COUNT;
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-6">

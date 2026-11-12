@@ -1327,14 +1327,14 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Pembinaan komunitas muslim maritim dan perlindungan kemanusiaan di pelabuhan Batavia abad ke-18',
     ],
     history:
-      'Al-Habib Husein bin Abubakar bin Abdillah Alaydrus lahir di Migrab, dekat Hazm, Hadramaut (Yaman) pada awal abad ke-18 M dari keluarga ulama sufi keturunan Rasulullah SAW. Setelah riyadhoh dan menuntut ilmu di tanah kelahirannya serta singgah berdakwah di Gujarat (India), beliau berlayar menuju kepulauan Nusantara dan mendarat di Pelabuhan Sunda Kelapa (Batavia) sekitar tahun 1736 M dalam usia muda yang penuh wibawa keilmuan.\n\nDi kawasan pesisir utara Batavia yang kala itu diawasi ketat oleh pemerintah kolonial VOC, Habib Husein bin Abubakar Alaydrus membuka sebuah surau tempat ibadah dan pengajaran Islam di daratan baru di luar pos pemeriksaan kapal (*Luar Batang*), yang kini dikenal sebagai Kampung Luar Batang, Penjaringan, Jakarta Utara. Kemuliaan akhlak, kedermawanan, dan kedalaman tasawuf beliau menarik simpati penduduk pribumi, pedagang Arab, hingga masyarakat keturunan Tionghoa seperti Haji Abdul Kadir yang memeluk Islam dan menjadi murid setianya.\n\nHabib Husein bin Abubakar Alaydrus wafat dalam usia yang relatif muda (sekitar 30-an tahun) pada hari Kamis, 17 Ramadhan 1169 H (24 Juni 1756 M). Beliau dimakamkan berdampingan dengan murid setianya, Haji Abdul Kadir, di dalam ruang utama Masjid Jami’ Keramat Luar Batang yang ditetapkan sebagai bangunan Cagar Budaya DKI Jakarta.',
+      'Al-Habib Husein bin Abubakar bin Abdillah Alaydrus lahir di Migrab, dekat Hazm, Hadramaut (Yaman) pada awal abad ke-18 M dari keluarga ulama sufi keturunan Rasulullah SAW. Setelah riyadhoh dan menuntut ilmu di tanah kelahirannya serta singgah berdakwah di Gujarat (India), beliau berlayar menuju kepulauan Nusantara dan mendarat di Pelabuhan Sunda Kelapa (Batavia) sekitar tahun 1736 M sebagai ulama muda asal Hadramaut yang penuh wibawa keilmuan.\n\nDi kawasan pesisir utara Batavia yang kala itu diawasi ketat oleh pemerintah kolonial VOC, Habib Husein bin Abubakar Alaydrus membuka sebuah surau tempat ibadah dan pengajaran Islam di daratan baru di luar pos pemeriksaan kapal (*Luar Batang*), yang kini dikenal sebagai Kampung Luar Batang, Penjaringan, Jakarta Utara. Beliau pernah ditahan di penjara Glodok oleh VOC karena kecurigaan kolonial terhadap pesatnya jamaah pengajian beliau, namun sipir penjara melihat beliau tetap shalat berjamaah di luar sel dengan tenang.\n\nKemuliaan akhlak, kedermawanan, dan kedalaman tasawuf beliau menarik simpati penduduk pribumi, pedagang Arab, hingga masyarakat keturunan Tionghoa seperti Haji Abdul Kadir yang memeluk Islam dan menjadi murid setianya. Habib Husein bin Abubakar Alaydrus wafat pada usia kurang dari 30 tahun (sekitar akhir 20-an tahun) pada hari Kamis, 17 Ramadhan 1169 H (24 Juni 1756 M), dan dimakamkan berdampingan dengan Haji Abdul Kadir di dalam ruang utama Masjid Jami’ Keramat Luar Batang.',
     karomah: [
-      'Dalam riwayat manaqib yang ditulis oleh Mufti Betawi Habib Utsman bin Yahya serta tradisi tutur masyarakat Jakarta, dikisahkan bahwa ketika Habib Husein dan para muridnya ditahan di penjara VOC karena kecurigaan penguasa Belanda terhadap banyaknya warga yang datang mengaji, setiap malam para sipir melihat Habib Husein justru sedang mengimami shalat berjamaah dengan tenang di halaman luar penjara sementara pintu sel tetap terkunci rapat.<!--more-->\n\nSelain itu, pada saat beliau wafat tanggal 17 Ramadhan 1169 H dan pemerintah kolonial memerintahkan agar jenazah beliau dimakamkan di pemakaman umum Tanah Abang, keranda jenazah beliau menurut riwayat tutur masyarakat terasa sangat berat dan bergerak kembali ke arah surau kediamannya di Luar Batang hingga akhirnya VOC mengizinkan beliau dimakamkan di tempat tersebut.',
+      'Dalam riwayat manaqib yang ditulis oleh Mufti Betawi Habib Utsman bin Yahya serta tradisi tutur masyarakat Jakarta, dikisahkan bahwa ketika Habib Husein dan para muridnya ditahan di penjara Glodok oleh VOC, setiap malam para sipir melihat Habib Husein justru sedang mengimami shalat berjamaah di luar sel sementara pintu penjara tetap terkunci rapat.<!--more-->\n\nKaromah beliau yang juga sangat masyhur adalah menyelamatkan seorang pedagang Tionghoa (yang kemudian memeluk Islam dengan nama Haji Abdul Kadir / Lie Khoon Seng) yang kapalnya nyaris tenggelam di Teluk Batavia serta menyembunyikannya dari kejaran pasukan kolonial di surau Luar Batang hingga aman.',
     ],
     untoldStory:
-      'Di dalam cungkup keramat Masjid Luar Batang, tepat di sebelah pusara Habib Husein bin Abubakar Alaydrus, terdapat makam seorang Tionghoa muslim bernama Haji Abdul Kadir (Lie Khoon Seng). Penempatan makam sang murid Tionghoa berdampingan langsung dengan sang Habib adalah wasiat Habib Husein sendiri semasa hidup.<!--more-->\n\nFakta sejarah ini menjadi bukti abadi tentang persaudaraan Islam yang melampaui sekat etnis di pesisir Jakarta sejak abad ke-18, di mana seorang dzurriyah Nabi SAW memuliakan muridnya semata-mata karena ketakwaan dan kesetiaannya dalam membela dakwah.',
+      'Di dalam cungkup keramat Masjid Luar Batang, tepat di sebelah pusara Habib Husein bin Abubakar Alaydrus, terdapat makam seorang Tionghoa muslim bernama Haji Abdul Kadir (Lie Khoon Seng) yang diselamatkan beliau di Teluk Batavia. Penempatan makam sang murid Tionghoa berdampingan langsung dengan sang Habib adalah wasiat Habib Husein sendiri semasa hidup.<!--more-->\n\nFakta sejarah ini menjadi bukti abadi tentang persaudaraan Islam yang melampaui sekat etnis di pesisir Jakarta sejak abad ke-18, di mana seorang dzurriyah Nabi SAW memuliakan muridnya semata-mata karena ketakwaan dan kesetiaannya dalam membela dakwah.',
     barokahHajat:
-      'Peziarah yang berziarah ke Keramat Luar Batang umumnya bertawassul memohon keberkahan istiqamah dalam ibadah dan dakwah, keselamatan dari kezaliman dan fitnah, serta kelancaran rezeki bagi para pedagang dan pekerja di ibu kota.',
+      'Wasilah keteguhan iman di tengah ujian, keberkahan dakwah dan perniagaan yang jujur, serta keselamatan dalam perjalanan.',
     doaKhusus: [
       {
         title: 'Tawassul & Hadiah Fatihah Khusus Al-Habib Husein bin Abubakar Alaydrus Luar Batang',
@@ -1355,9 +1355,9 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Jami’ Keramat Luar Batang', 'Ruang Maqbarah Terpisah Pria & Wanita', 'Tempat Wudhu & Toilet Bersih', 'Area Parkir Peziarah'],
     openingHours: 'Buka 24 Jam',
     references: [
-      'Heuken, Adolf (2003). Mesjid-mesjid Tua di Jakarta. Yayasan Cipta Loka Caraka.',
-      'Al-Aydrus, M. Hasyim Assagaf (1998). Sejarah dan Manaqib Al-Habib Husein bin Abubakar Alaydrus Luar Batang. Mutawalli Luar Batang.',
-      'Dinas Kebudayaan Provinsi DKI Jakarta — Inventaris Bangunan Cagar Budaya Masjid Jami’ Keramat Luar Batang.',
+      'Sejarah Masjid Keramat Luar Batang — Mutawalli Masjid Jami’ Keramat Luar Batang.',
+      'Heuken, Adolf (2003). Mesjid-Mesjid Tua di Jakarta. Yayasan Cipta Loka Caraka.',
+      'Rabithah Alawiyah — Dokumentasi Manaqib Al-Habib Husein bin Abubakar Alaydrus Luar Batang.',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1399,7 +1399,7 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     untoldStory:
       'Pada masa pembangunan kanal dan dermaga Pelabuhan Tanjung Priok oleh pemerintah kolonial Belanda tahun 1877–1886, makam asli Habib Hasan di tepi dermaga dipindahkan ke lahan perkebunan Dobo di Koja dengan disaksikan para habaib dan ulama Betawi.<!--more-->\n\nDi Kompleks Gubah Al-Haddad Tanjung Priok saat ini berdiri masjid megah berserta pendopo maqbarah yang setiap pekannya menjadi pusat majelis dzikir Ratib Al-Haddad, shalawat, dan santunan bagi ribuan jamaah serta pekerja pelabuhan.',
     barokahHajat:
-      'Peziarah yang berziarah ke Maqom Keramat Mbah Priok (Habib Hasan bin Muhammad Al-Haddad) umumnya bertawassul memohon keselamatan pelayaran dan perjalanan jauh, kecukupan rezeki rumah tangga ("keberkahan periuk"), serta keteguhan hati dalam menghadapi badai ujian hidup.',
+      'Wasilah kesabaran menghadapi badai ujian hidup, pengorbanan di jalan dakwah, dan perlindungan dalam perjalanan laut/rantau.',
     doaKhusus: [
       {
         title: 'Tawassul & Hadiah Fatihah Khusus Al-Habib Hasan bin Muhammad Al-Haddad (Mbah Priok)',
@@ -1420,8 +1420,8 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid & Pendopo Agung Gubah Al-Haddad', 'Kubah Maqom Mbah Priok', 'Sumber Air & Tempat Wudhu', 'Area Parkir Bus di Kawasan Cagar Budaya'],
     openingHours: 'Buka 24 Jam',
     references: [
+      'Riwayat Manaqib Al-Imam Al-Arif Billah Habib Hasan bin Muhammad Al-Haddad (Gubah Al-Haddad Tanjung Priok).',
       'Shahab, Alwi (2004). Saudagar Baghdad dari Betawi. Republika.',
-      'Yayasan Gubah Al-Haddad — Manaqib Al-Arif Billah Al-Habib Hasan bin Muhammad Al-Haddad (Mbah Priok).',
       'Keputusan Gubernur Provinsi DKI Jakarta Tahun 2017 tentang Penetapan Situs Makam Mbah Priok sebagai Cagar Budaya.',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
@@ -1457,14 +1457,14 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Pembentukan komunitas pejuang muslim Jatinegara Kaum ("Negara Sejati" / *Jatina Nagara*) pasca-jatuhnya Sunda Kelapa ke tangan JP Coen (1619 M)',
     ],
     history:
-      'Pangeran Jayakarta, yang dikenal dalam arsip sejarah Banten dan Betawi sebagai Pangeran Sungerasa Jayawikarta atau Pangeran Achmad Jaketra, adalah penguasa Kadipaten Jayakarta (bawahan Kesultanan Banten) pada awal abad ke-17 M. Beliau merupakan cucu Sultan Maulana Hasanuddin Banten dari garis ibunya, Ratu Pembayun, yang menikah dengan Tubagus Angke.\n\nKetika Gubernur Jenderal VOC Jan Pieterszoon Coen secara sepihak membangun benteng militer di muara Sungai Ciliwung dan menyerang keraton Jayakarta pada tanggal 30 Mei 1619 M, Pangeran Jayakarta beserta para ulama, prajurit, dan pengikut setianya menolak menyerah. Beliau melakukan hijrah strategis ke arah tenggara di tepian Sungai Sunter yang masih berupa hutan pohon jati, lalu membangun pemukiman pertahanan baru yang dinamakan *Jatinegara* (dari kata *Jatina Nagara*, artinya "Pemerintahan yang Sejati").\n\nDi Jatinegara Kaum, pada tahun 1620 M Pangeran Jayakarta mendirikan sebuah surau kayu sederhana yang kini berdiri megah sebagai Masjid Jami’ Assalafiyah. Dari masjid inilah beliau menyusun perlawanan gerilya terhadap VOC dan membina keislaman masyarakat Betawi serta Sunda hingga wafat sekitar tahun 1640 M. Makam beliau beserta keluarganya terletak di halaman Masjid Jami’ Assalafiyah, Kelurahan Jatinegara Kaum, Kecamatan Pulogadung, Jakarta Timur.',
+      'Pangeran Jayakarta, yang dikenal dalam arsip sejarah Banten dan Betawi sebagai Pangeran Achmad Jaketra (putra Pangeran Sungerasa Jayawikarta dari Kesultanan Banten), adalah penguasa dan pejuang Kadipaten Jayakarta pada awal abad ke-17 M. Beliau merupakan keturunan langsung Sultan Maulana Hasanuddin Banten dan Kanjeng Sunan Gunung Jati.\n\nKetika Gubernur Jenderal VOC Jan Pieterszoon Coen secara sepihak membangun benteng militer di muara Sungai Ciliwung dan menyerang keraton Jayakarta pada tanggal 30 Mei 1619 M, Pangeran Achmad Jaketra beserta para ulama, prajurit, dan pengikut setianya mempertahankan Jayakarta dengan gagah berani dan menolak menyerah. Beliau kemudian melakukan hijrah strategis ke arah tenggara di tepian Sungai Sunter yang masih berupa hutan pohon jati, lalu membangun basis pertahanan baru yang dinamakan *Jatinegara Kaum* (dari kata *Jatina Nagara*, artinya "Pemerintahan yang Sejati").\n\nDi Jatinegara Kaum, pada tahun 1620 M Pangeran Jayakarta mendirikan sebuah surau kayu sederhana yang kini berdiri megah sebagai Masjid Jami’ Assalafiyah. Dari masjid inilah beliau menyusun perlawanan gerilya terhadap VOC dan membina keislaman masyarakat Betawi serta Sunda hingga wafat sekitar tahun 1640 M. Makam beliau beserta keluarganya terletak di halaman Masjid Jami’ Assalafiyah, Kelurahan Jatinegara Kaum, Kecamatan Pulo Gadung, Jakarta Timur.',
     karomah: [
       'Dalam riwayat manaqib dan tradisi tutur masyarakat Jatinegara Kaum, dikisahkan bahwa Pangeran Jayakarta memilih bersembunyi dan menyamarkan identitas kebangsawanannya di tengah hutan jati Pulogadung sebagai seorang guru ngaji biasa bernama "Syekh Achmad", sehingga mata-mata VOC Belanda selama puluhan tahun tidak pernah berhasil melacak markas perlawanan beliau.<!--more-->\n\nEmpat tiang soko guru kayu jati asli di dalam ruang utama Masjid Jami’ Assalafiyah Jatinegara Kaum yang ditegakkan oleh Pangeran Jayakarta dan para pengikutnya pada tahun 1620 M hingga kini masih berdiri kokoh menopang atap masjid setelah berusia lebih dari empat abad.',
     ],
     untoldStory:
       'Nama wilayah "Jatinegara" di Jakarta Timur bukanlah sekadar nama geografis karena banyaknya pohon jati, melainkan pernyataan politik dan kedaulatan batin Pangeran Jayakarta bahwa meskipun VOC merampas pelabuhan dan mengganti nama Jayakarta menjadi Batavia pada tahun 1619, kedaulatan "Negara Sejati" (*Jatina Nagara*) tetap hidup di hati kaum beriman yang berjuang di Jatinegara Kaum.<!--more-->\n\nHingga hari ini, warga asli di sekitar Masjid Assalafiyah Jatinegara Kaum masih menjaga kekerabatan keturunan pengikut Pangeran Jayakarta dan melestarikan tradisi ziarah akbar menjelang bulan suci Ramadhan serta peringatan Hari Ulang Tahun Kota Jakarta.',
     barokahHajat:
-      'Peziarah yang berziarah ke kompleks Makam Pangeran Jayakarta di Jatinegara Kaum lazimnya bertawassul memohon keteguhan iman dan harga diri dalam menghadapi tekanan hidup di ibu kota, keberkahan kepemimpinan masyarakat, serta perlindungan keluarga.',
+      'Wasilah keberanian mempertahankan kedaulatan dan kehormatan umat, amanah kepemimpinan, dan keteguhan prinsip.',
     doaKhusus: [
       {
         title: 'Tawassul & Hadiah Fatihah Khusus Pangeran Achmad Jaketra (Pangeran Jayakarta)',
@@ -1485,9 +1485,9 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Cagar Budaya Assalafiyah (1620 M)', 'Cungkup Makam Pangeran Jayakarta & Keluarga', 'Tempat Wudhu & Toilet', 'Area Parkir'],
     openingHours: '07:00 - 21:00 WIB',
     references: [
+      'SK Cagar Budaya DKI Jakarta (Kompleks Masjid Jami Assalafiyah & Makam Pangeran Jayakarta).',
+      'Sejarah Jakarta karya Mona Lohanda (Lohanda, Mona).',
       'Heuken, Adolf (2003). Mesjid-mesjid Tua di Jakarta. Yayasan Cipta Loka Caraka.',
-      'Candrian Attahiyyat (2012). Jejak Pangeran Jayakarta di Jatinegara Kaum. Dinas Pariwisata dan Kebudayaan Provinsi DKI Jakarta.',
-      'Djajadiningrat, Hoesein (1983). Tinjauan Kritis Tentang Sejarah Banten. Djambatan.',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1524,23 +1524,23 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     history:
       'Al-Habib Ahmad bin Alwi bin Ahmad Al-Haddad lahir di Kota Qaidun, lembah Hadramaut (Yaman) pada tanggal 26 Sya’ban 1254 H (1838 M). Sejak belia beliau menimba ilmu syariat dan hakikat langsung kepada ayahandanya serta para ulama besar Hadramaut, termasuk penyusun Maulid Simthud Durar Al-Habib Ali bin Muhammad Al-Habsyi di Sewun. Dalam pengembaraan dakwah dan perniagaannya ke Nusantara, beliau sempat singgah di Pulau Timor, Singapura, dan Sulawesi sebelum menetap di Batavia (Jakarta).\n\nDi Jakarta, Habib Ahmad bin Alwi Al-Haddad dikenal sebagai seorang waliyullah yang menempuh jalan *majdzub* dan *khumul* (menutupi derajat kewaliannya dengan penampilan sederhana). Masyarakat Betawi memanggil beliau dengan penuh kasih sayang sebagai "Habib Kuncung" karena kebiasaan beliau mengenakan kopiah/peci panjang berbentuk kerucut ke atas (*kuncung*) dari tradisi Hadramaut dan Bugis.\n\nBeliau sangat akrab dengan kaum dhuafa, pedagang pasar, dan anak-anak yatim di kawasan Kalibata, Tanah Abang, hingga Empang Bogor, serta bersahabat dekat dengan Al-Habib Abdullah bin Mukhsin Al-Attas (Keramat Empang Bogor) dan Al-Habib Muhammad bin Ahmad Al-Muhdhor (Bondowoso). Habib Ahmad bin Alwi Al-Haddad wafat pada tanggal 29 Sya’ban 1345 H (1926 M) dalam usia sekitar 91 tahun Hijriah dan dimakamkan di kompleks Masjid At-Taubah, Rawajati Timur, Kalibata, Kecamatan Pancoran, Jakarta Selatan.',
     karomah: [
-      'Dalam riwayat manaqib yang dihimpun keluarga besar Al-Haddad dan tradisi tutur masyarakat Jakarta, dikisahkan bahwa meskipun Habib Kuncung sering tampil berpakaian sangat bersahaja, para waliyullah besar zamannya seperti Habib Abdullah bin Mukhsin Al-Attas Empang Bogor selalu berdiri menyambut dan mencium tangan beliau karena mengetahui kedudukan rohani Habib Kuncung yang tinggi di sisi Allah SWT.<!--more-->\n\nBanyak kesaksian warga Betawi masa lampau yang menceritakan bagaimana kehadiran Habib Kuncung di sebuah toko atau warung milik warga miskin selalu membawa keberkahan larisnya dagangan dan lunasnya utang piutang melalui doa singkat beliau.',
+      'Dalam riwayat manaqib yang dihimpun keluarga besar Al-Haddad dan tradisi tutur masyarakat Jakarta, dikisahkan bahwa meskipun Habib Kuncung sering tampil berpakaian sangat bersahaja dengan kopiah kerucut (kuncung), para waliyullah besar zamannya seperti Habib Abdullah bin Mukhsin Al-Attas Empang Bogor selalu berdiri menyambut dan mencium tangan beliau karena mengetahui kedudukan rohani Habib Kuncung yang tinggi di sisi Allah SWT.<!--more-->\n\nBanyak kesaksian warga Betawi masa lampau yang menceritakan bagaimana kehadiran Habib Kuncung di sebuah warung milik warga dhuafa atau saat menyantuni anak-anak yatim selalu membawa keberkahan kelapangan rezeki yang melimpah melalui doa singkat beliau.',
     ],
     untoldStory:
       'Di dalam kompleks kubah maqbarah Masjid At-Taubah Rawajati Kalibata, selain pusara utama Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung), bersemayam pula ulama besar Al-Habib Munzir bin Fuad Al-Musawa (Pendiri Majelis Rasulullah SAW, wafat 2013 M) yang semasa hidupnya sangat mencintai dan rutin berziarah ke makam Habib Kuncung.<!--more-->\n\nKeberadaan dua pusara ulama kecintaan umat lintas generasi di kompleks yang sama menjadikan Masjid At-Taubah Kalibata sebagai salah satu magnet ziarah dan majelis shalawat terbesar di Jakarta Selatan yang tak pernah sepi siang maupun malam.',
     barokahHajat:
-      'Peziarah yang berziarah ke makam Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung) lazimnya bertawassul memohon kepada Allah SWT kelapangan rezeki usaha dan pelunasan beban utang, kelembutan hati untuk mencintai kaum fakir miskin, serta ketenangan batin.',
+      'Wasilah kelembutan hati, kepedulian terhadap anak yatim dan dhuafa, serta kelapangan rezeki yang berkah.',
     doaKhusus: [
       {
         title: 'Tawassul & Hadiah Fatihah Khusus Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung)',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْوَلِيِّ الصَّالِحِ الْعَارِفِ بِاللهِ الْحَبِيبِ أَحْمَدَ بْنِ عَلَوِي الْحَدَّادْ (حَبِيبْ كُونْشُونْج كَالِيبَاتَا) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ وَسِّعْ أَرْزَاقَنَا وَاقْضِ دُيُونَنَا وَانْفَعْنَا بِكَرَامَتِهِ وَأَسْرَارِهِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْوَلِيِّ الصَّالِحِ الْعَارِفِ بِاللهِ الْحَبِيبِ أَحْمَدَ بْنِ عَلَوِي الْحَدَّادْ (حَبِيبْ كُونْشُونْج كَالِيبَاتَا) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ وَسِّعْ أَرْزَاقَنَا وَاقْضِ دُيُونَنَا وَانْفَعْنَا بِكَرَامَتِهِ وَأَسْرَارِهِ.',
+        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْوَلِيِّ الصَّالِحِ الْعَارِفِ بِاللهِ الْحَبِيبِ أَحْمَدَ بْنِ عَلَوِي الْحَدَّادْ (حَبِيبْ كُونْشُونْج كَالِيبَاتَا) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ وَسِّعْ أَرْزَاقَنَا وَارْحَمِ الْيَتَامَى وَالْمَسَاكِينَ وَانْفَعْنَا بِكَرَامَتِهِ وَأَسْرَارِهِ.',
+        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْوَلِيِّ الصَّالِحِ الْعَارِفِ بِاللهِ الْحَبِيبِ أَحْمَدَ بْنِ عَلَوِي الْحَدَّادْ (حَبِيبْ كُونْشُونْج كَالِيبَاتَا) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ وَسِّعْ أَرْزَاقَنَا وَارْحَمِ الْيَتَامَى وَالْمَسَاكِينَ وَانْفَعْنَا بِكَرَامَتِهِ وَأَسْرَارِهِ.',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhil-Waliyyish-Shaalih Al-'Aarifi billaah Al-Habiib Ahmad bin 'Alawii Al-Haddaad (Habib Kuncung Kalibata) syai-un lillaahi lahumul-Faatihah. Allaahumma wassi' arzaaqanaa waqdhi duyuunanaa wanfa'naa bi karaamatihii wa asraarih.",
+          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhil-Waliyyish-Shaalih Al-'Aarifi billaah Al-Habiib Ahmad bin 'Alawii Al-Haddaad (Habib Kuncung Kalibata) syai-un lillaahi lahumul-Faatihah. Allaahumma wassi' arzaaqanaa warhamil-yataamaa wal-masaakiina wanfa'naa bi karaamatihii wa asraarih.",
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh wali yang shalih arif billah Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung Kalibata), Al-Fatihah. Ya Allah, lapangkanlah rezeki kami, lunaskanlah tanggungan kami, dan limpahkanlah kemanfaatan melalui kemuliaan serta rahasia keshalihan beliau.',
+          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh wali yang shalih arif billah Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung Kalibata), Al-Fatihah. Ya Allah, lapangkanlah rezeki kami, sayangilah anak-anak yatim dan fakir miskin, serta limpahkanlah kemanfaatan melalui kemuliaan dan rahasia keshalihan beliau.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh wali yang shalih arif billah Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung Kalibata), Al-Fatihah. Ya Allah, lapangkanlah rezeki kami, lunaskanlah tanggungan kami, dan limpahkanlah kemanfaatan melalui kemuliaan serta rahasia keshalihan beliau.',
+          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh wali yang shalih arif billah Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung Kalibata), Al-Fatihah. Ya Allah, lapangkanlah rezeki kami, sayangilah anak-anak yatim dan fakir miskin, serta limpahkanlah kemanfaatan melalui kemuliaan dan rahasia keshalihan beliau.',
       },
     ],
     haulSchedule:
@@ -1594,7 +1594,7 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     untoldStory:
       'Pertemuan batin dan kebangsaan antara Al-Habib Ali bin Abdurrahman Al-Habsyi dengan Bung Karno serta para tokoh pergerakan nasional di serambi rumah Kwitang memiliki arti sejarah yang krusial dalam penentuan waktu Proklamasi Kemerdekaan Indonesia pada bulan suci Ramadhan 1364 H (Agustus 1945).<!--more-->\n\nSelain itu, Habib Ali Kwitang adalah ulama pelopor yang pertama kali menyebarluaskan pembacaan *Maulid Simthud Durar* karya gurunya (Habib Ali bin Muhammad Al-Habsyi Sewun) di tanah Jawa dan Betawi, yang kini menjadi bacaan maulid paling populer di majelis-majelis Indonesia.',
     barokahHajat:
-      'Peziarah yang berziarah ke maqbarah Habib Ali Kwitang di Masjid Al-Riyadh umumnya bertawassul memohon kecintaan yang tulus kepada Nabi Muhammad SAW, keberkahan majelis ilmu atau dakwah yang sedang dibina, serta kerukunan rumah tangga dan masyarakat.',
+      'Wasilah keberkahan ilmu agama, kecintaan (mahabbah) kepada Rasulullah SAW dan Ahlul Bait, keistiqamahan menghadiri majelis ilmu, serta keberkahan keluarga.',
     doaKhusus: [
       {
         title: 'Tawassul & Hadiah Fatihah Khusus Al-Habib Ali bin Abdurrahman Al-Habsyi Kwitang',
@@ -1609,15 +1609,15 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       },
     ],
     haulSchedule:
-      '20 Rajab & Rangkaian Maulid Akhir Kamis Sore Bulan Rabiul Awal (Haul Akbar Nasional & Maulid Agung di Masjid Jami’ Al-Riyadh Kwitang, serta Majelis Rutin setiap Ahad Pagi pukul 06:00–09:00 WIB).',
+      'Hari Ahad terakhir bulan Rabiul Akhir (Haul Akbar Majelis Kwitang) serta Majelis Rutin setiap Ahad Pagi di Masjid Jami’ Al-Riyadh Kwitang.',
     localAdab:
       'Mengenakan pakaian muslim putih/sopan menutup aurat, mengikuti pemisahan ruang ziarah jamaah pria dan wanita di sisi Masjid Al-Riyadh Kwitang, menjaga ketenangan saat shalat berjamaah atau majelis berlangsung, dan mematuhi petugas ketertiban majelis.',
     facilities: ['Masjid Jami’ Al-Riyadh Kwitang', 'Kubah Maqbarah Keluarga Besar Al-Habsyi Kwitang', 'Gedung Islamic Center Indonesia (ICI)', 'Tempat Wudhu & Toilet'],
     openingHours: '05:00 - 22:00 WIB',
     references: [
-      'Shahab, Alwi (2006). Kwitang: Pusat Pengembangan Islam di Jakarta. Republika.',
-      'Kiki, Rakhmad Zailani dkk. (2011). Genealogi Intelektual Ulama Betawi. Jakarta Islamic Centre.',
-      'Majelis Taklim Al-Habib Ali Al-Habsyi Kwitang — Biografi dan Manaqib Al-Habib Ali bin Abdurrahman Al-Habsyi.',
+      'Jaringan Ulama Betawi — Kiki, Rakhmad Zailani dkk. (2011). Jakarta Islamic Centre.',
+      'Arsip Majelis Taklim Al-Riyadh Kwitang — Biografi dan Manaqib Al-Habib Ali bin Abdurrahman Al-Habsyi.',
+      'Dokumentasi Rabithah Alawiyah — Sejarah Dakwah Habaib di Batavia.',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1784,12 +1784,12 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     history:
       'Al-Habib Abdullah bin Mukhsin bin Muhammad Al-Attas lahir di Desa Haurah, kawasan Kasr, lembah Hadramaut (Yaman) pada tahun 1265 H (1849 M). Sejak kecil beliau menghafal Al-Qur’an di bawah bimbingan Syaikh Umar bin Faraj bin Sabbah dan menimba ilmu syariat serta hakikat kepada para kutub auliya Hadramaut, termasuk Al-Habib Sholeh bin Abdullah Al-Attas di Wadi Amed dan Al-Habib Ahmad bin Muhammad Al-Muhdhor di Quwairah. Setelah menunaikan ibadah haji tahun 1282 H dan berziarah ke makam Rasulullah SAW di Madinah, beliau melakukan perjalanan dakwah menuju Nusantara.\n\nSetibanya di Batavia dan kemudian menetap di kawasan Empang, Buitenzorg (Kota Bogor) pada akhir abad ke-19, Habib Abdullah bin Mukhsin Al-Attas membangun Masjid Jami’ An-Nur pada tahun 1318 H (1900 M) di tepi aliran Sungai Cisadane. Keikhlasan ibadah, kemuliaan akhlak, dan kedalaman ilmu tasawuf beliau menjadikan kawasan Empang Bogor sebagai kiblat para penuntut ilmu dan peziarah dari seluruh Pulau Jawa.\n\nMurid utama beliau, Al-Habib Alwi bin Muhammad bin Thahir Al-Haddad (yang kelak menjadi Mufti Kesultanan Johor, Malaysia), membukukan perjalanan hidup, untaian kalam hikmah, dan sanad keilmuan beliau dalam kitab manaqib masyhur berjudul *Al-Anfasul ‘Aliyyah*. Habib Abdullah bin Mukhsin Al-Attas wafat pada hari Selasa, 29 Dzulhijjah 1351 H (25 April 1933 M) dan dimakamkan di dalam kubah barat Masjid Jami’ An-Nur, Kelurahan Empang, Kecamatan Bogor Selatan, Kota Bogor.',
     karomah: [
-      'Dalam riwayat manaqib *Al-Anfasul ‘Aliyyah* karya murid beliau Al-Habib Alwi bin Thahir Al-Haddad, dikisahkan bahwa pada masa awal di Batavia ketika Habib Abdullah bin Mukhsin difitnah dan dipenjara secara zalim oleh pemerintah kolonial Belanda, beliau menjalani ujian tersebut dengan penuh kesabaran dan dzikir hingga kepala sipir penjara Belanda beserta keluarganya mengalami kejadian luar biasa yang membuat mereka memohon maaf dan membebaskan beliau dengan penuh penghormatan.<!--more-->\n\nDi kediamannya di Empang Bogor, dapur umum Habib Abdullah bin Mukhsin tidak pernah berhenti mengepul setiap hari untuk memberi makan para tamu, santri, dan fakir miskin yang datang dari berbagai daerah tanpa pernah kekurangan bahan pangan.',
+      'Dalam riwayat manaqib *Al-Anfasul ‘Aliyyah* karya murid beliau Al-Habib Alwi bin Muhammad Al-Haddad, dikisahkan bahwa ketika beliau dipenjara oleh penguasa kolonial karena fitnah, kepala penjara justru jatuh sakit dan memohon doa kesembuhan kepada beliau hingga akhirnya membebaskan beliau dengan penuh penghormatan.<!--more-->\n\nDi kediamannya di Empang Bogor, dapur umum Habib Abdullah bin Mukhsin tidak pernah berhenti mengepul setiap hari untuk memberi makan para tamu, santri, dan fakir miskin yang datang dari berbagai daerah tanpa pernah kekurangan bahan pangan.',
     ],
     untoldStory:
-      'Kamar uzlah (khalwat) tempat Al-Habib Abdullah bin Mukhsin Al-Attas beribadah dan bermunajat semasa hidupnya di Empang Bogor masih terawat dengan baik di dekat kompleks Masjid An-Nur, lengkap dengan peninggalan tempat tidur kayu sederhana, jubah, dan tongkat beliau.<!--more-->\n\nKitab *Fathul ‘Arifin* dan *Al-Anfasul ‘Aliyyah* yang merekam perkataan-perkataan hikmah Habib Abdullah bin Mukhsin Al-Attas menegaskan prinsip tasawuf beliau yang lurus: bahwa puncak kemuliaan seorang hamba bukanlah pada keajaiban lahiriah, melainkan pada keteguhan mengikuti sunnah Nabi Muhammad SAW (Istiqamah) dan kebersihan hati dari sifat dengki terhadap sesama muslim.',
+      'Kamar uzlah (khalwat) tempat Al-Habib Abdullah bin Mukhsin Al-Attas beribadah dan bermunajat semasa hidupnya di Empang Bogor masih terawat dengan baik di dekat kompleks Masjid Keramat Empang Bogor (Masjid An-Nur), lengkap dengan peninggalan tempat tidur kayu sederhana, jubah, dan tongkat beliau.<!--more-->\n\nKitab *Fathul ‘Arifin* dan *Al-Anfasul ‘Aliyyah* yang merekam perkataan-perkataan hikmah Habib Abdullah bin Mukhsin Al-Attas menegaskan prinsip tasawuf beliau yang lurus: bahwa puncak kemuliaan seorang hamba bukanlah pada keajaiban lahiriah, melainkan pada keteguhan mengikuti sunnah Nabi Muhammad SAW (Istiqamah) dan kebersihan hati dari sifat dengki terhadap sesama muslim.',
     barokahHajat:
-      'Peziarah yang berziarah ke Keramat Empang Bogor (Al-Habib Abdullah bin Mukhsin Al-Attas) lazimnya bertawassul memohon keistiqamahan dalam mengamalkan dzikir (khususnya Ratib Al-Attas), kelapangan rezeki yang berkah, serta keselamatan keluarga dari fitnah dan kesulitan.',
+      'Wasilah keteguhan memegang sunnah Rasulullah SAW, kesabaran dalam ujian, dan keberkahan ilmu.',
     doaKhusus: [
       {
         title: 'Tawassul & Hadiah Fatihah Khusus Al-Habib Abdullah bin Mukhsin Al-Attas Empang Bogor',

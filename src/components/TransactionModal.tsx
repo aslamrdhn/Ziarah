@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle2, ScrollText, HeartHandshake, Loader2, Copy, MessageSquareHeart, Lock, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ZiarahSite, SITES } from '../data/sites';
+import type { ZiarahSite } from '../data/sites';
+import { TOTAL_SITES_COUNT } from '../data/initialSites';
 import { Link } from 'react-router-dom';
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -358,7 +359,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                       Pembuka Seluruh Khazanah Nusantara
                     </div>
                     <h4 className="font-serif font-semibold text-stone-900 text-sm sm:text-base mb-1">
-                      Akses Penuh {SITES.length}+ Makam &amp; Wasiat Rahasia
+                      Akses Penuh {TOTAL_SITES_COUNT}+ Makam &amp; Wasiat Rahasia
                     </h4>
                     <p className="text-xs text-stone-600 leading-relaxed">
                       Buka akses penuh ke seluruh catatan manuskrip, karomah lanjutan, dan wasiat rahasia melalui Infaq Operasional &amp; Pemeliharaan Digital minimal <strong className="font-semibold text-stone-900">Rp {rubrikMinAmount.toLocaleString('id-ID')}</strong> serta mengunggah bukti transfer.
