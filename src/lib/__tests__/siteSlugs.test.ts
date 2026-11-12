@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { slugifySiteText, getSiteSlug, getSitePath, findSiteByParam } from '../siteSlugs';
 import { initialSites } from '../../data/initialSites';
-import { ziarahSites, getSourceClassificationLabel } from '../../data/sites';
+import { ziarahSites, SITES, mergeAndDeduplicateSites, getSourceClassificationLabel } from '../../data/sites';
+import { JAWA_BARAT_BANTEN_DKI_SITES } from '../../data/regions/jawaBaratBantenDki';
+import { JAWA_TENGAH_DIY_SITES } from '../../data/regions/jawaTengahDiy';
+import { JAWA_TIMUR_MADURA_SITES } from '../../data/regions/jawaTimurMadura';
+import { SUMATERA_SITES } from '../../data/regions/sumatera';
+import { KALIMANTAN_SULAWESI_SITES } from '../../data/regions/kalimantanSulawesi';
+import { BALI_NUSA_MALUKU_PAPUA_SITES } from '../../data/regions/baliNusaMalukuPapua';
 import { matchesEmotionalIntent } from '../../views/DaftarMakam';
 import { FALLBACK_MUNAJAT_ITEMS } from '../transferProof';
 import { extractCoordinatesFromMapsUrl } from '../../views/AdminKurator';
@@ -31,9 +37,9 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
     expect(findSiteByParam(ziarahSites, 'agh-muhammad-as-wajo')?.id).toBe('ulama-39');
   });
 
-  it('extracts all 96 sites in vercel-postbuild.mjs without apostrophe truncation or <!--more--> leakage', () => {
+  it('extracts all sites in vercel-postbuild.mjs without apostrophe truncation or <!--more--> leakage', () => {
     const extracted = extractSitesFromSource();
-    expect(extracted.length).toBeGreaterThanOrEqual(96);
+    expect(extracted.length).toBe(SITES.length);
 
     const asadSite = extracted.find((s: any) => s.id === 'ulama-39');
     expect(asadSite).toBeDefined();
@@ -45,6 +51,27 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
       expect(s.description).not.toContain('<!--more-->');
       expect(s.history).not.toContain('<!--more-->');
     }
+  });
+
+  it('merges and deduplicates regional site arrays prioritizing regional overrides by id', () => {
+    expect(Array.isArray(JAWA_BARAT_BANTEN_DKI_SITES)).toBe(true);
+    expect(Array.isArray(JAWA_TENGAH_DIY_SITES)).toBe(true);
+    expect(Array.isArray(JAWA_TIMUR_MADURA_SITES)).toBe(true);
+    expect(Array.isArray(SUMATERA_SITES)).toBe(true);
+    expect(Array.isArray(KALIMANTAN_SULAWESI_SITES)).toBe(true);
+    expect(Array.isArray(BALI_NUSA_MALUKU_PAPUA_SITES)).toBe(true);
+
+    const baseSample = [SITES[0]];
+    const regionalOverride = [
+      {
+        ...SITES[0],
+        title: 'Sunan Gresik (Diperbarui Modul Regional)',
+      },
+    ];
+    const merged = mergeAndDeduplicateSites(baseSample, regionalOverride);
+    expect(merged).toHaveLength(1);
+    expect(merged[0].title).toBe('Sunan Gresik (Diperbarui Modul Regional)');
+    expect(merged[0].province).toBe(SITES[0].location.province);
   });
 
   it('filters emotional intents into distinct, non-100% subsets and keeps FALLBACK_MUNAJAT_ITEMS empty', () => {
@@ -109,4 +136,5 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
     expect(getSourceClassificationLabel(undefined, 'catatan_sejarah')).toBe('Catatan Sejarah & Literatur');
   });
 });
+
 

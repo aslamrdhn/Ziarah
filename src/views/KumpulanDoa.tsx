@@ -443,7 +443,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                   Buka Seluruh {allDoaKaromah.length}+ Khazanah Doa &amp; Wirid Khusus Para Wali — Infaq Rp {barokahAmount.toLocaleString('id-ID')}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-                  {copy.barokahPaywallDescription} Dua amalan di atas dibuka gratis sebagai contoh kurasi. Cukup satu kali infaq jariyah <strong>Rp {barokahAmount.toLocaleString('id-ID')}</strong> untuk membuka penuh seluruh lafaz Arab, transliterasi Latin, terjemahan makna hajat, serta fitur salin &amp; simpan doa di seluruh 96+ makam Auliya Nusantara pada perangkat ini.
+                  {copy.barokahPaywallDescription} Dua amalan di atas dibuka gratis sebagai contoh kurasi. Cukup satu kali Infaq Operasional &amp; Pemeliharaan Digital <strong>Rp {barokahAmount.toLocaleString('id-ID')}</strong> untuk membuka penuh seluruh lafaz Arab, transliterasi Latin, terjemahan makna hajat, serta fitur salin &amp; simpan doa di seluruh {ziarahSites.length}+ makam Auliya Nusantara pada perangkat ini.
                 </p>
                 <div className="pt-2">
                   <button

@@ -106,7 +106,7 @@ export function extractShortEra(era?: string): string {
 }
 
 export function getSiteLogistics(site: ZiarahSite): SiteLogisticsInfo {
-  const preset = HISTORICAL_LOGISTICS_BY_ID[site.id];
+  const preset = HISTORICAL_LOGISTICS_BY_ID[site.id] || (site.legacyId ? HISTORICAL_LOGISTICS_BY_ID[site.legacyId] : undefined);
   const titleLower = `${site.title} ${site.name}`.toLowerCase();
 
   let fallbackHaul = 'Setiap Tahun (Mengikuti Kalender Hijriah Majelis & Pengurus Maqbarah Setempat)';
@@ -139,9 +139,13 @@ export function getSiteLogistics(site: ZiarahSite): SiteLogisticsInfo {
     fallbackAdab = 'Menjaga adab majelis dzikir, memisahkan shaf peziarah laki-laki dan perempuan, serta tidak meninggikan suara di dekat cungkup.';
   }
 
+  const explicitAdab = Array.isArray(site.localAdab)
+    ? site.localAdab.map((item) => item.trim()).filter(Boolean).join(' • ')
+    : site.localAdab?.trim();
+
   return {
     haulSchedule: site.haulSchedule?.trim() || preset?.haulSchedule || fallbackHaul,
-    localAdab: site.localAdab?.trim() || preset?.localAdab || fallbackAdab,
+    localAdab: explicitAdab || preset?.localAdab || fallbackAdab,
     shortEra: extractShortEra(site.era),
   };
 }
@@ -151,7 +155,12 @@ export function getSiteLogistics(site: ZiarahSite): SiteLogisticsInfo {
  * Menggunakan nilai `site.barokahHajat` dari Admin jika tersedia, atau fallback kontekstual cerdas untuk seluruh 96+ makam.
  */
 export function getSiteBarokahHajat(site: ZiarahSite): string {
-  if (site.barokahHajat && site.barokahHajat.trim().length > 0) {
+  if (Array.isArray(site.barokahHajat)) {
+    const items = site.barokahHajat.map((item) => item.trim()).filter(Boolean);
+    if (items.length > 0) {
+      return items.join(' • ');
+    }
+  } else if (typeof site.barokahHajat === 'string' && site.barokahHajat.trim().length > 0) {
     return site.barokahHajat.trim();
   }
 
@@ -234,6 +243,10 @@ export interface CompleteBarokahGuide {
   tataCaraWaktu: string[];
   doaItems: EnrichedDoaKhususItem[];
   wiridPenutupAdab: string[];
+  isSpecificBarokah: boolean;
+  isSpecificDoa: boolean;
+  isCuratedSpecific: boolean;
+  curationStatusLabel: string;
 }
 
 /**
@@ -318,12 +331,19 @@ export function getSiteCompleteBarokahGuide(site: ZiarahSite): CompleteBarokahGu
 
   const baseItems: EnrichedDoaKhususItem[] = [];
 
-  if (Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0) {
+  const isSpecificBarokah = Array.isArray(site.barokahHajat)
+    ? site.barokahHajat.some((item) => item.trim().length > 0)
+    : Boolean(typeof site.barokahHajat === 'string' && site.barokahHajat.trim().length > 0);
+  const isSpecificDoa = Boolean(Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0);
+  const isCuratedSpecific = isSpecificBarokah && isSpecificDoa;
+
+  if (isSpecificDoa && Array.isArray(site.doaKhusus)) {
     site.doaKhusus.forEach((d) => {
       baseItems.push({
         title: d.title,
         text: d.text,
         latin:
+          (d.latin && d.latin.trim()) ||
           `Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhi waliyullaahish-shaalih ${site.name} (${site.title}), syai-un lillaahi lahumul-Faatihah. Allaahummaghfir lahu warhamhu wa'fu 'anhu wanfa'naa bi asraarihii wa anwaarihii wa 'uluumihii fid-diini wad-dun-yaa wal-aakhirah.`,
         translation:
           d.translation ||
@@ -356,6 +376,12 @@ export function getSiteCompleteBarokahGuide(site: ZiarahSite): CompleteBarokahGu
       `Wirid Penutup Hajat: Sebelum beranjak, baca "Yaa Hayyu Yaa Qayyuum bi rahmatika astaghiits" (11x), Shalawat Thibbil Qulub / Al-Fatih (7x), dan tutup dengan Al-Fatihah (1x) sambil menghadirkan hajat keluarga di dalam hati.`,
       `Adab Pulang & Menjaga Keberkahan: Mundur perlahan dengan sopan tanpa membelakangi cungkup secara tergesa-gesa, sisihkan infaq seikhlasnya untuk pemeliharaan maqbarah atau fakir miskin di sekitar lokasi sebagai penyempurna wasilah doa.`,
     ],
+    isSpecificBarokah,
+    isSpecificDoa,
+    isCuratedSpecific,
+    curationStatusLabel: isCuratedSpecific
+      ? 'Khazanah Doa & Wasilah Terkurasi Khusus Makam Ini'
+      : 'Tuntunan Tawassul & Doa Hajat Umum Ziarah Auliya — Menunggu Kurasi Spesifik Makam',
   };
 }
 

@@ -239,7 +239,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
   const activeRouteSites = useMemo(() => {
     if (activeRouteObj.id === 'off') return [];
     return activeRouteObj.siteIds
-      .map((id) => validSites.find((s) => s.id === id))
+      .map((id) => validSites.find((s) => s.id === id || s.legacyId === id))
       .filter((s): s is ZiarahSite => Boolean(s));
   }, [activeRouteObj, validSites]);
 

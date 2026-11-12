@@ -11,6 +11,8 @@ interface TransferProofUploadFieldProps {
   onReceiptChange: (receipt: CompressedReceiptResult | null) => void;
   agreedToAkad: boolean;
   onAgreedToAkadChange: (agreed: boolean) => void;
+  isAnonymous?: boolean;
+  onIsAnonymousChange?: (isAnonymous: boolean) => void;
   accentColor?: 'emerald' | 'purple';
   requiredForUnlock?: boolean;
 }
@@ -22,6 +24,10 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
   onSenderAccountChange,
   receipt,
   onReceiptChange,
+  agreedToAkad,
+  onAgreedToAkadChange,
+  isAnonymous = false,
+  onIsAnonymousChange,
   requiredForUnlock = true,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -105,6 +111,19 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
           <p className="text-[10px] text-rose-600 mt-1 font-medium">
             Masukkan minimal 3 karakter nama pengirim sesuai bukti transfer.
           </p>
+        )}
+        {onIsAnonymousChange && (
+          <label className="mt-2 flex items-start gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={isAnonymous}
+              onChange={(e) => onIsAnonymousChange(e.target.checked)}
+              className="mt-0.5 rounded border-stone-300 text-emerald-800 focus:ring-emerald-700 cursor-pointer"
+            />
+            <span className="text-[11px] text-stone-600 leading-snug">
+              Tampilkan nama saya sebagai <strong className="font-semibold text-stone-900">&quot;Hamba Allah&quot;</strong> pada ticker publik &amp; Dinding Munajat (nama asli hanya disimpan terenkripsi untuk verifikasi kurator).
+            </span>
+          </label>
         )}
       </div>
 
@@ -191,6 +210,20 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
             <span>{errorMsg}</span>
           </div>
         )}
+      </div>
+
+      <div className="pt-1 border-t border-stone-200/80">
+        <label className="flex items-start gap-2.5 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={agreedToAkad}
+            onChange={(e) => onAgreedToAkadChange(e.target.checked)}
+            className="mt-0.5 rounded border-stone-300 text-emerald-800 focus:ring-emerald-700 cursor-pointer"
+          />
+          <span className="text-[11px] text-stone-600 leading-relaxed">
+            <strong className="font-semibold text-stone-800">Persetujuan Privasi (UU PDP) &amp; Akad Infaq:</strong> Saya menyetujui bahwa dana ini adalah <strong>Infaq Operasional &amp; Pemeliharaan Digital</strong> (bukan penghimpunan dana pokok wakaf sesuai UU No. 41 Tahun 2004), serta menyetujui pemrosesan data bukti transfer untuk verifikasi kurator sesuai UU Perlindungan Data Pribadi (UU No. 27 Tahun 2022).
+          </span>
+        </label>
       </div>
     </div>
   );

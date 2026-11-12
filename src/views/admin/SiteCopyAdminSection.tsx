@@ -111,6 +111,13 @@ const COPY_FIELDS: CopyFieldDef[] = [
     description: 'Keterangan tim kurator pengelola resmi di bagian bawah situs.',
     section: 'identitas_nav_footer',
   },
+  {
+    key: 'adminWhatsappNumber',
+    label: 'Nomor WhatsApp Resmi Admin Kurator',
+    description:
+      'Format angka internasional tanpa tanda + (contoh: 6285717605655). Digunakan otomatis untuk konfirmasi bukti transfer di Modal Pembayaran, Infaq Digital, dan Rubrik Kisah.',
+    section: 'identitas_nav_footer',
+  },
 
   // c) Halaman Beranda & Filter
   {

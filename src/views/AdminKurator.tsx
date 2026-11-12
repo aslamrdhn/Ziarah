@@ -704,11 +704,21 @@ export const AdminKurator: React.FC = () => {
       },
       karomah: (editingSite.karomah || []).map((k) => sanitizeMultilineText(k, 3000)).filter(Boolean),
       karomahSourceType: editingSite.karomahSourceType || 'tradisi_lisan',
-      barokahHajat: sanitizeMultilineText(editingSite.barokahHajat, 2000),
+      barokahHajat: sanitizeMultilineText(
+        Array.isArray(editingSite.barokahHajat)
+          ? editingSite.barokahHajat.join(' • ')
+          : editingSite.barokahHajat,
+        2000
+      ),
       doaKhusus: cleanDoaKhusus,
       untoldStory: sanitizeMultilineText(editingSite.untoldStory, 6000),
       haulSchedule: sanitizePlainText(editingSite.haulSchedule, 240),
-      localAdab: sanitizeMultilineText(editingSite.localAdab, 2000),
+      localAdab: sanitizeMultilineText(
+        Array.isArray(editingSite.localAdab)
+          ? editingSite.localAdab.join(' • ')
+          : editingSite.localAdab,
+        2000
+      ),
       karya: (editingSite.karya || []).map((k) => sanitizePlainText(k, 240)).filter(Boolean),
       references: (editingSite.references || []).map((r) => sanitizePlainText(r, 400)).filter(Boolean),
       isDeleted: false,
@@ -909,7 +919,7 @@ export const AdminKurator: React.FC = () => {
       {
         id: newId,
         title: 'Program Kebaikan Baru',
-        desc: 'Tuliskan deskripsi program donasi/wakaf di sini...',
+        desc: 'Tuliskan deskripsi program dukungan khazanah & infaq literasi arsip di sini...',
         tag: 'Prioritas',
         iconName: 'HeartHandshake',
         color: 'from-emerald-500 to-teal-700',
@@ -1525,10 +1535,14 @@ export const AdminKurator: React.FC = () => {
                     ...s,
                     era: s.era || '',
                     sanad: s.sanad || '',
-                    barokahHajat: s.barokahHajat || '',
+                    barokahHajat: Array.isArray(s.barokahHajat)
+                      ? s.barokahHajat.join(' • ')
+                      : s.barokahHajat || '',
                     untoldStory: s.untoldStory || '',
                     haulSchedule: s.haulSchedule || '',
-                    localAdab: s.localAdab || '',
+                    localAdab: Array.isArray(s.localAdab)
+                      ? s.localAdab.join(' • ')
+                      : s.localAdab || '',
                     imageSource: s.imageSource || '',
                     karomah: Array.isArray(s.karomah) ? [...s.karomah] : [],
                     doaKhusus: Array.isArray(s.doaKhusus) ? s.doaKhusus.map((d) => ({ ...d })) : [],
@@ -2651,7 +2665,7 @@ export const AdminKurator: React.FC = () => {
                         Riwayat Konfirmasi Donasi &amp; Verifikasi Bukti Transfer ({filteredDonations.length} dari {donations.length})
                       </h3>
                       <p className="text-xs text-slate-500">
-                        Periksa foto struk bukti transfer pewakif. Jika bukti tidak valid, klik <strong>Cabut &amp; Hapus</strong> untuk mengunci kembali akses secara real-time.
+                        Periksa foto struk bukti transfer munfiq / peziarah. Jika bukti tidak valid, klik <strong>Cabut &amp; Hapus</strong> untuk mengunci kembali akses secara real-time.
                       </p>
                     </div>
                     {/* c) Filter Cepat di Tabel Verifikasi Donasi Admin */}

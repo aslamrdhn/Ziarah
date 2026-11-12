@@ -69,22 +69,17 @@ export function extractQuotedField(block, fieldName, fallback = '') {
   return cleanSeoText(m[2]) || fallback;
 }
 
-export function extractSitesFromSource(customSitesFile) {
-  const sitesFile = customSitesFile || path.resolve(cwd, 'src', 'data', 'sites.ts');
-  if (!fs.existsSync(sitesFile)) return [];
-  const raw = fs.readFileSync(sitesFile, 'utf8');
+function parseSiteBlocksFromRawTs(raw) {
   const idRegex = /\bid:\s*(['"])((?:\\.|(?!\1).)*)\1/g;
   const positions = [];
   let match;
   while ((match = idRegex.exec(raw)) !== null) {
     positions.push({ id: cleanSeoText(match[2]), index: match.index });
   }
-  const seen = new Set();
-  const result = [];
+  const extracted = [];
   for (let i = 0; i < positions.length; i++) {
     const { id, index } = positions[i];
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
+    if (!id) continue;
     const nextIndex = i + 1 < positions.length ? positions[i + 1].index : raw.length;
     const block = raw.slice(index, nextIndex);
     const name = extractQuotedField(block, 'name', id);
@@ -98,7 +93,7 @@ export function extractSitesFromSource(customSitesFile) {
     const era = extractQuotedField(block, 'era', '');
     const sanad = extractQuotedField(block, 'sanad', '');
     const slug = getSiteSlug(title, city, id);
-    result.push({
+    extracted.push({
       id,
       slug,
       name,
@@ -113,83 +108,266 @@ export function extractSitesFromSource(customSitesFile) {
       sanad,
     });
   }
-  return result;
+  return extracted;
 }
 
-const staticRoutes = [
-  {
-    path: '/',
-    priority: '1.0',
-    changefreq: 'daily',
-    title: 'Ziarah Kubur & Makam Wali Nusantara: Doa, Yasin, Tahlil & Peta 96 Wali | Ziarah Nusantara',
-    description:
-      'Panduan lengkap ziarah kubur dan direktori 96 makam Wali Songo & Ulama Nusantara. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.',
-  },
-  {
-    path: '/direktori',
-    priority: '0.9',
-    changefreq: 'daily',
-    title: 'Direktori 96 Makam Walisongo, Ulama & Habaib di 18 Provinsi — Ziarah Nusantara',
-    description:
-      'Jejak spiritual 96 lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia lengkap dengan alamat, peta rute GPS, kisah karomah, dan bacaan doa tawassul.',
-  },
-  {
-    path: '/peta',
-    priority: '0.9',
-    changefreq: 'weekly',
-    title: 'Peta Rute Ziarah Makam Wali Songo & Ulama Nusantara — Ziarah Nusantara',
-    description:
-      'Peta interaktif titik lokasi GPS dan navigasi rute perjalanan ziarah ke 96 makam Waliyullah serta ulama besar di seluruh kepulauan Indonesia.',
-  },
-  {
-    path: '/panduan',
-    priority: '0.9',
-    changefreq: 'weekly',
-    title: 'Panduan Ziarah Kubur Lengkap: Urutan Doa (Arab, Latin, Artinya), Tahlil, Yasin & Adab | Ziarah Nusantara',
-    description:
-      'Tuntunan lengkap adab & urutan bacaan doa ziarah kubur orang tua dan makam Wali (Arab, Latin, Artinya), Salam Ahli Kubur, Qasidah Salamullah Ya Sadah, Tawassul, Yasin & Tahlil sesuai sunnah Ahlussunnah wal Jamaah.',
-  },
-  {
-    path: '/rubrik',
-    priority: '0.8',
-    changefreq: 'weekly',
-    title: 'Rubrik Sejarah, Kisah Karomah & Wasiat Batin Para Wali — Ziarah Nusantara',
-    description:
-      'Kisah nyata keteladanan, wasiat batin, sanad keilmuan, dan sejarah dakwah para Waliyullah Nusantara berbasis naskah babad dan jurnal akademik.',
-  },
-  {
-    path: '/doa',
-    priority: '0.8',
-    changefreq: 'monthly',
-    title: 'Kumpulan Doa Khusus Ziarah Kubur, Tahlil & Tawassul Lengkap — Ziarah Nusantara',
-    description:
-      'Bacaan salam ziarah kubur, susunan tawassul khusus para Waliyullah, Surah Yasin, dan tahlil lengkap teks Arab, transliterasi Latin, serta terjemahan Bahasa Indonesia.',
-  },
-  {
-    path: '/donasi',
-    priority: '0.8',
-    changefreq: 'monthly',
-    title: 'Infaq & Amal Jariyah Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
-    description:
-      'Layanan infaq dan wakaf literasi digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori 96 makam Waliyullah tetap bebas akses.',
-  },
-  {
-    path: '/infaq',
-    priority: '0.7',
-    changefreq: 'monthly',
-    title: 'Infaq & Amal Jariyah Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
-    description:
-      'Layanan infaq dan wakaf literasi digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori 96 makam Waliyullah tetap bebas akses.',
-  },
-  {
-    path: '/kurasi',
-    priority: '0.7',
-    changefreq: 'monthly',
-    title: 'Standar Kurasi & Metodologi Referensi Sejarah — Ziarah Nusantara',
-    description:
-      'Pedoman metodologi verifikasi sumber sejarah, jurnal akademik, naskah babad, dan kurasi 96 situs makam oleh Tim Kurator Arsip Ziarah Nusantara.',
-  },
-];
+const REGIONAL_ID_TO_LEGACY_ID = {
+  // Jawa Barat, Banten & DKI Jakarta (Tahap 2)
+  'sunan-gunung-jati': 'wali-9',
+  'syekh-datuk-kahfi': 'auliya-19',
+  'syekh-quro-karawang': 'ulama-10',
+  'syekh-abdul-muhyi-pamijahan': 'ulama-8',
+  'sultan-maulana-hasanuddin': 'auliya-2',
+  'sultan-maulana-yusuf': 'auliya-18',
+  'syekh-asnawi-caringin': 'ulama-7',
+  'syekh-nawawi-al-bantani': 'ulama-6',
+  'habib-husein-luar-batang': 'habib-2',
+  'mbah-priok': 'habib-3',
+  'pangeran-jayakarta': 'auliya-1',
+  'habib-ahmad-bin-alwi-al-haddad': 'habib-4',
+  'habib-ali-kwitang': 'habib-1',
+  'habib-utsman-bin-yahya': 'habib-5',
+  'guru-marzuki-cipinang': 'ulama-5',
+  'habib-abdullah-empang-bogor': 'habib-6',
+  'mama-falak-pagentongan-bogor': 'ulama-9',
+  'eyang-dalem-abdul-manaf-mahmud': 'auliya-3',
+  'kh-noer-ali-bekasi': 'ulama-30',
+  // Jawa Tengah & DI Yogyakarta (Tahap 3)
+  'sunan-kalijaga': 'wali-7',
+  'sunan-kudus': 'wali-5',
+  'sunan-muria': 'wali-8',
+  'raden-patah-demak': 'auliya-6',
+  'syekh-jangkung-pati': 'auliya-7',
+  'syekh-mutamakkin-kajen': 'ulama-11',
+  'habib-ahmad-sapuro': 'habib-7',
+  'sunan-pandanaran-bayat': 'auliya-5',
+  'kh-sholeh-darat-semarang': 'ulama-13',
+  'syekh-subakir-tidar': 'auliya-4',
+  'kh-dalhar-watucongol': 'ulama-12',
+  'syekh-maulana-maghribi-parangtritis': 'auliya-9',
+  'kh-munawwir-krapyak': 'ulama-33',
+  'kyai-nur-iman-mlangi': 'auliya-8',
+  'kh-arwani-amin-kudus': 'ulama-14',
+  'mbah-maimoen-zubair-sarang': 'ulama-31',
+  'masyayikh-lasem-rembang': 'ulama-32',
+  'habib-hasyim-bin-yahya-pekalongan': 'habib-14',
+  'kh-ahmad-rifai-kalisalak': 'ulama-40',
+  // Jawa Timur & Pulau Madura (Tahap 4)
+  'syekh-maulana-malik-ibrahim': 'wali-1',
+  'sunan-ampel': 'wali-2',
+  'sunan-bonang': 'wali-3',
+  'sunan-drajat': 'wali-4',
+  'sunan-giri': 'wali-6',
+  'syekh-maulana-ishaq': 'auliya-20',
+  'syekh-ibrahim-asmorokondi': 'auliya-11',
+  'habib-abu-bakar-gresik': 'habib-8',
+  'kh-abdul-hamid-pasuruan': 'ulama-19',
+  'kh-asad-syamsul-arifin': 'ulama-20',
+  'kh-hasyim-asyari-tebuireng': 'ulama-1',
+  'kh-wahab-chasbullah': 'ulama-16',
+  'kh-bisri-syansuri': 'ulama-17',
+  'kh-romly-tamim-rejoso': 'ulama-18',
+  'syekh-jumadil-kubro-troloyo': 'auliya-10',
+  'kh-abdul-karim-lirboyo': 'ulama-21',
+  'gus-miek-ploso-kediri': 'ulama-22',
+  'syekh-ihsan-jampes-kediri': 'ulama-34',
+  'kh-hasan-besari-tegalsari': 'auliya-30',
+  'masyayikh-tremas-pacitan': 'ulama-41',
+  'habib-sholeh-tanggul-jember': 'habib-9',
+  'guru-bangil-pasuruan': 'ulama-35',
+  'sunan-bejagung-tuban': 'auliya-21',
+  'syaichona-kholil-bangkalan': 'ulama-15',
+  'sayyid-yusuf-talango': 'auliya-12',
+  // Sumatera (Tahap 5)
+  'syekh-abdurrauf-as-singkili': 'ulama-3',
+  'syekh-hamzah-fansuri': 'ulama-24',
+  'sultan-malikussaleh': 'auliya-25',
+  'teungku-di-anjong-banda-aceh': 'habib-15',
+  'syekh-abdul-wahab-rokan-besilam': 'ulama-26',
+  'makam-papan-tinggi-mahligai-barus': 'ulama-36',
+  'syekh-burhanuddin-ulakan': 'ulama-25',
+  'kiai-marogan-palembang': 'ulama-27',
+  'kompleks-kawah-tengkurep-palembang': 'auliya-26',
+  // Kalimantan & Sulawesi (Tahap 6)
+  'syekh-muhammad-arsyad-al-banjari': 'ulama-28',
+  'guru-sekumpul-martapura': 'ulama-2',
+  'sultan-suriansyah-banjarmasin': 'auliya-16',
+  'habib-basirih-banjarmasin': 'habib-12',
+  'habib-husein-alkadrie-mempawah': 'habib-16',
+  'syekh-yusuf-al-makassari': 'ulama-4',
+  'datuk-ri-bandang': 'auliya-17',
+  'datuk-patimang-luwu': 'auliya-27',
+  'datuk-ri-tiro': 'auliya-28',
+  'habib-idrus-bin-salim-al-jufri-palu': 'habib-13',
+  'kyai-mojo-tondano': 'ulama-29',
+  // Bali, Nusa Tenggara, Maluku & Papua (Tahap 7)
+  'habib-ali-bafaqih-negara': 'habib-11',
+  'habib-ali-kusamba': 'habib-10',
+  'karangrupit-buleleng': 'auliya-22',
+  'pangeran-mas-sepuh-seseh': 'auliya-13',
+  'siti-khotijah-denpasar': 'auliya-23',
+  'tgkh-zainuddin-abdul-madjid': 'ulama-23',
+  'makam-loang-baloq': 'auliya-15',
+  'sultan-baabullah-ternate': 'auliya-29',
+};
+
+export function extractSitesFromSource(customTarget) {
+  let sitesFile = path.resolve(cwd, 'src', 'data', 'sites.ts');
+  let regionsDir = path.resolve(cwd, 'src', 'data', 'regions');
+
+  if (customTarget && typeof customTarget === 'string') {
+    const resolvedTarget = path.resolve(customTarget);
+    if (fs.existsSync(resolvedTarget) && fs.statSync(resolvedTarget).isDirectory()) {
+      sitesFile = path.join(resolvedTarget, 'src', 'data', 'sites.ts');
+      regionsDir = path.join(resolvedTarget, 'src', 'data', 'regions');
+    } else if (resolvedTarget.endsWith('.ts')) {
+      sitesFile = resolvedTarget;
+      regionsDir = path.join(path.dirname(resolvedTarget), 'regions');
+    }
+  }
+
+  const byId = new Map();
+
+  // 1. Read BASE_SITES from src/data/sites.ts
+  if (fs.existsSync(sitesFile)) {
+    const rawBase = fs.readFileSync(sitesFile, 'utf8');
+    for (const item of parseSiteBlocksFromRawTs(rawBase)) {
+      if (!byId.has(item.id)) {
+        byId.set(item.id, item);
+      }
+    }
+  }
+
+  // 2. Read all regional .ts files in src/data/regions/ and override/deduplicate by id or legacyId
+  if (fs.existsSync(regionsDir) && fs.statSync(regionsDir).isDirectory()) {
+    const regionFiles = fs
+      .readdirSync(regionsDir)
+      .filter((f) => f.endsWith('.ts'))
+      .sort();
+
+    for (const fileName of regionFiles) {
+      const fullRegionPath = path.join(regionsDir, fileName);
+      if (!fs.statSync(fullRegionPath).isFile()) continue;
+      const rawRegion = fs.readFileSync(fullRegionPath, 'utf8');
+      for (const item of parseSiteBlocksFromRawTs(rawRegion)) {
+        const legacyTargetId = REGIONAL_ID_TO_LEGACY_ID[item.id];
+        const prevBySameId = byId.get(item.id);
+        const prevByLegacyId = legacyTargetId ? byId.get(legacyTargetId) : undefined;
+        const prev = prevBySameId || prevByLegacyId;
+
+        if (prev) {
+          const mergedTitle = item.title || prev.title;
+          const mergedCity = item.city || prev.city;
+          const mergedObj = {
+            id: item.id,
+            slug: getSiteSlug(mergedTitle, mergedCity, item.id),
+            name: item.name || prev.name,
+            title: mergedTitle,
+            category: item.category || prev.category,
+            description: item.description || prev.description,
+            history: item.history || prev.history,
+            address: item.address || prev.address,
+            city: mergedCity,
+            province: item.province || prev.province,
+            era: item.era || prev.era,
+            sanad: item.sanad || prev.sanad,
+          };
+          if (prevByLegacyId && legacyTargetId && legacyTargetId !== item.id) {
+            const rebuilt = new Map();
+            for (const [k, v] of byId.entries()) {
+              if (k === legacyTargetId) {
+                rebuilt.set(item.id, mergedObj);
+              } else {
+                rebuilt.set(k, v);
+              }
+            }
+            byId.clear();
+            for (const [k, v] of rebuilt.entries()) {
+              byId.set(k, v);
+            }
+          } else {
+            byId.set(item.id, mergedObj);
+          }
+        } else {
+          byId.set(item.id, item);
+        }
+      }
+    }
+  }
+
+  return Array.from(byId.values());
+}
+
+function buildStaticRoutes(siteCount, provinceCount) {
+  return [
+    {
+      path: '/',
+      priority: '1.0',
+      changefreq: 'daily',
+      title: `Ziarah Kubur & Makam Wali Nusantara: Doa, Yasin, Tahlil & Peta ${siteCount} Wali | Ziarah Nusantara`,
+      description: `Panduan lengkap ziarah kubur dan direktori ${siteCount} makam Wali Songo & Ulama Nusantara di ${provinceCount} provinsi. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.`,
+    },
+    {
+      path: '/direktori',
+      priority: '0.9',
+      changefreq: 'daily',
+      title: `Direktori ${siteCount} Makam Walisongo, Ulama & Habaib di ${provinceCount} Provinsi — Ziarah Nusantara`,
+      description: `Jejak spiritual ${siteCount} lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di ${provinceCount} provinsi Indonesia lengkap dengan alamat, peta rute GPS, kisah karomah, dan bacaan doa tawassul.`,
+    },
+    {
+      path: '/peta',
+      priority: '0.9',
+      changefreq: 'weekly',
+      title: 'Peta Rute Ziarah Makam Wali Songo & Ulama Nusantara — Ziarah Nusantara',
+      description: `Peta interaktif titik lokasi GPS dan navigasi rute perjalanan ziarah ke ${siteCount} makam Waliyullah serta ulama besar di seluruh kepulauan Indonesia.`,
+    },
+    {
+      path: '/panduan',
+      priority: '0.9',
+      changefreq: 'weekly',
+      title: 'Panduan Ziarah Kubur Lengkap: Urutan Doa (Arab, Latin, Artinya), Tahlil, Yasin & Adab | Ziarah Nusantara',
+      description:
+        'Tuntunan lengkap adab & urutan bacaan doa ziarah kubur orang tua dan makam Wali (Arab, Latin, Artinya), Salam Ahli Kubur, Qasidah Salamullah Ya Sadah, Tawassul, Yasin & Tahlil sesuai sunnah Ahlussunnah wal Jamaah.',
+    },
+    {
+      path: '/rubrik',
+      priority: '0.8',
+      changefreq: 'weekly',
+      title: 'Rubrik Sejarah, Kisah Karomah & Wasiat Batin Para Wali — Ziarah Nusantara',
+      description:
+        'Kisah nyata keteladanan, wasiat batin, sanad keilmuan, dan sejarah dakwah para Waliyullah Nusantara berbasis naskah babad dan jurnal akademik.',
+    },
+    {
+      path: '/doa',
+      priority: '0.8',
+      changefreq: 'monthly',
+      title: 'Kumpulan Doa Khusus Ziarah Kubur, Tahlil & Tawassul Lengkap — Ziarah Nusantara',
+      description:
+        'Bacaan salam ziarah kubur, susunan tawassul khusus para Waliyullah, Surah Yasin, dan tahlil lengkap teks Arab, transliterasi Latin, serta terjemahan Bahasa Indonesia.',
+    },
+    {
+      path: '/donasi',
+      priority: '0.8',
+      changefreq: 'monthly',
+      title: 'Infaq Operasional & Pemeliharaan Digital Arsip Sejarah Makam Wali — Ziarah Nusantara',
+      description: `Layanan Infaq Operasional & Pemeliharaan Digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori ${siteCount} makam Waliyullah tetap bebas akses.`,
+    },
+    {
+      path: '/infaq',
+      priority: '0.7',
+      changefreq: 'monthly',
+      title: 'Infaq Operasional & Pemeliharaan Digital Arsip Sejarah Makam Wali — Ziarah Nusantara',
+      description: `Layanan Infaq Operasional & Pemeliharaan Digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori ${siteCount} makam Waliyullah tetap bebas akses.`,
+    },
+    {
+      path: '/kurasi',
+      priority: '0.7',
+      changefreq: 'monthly',
+      title: 'Standar Kurasi & Metodologi Referensi Sejarah — Ziarah Nusantara',
+      description: `Pedoman metodologi verifikasi sumber sejarah, jurnal akademik, naskah babad, dan kurasi ${siteCount} situs makam di ${provinceCount} provinsi oleh Tim Kurator Arsip Ziarah Nusantara.`,
+    },
+  ];
+}
 
 function parseFirestoreStringField(fields, key, fallback = '') {
   const val = fields?.[key]?.stringValue;
@@ -304,14 +482,15 @@ async function fetchCloudSitesForSeo(localSites) {
 
 const localExtractedSites = extractSitesFromSource();
 const sites = process.env.VITEST ? localExtractedSites : await fetchCloudSitesForSeo(localExtractedSites);
+const uniqueProvinces = Array.from(new Set(sites.map((s) => s.province).filter(Boolean))).sort();
+const staticRoutes = buildStaticRoutes(sites.length, uniqueProvinces.length);
 
 function buildDirectoryLinksHtml() {
-  const provinces = Array.from(new Set(sites.map((s) => s.province))).sort();
   return `
-    <section aria-label="Indeks Direktori Lengkap 96 Makam Waliyullah di 18 Provinsi">
-      <h2>Daftar Lengkap ${sites.length} Lokasi Ziarah Makam Waliyullah, Walisongo, Ulama, dan Habaib di ${provinces.length} Provinsi Indonesia</h2>
+    <section aria-label="Indeks Direktori Lengkap ${sites.length} Makam Waliyullah di ${uniqueProvinces.length} Provinsi">
+      <h2>Daftar Lengkap ${sites.length} Lokasi Ziarah Makam Waliyullah, Walisongo, Ulama, dan Habaib di ${uniqueProvinces.length} Provinsi Indonesia</h2>
       <p>Berikut adalah indeks direktori situs pemakaman para Waliyullah, ulama pesantren, dan habaib yang tersebar di berbagai wilayah kepulauan Nusantara beserta tautan menuju halaman peta rute dan riwayat sejarah masing-masing tokoh:</p>
-      ${provinces
+      ${uniqueProvinces
         .map((prov) => {
           const provSites = sites.filter((s) => s.province === prov);
           return `
@@ -334,8 +513,8 @@ function buildDirectoryLinksHtml() {
 function buildHomepageRootHtml() {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <header>
-          <h1>Ziarah Kubur &amp; Makam Wali Nusantara: Doa, Yasin, Tahlil &amp; Peta 96 Wali | Ziarah Nusantara</h1>
-          <p><strong>Panduan lengkap ziarah kubur dan direktori 96 makam Wali Songo &amp; Ulama Nusantara.</strong> Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS di 18 provinsi Indonesia.</p>
+          <h1>Ziarah Kubur &amp; Makam Wali Nusantara: Doa, Yasin, Tahlil &amp; Peta ${sites.length} Wali | Ziarah Nusantara</h1>
+          <p><strong>Panduan lengkap ziarah kubur dan direktori ${sites.length} makam Wali Songo &amp; Ulama Nusantara.</strong> Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS di ${uniqueProvinces.length} provinsi Indonesia.</p>
         </header>
         <section>
           <h2>Apa Tujuan dan Hukum Ziarah Kubur dalam Islam?</h2>
@@ -349,13 +528,13 @@ function buildHomepageRootHtml() {
           </ol>
           <h2>Layanan dan Direktori Utama Ziarah Nusantara</h2>
           <ul>
-            <li><a href="${SITE_ORIGIN}/direktori">Direktori 96 Makam Walisongo, Ulama, dan Habaib di 18 Provinsi Indonesia</a></li>
+            <li><a href="${SITE_ORIGIN}/direktori">Direktori ${sites.length} Makam Walisongo, Ulama, dan Habaib di ${uniqueProvinces.length} Provinsi Indonesia</a></li>
             <li><a href="${SITE_ORIGIN}/panduan">Panduan Doa Ziarah Kubur Lengkap (Arab, Latin, dan Artinya) beserta Tahlil dan Adab Ziarah</a></li>
             <li><a href="${SITE_ORIGIN}/peta">Peta Rute Perjalanan Ziarah Wali Songo dan Ulama Nusantara</a></li>
             <li><a href="${SITE_ORIGIN}/doa">Kumpulan Doa Khusus Ziarah Kubur, Tahlil, dan Tawassul</a></li>
             <li><a href="${SITE_ORIGIN}/rubrik">Rubrik Sejarah, Kisah Karomah, dan Wasiat Batin Para Wali</a></li>
             <li><a href="${SITE_ORIGIN}/kurasi">Standar Kurasi dan Metodologi Referensi Sejarah</a></li>
-            <li><a href="${SITE_ORIGIN}/infaq">Infaq Digital dan Ruang Munajat Doa Peziarah</a></li>
+            <li><a href="${SITE_ORIGIN}/infaq">Infaq Operasional &amp; Pemeliharaan Digital dan Ruang Munajat Doa Peziarah</a></li>
           </ul>
         </section>
       </main>`;
@@ -364,8 +543,8 @@ function buildHomepageRootHtml() {
 function buildDirektoriRootHtml() {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <header>
-          <h1>Direktori 96 Makam Walisongo, Ulama &amp; Habaib di 18 Provinsi — Ziarah Nusantara</h1>
-          <p>Jejak spiritual 96 lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia lengkap dengan alamat, peta rute perjalanan, kisah karomah, dan bacaan doa tawassul.</p>
+          <h1>Direktori ${sites.length} Makam Walisongo, Ulama &amp; Habaib di ${uniqueProvinces.length} Provinsi — Ziarah Nusantara</h1>
+          <p>Jejak spiritual ${sites.length} lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di ${uniqueProvinces.length} provinsi Indonesia lengkap dengan alamat, peta rute perjalanan, kisah karomah, dan bacaan doa tawassul.</p>
         </header>
         ${buildDirectoryLinksHtml()}
       </main>`;
@@ -543,6 +722,10 @@ export function renderCustomHtml(baseHtml, entry) {
       /<script type="application\/ld\+json" id="schema-jsonld">[\s\S]*?<\/script>/i,
       `<script type="application/ld+json" id="schema-jsonld">${buildRouteJsonLd(entry)}</script>`
     );
+  } else {
+    html = html
+      .replace(/\b96\s+(makam|lokasi makam|Wali|situs makam|Makam)/g, `${sites.length} $1`)
+      .replace(/\b18\s+(provinsi|Provinsi)/g, `${uniqueProvinces.length} $1`);
   }
 
   if (entry.bodyHtml) {
@@ -646,9 +829,9 @@ if (!process.env.VITEST) {
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
     '  <channel>',
-    '    <title>Ziarah Kubur &amp; Makam Wali Nusantara: Doa, Yasin, Tahlil &amp; Peta 96 Wali | Ziarah Nusantara</title>',
+    `    <title>Ziarah Kubur &amp; Makam Wali Nusantara: Doa, Yasin, Tahlil &amp; Peta ${sites.length} Wali | Ziarah Nusantara</title>`,
     `    <link>${SITE_ORIGIN}/</link>`,
-    '    <description>Panduan lengkap ziarah kubur dan direktori 96 makam Wali Songo &amp; Ulama Nusantara. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.</description>',
+    `    <description>Panduan lengkap ziarah kubur dan direktori ${sites.length} makam Wali Songo &amp; Ulama Nusantara di ${uniqueProvinces.length} provinsi. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.</description>`,
     '    <language>id-ID</language>',
     `    <atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml" />`,
     ...sitemapEntries.map(
@@ -661,7 +844,57 @@ if (!process.env.VITEST) {
   ];
   const rssXmlContent = rssLines.join('\n');
 
-  // Write generated sitemaps and robots.txt to both public/ and dist/
+  // 3b. Generate ziarah-sites.json & dynamic llms.txt so external tools & AI crawlers see all modular regional sites
+  const ziarahSitesJsonContent = JSON.stringify(
+    {
+      totalSites: sites.length,
+      totalProvinces: uniqueProvinces.length,
+      provinces: uniqueProvinces,
+      updatedAt: todayIsoDate,
+      sites: sites.map((s) => ({
+        id: s.id,
+        slug: s.slug,
+        name: s.name,
+        title: s.title,
+        category: s.category,
+        city: s.city,
+        province: s.province,
+        address: s.address,
+        url: `${SITE_ORIGIN}/situs/${s.slug}`,
+      })),
+    },
+    null,
+    2
+  );
+
+  const llmsTxtContent = [
+    '# Ziarah Nusantara',
+    '',
+    `> Situs resmi Ziarah Nusantara (${SITE_ORIGIN}) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Platform direktori ensiklopedis ${sites.length} makam para Waliyullah, Wali Songo, dan Ulama Nusantara di ${uniqueProvinces.length} provinsi Indonesia, dilengkapi peta rute geospasial, panduan adab ziarah, kumpulan doa tahlil & tawassul, serta literasi sejarah Islam Nusantara berbasis referensi jurnal ilmiah dan naskah babad.`,
+    '',
+    `Ziarah Nusantara menyediakan dokumentasi terverifikasi mengenai ${sites.length} lokasi makam di ${uniqueProvinces.length} provinsi, biografi sejarah, jaringan sanad keilmuan, karya tulis (kitab kuning/manuskrip), karomah, serta tuntunan doa ziarah kubur di seluruh Indonesia. Seluruh data dikurasi oleh Tim Kurator Arsip Ziarah Nusantara.`,
+    '',
+    '## Direktori & Layanan Utama',
+    '',
+    `- [Beranda & Katalog Direktori Makam](${SITE_ORIGIN}/): Halaman utama dan indeks pencarian seluruh ${sites.length} situs makam Waliyullah, Wali Songo, Ulama Pesantren, Habaib, dan Auliya Nusantara di ${uniqueProvinces.length} provinsi.`,
+    `- [Arsip & Direktori Makam Waliyullah](${SITE_ORIGIN}/direktori): Katalog lengkap ${sites.length} situs ziarah di ${uniqueProvinces.join(', ')} beserta rujukan akademik.`,
+    `- [Peta Rute Geospasial Ziarah](${SITE_ORIGIN}/peta): Peta interaktif lokasi ${sites.length} makam Waliyullah dengan perhitungan rute jalan raya dan estimasi waktu tempuh peziarah.`,
+    `- [Panduan Adab & Tata Cara Ziarah](${SITE_ORIGIN}/panduan): Pedoman adab sopan santun, niat, salam ziarah, dan tuntunan ziarah kubur sesuai tradisi Ahlussunnah wal Jamaah.`,
+    `- [Rubrik Kisah, Karomah & Naskah Sejarah](${SITE_ORIGIN}/rubrik): Kajian biografi mendalam, sanad keilmuan Haramain-Nusantara, dan keteladanan dakwah para Waliyullah.`,
+    `- [Kumpulan Doa Khusus, Tahlil & Tawassul](${SITE_ORIGIN}/doa): Bacaan salam ziarah, susunan tawassul, Surah Yasin, dan tahlil lengkap teks Arab, Latin, dan terjemahan Bahasa Indonesia.`,
+    `- [Infaq Operasional & Pemeliharaan Digital](${SITE_ORIGIN}/infaq): Layanan Infaq Operasional & Pemeliharaan Digital QRIS resmi Ziarah Nusantara untuk riset literasi sejarah dan pemeliharaan direktori ${sites.length} situs makam.`,
+    '',
+    '## Dokumentasi, Kebijakan & Metadata Agen',
+    '',
+    `- [Standar & Kebijakan Kurasi Ilmiah](${SITE_ORIGIN}/kurasi): Metodologi verifikasi sumber sejarah, jurnal akademik, skripsi, dan naskah babad oleh Tim Kurator Arsip Ziarah Nusantara.`,
+    `- [Dokumentasi Lengkap LLMs](${SITE_ORIGIN}/llms-full.txt): Ringkasan komprehensif seluruh kategori makam, daftar tokoh Wali Songo & Ulama Nusantara, serta struktur data platform.`,
+    `- [Indeks JSON Situs Makam](${SITE_ORIGIN}/ziarah-sites.json): Data terstruktur JSON seluruh ${sites.length} makam di ${uniqueProvinces.length} provinsi.`,
+    `- [Katalog AI & WebMCP](${SITE_ORIGIN}/.well-known/ai-catalog.json): Skema katalog terstruktur untuk penjelajahan agen AI dan integrasi indeks pengetahuan.`,
+    `- [Peta Situs XML](${SITE_ORIGIN}/sitemap.xml): Daftar indeks seluruh halaman publik Ziarah Nusantara.`,
+    '',
+  ].join('\n');
+
+  // Write generated sitemaps, feeds, llms.txt, and ziarah-sites.json to both public/ and dist/
   for (const targetFolder of [rootPublic, rootDist]) {
     if (fs.existsSync(targetFolder)) {
       fs.writeFileSync(path.join(targetFolder, 'sitemap.xml'), sitemapXmlContent, 'utf8');
@@ -671,6 +904,8 @@ if (!process.env.VITEST) {
       fs.writeFileSync(path.join(targetFolder, 'sitemap.txt'), sitemapTxtContent, 'utf8');
       fs.writeFileSync(path.join(targetFolder, 'rss.xml'), rssXmlContent, 'utf8');
       fs.writeFileSync(path.join(targetFolder, 'robots.txt'), robotsTxtContent, 'utf8');
+      fs.writeFileSync(path.join(targetFolder, 'ziarah-sites.json'), ziarahSitesJsonContent, 'utf8');
+      fs.writeFileSync(path.join(targetFolder, 'llms.txt'), llmsTxtContent, 'utf8');
     }
   }
 

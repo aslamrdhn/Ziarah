@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeDonationAmount } from './sanitize';
+import { SITES } from '../data/sites';
+
+const DYNAMIC_SITE_COUNT = SITES.length;
+const DYNAMIC_PROVINCE_COUNT = new Set(SITES.map((s) => s.province)).size;
+
+export const ADMIN_WHATSAPP_NUMBER =
+  (typeof import.meta !== 'undefined' &&
+    (import.meta as { env?: Record<string, string> }).env?.VITE_ADMIN_WHATSAPP?.trim()) ||
+  '6285717605655';
 
 export interface QuickNominalPackage {
   amount: number;
@@ -32,6 +41,7 @@ export interface SiteCopyConfig {
   // 0. Identitas & Navbar
   brandName: string;
   brandSubtitle: string;
+  adminWhatsappNumber: string;
   navHomeLabel: string;
   navRubrikLabel: string;
   navMapLabel: string;
@@ -120,6 +130,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   // 0. Identitas & Navbar
   brandName: 'Ziarah Nusantara',
   brandSubtitle: 'Ensiklopedia Digital & Panduan Makam Wali',
+  adminWhatsappNumber: ADMIN_WHATSAPP_NUMBER,
   navHomeLabel: 'Direktori Makam',
   navRubrikLabel: 'Kisah & Karomah',
   navMapLabel: 'Peta Rute',
@@ -205,9 +216,8 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
       stepLabel: '05 · Bekal Lengkap di Genggaman Anda',
       shortTabTitle: 'Siap Berangkat Ziarah Hari Ini',
       title: 'Satu Panduan untuk Seluruh Perjalanan Batin',
-      narrative:
-        'Dari titik koordinat 96 makam di 18 provinsi, jadwal haul tahunan, teks Yasin & Tahlil lengkap dengan khususan nama almarhum, hingga dinding munajat doa bersama—semuanya siap menemani langkah ziarah Anda.',
-      ctaLabel: 'Mulai Jelajahi 96 Makam',
+      narrative: `Dari titik koordinat ${DYNAMIC_SITE_COUNT} makam di ${DYNAMIC_PROVINCE_COUNT} provinsi, jadwal haul tahunan, teks Yasin & Tahlil lengkap dengan khususan nama almarhum, hingga dinding munajat doa bersama—semuanya siap menemani langkah ziarah Anda.`,
+      ctaLabel: `Mulai Jelajahi ${DYNAMIC_SITE_COUNT} Makam`,
       ctaTarget: '#katalog-direktori',
     },
   ],
@@ -222,14 +232,12 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   barokahHookPrefix: 'Harapan & Wasilah Hajat Jamaah',
   barokahPaywallTitle: 'Amalan & Doa Khusus Hajat Terkunci',
   barokahPaywallDescription:
-    'Buka penuh 3 Bagian Panduan Amalan (Tata Cara & Waktu Mustajab, Lafaz Arab Naskh, Transliterasi Latin, Terjemahan Hajat, serta Wirid Penutup) dengan infaq jariyah.',
+    'Buka penuh 3 Bagian Panduan Amalan (Tata Cara & Waktu Mustajab, Lafaz Arab Naskh, Transliterasi Latin, Terjemahan Hajat, serta Wirid Penutup) dengan Infaq Operasional & Pemeliharaan Digital.',
   barokahPaywallButtonText: 'Buka Barokah & Doa Khusus',
   paywallBadge: 'Arsip Khazanah & Wasiat Terkunci',
   paywallTitle: 'Teruskan Membaca Wasiat & Kesaksian Batin Beliau',
-  paywallDescription:
-    'Bagian lanjutan naskah ini disimpan dalam Khazanah Khusus. Dengan niat infaq jariyah satu kali, Anda ikut menjaga kelangsungan arsip sejarah ulama Nusantara sekaligus membuka seluruh 96+ kisah rahasia di perangkat ini.',
-  paywallSubtitle:
-    'Bagian lanjutan naskah ini disimpan dalam Khazanah Khusus. Dengan niat infaq jariyah satu kali, Anda ikut menjaga kelangsungan arsip sejarah ulama Nusantara sekaligus membuka seluruh 96+ kisah rahasia di perangkat ini.',
+  paywallDescription: `Bagian lanjutan naskah ini disimpan dalam Khazanah Khusus. Dengan niat Infaq Operasional & Pemeliharaan Digital satu kali, Anda ikut menjaga kelangsungan arsip sejarah ulama Nusantara sekaligus membuka seluruh ${DYNAMIC_SITE_COUNT}+ kisah rahasia di perangkat ini.`,
+  paywallSubtitle: `Bagian lanjutan naskah ini disimpan dalam Khazanah Khusus. Dengan niat Infaq Operasional & Pemeliharaan Digital satu kali, Anda ikut menjaga kelangsungan arsip sejarah ulama Nusantara sekaligus membuka seluruh ${DYNAMIC_SITE_COUNT}+ kisah rahasia di perangkat ini.`,
   paywallButtonText: 'Buka Seluruh Kisah & Wasiat',
   paywallPrimaryButton: 'Buka Seluruh Kisah & Wasiat',
   whatsappSharePrefix: 'Merinding membaca cuplikan kisah & karomah',
@@ -240,24 +248,23 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
     'Lembaran catatan sejarah, kesaksian karomah, dan wasiat keteladanan para Auliya yang dikurasi dari babad serta penuturan lisan.',
 
   // 3. Infaq, Paket Nominal & Munajat
-  infaqTitle: 'Jariyah Penjaga Jejak & Riwayat Para Kekasih Allah',
-  infaqHeadline: 'Jariyah Penjaga Jejak & Riwayat Para Kekasih Allah',
+  infaqTitle: 'Infaq Operasional & Pemeliharaan Digital Arsip Sejarah Para Kekasih Allah',
+  infaqHeadline: 'Infaq Operasional & Pemeliharaan Digital Arsip Sejarah Para Kekasih Allah',
   infaqSubtitle:
-    'Setiap rupiah infaq Anda menjadi amal jariyah untuk perawatan server arsip digital, riset naskah sejarah pesantren, dan penyebaran tuntunan adab ziarah ke seluruh penjuru Nusantara.',
+    'Setiap rupiah Infaq Operasional & Pemeliharaan Digital Anda digunakan untuk perawatan server arsip digital, riset naskah sejarah pesantren, dan penyebaran tuntunan adab ziarah ke seluruh penjuru Nusantara.',
   infaqSubheadline:
-    'Setiap rupiah infaq Anda menjadi amal jariyah untuk perawatan server arsip digital, riset naskah sejarah pesantren, dan penyebaran tuntunan adab ziarah ke seluruh penjuru Nusantara.',
+    'Setiap rupiah Infaq Operasional & Pemeliharaan Digital Anda digunakan untuk perawatan server arsip digital, riset naskah sejarah pesantren, dan penyebaran tuntunan adab ziarah ke seluruh penjuru Nusantara.',
   infaqTransparencyNote:
-    '100% dikelola secara amanah untuk pelestarian literasi sejarah Islam Nusantara, pemeliharaan sistem direktori bebas iklan, dan dokumentasi lapangan.',
+    '100% dikelola secara amanah sebagai Infaq Operasional & Pemeliharaan Digital untuk pelestarian literasi sejarah Islam Nusantara, pemeliharaan sistem direktori bebas iklan, dan dokumentasi lapangan.',
   munajatTitle: 'Dinding Munajat & Doa Bersama Peziarah',
   munajatHeaderTitle: 'Dinding Munajat & Doa Bersama Peziarah',
   munajatSubtitle:
-    'Titipkan doa terbaik Anda bersama infaq jariyah, dan mari saling mengaminkan hajat sesama peziarah.',
+    'Titipkan doa terbaik Anda bersama Infaq Operasional & Pemeliharaan Digital, dan mari saling mengaminkan hajat sesama peziarah.',
   munajatHeaderSubtitle:
-    'Titipkan doa terbaik Anda bersama infaq jariyah, dan mari saling mengaminkan hajat sesama peziarah.',
+    'Titipkan doa terbaik Anda bersama Infaq Operasional & Pemeliharaan Digital, dan mari saling mengaminkan hajat sesama peziarah.',
   doaHajatPlaceholder:
     'Contoh: Semoga almarhum ayahanda diampuni segala khilafnya dan keluarga kami diberi ketenangan batin serta kelapangan rezeki yang berkah...',
-  unlockSuccessMessage:
-    'Alhamdulillah, terima kasih atas infaq jariyah Anda. Seluruh 96+ kisah rahasia, catatan karomah, dan manuskrip kini telah terbuka penuh di perangkat Anda.',
+  unlockSuccessMessage: `Alhamdulillah, terima kasih atas Infaq Operasional & Pemeliharaan Digital Anda. Seluruh ${DYNAMIC_SITE_COUNT}+ kisah rahasia, catatan karomah, dan manuskrip kini telah terbuka penuh di perangkat Anda.`,
   quickNominalPackages: [
     {
       amount: 10000,
@@ -269,19 +276,31 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
       amount: 25000,
       label: 'Rp 25rb',
       tag: 'Paling Banyak Dipilih',
-      desc: 'Wasilah penjaga sanad & perawatan arsip harian',
+      desc: 'Infaq Operasional & Pemeliharaan Digital arsip harian',
     },
     {
       amount: 50000,
       label: 'Rp 50rb',
-      tag: 'Jariyah Utama',
+      tag: 'Infaq Utama',
       desc: 'Dukungan riset naskah kuno & dokumentasi makam',
     },
     {
       amount: 100000,
       label: 'Rp 100rb',
-      tag: 'Wakaf Literasi',
+      tag: 'Pemeliharaan Digital',
       desc: 'Kontribusi utama pelestarian ensiklopedia Nusantara',
+    },
+    {
+      amount: 250000,
+      label: 'Rp 250rb',
+      tag: 'Pelestari Jejak Nusantara',
+      desc: 'Dukungan digitalisasi arsip naskah babad, sanad & dokumentasi makam',
+    },
+    {
+      amount: 500000,
+      label: 'Rp 500rb',
+      tag: 'Penjaga Arsip Utama',
+      desc: 'Infaq Operasional & Pemeliharaan Digital infrastruktur direktori bebas iklan',
     },
   ],
 
@@ -495,9 +514,19 @@ export function mergeWithDefaultSiteCopy(raw?: Partial<SiteCopyConfig> | null): 
     sanitizeDonationAmount(raw.rubrikLockAmount, 1000, 10000000) ||
     DEFAULT_SITE_COPY.rubrikLockAmount;
 
+  const rawAdminWa =
+    typeof raw.adminWhatsappNumber === 'string'
+      ? raw.adminWhatsappNumber.replace(/[^0-9]/g, '')
+      : '';
+  const adminWhatsappNumber =
+    rawAdminWa.length >= 9 && rawAdminWa.length <= 16
+      ? rawAdminWa
+      : DEFAULT_SITE_COPY.adminWhatsappNumber;
+
   return {
     brandName: pickStr(raw.brandName, DEFAULT_SITE_COPY.brandName, 100),
     brandSubtitle: pickStr(raw.brandSubtitle, DEFAULT_SITE_COPY.brandSubtitle, 160),
+    adminWhatsappNumber,
     navHomeLabel: pickStr(raw.navHomeLabel, DEFAULT_SITE_COPY.navHomeLabel, 60),
     navRubrikLabel: pickStr(raw.navRubrikLabel, DEFAULT_SITE_COPY.navRubrikLabel, 60),
     navMapLabel: pickStr(raw.navMapLabel, DEFAULT_SITE_COPY.navMapLabel, 60),

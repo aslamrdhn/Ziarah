@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ziarahSites } from '../../data/sites';
-import { getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../siteLogistics';
+import {
+  getSiteBarokahHajat,
+  getEffectiveSiteDoaKhusus,
+  getSiteCompleteBarokahGuide,
+} from '../siteLogistics';
 import {
   saveVerifiedDonationRecord,
   BAROKAH_DONATION_ID_KEY,
@@ -73,6 +77,31 @@ describe('Barokah & Doa Khusus (Rp 5.000) & Pemisahan Kunci Donasi', () => {
     expect(getSiteBarokahHajat(sample)).toBe(
       'Biasanya peziarah bertawassul memohon kelancaran jodoh dan ketenangan keluarga.'
     );
+  });
+
+  it('menyediakan data eksplisit unik pada 24+ makam utama dan label status kurasi yang jujur', () => {
+    const explicitSites = ziarahSites.filter(
+      (s) => getSiteCompleteBarokahGuide(s).isCuratedSpecific
+    );
+    expect(explicitSites.length).toBeGreaterThanOrEqual(24);
+
+    const sunanAmpel = ziarahSites.find((s) => s.id === 'sunan-ampel' || s.id === 'wali-2')!;
+    const ampelGuide = getSiteCompleteBarokahGuide(sunanAmpel);
+    expect(ampelGuide.isCuratedSpecific).toBe(true);
+    expect(ampelGuide.curationStatusLabel).toBe(
+      'Khazanah Doa & Wasilah Terkurasi Khusus Makam Ini'
+    );
+    expect(ampelGuide.doaItems.length).toBeGreaterThanOrEqual(2);
+    expect(ampelGuide.doaItems[1].latin).toContain("ta'shimanaa wa dzurriyyaatinaa");
+
+    const fallbackSite = {
+      ...sunanAmpel,
+      barokahHajat: undefined,
+      doaKhusus: undefined,
+    };
+    const fallbackGuide = getSiteCompleteBarokahGuide(fallbackSite);
+    expect(fallbackGuide.isCuratedSpecific).toBe(false);
+    expect(fallbackGuide.curationStatusLabel).toContain('Menunggu Kurasi Spesifik Makam');
   });
 
   it('memisahkan kunci localStorage antara Barokah & Doa Khusus (Rp 5.000) dan Rubrik & Khazanah (Rp 10.000)', () => {

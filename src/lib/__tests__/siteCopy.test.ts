@@ -35,6 +35,18 @@ describe('siteCopy & cliffhanger utilities', () => {
     expect(merged.quickNominalPackages).toHaveLength(1);
     expect(merged.quickNominalPackages[0].amount).toBe(35000);
     expect(merged.tabLabelAll).toBe(DEFAULT_SITE_COPY.tabLabelAll);
+    expect(merged.adminWhatsappNumber).toBe(DEFAULT_SITE_COPY.adminWhatsappNumber);
+
+    const customWa = mergeWithDefaultSiteCopy({
+      adminWhatsappNumber: '+62 812-3456-7890',
+    });
+    expect(customWa.adminWhatsappNumber).toBe('6281234567890');
+    expect(DEFAULT_SITE_COPY.adminWhatsappNumber.length).toBeGreaterThanOrEqual(10);
+    expect(DEFAULT_SITE_COPY.infaqTitle).toContain('Infaq Operasional & Pemeliharaan Digital');
+    for (const pkg of DEFAULT_SITE_COPY.quickNominalPackages) {
+      expect(pkg.tag.toLowerCase()).not.toContain('wakaf');
+      expect(pkg.desc.toLowerCase()).not.toContain('wakaf');
+    }
   });
 
   it('splits story text cleanly at explicit <!--more--> marker in getEmotionalCliffhanger', () => {

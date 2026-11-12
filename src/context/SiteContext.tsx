@@ -66,6 +66,7 @@ export function mergeLocalAndCloudSites(
     const baseLocal = localSites.find(
       (s) =>
         s.id === cloudSite.id ||
+        (s.legacyId && s.legacyId === cloudSite.id) ||
         getSiteSlug(s) === cloudSite.id ||
         (Boolean(cloudSlug) && getSiteSlug(s) === cloudSlug)
     );
@@ -75,6 +76,7 @@ export function mergeLocalAndCloudSites(
     if (cloudSite.isDeleted === true) {
       mergedMap.delete(canonicalId);
       mergedMap.delete(cloudSite.id);
+      if (baseLocal?.legacyId) mergedMap.delete(baseLocal.legacyId);
       continue;
     }
 

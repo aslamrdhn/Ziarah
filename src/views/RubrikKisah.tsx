@@ -22,6 +22,7 @@ import {
   ArrowDown
 } from 'lucide-react';
 import { useSites } from '../context/SiteContext';
+import { SITES } from '../data/sites';
 import { Link } from 'react-router-dom';
 import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc, limit } from 'firebase/firestore';
@@ -39,7 +40,7 @@ import {
   useVerifiedDonationUnlock,
 } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
-import { useSiteCopy } from '../lib/siteCopy';
+import { useSiteCopy, ADMIN_WHATSAPP_NUMBER } from '../lib/siteCopy';
 
 export interface RubrikItem {
   id: string;
@@ -71,7 +72,7 @@ export const DEFAULT_RUBRIK_GATE_SETTINGS: RubrikGateSettings = {
   minDonationAmount: 10000,
   bannerTitle: 'Khazanah Kisah Rahasia, Manuskrip & Hikmah Karomah',
   bannerDescription:
-    'Sebagai contoh kurasi sejarah & sanad, 2 tulisan pilihan dibuka secara gratis untuk Anda baca penuh. Seluruh naskah lainnya dikunci dalam Khazanah Khusus dan dapat dibuka dengan niat infaq jariyah untuk Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara.',
+    'Sebagai contoh kurasi sejarah & sanad, 2 tulisan pilihan dibuka secara gratis untuk Anda baca penuh. Seluruh naskah lainnya dikunci dalam Khazanah Khusus dan dapat dibuka dengan Infaq Operasional & Pemeliharaan Digital untuk Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara.',
   pinnedFreeArticleIds: [
     'rubrik-ulama-3-untold',
     'rubrik-sekumpul-adab',
@@ -91,13 +92,13 @@ const RUBRIK_DECOY_PACKAGES = [
   },
   {
     amount: 25000,
-    title: 'Infaq Penjaga Sanad',
+    title: 'Infaq Operasional & Pemeliharaan Digital',
     badge: 'Paling Banyak Dipilih',
-    description: 'Membuka SELURUH kisah rahasia, karomah & manuskrip di semua 96+ makam pada perangkat ini',
+    description: `Membuka SELURUH kisah rahasia, karomah & manuskrip di semua ${SITES.length}+ makam pada perangkat ini`,
   },
   {
     amount: 50000,
-    title: 'Infaq Jariyah Utama',
+    title: 'Infaq Operasional Utama',
     badge: 'Keberkahan Utama',
     description: 'Membuka seluruh khazanah selamanya di perangkat ini + menitipkan hajat di Dinding Munajat Peziarah',
   },
@@ -171,7 +172,8 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>('QRIS');
   const [senderAccount, setSenderAccount] = useState<string>('');
   const [receipt, setReceipt] = useState<CompressedReceiptResult | null>(null);
-  const [agreedToAkad, setAgreedToAkad] = useState<boolean>(false);
+  const [agreedToAkad, setAgreedToAkad] = useState<boolean>(true);
+  const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [unlockSuccessState, setUnlockSuccessState] = useState<boolean>(false);
   const [copiedBank, setCopiedBank] = useState<boolean>(false);
@@ -421,7 +423,8 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     setSubmitError(null);
     setUnlockSuccessState(false);
     setReceipt(null);
-    setAgreedToAkad(false);
+    setAgreedToAkad(true);
+    setIsAnonymous(false);
     if (auth.currentUser?.displayName && !senderAccount) {
       setSenderAccount(auth.currentUser.displayName);
     }
@@ -434,7 +437,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     setTimeout(() => setCopiedBank(false), 2000);
   };
 
-  const isProofComplete = Boolean(receipt && senderAccount.trim().length >= 3);
+  const isProofComplete = Boolean(receipt && senderAccount.trim().length >= 3 && agreedToAkad);
 
   const activeEffectiveNominal = useMemo(() => {
     if (customNominalInput.trim()) {
@@ -458,6 +461,10 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       setSubmitError('Wajib mengisi nama pengirim sesuai bukti transfer (minimal 3 karakter).');
       return;
     }
+    if (!agreedToAkad) {
+      setSubmitError('Mohon centang persetujuan akad Infaq Operasional & kebijakan privasi (UU PDP).');
+      return;
+    }
 
     const cooldown = checkAndRecordSubmissionCooldown('donation', 15);
     if (!cooldown.allowed) {
@@ -467,28 +474,32 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
     setIsSubmittingDonation(true);
     const cleanSender = sanitizePlainText(senderAccount, 80);
-    const finalDonor = cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
+    const finalDonor = isAnonymous
+      ? 'Hamba Allah'
+      : cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
     const cleanAmount = sanitizeDonationAmount(activeEffectiveNominal, 1000, 1000000000) || 25000;
     const cleanPrayerIntent = sanitizePlainText(prayerIntent, 200);
     const finalDoaHajat =
       cleanPrayerIntent ||
       sanitizePlainText(
-        `Infaq Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara (${unlockModalArticle?.title || 'Khazanah Nusantara'})`,
+        `Infaq Operasional & Pemeliharaan Digital (${unlockModalArticle?.title || 'Khazanah Nusantara'})`,
         200
       );
 
     try {
       const donationId = await submitDonationWithPrivateProof({
         programId: 'riset-web',
-        programTitle: 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
+        programTitle: 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
         siteId: sanitizePlainText(unlockModalArticle?.siteId, 80) || 'web-riset',
-        siteName: sanitizePlainText(unlockModalArticle?.siteName, 160) || 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
+        siteName: sanitizePlainText(unlockModalArticle?.siteName, 160) || 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
         amount: cleanAmount,
         donorName: finalDonor,
         paymentMethod,
         senderAccount: cleanSender || finalDonor,
         receipt,
         doaHajat: finalDoaHajat,
+        isAnonymous,
+        showPublicly: !isAnonymous,
       });
 
       saveVerifiedDonationRecord(donationId, unlockModalArticle?.siteId);
@@ -504,16 +515,19 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   };
 
   const categories = ['Semua', 'Kisah Rahasia', 'Manuskrip', 'Hikmah & Karomah', 'Tersimpan'];
-  const finalDonorForWa = (senderAccount.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
-  const waUnlockMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq Jariyah & Pembukaan Akses Khazanah:\n\n` +
+  const finalDonorForWa = isAnonymous
+    ? 'Hamba Allah'
+    : (senderAccount.trim() || auth.currentUser?.displayName || 'Hamba Allah').slice(0, 100);
+  const waUnlockMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq Operasional & Pembukaan Akses Khazanah:\n\n` +
     `• *Kode Referensi Bukti:* ${receipt?.referenceCode || verifiedRefCode || '-'}\n` +
     `• *Nama Pengirim:* ${finalDonorForWa}\n` +
     `• *Metode Pembayaran:* ${paymentMethod}\n` +
     `• *Nominal Infaq:* Rp ${activeEffectiveNominal.toLocaleString('id-ID')}\n` +
-    `• *Program:* Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara` +
+    `• *Program:* Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara` +
     (prayerIntent.trim() ? `\n• *Titip Doa / Hajat:* "${sanitizePlainText(prayerIntent, 200)}"` : '') +
     `\n\nScreenshot bukti transfer telah terunggah di sistem Admin Kurator. Terima kasih.`;
-  const waUnlockUrl = `https://wa.me/6285717378885?text=${encodeURIComponent(waUnlockMessage)}`;
+  const cleanAdminWa = (copy.adminWhatsappNumber || ADMIN_WHATSAPP_NUMBER).replace(/[^0-9]/g, '');
+  const waUnlockUrl = `https://wa.me/${cleanAdminWa}?text=${encodeURIComponent(waUnlockMessage)}`;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24">
@@ -926,7 +940,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                         className="w-full py-3 bg-[#FAF8F5] hover:bg-stone-100 text-stone-800 border border-stone-200/90 font-medium rounded-2xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
                       >
                         <MessageSquareHeart className="w-4 h-4 text-stone-700" />
-                        <span>Teruskan Bukti ke WhatsApp Admin (+62 857-1737-8885)</span>
+                        <span>Teruskan Bukti ke WhatsApp Admin (+{cleanAdminWa})</span>
                       </a>
                     </div>
                   </div>
@@ -1074,6 +1088,8 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       onReceiptChange={setReceipt}
                       agreedToAkad={agreedToAkad}
                       onAgreedToAkadChange={setAgreedToAkad}
+                      isAnonymous={isAnonymous}
+                      onIsAnonymousChange={setIsAnonymous}
                       accentColor="emerald"
                       requiredForUnlock
                     />

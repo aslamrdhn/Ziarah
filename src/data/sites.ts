@@ -1,3 +1,10 @@
+import { JAWA_BARAT_BANTEN_DKI_SITES } from './regions/jawaBaratBantenDki';
+import { JAWA_TENGAH_DIY_SITES } from './regions/jawaTengahDiy';
+import { JAWA_TIMUR_MADURA_SITES } from './regions/jawaTimurMadura';
+import { SUMATERA_SITES } from './regions/sumatera';
+import { KALIMANTAN_SULAWESI_SITES } from './regions/kalimantanSulawesi';
+import { BALI_NUSA_MALUKU_PAPUA_SITES } from './regions/baliNusaMalukuPapua';
+
 export type SourceClassification =
   | 'catatan_sejarah'
   | 'inskripsi_primer'
@@ -25,8 +32,18 @@ export function getSourceClassificationLabel(
   }
 }
 
+export interface DoaKhususEntry {
+  title: string;
+  text: string;
+  latin?: string;
+  translation?: string;
+  arab?: string;
+  terjemahan?: string;
+}
+
 export interface ZiarahSite {
   id: string;
+  legacyId?: string;
   name: string;
   title: string; // e.g. "Sunan Ampel"
   description: string;
@@ -34,12 +51,18 @@ export interface ZiarahSite {
     lat: number;
     lng: number;
     address: string;
+    district?: string;
     city: string;
     province: string;
   };
+  province?: string;
+  city?: string;
+  district?: string;
+  address?: string;
   category: 'Walisongo' | 'Habaib' | 'Ulama Nusantara' | 'Auliya Nusantara';
   imageUrl: string;
   imageSource?: string;
+  googleMapsUrl?: string;
   history: string;
   historySourceType?: SourceClassification;
   facilities: string[];
@@ -52,19 +75,119 @@ export interface ZiarahSite {
   karomahSourceType?: SourceClassification;
   untoldStory?: string;
   haulSchedule?: string;
-  localAdab?: string;
-  barokahHajat?: string;
-  doaKhusus?: {
-    title: string;
-    text: string;
-    latin?: string;
-    translation?: string;
-  }[];
+  localAdab?: string | string[];
+  barokahHajat?: string | string[];
+  doaKhusus?: DoaKhususEntry[];
+  verifiedBy?: string;
+  lastVerified?: string;
   isDeleted?: boolean;
   updatedAt?: string;
 }
 
-export const ziarahSites: ZiarahSite[] = [
+export type Site = ZiarahSite;
+export type PeninggalanSite = ZiarahSite;
+
+export const REGIONAL_ID_TO_LEGACY_ID: Record<string, string> = {
+  // Jawa Barat, Banten & DKI Jakarta (Tahap 2)
+  'sunan-gunung-jati': 'wali-9',
+  'syekh-datuk-kahfi': 'auliya-19',
+  'syekh-quro-karawang': 'ulama-10',
+  'syekh-abdul-muhyi-pamijahan': 'ulama-8',
+  'sultan-maulana-hasanuddin': 'auliya-2',
+  'sultan-maulana-yusuf': 'auliya-18',
+  'syekh-asnawi-caringin': 'ulama-7',
+  'syekh-nawawi-al-bantani': 'ulama-6',
+  'habib-husein-luar-batang': 'habib-2',
+  'mbah-priok': 'habib-3',
+  'pangeran-jayakarta': 'auliya-1',
+  'habib-ahmad-bin-alwi-al-haddad': 'habib-4',
+  'habib-ali-kwitang': 'habib-1',
+  'habib-utsman-bin-yahya': 'habib-5',
+  'guru-marzuki-cipinang': 'ulama-5',
+  'habib-abdullah-empang-bogor': 'habib-6',
+  'mama-falak-pagentongan-bogor': 'ulama-9',
+  'eyang-dalem-abdul-manaf-mahmud': 'auliya-3',
+  'kh-noer-ali-bekasi': 'ulama-30',
+  // Jawa Tengah & DI Yogyakarta (Tahap 3)
+  'sunan-kalijaga': 'wali-7',
+  'sunan-kudus': 'wali-5',
+  'sunan-muria': 'wali-8',
+  'raden-patah-demak': 'auliya-6',
+  'syekh-jangkung-pati': 'auliya-7',
+  'syekh-mutamakkin-kajen': 'ulama-11',
+  'habib-ahmad-sapuro': 'habib-7',
+  'sunan-pandanaran-bayat': 'auliya-5',
+  'kh-sholeh-darat-semarang': 'ulama-13',
+  'syekh-subakir-tidar': 'auliya-4',
+  'kh-dalhar-watucongol': 'ulama-12',
+  'syekh-maulana-maghribi-parangtritis': 'auliya-9',
+  'kh-munawwir-krapyak': 'ulama-33',
+  'kyai-nur-iman-mlangi': 'auliya-8',
+  'kh-arwani-amin-kudus': 'ulama-14',
+  'mbah-maimoen-zubair-sarang': 'ulama-31',
+  'masyayikh-lasem-rembang': 'ulama-32',
+  'habib-hasyim-bin-yahya-pekalongan': 'habib-14',
+  'kh-ahmad-rifai-kalisalak': 'ulama-40',
+  // Jawa Timur & Pulau Madura (Tahap 4)
+  'syekh-maulana-malik-ibrahim': 'wali-1',
+  'sunan-ampel': 'wali-2',
+  'sunan-bonang': 'wali-3',
+  'sunan-drajat': 'wali-4',
+  'sunan-giri': 'wali-6',
+  'syekh-maulana-ishaq': 'auliya-20',
+  'syekh-ibrahim-asmorokondi': 'auliya-11',
+  'habib-abu-bakar-gresik': 'habib-8',
+  'kh-abdul-hamid-pasuruan': 'ulama-19',
+  'kh-asad-syamsul-arifin': 'ulama-20',
+  'kh-hasyim-asyari-tebuireng': 'ulama-1',
+  'kh-wahab-chasbullah': 'ulama-16',
+  'kh-bisri-syansuri': 'ulama-17',
+  'kh-romly-tamim-rejoso': 'ulama-18',
+  'syekh-jumadil-kubro-troloyo': 'auliya-10',
+  'kh-abdul-karim-lirboyo': 'ulama-21',
+  'gus-miek-ploso-kediri': 'ulama-22',
+  'syekh-ihsan-jampes-kediri': 'ulama-34',
+  'kh-hasan-besari-tegalsari': 'auliya-30',
+  'masyayikh-tremas-pacitan': 'ulama-41',
+  'habib-sholeh-tanggul-jember': 'habib-9',
+  'guru-bangil-pasuruan': 'ulama-35',
+  'sunan-bejagung-tuban': 'auliya-21',
+  'syaichona-kholil-bangkalan': 'ulama-15',
+  'sayyid-yusuf-talango': 'auliya-12',
+  // Sumatera (Tahap 5)
+  'syekh-abdurrauf-as-singkili': 'ulama-3',
+  'syekh-hamzah-fansuri': 'ulama-24',
+  'sultan-malikussaleh': 'auliya-25',
+  'teungku-di-anjong-banda-aceh': 'habib-15',
+  'syekh-abdul-wahab-rokan-besilam': 'ulama-26',
+  'makam-papan-tinggi-mahligai-barus': 'ulama-36',
+  'syekh-burhanuddin-ulakan': 'ulama-25',
+  'kiai-marogan-palembang': 'ulama-27',
+  'kompleks-kawah-tengkurep-palembang': 'auliya-26',
+  // Kalimantan & Sulawesi (Tahap 6)
+  'syekh-muhammad-arsyad-al-banjari': 'ulama-28',
+  'guru-sekumpul-martapura': 'ulama-2',
+  'sultan-suriansyah-banjarmasin': 'auliya-16',
+  'habib-basirih-banjarmasin': 'habib-12',
+  'habib-husein-alkadrie-mempawah': 'habib-16',
+  'syekh-yusuf-al-makassari': 'ulama-4',
+  'datuk-ri-bandang': 'auliya-17',
+  'datuk-patimang-luwu': 'auliya-27',
+  'datuk-ri-tiro': 'auliya-28',
+  'habib-idrus-bin-salim-al-jufri-palu': 'habib-13',
+  'kyai-mojo-tondano': 'ulama-29',
+  // Bali, Nusa Tenggara, Maluku & Papua (Tahap 7)
+  'habib-ali-bafaqih-negara': 'habib-11',
+  'habib-ali-kusamba': 'habib-10',
+  'karangrupit-buleleng': 'auliya-22',
+  'pangeran-mas-sepuh-seseh': 'auliya-13',
+  'siti-khotijah-denpasar': 'auliya-23',
+  'tgkh-zainuddin-abdul-madjid': 'ulama-23',
+  'makam-loang-baloq': 'auliya-15',
+  'sultan-baabullah-ternate': 'auliya-29',
+};
+
+export const BASE_SITES: ZiarahSite[] = [
   // =========================================================================
   // I. DEWAN WALISONGO (9 WALI UTAMA TANAH JAWA)
   // =========================================================================
@@ -105,11 +228,21 @@ export const ziarahSites: ZiarahSite[] = [
       "Di tengah malam buta saat wabah demam mematikan melanda pesisir Majapahit dan para tabib istana telah angkat tangan, seorang ibu berlari menembus gerimis sambil menggendong anaknya yang sekarat ke hadapan Syekh Maulana Malik Ibrahim.\n\nDengan napas tersengal dan air mata yang membasahi tanah, sang ibu merintih memohon pertolongan; sang Wali pun mengusap kening anak yang panas membara itu lalu membisikkan amalan rahasia kesembuhan<!--more-->\n\nBeliau melantunkan Surah Al-Fatihah tujuh kali dalam satu tarikan napas penuh keyakinan, lalu membasuhkan air embun dedaunan pesisir yang telah didoakan ke dada sang anak. Sebelum fajar menyingsing, demam anak itu luruh seketika dan ratusan keluarga pesisir memeluk Islam karena menyaksikan kasih sayang sang Wali yang merawat siapa saja tanpa memandang kasta.",
       "Ketika kemarau panjang menghanguskan ladang-ladang di Gresik, tetua adat setempat bersiap mengorbankan seorang gadis desa di atas panggung batu demi meredakan murka penjaga laut.\n\nDi saat pedang upacara hendak dihunus dan tangis keluarga sang gadis pecah di tengah kerumunan, Syekh Maulana Malik Ibrahim maju menghadang seorang diri dengan air mata haru lalu mengangkat kedua tangannya tinggi-tinggi ke langit yang gersang<!--more-->\n\nBeliau bermunajat dengan suara bergetar memohon kepada Allah Yang Maha Pengasih agar menurunkan hujan rahmat dan mengganti tradisi ketakutan itu dengan cahaya iman. Belum sempat kedua tangan beliau turun, mendung hitam bergulung-gulung dari arah laut dan hujan deras mengguyur bumi Gresik, menghentikan ritual pengorbanan manusia untuk selamanya."
     ],
+    haulSchedule: "Puncak Haul Akbar: 12 Rabiul Awal (Bertepatan dengan tanggal wafat beliau pada inskripsi batu nisan Gapurasukolilo 822 H / 8 April 1419 M).",
+    localAdab: "Wajib berpakaian muslim sopan dan menutup aurat. Memasuki cungkup utama melalui pintu kayu rendah dengan menundukkan kepala sebagai simbol tawadhu, duduk tertib di pendopo tahlil tanpa menghalangi jalur keluar-masuk rombongan, serta menjaga ketenangan di sekitar pusara utama.",
+    barokahHajat: "Meneladani perjuangan Syekh Maulana Malik Ibrahim (Kakek Bantal) yang mengobati warga tanpa memandang kasta dan menyuburkan tanah tandus Leran melalui irigasi serta perniagaan jujur, peziarah yang datang ke pusara beliau umumnya bertawassul memohon kepada Allah SWT agar dikaruniai keberkahan usaha pertanian dan perniagaan, kesembuhan dari penyakit lahir-batin, serta hati yang dermawan menjadi bantal peneduh bagi fakir miskin.",
     doaKhusus: [
       {
-        title: "Tawasul Syekh Maulana Malik Ibrahim",
-        text: "إِلَى حَضْرَةِ الشَّيْخِ مَوْلَانَا مَالِكِ إِبْرَاهِيمَ المَغْرِبِيِّ قَدَّسَ اللهُ سِرَّهُ العَزِيزَ، الفَاتِحَة...",
-        translation: "Kepada kehadirat Syekh Maulana Malik Ibrahim Al-Maghribi, semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah..."
+        title: "Hadoroh & Tawassul Khusus Syekh Maulana Malik Ibrahim (Sunan Gresik)",
+        text: "إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ سَيِّدِنَا الشَّيْخِ مَوْلَانَا مَالِكِ إِبْرَاهِيمَ السَّمَرْقَنْدِيِّ الْمَغْرِبِيِّ قَدَّسَ اللهُ سِرَّهُ الْعَزِيزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhi Sayyidinaa asy-Syaikh Maulaanaa Maalik Ibraahiim as-Samarqandiyyil-Maghribiyyi qaddasallaahu sirrahul-'aziiz, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh penghulu kami Syekh Maulana Malik Ibrahim As-Samarqandi Al-Maghribi (Sunan Gresik), semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Munajat Keberkahan Rezeki Halal & Kesembuhan Wasilah Kakek Bantal",
+        text: "اللّٰهُمَّ يَا فَتَّاحُ يَا رَزَّاقُ يَا شَافِي، بِبَرَكَةِ وَلِيِّكَ الشَّيْخِ مَوْلَانَا مَالِكِ إِبْرَاهِيمَ الَّذِي أَحْيَيْتَ بِهِ الْأَرْضَ وَالْقُلُوبَ، بَارِكْ لَنَا فِي أَرْزَاقِنَا وَمَزَارِعِنَا وَتِجَارَتِنَا، وَاشْفِ مَرْضَانَا شِفَاءً لَا يُغَادِرُ سَقَمًا",
+        latin: "Allaahumma yaa Fattaahu yaa Razzaaqu yaa Syaafii, bi barakati waliyyika asy-Syaikh Maulaanaa Maalik Ibraahiim alladzii ahyaita bihil-ardha wal-quluub, baarik lanaa fii arzaaqinaa wa mazaari'inaa wa tijaaratinaa, wasyfi mardhaanaa syifaa-an laa yughaadiru saqamaa.",
+        translation: "Ya Allah Wahai Dzat Maha Pembuka, Maha Pemberi Rezeki, dan Maha Penyembuh, dengan keberkahan kekasih-Mu Syekh Maulana Malik Ibrahim yang Engkau hidupkan tanah tandus dan hati manusia melaluinya, berkahilah rezeki, pertanian, dan perniagaan kami, serta sembuhkanlah yang sakit di antara kami dengan kesembuhan sempurna."
       }
     ]
   },
@@ -150,16 +283,21 @@ export const ziarahSites: ZiarahSite[] = [
       "Ketika pembangunan Masjid Agung Ampel baru saja rampung, sebagian tokoh meragukan keakuratan arah kiblatnya hingga suasana musyawarah malam itu menjadi tegang.\n\nAtas isyarat batin Kanjeng Sunan Ampel, murid setianya Mbah Sonhaji (Mbah Bolong) maju ke dinding pengimaman lalu melubangi tembok batu itu dengan ujung jarinya dan meminta para hadirin menatap ke dalam lubang tersebut<!--more-->\n\nSeketika tersingkaplah hijab jarak ribuan kilometer hingga tampak bangunan suci Ka'bah di Makkah secara nyata tepat lurus di hadapan mihrab Masjid Ampel, membuat seluruh ulama dan santri jatuh bersujud syukur dengan derai air mata.",
       "Suatu malam ketika hujan badai membuat Sungai Kalimas meluap hebat, seorang warga miskin di seberang rawa Ampel Denta mengalami kritis dan membutuhkan pertolongan segera sementara tak satu pun tukang perahu berani menyeberang.\n\nKanjeng Sunan Ampel menenangkan murid-muridnya yang cemas di tepi dermaga, merapatkan jubahnya, lalu membisikkan rahasia tawakal para kekasih Allah<!--more-->\n\nBeliau berkata lembut bahwa barangsiapa menundukkan hawa nafsunya semata-mata karena Allah, maka seluruh unsur alam akan tunduk melayaninya. Dengan langkah tenang sambil melantunkan dzikir, beliau berjalan di atas permukaan air sungai yang bergolak deras tanpa membasahi telapak kakinya sedikit pun hingga tiba di rumah warga tersebut."
     ],
+    haulSchedule: "Puncak Haul Agung Sunan Ampel: Pekan terakhir bulan Sya'ban (Jumat–Ahad menjelang bulan suci Ramadhan) di Kompleks Masjid Agung Sunan Ampel Surabaya.",
+    localAdab: "Menjaga wudhu sejak dari area pancuran Masjid Agung Ampel, melepas alas kaki sebelum memasuki pelataran batu nisan berpagar, memisahkan barisan peziarah laki-laki dan perempuan, serta dilarang keras meminta kepada makam atau menaruh sesajen.",
+    barokahHajat: "Sebagai sesepuh Dewan Walisongo dan pencetus falsafah etika 'Moh Limo' di Pesantren Ampel Denta, pusara Kanjeng Sunan Ampel menjadi tempat para peziarah, santri, dan orang tua bertawassul memohon kepada Allah SWT agar dikaruniai keteguhan iman menjauhi maksiat, keberkahan ilmu agama bagi anak cucu, kelurusan akhlak keluarga, serta husnul khatimah.",
     doaKhusus: [
       {
-        title: "Tawasul Kanjeng Sunan Ampel",
-        text: "إِلَى حَضْرَةِ سَيِّدِنَا الشَّيْخِ السَّيِّدِ عَلِي رَحْمَةُ اللهِ (سُونَانْ أَمْفِيلْ)، الفَاتِحَة...",
-        translation: "Kepada kehadirat Junjungan kami Syekh Sayyid Ali Rahmatullah (Sunan Ampel). Al-Fatihah..."
+        title: "Hadoroh & Tawassul Sesepuh Walisongo Kanjeng Sunan Ampel",
+        text: "إِلَى حَضْرَةِ سَيِّدِنَا وَمَوْلَانَا الشَّيْخِ السَّيِّدِ عَلِي رَحْمَةُ اللهِ أَمْفِيلْ دِينْتَا، وَأُصُولِهِ وَفُرُوعِهِ وَتَلَامِيذِهِ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati Sayyidinaa wa Maulaanaa asy-Syaikh as-Sayyid 'Alii Rahmatullaah Ampel Denta, wa ushuulihii wa furuu'ihii wa talaamiidzihii, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Junjungan kami Syekh Sayyid Ali Rahmatullah (Sunan Ampel) beserta leluhur, keturunan, dan murid-murid beliau di Ampel Denta. Al-Fatihah."
       },
       {
-        title: "Doa Keteguhan Iman & Husnul Khotimah",
-        text: "اللَّهُمَّ إِنِّي أَسْأَلُكَ بِحَقِّ وَلِيِّكَ السَّيِّدِ رَحْمَةُ اللهِ أَنْ تَرْزُقَنِي حُسْنَ الخَاتِمَةِ وَالِاسْتِقَامَةَ.",
-        translation: "Ya Allah, aku memohon kepada-Mu dengan wasilah kekasih-Mu Sayyid Rahmatullah (Sunan Ampel), karuniakanlah kepadaku husnul khotimah dan keistiqomahan."
+        title: "Doa Keteguhan Iman, Penjagaan Diri dari Maksiat & Husnul Khatimah",
+        text: "اللّٰهُمَّ إِنِّا نَسْأَلُكَ بِكَرَامَةِ وَلِيِّكَ السَّيِّدِ عَلِي رَحْمَةُ اللهِ أَنْ تَعْصِمَنَا وَذُرِّيَّاتِنَا مِنَ الْفَوَاحِشِ وَالْمَعَاصِي، وَأَنْ تَرْزُقَنَا عِلْمًا نَافِعًا وَاسْتِقَامَةً تَامَّةً وَحُسْنَ الْخَاتِمَةِ",
+        latin: "Allaahumma innaa nas-aluka bi karaamati waliyyika as-Sayyid 'Alii Rahmatullaah an ta'shimanaa wa dzurriyyaatinaa minal-fawaahisyi wal-ma'aashii, wa an tarzuqanaa 'ilman naafi'an wastiqaamatan taammatan wa husnal-khaatimah.",
+        translation: "Ya Allah, kami memohon kepada-Mu dengan kemuliaan kekasih-Mu Sayyid Ali Rahmatullah (Sunan Ampel), lindungilah kami dan anak keturunan kami dari perbuatan keji dan kemaksiatan, serta karuniakanlah kepada kami ilmu yang bermanfaat, keistiqomahan yang utuh, dan husnul khatimah."
       }
     ]
   },
@@ -199,11 +337,21 @@ export const ziarahSites: ZiarahSite[] = [
       "Ketika masyarakat pesisir Tuban diliputi ketegangan dan kesedihan akibat runtuhnya tatanan lama, pada malam Jumat Sunan Bonang duduk di serambi masjid dan mulai menabuh gamelan bonangnya dengan irama suluk yang belum pernah terdengar sebelumnya.\n\nAnehnya, setiap orang yang melintas dan mendengar alunan gending itu tiba-tiba terdiam lalu menangis haru tanpa tahu sebabnya<!--more-->\n\nTernyata frekuensi dzikir khafi yang ditiupkan Sunan Bonang di balik tiap ketukan bonang itu langsung menyentuh fitrah ruhani mereka yang paling dalam. Ratusan warga yang semula keras hati datang bersimpuh di pelataran masjid, merasakan kesejukan batin yang luar biasa, lalu mengikrarkan dua kalimat syahadat dengan penuh kerinduan.",
       "Di puncak musim kemarau saat para musafir dan nelayan Tuban kehausan hebat karena seluruh sumur daratan berubah asin oleh rembesan air laut, seorang kakek tua datang mengadu dengan bibir pecah-pecah kepada Sunan Bonang.\n\nSang Wali tersenyum teduh, mengajak kakek itu berjalan ke tepi pantai, lalu menancapkan ujung tongkatnya tepat di atas pasir basah yang biasa terendam ombak laut asin<!--more-->\n\nSambil melantunkan shalawat Tibbil Qulub dan memohon kepada Allah Sang Pemilik Samudra, beliau mencabut tongkatnya. Seketika memancarlah mata air tawar yang jernih dan manis tepat di bibir pantai asin—Sumur Srumbung—yang hingga hari ini tak pernah kering menjadi saksi kasih sayang beliau."
     ],
+    haulSchedule: "Puncak Haul Akbar Sunan Bonang: Malam Jumat Wage di bulan Muharram (Suro) di Kompleks Makam Kutorejo & Alun-Alun Tuban.",
+    localAdab: "Melepas alas kaki sebelum melewati Gapura Paduraksa kuno berhias piring porselen, menjaga ketenangan di dalam pendopo kayu jati, dan dianjurkan melantunkan syair Tombo Ati serta shalawat Tibbil Qulub dengan suara syahdu.",
+    barokahHajat: "Dikenal sebagai penggubah Suluk Wujil dan tembang 'Tombo Ati' (Obat Hati), peziarah yang datang ke pusara Kanjeng Sunan Bonang di Tuban umumnya bertawassul memohon kepada Allah SWT agar disembuhkan dari kegelisahan batin, kesedihan mendalam, kerasnya hati, serta dianugerahi keteduhan jiwa dan kecintaan kepada ibadah malam.",
     doaKhusus: [
       {
-        title: "Syair & Doa Tombo Ati (Warisan Sunan Bonang)",
-        text: "اللَّهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ طِبِّ القُلُوبِ وَدَوَائِهَا، وَعَافِيَةِ الأَبْدَانِ وَشِفَائِهَا، وَنُورِ الأَبْصَارِ وَضِيَائِهَا.",
-        translation: "Ya Allah limpahkanlah rahmat kepada junjungan kami Nabi Muhammad SAW, sang penyembuh dan obat hati, penyehat badan, serta cahaya mata hati."
+        title: "Hadoroh & Tawassul Kanjeng Sunan Bonang (Maulana Makhdum Ibrahim)",
+        text: "إِلَى حَضْرَةِ الشَّيْخِ مَوْلَانَا مَخْدُومْ إِبْرَاهِيمَ سُونَانْ بُونَانْغ قَدَّسَ اللهُ سِرَّهُ الْعَزِيزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati asy-Syaikh Maulaanaa Makhduum Ibraahiim Suunaan Boonaang qaddasallaahu sirrahul-'aziiz, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Syekh Maulana Makhdum Ibrahim (Sunan Bonang), semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Shalawat Thibbil Qulub & Munajat Penawar Hati (Warisan Tombo Ati Sunan Bonang)",
+        text: "اللّٰهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ طِبِّ الْقُلُوبِ وَدَوَائِهَا، وَعَافِيَةِ الْأَبْدَانِ وَشِفَائِهَا، وَنُورِ الْأَبْصَارِ وَضِيَائِهَا، اللّٰهُمَّ نَوِّرْ قُلُوبَنَا بِنُورِ ذِكْرِكَ وَطَاعَتِكَ وَاشْرَحْ صُدُورَنَا بِمَحَبَّتِكَ",
+        latin: "Allaahumma shalli 'alaa Sayyidinaa Muhammadin thibbil-quluubi wa dawaa-ihaa, wa 'aafiyatil-abdaani wa syifaa-ihaa, wa nuuril-abshaari wa dhiyaa-ihaa. Allaahumma nawwir quluubanaa bi nuuri dzikrika wa thaa'atika wasyrah shuduuranaa bi mahabbatika.",
+        translation: "Ya Allah limpahkanlah rahmat kepada junjungan kami Nabi Muhammad SAW, sang penyembuh dan obat hati, penyehat badan, serta cahaya mata hati. Ya Allah, terangilah hati kami dengan cahaya dzikir dan ketaatan kepada-Mu, serta lapangkanlah dada kami dengan kecintaan kepada-Mu."
       }
     ]
   },
@@ -242,11 +390,21 @@ export const ziarahSites: ZiarahSite[] = [
       "Diselamatkan oleh ikan cucut dan ikan talang saat perahunya pecah dihantam badai laut di perairan Lamongan hingga mendarat selamat di Desa Jelag.",
       "Ketika para santri dan warga yang membangun pesantren di puncak perbukitan kapur Drajat kelelahan serta kehabisan air minum di bawah terik matahari, mereka mengadu dengan napas tersengal kepada Sunan Drajat.\n\nSang Wali menatap wajah para pencari ilmu itu dengan penuh iba, lalu melangkah ke sebatang pohon lengkeng hutan yang tumbuh di tanah berbatu dan memegang batangnya erat-erat<!--more-->\n\nBeliau memejamkan mata bermunajat memohon mata air kehidupan bagi para penuntut ilmu dan fakir miskin. Begitu pohon itu dicabut atas izin Allah, memancarlah mata air jernih yang tak pernah surut dari bekas akarnya—Sumur Lengsanga—yang hingga kini menjadi pelepas dahaga peziarah."
     ],
+    haulSchedule: "Puncak Haul Akbar Sunan Drajat: 10–12 Muharram (Suro) di Kompleks Makam Dalem Duwur & Pondok Pesantren Sunan Drajat Paciran, Lamongan.",
+    localAdab: "Menaiki tujuh undakan bukit Dalem Duwur dengan langkah tenang dan tertib, menjaga kebersihan area kayu ukir kuno cungkup, serta dianjurkan menyisihkan sedekah bagi anak yatim dan fakir miskin sesuai ajaran Catur Piwulang.",
+    barokahHajat: "Meneladani ajaran 'Catur Piwulang' Kanjeng Sunan Drajat (Sunan Mayang Madu) yang mengangkat derajat kaum papa di pesisir Lamongan, peziarah yang datang ke bukit Dalem Duwur umumnya bertawassul memohon kepada Allah SWT agar dilapangkan pintu rezeki yang berkah, diangkat dari himpitan utang dan kemiskinan, serta dimampukan menjadi tangan di atas yang gemar bersedekah.",
     doaKhusus: [
       {
-        title: "Tawasul Kanjeng Sunan Drajat",
-        text: "إِلَى حَضْرَةِ الشَّيْخِ شَرِيفِ الدِّينِ رَادِينْ قَاسِمْ (سُونَانْ دَرَاجَاتْ)، الفَاتِحَة...",
-        translation: "Kepada kehadirat Syekh Syarifuddin Raden Qasim (Sunan Drajat). Al-Fatihah..."
+        title: "Hadoroh & Tawassul Kanjeng Sunan Drajat (Raden Qasim Syarifuddin)",
+        text: "إِلَى حَضْرَةِ الشَّيْخِ شَرِيفِ الدِّينِ رَادِينْ قَاسِمْ سُونَانْ دَرَاجَاتْ (مَايَانْغ مَادُو) قَدَّسَ اللهُ سِرَّهُ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati asy-Syaikh Syariifuddiin Raaden Qaasim Suunaan Daraajaat (Maayaang Maaduu) qaddasallaahu sirrahu, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Syekh Syarifuddin Raden Qasim (Sunan Drajat / Sunan Mayang Madu), semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Kelapangan Rezeki, Pengentas Kefakiran & Kemuliaan Derajat (Catur Piwulang)",
+        text: "اللّٰهُمَّ اكْفِنَا بِحَلَالِكَ عَنْ حَرَامِكَ وَأَغْنِنَا بِفَضْلِكَ عَمَّنْ سِوَاكَ، وَارْفَعْ دَرَجَاتِنَا بِالْعِلْمِ وَالصَّدَقَةِ وَإِغَاثَةِ الْمَلْهُوفِينَ كَمَا رَفَعْتَ دَرَجَةَ وَلِيِّكَ سُونَانْ دَرَاجَاتْ",
+        latin: "Allaahummakfinaa bi halaalika 'an haraamika wa aghninaa bi fadhlika 'amman siwaak, warfa' darajaatinaa bil-'ilmi wash-shadaqati wa ighaatsatil-malhuufiina kamaa rafa'ta darajata waliyyika Suunaan Daraajaat.",
+        translation: "Ya Allah, cukupkanlah kami dengan rezeki halal-Mu dari yang haram dan kayakanlah kami dengan karunia-Mu dari bergantung kepada selain-Mu; angkatlah derajat kami dengan ilmu, sedekah, dan menolong sesama yang kesusahan sebagaimana Engkau mengangkat derajat kekasih-Mu Sunan Drajat."
       }
     ]
   },
@@ -286,11 +444,21 @@ export const ziarahSites: ZiarahSite[] = [
       "Meredakan wabah penyakit di tanah Baitul Maqdis melalui doa hingga diberi hadiah batu prasasti oleh Amir Palestina.",
       "Pada suatu malam yang sunyi, seorang adipati sakti yang angkuh datang bersama pengawalnya ke serambi Menara Kudus untuk menguji ilmu Sunan Kudus dan mengancam hendak membubarkan majelis pengajian para santri.\n\nSunan Kudus menyambutnya seorang diri dengan senyum tenang tanpa kemarahan sedikit pun, lalu membisikkan satu kalimat peringatan ruhani<!--more-->\n\nBeliau menunjuk ke arah delapan pancuran wudhu masjid dan mempersilakan sang tamu membasuh wajah serta hatinya dari kesombongan dunia. Begitu air wudhu menyentuh kening adipati itu, seluruh kesaktian yang ia banggakan luruh seketika dan dadanya dipenuhi ketenangan luar biasa hingga ia jatuh bersimpuh memohon bimbingan taubat."
     ],
+    haulSchedule: "Puncak Tradisi Buka Luwur (Ganti Kelambu Makam) & Haul Sunan Kudus: 1–10 Muharram (Puncak pada 10 Muharram / Hari Asyura) di Masjid Al-Aqsha Menara Kudus.",
+    localAdab: "Mengambil wudhu di Pancuran Delapan Menara Kudus, mengenakan busana muslim santun, menghormati kearifan lokal masyarakat Kudus (tidak membawa/mengonsumsi daging sapi di area cagar budaya), dan menjaga kekhusyukan di lorong batu bata merah menuju cungkup.",
+    barokahHajat: "Karena gelar 'Waliyyul Ilmi' dan kebijaksanaan Sayyid Ja'far Shadiq (Sunan Kudus) sebagai hakim agung serta pelopor perniagaan masyarakat Kudus Kulon, para peziarah yang berdoa di Menara Kudus umumnya bertawassul memohon kepada Allah SWT agar dikaruniai ketajaman ilmu fikih dan hikmah, keadilan dalam keputusan kepemimpinan, serta kejayaan usaha dan kerukunan hidup bermasyarakat.",
     doaKhusus: [
       {
-        title: "Tawasul Sunan Kudus",
-        text: "إِلَى حَضْرَةِ الشَّيْخِ سَيِّدِ جَعْفَرْ صَادِقْ (سُونَانْ قُدُوسْ)، الفَاتِحَة...",
-        translation: "Kepada kehadirat Syekh Sayyid Ja'far Shadiq (Sunan Kudus). Al-Fatihah..."
+        title: "Hadoroh & Tawassul Waliyyul Ilmi Kanjeng Sunan Kudus",
+        text: "إِلَى حَضْرَةِ وَلِيِّ الْعِلْمِ الشَّيْخِ السَّيِّدِ جَعْفَرْ صَادِقْ عَظْمَتْ خَانْ (سُونَانْ قُدُوسْ) قَدَّسَ اللهُ سِرَّهُ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati Waliyyil-'Ilmi asy-Syaikh as-Sayyid Ja'far Shaadiq 'Azhmat Khaan (Suunaan Quduus) qaddasallaahu sirrahu, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Waliyyul Ilmi Syekh Sayyid Ja'far Shadiq Azmatkhan (Sunan Kudus), semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Wasilah Kedalaman Ilmu Hikmah, Wibawa Kepemimpinan & Keberkahan Niaga",
+        text: "اللّٰهُمَّ آتِنَا الْحِكْمَةَ وَفَصْلَ الْخِطَابِ وَعِلْمًا نَافِعًا، وَارْزُقْنَا الْعَدْلَ وَالْأَمَانَةَ وَالْبَرَكَةَ فِي مَعَايِشِنَا كَمَا أَكْرَمْتَ وَلِيَّكَ السَّيِّدَ جَعْفَرْ صَادِقْ",
+        latin: "Allaahumma aatinal-hikmata wa fashlal-khithaabi wa 'ilman naafi'aa, warzuqnal-'adla wal-amaanata wal-barakata fii ma'aayisyinaa kamaa akramta waliyyaka as-Sayyida Ja'far Shaadiq.",
+        translation: "Ya Allah, anugerahkanlah kepada kami hikmah kebijaksanaan, ketepatan bertutur kata, dan ilmu yang bermanfaat; serta karuniakanlah keadilan, sifat amanah, dan keberkahan dalam mata pencaharian kami sebagaimana Engkau memuliakan kekasih-Mu Sayyid Ja'far Shadiq."
       }
     ]
   },
@@ -330,6 +498,23 @@ export const ziarahSites: ZiarahSite[] = [
       "Saat masih bayi dalam peti di tengah Selat Bali, peti Raden Paku memancarkan cahaya terang dan membuat kapal dagang Nyai Ageng Pinatih berhenti berputar-putar.",
       "Pada suatu malam yang dingin, seorang saudagar muda yang bangkrut total dan dikejar-kejar penagih utang mendaki tangga batu Giri Kedaton sambil menangis memohon doa kepada Sunan Giri.\n\nSang Wali mengambil segenggam pasir dari halaman pesantren, menyerahkannya kepada saudagar itu, lalu membisikkan wasiat adab berniaga dan sedekah pembuka pintu langit<!--more-->\n\nBeliau mewasiatkan agar sang saudagar memperbaiki shalat subuhnya, tidak pernah mengurangi takaran timbangan seberat biji sawi pun, dan menyisihkan hak anak yatim sebelum menghitung laba. Tak lama setelah mengamalkan wasiat itu, perniagaan saudagar tersebut bangkit secara ajaib hingga seluruh utangnya lunas dan ia menjadi penyokong kapal dakwah santri Giri ke Kepulauan Maluku.",
       "Ketika Raden Paku diperintahkan ayahandanya Syekh Maulana Ishaq untuk mencari lokasi pesantren yang akan memberkahi Nusantara, beliau berjalan menembus malam sambil menggenggam sekepal tanah dari Pasai.\n\nSetelah berhari-hari mendaki perbukitan dengan berpuasa dan berdzikir memohon petunjuk tempat terbaik bagi anak cucu umat, langkah beliau tiba-tiba terhenti di puncak Bukit Kebomas Gresik<!--more-->\n\nKetika dicocokkan, tanah di puncak bukit itu memiliki warna, keharuman, dan berat timbangan yang persis sama dengan tanah di dalam genggamannya. Di titik berkah itulah beliau membangun Giri Kedaton yang melahirkan ratusan ulama besar lintas pulau."
+    ],
+    haulSchedule: "Puncak Haul Agung Sunan Giri: 24–25 Rabiul Awal (serta tradisi Malam Selawe / 25 Ramadhan) di Puncak Bukit Giri Kedaton, Kebomas, Gresik.",
+    localAdab: "Menaiki ratusan anak tangga batu Bukit Giri dengan niat ibadah dan menjaga kesopanan, melepas alas kaki sebelum memasuki serambi cungkup kayu jati berukir kuno, serta dilarang bersuara keras di dalam ruang makam Prabu Satmata.",
+    barokahHajat: "Sebagai Raja-Ulama (Prabu Satmata) yang mengirim mubaligh dan armada niaga dari Bukit Giri ke seluruh Indonesia Timur, peziarah yang mendaki ke pusara Kanjeng Sunan Giri umumnya bertawassul memohon kepada Allah SWT agar dikaruniai keteguhan nyali menghadapi rintangan hidup, kemuliaan derajat pendidikan anak-anak, serta keselamatan dan keberuntungan dalam pelayaran maupun perniagaan.",
+    doaKhusus: [
+      {
+        title: "Hadoroh & Tawassul Prabu Satmata Kanjeng Sunan Giri (Raden Paku)",
+        text: "إِلَى حَضْرَةِ السُّلْطَانِ عَبْدِ الْفَقِيهِ رَادِينْ فَاكُو (سُونَانْ غِيرِي) قَدَّسَ اللهُ سِرَّهُ الْعَزِيزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati as-Sulthaan 'Abdil-Faqiih Raaden Paakuu (Suunaan Giirii) qaddasallaahu sirrahul-'aziiz, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Sultan Abdul Faqih Raden Paku (Sunan Giri), semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Keteguhan Hati, Wibawa Ilmu & Keselamatan Perjalanan (Wasilah Bukit Giri)",
+        text: "اللّٰهُمَّ يَا قَوِيُّ يَا مَتِينُ، ثَبِّتْ قُلُوبَنَا عَلَى دِينِكَ، وَاحْفَظْنَا فِي أَسْفَارِنَا وَأَعْمَالِنَا، وَافْتَحْ لِأَوْلَادِنَا فُتُوحَ الْعَارِفِينَ كَمَا فَتَحْتَ عَلَى أَهْلِ غِيرِي كَدَاتُونْ",
+        latin: "Allaahumma yaa Qawiyyu yaa Matiin, tsabbit quluubanaa 'alaa diinika, wahfazhnaa fii asfaarinaa wa a'maalinaa, waftah li aulaadinaa futuuhal-'aarifiina kamaa fatahta 'alaa ahli Giirii Kadaatuun.",
+        translation: "Ya Allah Wahai Dzat Yang Maha Kuat lagi Maha Kokoh, teguhkanlah hati kami di atas agama-Mu, lindungilah kami dalam perjalanan dan pekerjaan kami, serta bukakanlah bagi anak-anak kami pintu kefahaman ilmu sebagaimana Engkau membukakannya bagi para santri Giri Kedaton."
+      }
     ]
   },
   {
@@ -370,11 +555,21 @@ export const ziarahSites: ZiarahSite[] = [
       "Ketika Dewan Walisongo bermusyawarah hingga larut malam untuk menentukan presisi arah kiblat Masjid Agung Demak namun belum mencapai kata sepakat, suasana di dalam ruang utama masjid menjadi hening.\n\nSunan Kalijaga kemudian berdiri dengan penuh tawadhu di tengah ruangan, memejamkan mata dalam dzikir khusyuk, lalu merentangkan kedua tangannya<!--more-->\n\nAtas izin Allah SWT, hijab ruang tersingkap hingga telapak tangan kanan beliau menyentuh dinding Ka'bah di Masjidil Haram dan tangan kiri beliau memegang tiang utama Masjid Agung Demak, meluruskan arah kiblat secara presisi dalam satu tarikan napas yang disaksikan langsung oleh para Wali.",
       "Di masa muda ketika Raden Sahid masih berjuang membersihkan sisa kekerasan dan masa lalunya, gurunya Sunan Bonang menancapkan sebatang tongkat di tepi sungai dan memintanya menjaga tongkat itu tanpa beranjak sedikit pun.\n\nBulan demi bulan hingga bertahun-tahun berlalu dalam terik matahari dan dinginnya badai malam sampai tubuh Raden Sahid ditumbuhi lumut dan dirambati akar pepohonan<!--more-->\n\nNamun di balik tubuh yang tak bergerak itu, qalbu beliau justru terbang melintasi derajat dzikir sirri yang paling jernih. Dari riyadhoh kesabaran luar biasa di tepi sungai itulah beliau diangkat menjadi Kanjeng Sunan Kalijaga, sang penuntun lembut bagi siapa saja yang pernah jatuh dalam dosa dan rindu kembali kepada Tuhan."
     ],
+    haulSchedule: "Puncak Tradisi Penjamasan Pusaka Kyai Carubuk & Haul Sunan Kalijaga: 10 Dzulhijjah (Idul Adha / Grebeg Besar Demak) & Malam 10 Muharram di Kadilangu, Demak.",
+    localAdab: "Mengikuti jadwal resmi pembukaan pintu cungkup utama Yayasan Sunan Kalijaga Kadilangu (khususnya hari Jumat Kliwon / Jumat Pahing), duduk bersila tenang di Pendopo Notobratan apabila cungkup dalam sedang ditutup, serta menjaga niat tauhid murni.",
+    barokahHajat: "Meneladani perjalanan taubat agung Raden Mas Said (Sunan Kalijaga) di tepi sungai dan karya 'Kidung Rumeksa ing Wengi', peziarah yang datang ke Kadilangu umumnya bertawassul memohon kepada Allah SWT agar diterima taubatnya dari masa lalu yang kelam, dipersatukan kembali keluarganya yang renggang bagaikan Soko Tatal, serta dilindungi rumah tangganya dari gangguan lahir maupun batin di waktu malam.",
     doaKhusus: [
       {
-        title: "Tawasul Kanjeng Sunan Kalijaga",
-        text: "إِلَى حَضْرَةِ الشَّيْخِ مَلَايَا رَادِينْ شَهِيدْ (سُونَانْ كَالِي جَاغَا)، الفَاتِحَة...",
-        translation: "Kepada kehadirat Syekh Malaya Raden Sahid (Sunan Kalijaga). Al-Fatihah..."
+        title: "Hadoroh & Tawassul Kanjeng Sunan Kalijaga (Raden Mas Said / Syekh Malaya)",
+        text: "إِلَى حَضْرَةِ وَلِيِّ اللهِ الشَّيْخِ مَلَايَا رَادِينْ مَاسْ شَهِيدْ (سُونَانْ كَالِي جَاغَا) كَادِيلَانْغُو قَدَّسَ اللهُ سِرَّهُ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati Waliyyillaah asy-Syaikh Malaayaa Raaden Maas Syahiid (Suunaan Kaalii Jaagaa) Kaadiilaanguu qaddasallaahu sirrahu, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Kekasih Allah Syekh Malaya Raden Mas Said (Sunan Kalijaga) Kadilangu, semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Perlindungan Malam, Penerimaan Taubat & Pemersatu Hati Keluarga",
+        text: "اللّٰهُمَّ اقْبَلْ تَوْبَتَنَا وَاغْسِلْ حَوْبَتَنَا، وَأَلِّفْ بَيْنَ قُلُوبِنَا كَمَا جَمَعْتَ شَظَايَا الْخَشَبِ فِي سُوكُو تَاتَالْ، وَاحْفَظْنَا فِي لَيْلِنَا وَنَهَارِنَا مِنْ شَرِّ كُلِّ ذِي شَرٍّ",
+        latin: "Allaahummaqbal taubatanaa waghsil haubatanaa, wa allif baina quluubinaa kamaa jama'ta syazhaayal-khasyabi fii Sookoo Taataal, wahfazhnaa fii lailinaa wa nahaarinaa min syarri kulli dzii syarr.",
+        translation: "Ya Allah, terimalah taubat kami dan basuhlah dosa-dosa kami, satukanlah hati keluarga kami sebagaimana Engkau menyatukan serpihan tatal menjadi tiang yang kokoh, serta lindungilah kami di waktu malam dan siang dari segala kejahatan makhluk."
       }
     ]
   },
@@ -412,6 +607,23 @@ export const ziarahSites: ZiarahSite[] = [
     karomah: [
       "Memancarkan mata air jernih di puncak Gunung Muria yang tidak pernah kering meski musim kemarau panjang.",
       "Pada suatu malam gelap ketika sekelompok perambah berniat menebang pohon-pohon besar penyangga mata air di lereng Gunung Muria demi keuntungan sesaat, mereka naik membawa kapak tajam.\n\nBaru saja kapak pertama hendak diayunkan, tiba-tiba kabut beraroma kasturi turun menyelimuti hutan dan terdengar alunan tembang dzikir Sunan Muria yang menggema lembut dari balik pepohonan<!--more-->\n\nSuara teduh itu mengingatkan mereka bahwa setiap helai daun dan akar pohon di gunung adalah tasbih makhluk Allah yang menjaga sumber air bagi ribuan bayi dan petani di lembah bawah. Seketika kapak di tangan mereka terlepas, hati mereka luruh dalam tangis taubat, dan mereka berbalik menjadi penjaga hutan Muria seumur hidup."
+    ],
+    haulSchedule: "Puncak Tradisi Buka Luwur & Haul Agung Sunan Muria: 14–15 Muharram (Suro) di Puncak Gunung Muria, Desa Colo, Kec. Dawe, Kudus.",
+    localAdab: "Menyiapkan stamina fisik sebelum menaiki 700+ anak tangga atau menggunakan jasa ojek resmi warga Colo dengan santun, menjaga kelestarian pohon dan mata air lereng Gunung Muria, serta berwudhu dengan air sejuk pegunungan sebelum masuk ke serambi makam.",
+    barokahHajat: "Karena perjalanan mendaki ratusan anak tangga Gunung Muria melambangkan kesungguhan ikhtiar (riyadhoh) dan kelembutan tembang Sinom & Kinanthi warisan Raden Umar Said, pusara Kanjeng Sunan Muria sangat masyhur diziarahi pasangan suami-istri dan pemuda-pemudi yang bertawassul memohon kepada Allah SWT agar dikaruniai keturunan yang sehat dan shalih, dimudahkan bertemu jodoh yang baik, serta diberkahi hasil bumi dan usaha rakyat kecil.",
+    doaKhusus: [
+      {
+        title: "Hadoroh & Tawassul Kanjeng Sunan Muria (Raden Umar Said)",
+        text: "إِلَى حَضْرَةِ وَلِيِّ اللهِ الشَّيْخِ رَادِينْ عُمَرْ سَعِيدْ (سُونَانْ مُورِيَا) قَدَّسَ اللهُ سِرَّهُ الْعَزِيزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati Waliyyillaah asy-Syaikh Raaden 'Umar Sa'iid (Suunaan Muuriyaa) qaddasallaahu sirrahul-'aziiz, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Kekasih Allah Syekh Raden Umar Said (Sunan Muria), semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Munajat Kemudahan Jodoh, Keturunan Shalih & Keberkahan Usaha Lereng Muria",
+        text: "رَبِّ لَا تَذَرْنِي فَرْدًا وَأَنْتَ خَيْرُ الْوَارِثِينَ ۝ رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ، اللّٰهُمَّ بِبَرَكَةِ وَلِيِّكَ سُونَانْ مُورِيَا يَسِّرْ لَنَا الْحَلَالَ الطَّيِّبَ وَارْزُقْنَا ذُرِّيَّةً صَالِحَةً طَيِّبَةً",
+        latin: "Rabbi laa tadzarnii fardan wa Anta khairul-waaritsiin. Rabbanaa hab lanaa min azwaajinaa wa dzurriyyaatinaa qurrata a'yun. Allaahumma bi barakati waliyyika Suunaan Muuriyaa yassir lanal-halaalath-thayyiba warzuqnaa dzurriyyatan shaalihatan thayyibah.",
+        translation: "Ya Tuhanku, janganlah Engkau biarkan aku hidup seorang diri dan Engkaulah Waris Yang Paling Baik. Ya Tuhan kami, anugerahkanlah kepada kami pasangan hidup dan keturunan sebagai penyejuk mata; Ya Allah, dengan keberkahan kekasih-Mu Sunan Muria, mudahkanlah bagi kami rezeki serta jodoh yang halal lagi baik, dan karuniakanlah keturunan yang shalih."
+      }
     ]
   },
   {
@@ -451,11 +663,21 @@ export const ziarahSites: ZiarahSite[] = [
       "Pada suatu malam yang dingin, seorang penderita penyakit kusta parah yang diusir dari kampungnya merangkak mendekati pagar luar Masjid Agung Sang Cipta Rasa sambil menangis tertahan karena malu bergabung dengan jamaah.\n\nMengetahui hal itu lewat mata batinnya, Sunan Gunung Jati keluar seorang diri dari mihrab sambil membawa kendi air wudhu, lalu duduk memeluk tubuh penderita itu tanpa rasa jijik sedikit pun<!--more-->\n\nBeliau membasuh luka-luka orang itu dengan tangannya sendiri seraya melantunkan doa syifa dan shalawat Nabi penuh cinta kasih. Atas izin Allah SWT, penyakit menahun itu sembuh bersih dan sang pria menjadi salah satu muadzin paling merdu di Cirebon.",
       "Ketika Syarif Hidayatullah mengembara ke daratan Tiongkok, Kaisar Hong Gie hendak menguji kebenaran ilmu sang ulama dengan memerintahkan putrinya, Ong Tin Nio, mengikat bokor kuningan di balik pakaiannya agar tampak seperti wanita hamil.\n\nDi hadapan ratusan pembesar istana yang menahan tawa untuk mempermalukan beliau, Kaisar bertanya berapa usia kandungan putrinya; Sunan Gunung Jati menatap tenang sambil berdoa dalam hati<!--more-->\n\nBeliau menjawab dengan penuh wibawa bahwa sang putri benar-benar sedang mengandung. Begitu tirai pemeriksaan dibuka, bokor kuningan itu lenyap dan Putri Ong Tin sungguh-sungguh hamil atas kuasa Allah SWT, hingga sang Kaisar takjub dan Putri Ong Tin memeluk Islam lalu berlayar menyusul beliau ke Cirebon."
     ],
+    haulSchedule: "Puncak Tradisi Panjang Jimat (Maulid Agung): 12 Rabiul Awal & Haul Agung Sunan Gunung Jati pada bulan Dzulhijjah (Idul Adha) di Astana Gunung Sembung, Cirebon.",
+    localAdab: "Peziarah umum berdoa dan bertahlil dengan tertib di depan Pintu Pasujudan (Pintu ke-3) karena pintu ke-4 hingga ke-9 di puncak Gunung Sembung memiliki tata aturan adat khusus keturunan Keraton Cirebon. Jagalah keheningan, jangan terpedaya oknum peminta sumbangan paksa di luar kotak resmi, dan niatkan infaq tulus sesuai wasiat 'Ingsun titip tajug lan fakir miskin'.",
+    barokahHajat: "Berpijak pada wasiat agung Syarif Hidayatullah (Sunan Gunung Jati) 'Ingsun titip tajug lan fakir miskin' dan kedudukan beliau sebagai Sultan sekaligus Wali Qutub, peziarah yang datang ke Astana Gunung Sembung umumnya bertawassul memohon kepada Allah SWT agar dikaruniai kemuliaan akhlak dan kepemimpinan yang amanah, keberkahan rezeki untuk memakmurkan masjid serta menyantuni fakir miskin, dan kesembuhan dari penyakit berat.",
     doaKhusus: [
       {
-        title: "Tawasul Kanjeng Sunan Gunung Jati",
-        text: "إِلَى حَضْرَةِ الشَّيْخِ الشَّرِيفِ هِدَايَةُ اللهِ (سُونَانْ غُونُونْغ جَاتِي)، الفَاتِحَة...",
-        translation: "Kepada kehadirat Syekh Syarif Hidayatullah (Sunan Gunung Jati). Al-Fatihah..."
+        title: "Hadoroh & Tawassul Wali Qutub Kanjeng Sunan Gunung Jati (Syarif Hidayatullah)",
+        text: "إِلَى حَضْرَةِ السُّلْطَانِ الْأَوْلِيَاءِ الشَّيْخِ الشَّرِيفِ هِدَايَةُ اللهِ (سُونَانْ غُونُونْغ جَاتِي) قَدَّسَ اللهُ سِرَّهُ الْعَزِيزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati Sulthaanil-Auliyaa-i asy-Syaikh asy-Syariif Hidaayatullaah (Suunaan Guunuung Jaatii) qaddasallaahu sirrahul-'aziiz, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Sultan Para Wali Syekh Syarif Hidayatullah (Sunan Gunung Jati), semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Wasilah Kemakmuran Masjid, Kepedulian Fakir Miskin & Kemuliaan Hidup",
+        text: "اللّٰهُمَّ اجْعَلْنَا مِنْ عُمَّارِ مَسَاجِدِكَ وَالرُّحَمَاءِ بِالْفُقَرَاءِ وَالْمَسَاكِينِ، وَأَفِضْ عَلَيْنَا مِنْ بَرَكَاتِ وَلِيِّكَ الشَّرِيفِ هِدَايَةُ اللهِ عِزًّا وَشِفَاءً وَرِزْقًا وَاسِعًا مُبَارَكًا",
+        latin: "Allaahummaj'alnaa min 'ummaari masaajidika war-ruhamaa-i bil-fuqaraa-i wal-masaakiin, wa afidh 'alainaa min barakaati waliyyika asy-Syariif Hidaayatullaah 'izzan wa syifaa-an wa rizqan waasi'an mubaarakaa.",
+        translation: "Ya Allah, jadikanlah kami termasuk orang-orang yang memakmurkan masjid-Mu dan penyayang terhadap fakir miskin; serta limpahkanlah kepada kami dengan keberkahan kekasih-Mu Syarif Hidayatullah kemuliaan, kesembuhan, dan rezeki yang luas lagi penuh berkah."
       }
     ]
   },
@@ -497,6 +719,23 @@ export const ziarahSites: ZiarahSite[] = [
     karomah: [
       "Kewibawaan dan pancaran mahabbah beliau membuat ratusan orang masuk Islam dan bertaubat hanya dengan memandang wajahnya saat berdoa.",
       "Pada suatu Minggu subuh yang dingin di Kwitang, seorang ayah yang nyaris gelap mata karena terlilit utang dan diusir dari kontrakan duduk menangis tertunduk di balik tiang paling belakang majelis.\n\nDi tengah ribuan jamaah yang memadati jalanan, tiba-tiba Habib Ali Kwitang berdiri dari kursinya, berjalan membelah lautan manusia langsung menuju tiang tersebut, lalu menepuk bahu pria itu sambil tersenyum teduh<!--more-->\n\nTanpa sepatah kata pun yang mempermalukan, Habib Ali menyelipkan sebuah amplop ke genggaman pria itu yang ternyata jumlah isinya persis sama dengan nilai utang yang sedang mencekiknya, padahal ia belum pernah bercerita kepada siapa pun. Habib Ali hanya berbisik lembut: 'Jangan pernah berputus asa dari rahmat Allah selama kakimu masih mau melangkah ke majelis kekasih-Nya, Nabi Muhammad SAW.'"
+    ],
+    haulSchedule: "Puncak Haul Agung Habib Ali Kwitang & Maulid Akhir Khamis: Setiap bulan Rabiul Awal & bulan Rajab (serta Pengajian Rutin Minggu Pagi pukul 06.00–10.00 WIB) di Masjid Al-Riyadh & Majelis Taklim Kwitang, Jakarta Pusat.",
+    localAdab: "Dianjurkan mengenakan pakaian muslim putih bersih dan kopiah, menjaga wudhu, memisahkan area jamaah laki-laki dan perempuan di Kubah Masjid Al-Riyadh, serta memperbanyak bacaan Maulid Simthud Durar dan shalawat Nabi.",
+    barokahHajat: "Karena Al-Habib Ali bin Abdurrahman Al-Habsyi (Kwitang) dikenal sebagai pelopor Majelis Taklim Minggu Pagi dan penyebar kecintaan kepada Maulid Simthud Durar di Tanah Betawi, peziarah yang datang ke Kubah Al-Riyadh Kwitang umumnya bertawassul memohon kepada Allah SWT agar ditanamkan mahabbah (cinta mendalam) kepada Rasulullah SAW, dilembutkan hati keluarga agar gemar menuntut ilmu, serta dilapangkan dari kesempitan utang dan kesulitan hidup.",
+    doaKhusus: [
+      {
+        title: "Hadoroh & Tawassul Al-Habib Ali bin Abdurrahman Al-Habsyi (Kwitang)",
+        text: "إِلَى حَضْرَةِ الدَّاعِي إِلَى اللهِ الْحَبِيبِ عَلِيِّ بْنِ عَبْدِ الرَّحْمٰنِ الْحَبْشِيِّ (كْوِيتَانْغ) نَفَعَنَا اللهُ بِعُلُومِهِ وَبَرَكَاتِهِ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhratid-Daa'ii ilallaah al-Habiib 'Alii bin 'Abdirrahmaan al-Habsyiyyi (Kwiitaang) nafa'anallaahu bi 'uluumihii wa barakaatihii, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Sang Penyeru ke jalan Allah Al-Habib Ali bin Abdurrahman Al-Habsyi Kwitang, semoga Allah memberikan kemanfaatan ilmu dan keberkahannya kepada kita. Al-Fatihah."
+      },
+      {
+        title: "Doa Mahabbah Rasulullah SAW, Keberkahan Majelis Ilmu & Pelunas Beban Hidup",
+        text: "اللّٰهُمَّ ارْزُقْنَا كَمَالَ الْمَحَبَّةِ لِنَبِيِّكَ مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ وَآلِ بَيْتِهِ الطَّاهِرِينَ، وَبِبَرَكَةِ الْحَبِيبِ عَلِيِّ الْحَبْشِيِّ فَرِّجْ كُرُوبَنَا وَاقْضِ دُيُونَنَا وَاجْمَعْنَا فِي زُمْرَةِ الصَّالِحِينَ",
+        latin: "Allaahummarzuqnaa kamaalal-mahabbati li Nabiyyika Muhammadin shallallaahu 'alaihi wa sallama wa aali baitihith-thaahiriin, wa bi barakatil-Habiib 'Aliyyil-Habsyiyyi farrij kuruubanaa waqdhi duyuunanaa wajma'naa fii zumratish-shaalihiin.",
+        translation: "Ya Allah, karuniakanlah kepada kami kesempurnaan cinta kepada Nabi-Mu Muhammad SAW dan Ahlul Bait beliau yang suci; dan dengan keberkahan Habib Ali Al-Habsyi, lapangkanlah kesempitan kami, lunaskanlah utang-utang kami, dan kumpulkanlah kami bersama golongan orang-orang yang shalih."
+      }
     ]
   },
   {
@@ -526,18 +765,28 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/98/COLLECTIE_TROPENMUSEUM_Moskee_Luar_Batang_%28Batavia%29_TMnr_60046455.jpg",
     imageSource: "Koleksi Tropenmuseum / Wikimedia Commons — Masjid Keramat Luar Batang Batavia (Habib Husein Alaydrus)",
     history: "Habib Husein tiba di pelabuhan Sunda Kelapa sekitar tahun 1736 M. Beliau sempat menolong seorang tawanan Tionghoa yang hendak dihukum mati oleh VOC, yang kemudian masuk Islam dan diberi nama Haji Abdul Kadir. Karena pengaruhnya yang begitu besar di kalangan pribumi, VOC sempat memenjarakan beliau di Glodok sebelum akhirnya membebaskannya karena keajaiban yang disaksikan sipir.",
-    untoldStory: "Saat jenazah Habib Husein hendak dimakamkan di Tanah Abang menggunakan kurung batang, jenazah beliau berulang kali menghilang dari dalam kurung batang dan telah kembali ke surau tempat beliau mengajar. Masyarakat pun sepakat memakamkannya di tempat itu dan menamainya 'Luar Batang' (keluar dari kurung batang).",
+    untoldStory: "Saat jenazah Habib Husein hendak dimakamkan di Tanah Abang menggunakan kurung batang, jenazah beliau berulang kali menghilang dari dalam kurung batang dan telah kembali ke surau tempat beliau mengajar<!--more-->\n\nMasyarakat dan pejabat VOC yang menyaksikan keajaiban itu pun takjub dan sepakat memakamkan beliau beserta murid setianya, Haji Abdul Kadir, di dalam kompleks surau perjuangannya di tepi pelabuhan Sunda Kelapa yang kemudian masyhur dengan nama 'Luar Batang' (keluar dari kurung batang).",
     facilities: ["Masjid Jami' Keramat Luar Batang", "Ruang Makam Habib Husein & Haji Abdul Kadir", "Tempat Wudhu & Toilet", "Area Parkir Pelabuhan Sunda Kelapa"],
     openingHours: "Buka 24 Jam",
     karomah: [
       "Saat dipenjara VOC di Glodok, sipir Belanda melihat Habib Husein mengimami shalat berjamaah di lapangan luar sementara pintu selnya masih terkunci rapat dari luar.",
       "Jenazah beliau keluar sendiri dari kurung batang (keranda) saat hendak dibawa ke pemakaman Tanah Abang karena menghendaki dimakamkan di surau Luar Batang."
     ],
+    haulSchedule: "Puncak Haul Akbar Habib Husein Luar Batang: Ahad terakhir di bulan Syawal (serta peringatan wafat 17 Ramadhan) di Kompleks Masjid Jami' Keramat Luar Batang, Penjaringan, Jakarta Utara.",
+    localAdab: "Mengikuti jalur antrean terpisah bagi peziarah pria dan wanita saat memasuki ruang makam Habib Husein & Haji Abdul Kadir, menjaga ketertiban barang bawaan, dan mendahulukan shalat تحية المسجد (Tahiyyatul Masjid) di Masjid Keramat Luar Batang.",
+    barokahHajat: "Meneladani keteguhan Al-Qutb Al-Habib Husein bin Abubakar Alaydrus yang membela kaum tertindas di pelabuhan Sunda Kelapa dan berkhalwat di tepi laut, peziarah yang datang ke Luar Batang umumnya bertawassul memohon kepada Allah SWT agar diselamatkan dari kezaliman dan fitnah manusia, diteguhkan iman di tengah kerasnya kehidupan kota besar, serta dibukakan pintu rezeki dan keberkahan perniagaan.",
     doaKhusus: [
       {
-        title: "Tawasul Habib Husein Luar Batang",
-        text: "إِلَى حَضْرَةِ القُطْبِ الحَبِيبِ حُسَيْنْ بِنْ أَبِي بَكْرٍ العَيْدَرُوسْ (لُوَارْ بَاتَانْغ)، الفَاتِحَة...",
-        translation: "Kepada kehadirat Al-Qutb Al-Habib Husein bin Abubakar Alaydrus Luar Batang. Al-Fatihah..."
+        title: "Hadoroh & Tawassul Al-Qutb Al-Habib Husein bin Abubakar Alaydrus & Haji Abdul Kadir",
+        text: "إِلَى حَضْرَةِ الْقُطْبِ الرَّبَّانِيِّ الْحَبِيبِ حُسَيْنْ بِنْ أَبِي بَكْرٍ الْعَيْدَرُوسْ (لُوَارْ بَاتَانْغ) وَتِلْمِيذِهِ الْحَاجِّ عَبْدِ الْقَادِرْ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhratil-Quthbir-Rabbaaniyyi al-Habiib Husain bin Abii Bakrin al-'Aidaruus (Luwaar Baataang) wa tilmiidzihil-Haajji 'Abdil-Qaadir, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Wali Qutub Al-Habib Husein bin Abubakar Alaydrus Luar Batang beserta murid setianya Haji Abdul Kadir. Al-Fatihah."
+      },
+      {
+        title: "Doa Benteng Keselamatan dari Kezaliman & Pembuka Pintu Rezeki Pesisir",
+        text: "اللّٰهُمَّ اكْفِنَا شَرَّ الظَّالِمِينَ وَاحْفَظْنَا بِعَيْنِكَ الَّتِي لَا تَنَامُ، وَبِكَرَامَةِ الْحَبِيبِ حُسَيْنْ بِنْ أَبِي بَكْرٍ الْعَيْدَرُوسْ افْتَحْ لَنَا أَبْوَابَ الْفَرَجِ وَالرِّزْقِ الْحَلَالِ الْوَاسِعِ",
+        latin: "Allaahummakfinaa syarrazh-zhaalimiina wahfazhnaa bi 'ainikal-latii laa tanaam, wa bi karaamatil-Habiib Husain bin Abii Bakrin al-'Aidaruus iftah lanaa abwaabal-faraji war-rizqil-halaalil-waasi'.",
+        translation: "Ya Allah, lindungilah kami dari kejahatan orang-orang yang zalim dan jagalah kami dengan penjagaan-Mu yang tiada pernah tidur; dan dengan kemuliaan Habib Husein bin Abubakar Alaydrus, bukakanlah bagi kami pintu kelapangan dan rezeki halal yang luas."
       }
     ]
   },
@@ -568,12 +817,29 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/a/a9/COLLECTIE_TROPENMUSEUM_De_haven_van_Tandjoengpriok_op_de_achtergrond_het_station_Batavia_Java_TMnr_10008011.jpg",
     imageSource: "Koleksi Tropenmuseum / Wikimedia Commons — Kawasan Bersejarah Tanjung Priok (Situs Makam Mbah Priok)",
     history: "Habib Hasan bin Muhammad Al-Haddad lahir di Palembang tahun 1727 M. Pada tahun 1756 M, dalam pelayaran dakwah menuju tanah Jawa bersama saudaranya Habib Zein, perahu beliau diterjang badai besar dan kehabisan perbekalan hingga beliau wafat di perairan teluk Jakarta.",
-    untoldStory: "Periuk penanak nasi dan dayung kayu milik Habib Hasan ikut hanyut ke pantai dan ditancapkan di makamnya. Dayung kayu itu tumbuh menjadi pohon Tanjung dan periuknya selalu muncul kembali di atas makam, sehingga kawasan itu dinamai 'Tanjung Priok'.",
+    untoldStory: "Ketika perbekalan makanan di perahu layar habis sama sekali di tengah amukan gelombang laut Jawa, Habib Hasan bin Muhammad Al-Haddad tetap tenang berdzikir membaca Ratib leluhurnya lalu memasukkan batu karang ke dalam periuk penanak nasi sambil bermunajat kepada Allah SWT<!--more-->\n\nAtas izin Allah, batu di dalam periuk itu berubah menjadi nasi hangat yang mengenyangkan seluruh awak perahu. Saat beliau gugur syahid di laut, periuk penanak nasi dan dayung kayunya ikut mengapung mengiringi jenazah beliau ke pantai utara Jakarta; dayung itu tumbuh menjadi pohon Tanjung dan periuknya menjadi penanda makam keramat yang melahirkan nama 'Tanjung Priok'.",
     facilities: ["Kubah & Pendopo Makam Mbah Priok", "Masjid Al-Maqom", "Sumur Keramat Air Tawar di Tepi Laut", "Area Parkir Cagar Budaya"],
     openingHours: "Buka 24 Jam",
     karomah: [
       "Saat perbekalan habis di tengah laut, beliau memasukkan batu karang ke dalam periuk (priuk) lalu berdoa hingga berubah menjadi nasi hangat.",
       "Ikan-ikan lumba-lumba dan cucut mengiringi jenazah beliau hingga mendarat di pantai utara Jakarta."
+    ],
+    haulSchedule: "Puncak Haul Akbar Mbah Priok (Al-Habib Hasan bin Muhammad Al-Haddad): Akhir bulan Sya'ban menjelang Ramadhan (serta Majelis Malam Jumat) di Kompleks Cagar Budaya Gubah Al-Haddad Tanjung Priok, Jakarta Utara.",
+    localAdab: "Memasuki kawasan pelabuhan dan Cagar Budaya Gubah Al-Haddad dengan pakaian sopan, menjaga kebersihan area pendopo marmer putih dan sumur air tawar tepi laut, serta dianjurkan membaca Ratib Al-Haddad.",
+    barokahHajat: "Mengenang karomah periuk nasi Al-Habib Hasan bin Muhammad Al-Haddad (Mbah Priok) di tengah badai laut dan sanad beliau kepada penyusun Ratib Al-Haddad, peziarah yang datang ke Gubah Al-Haddad umumnya bertawassul memohon kepada Allah SWT agar periuk dapur keluarganya tidak pernah kekurangan rezeki halal, diberi keselamatan kerja di laut maupun pelabuhan, serta ketangguhan menghadapi badai ujian hidup.",
+    doaKhusus: [
+      {
+        title: "Hadoroh & Tawassul Al-Habib Hasan bin Muhammad Al-Haddad (Mbah Priok)",
+        text: "إِلَى حَضْرَةِ الْعَارِفِ بِاللهِ الْحَبِيبِ حَسَنْ بِنْ مُحَمَّدٍ الْحَدَّادِ (مَبَاهْ فَرِيُوكْ) قَدَّسَ اللهُ سِرَّهُ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhratil-'Aarifi billaah al-Habiib Hasan bin Muhammad al-Haddaad (Mbaah Priook) qaddasallaahu sirrahu, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Al-Arif Billah Al-Habib Hasan bin Muhammad Al-Haddad (Mbah Priok), semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Wirid Ratib Al-Haddad & Kecukupan Rezeki Keluarga di Tengah Badai Ujian",
+        text: "يَا لَطِيفًا بِخَلْقِهِ يَا عَلِيمًا بِخَلْقِهِ يَا خَبِيرًا بِخَلْقِهِ اُلْطُفْ بِنَا يَا لَطِيفُ يَا عَلِيمُ يَا خَبِيرُ ۝ اللّٰهُمَّ بَارِكْ لَنَا فِي أَقْوَاتِنَا وَاحْفَظْنَا فِي الْبَرِّ وَالْبَحْرِ بِكَرَامَةِ الْحَبِيبِ حَسَنِ الْحَدَّادِ",
+        latin: "Yaa Lathiifan bi khalqihii yaa 'Aliiman bi khalqihii yaa Khabiiran bi khalqihii ulthuf binaa yaa Lathiifu yaa 'Aliimu yaa Khabiir. Allaahumma baarik lanaa fii aqwaatinaa wahfazhnaa fil-barri wal-bahri bi karaamatil-Habiib Hasanil-Haddaad.",
+        translation: "Wahai Dzat Yang Maha Lembut, Maha Mengetahui, dan Maha Waspada terhadap makhluk-Nya, berlaku lembutlah kepada kami. Ya Allah, berkahilah kecukupan pangan keluarga kami dan lindungilah kami di darat maupun di lautan dengan kemuliaan Habib Hasan Al-Haddad."
+      }
     ]
   },
   {
@@ -601,12 +867,29 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/29/Al-Hawi_Mosque%2C_Condet%2C_East_Jakarta_in_2022.jpg",
     imageSource: "Wikimedia Commons — Jaringan Masjid & Majelis Habaib Jakarta Selatan–Timur (Kalibata & Condet)",
     history: "Habib Ahmad bin Alwi Al-Haddad lahir di Qaidun, Hadramaut pada 26 Sya'ban 1254 H (1838 M). Beliau dijuluki 'Habib Kuncung' karena kegemarannya mengenakan kopiah dari Bugis yang ujungnya mengerucut ke atas. Beliau wafat pada 29 Sya'ban 1345 H (1926 M) dan dimakamkan di samping Masjid At-Taubah Kalibata.",
-    untoldStory: "Banyak pedagang di Batavia dan Singapura bersaksi bahwa ketika mereka mengalami kesulitan besar di perantauan, Habib Kuncung tiba-tiba hadir menolong mereka padahal di saat bersamaan beliau terlihat sedang duduk di serambi rumah Habib Ali Kwitang.",
+    untoldStory: "Banyak pedagang kecil di Batavia dan perantau di Singapura bersaksi bahwa ketika usaha mereka terancam gulung tikar atau mereka mengalami kesulitan besar di perantauan, Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung) tiba-tiba hadir mengetuk pintu dan membukakan jalan keluar<!--more-->\n\nNamun setiap kali diberi hadiah harta oleh orang-orang kaya, beliau langsung membagikannya habis kepada janda tua dan anak-anak yatim di lorong-lorong Batavia sebelum matahari tenggelam, seraya berkata bahwa kebahagiaan sejati seorang hamba terletak pada hati yang tidak terikat oleh dunia.",
     facilities: ["Masjid Jami' At-Taubah Kalibata", "Kubah Makam Habib Kuncung", "Tempat Wudhu & Toilet", "Dekat Stasiun KRL Duren Kalibata"],
     openingHours: "Buka 24 Jam",
     karomah: [
       "Mampu berada di dua tempat berbeda pada waktu bersamaan (Singapura dan Batavia) untuk menolong jamaah yang kesulitan.",
       "Mengetahui isi hati tamu yang datang sebelum tamu tersebut mengutarakan hajatnya."
+    ],
+    haulSchedule: "Puncak Haul Akbar Habib Kuncung: Akhir bulan Sya'ban / awal bulan Muharram di Kompleks Masjid Jami' At-Taubah, Rawajati, Kalibata, Jakarta Selatan.",
+    localAdab: "Karena lokasi berada di kawasan permukiman padat Rawajati Kalibata (dekat Stasiun Duren Kalibata), peziarah dianjurkan memarkir kendaraan di titik resmi, menjaga ketenangan lingkungan warga, dan tidak berdesakan di dalam kubah Masjid At-Taubah.",
+    barokahHajat: "Semasa hidupnya Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung) sangat menyayangi pedagang kecil dan perantau yang sedang terhimpit kesulitan ekonomi, sehingga para peziarah yang datang ke Kalibata umumnya bertawassul memohon kepada Allah SWT agar dimudahkan jalan keluar yang tak terduga (min haitsu laa yahtasib) atas urusan perniagaan, pelunasan utang, dan ketenangan batin.",
+    doaKhusus: [
+      {
+        title: "Hadoroh & Tawassul Al-Arif Billah Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung)",
+        text: "إِلَى حَضْرَةِ الْوَلِيِّ الْمَجْذُوبِ الْحَبِيبِ أَحْمَدَ بْنِ عَلْوِي الْحَدَّادِ (حَبِيبْ كُونْجُونْغ كَالِيبَاتَا) قَدَّسَ اللهُ سِرَّهُ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhratil-Waliyyil-Majdzuub al-Habiib Ahmad bin 'Alwii al-Haddaad (Habiib Kuunjuung Kaaliibaataa) qaddasallaahu sirrahu, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Wali Allah Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung Kalibata), semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Pembuka Jalan Keluar Tak Terduga & Kelancaran Usaha Perantauan",
+        text: "اللّٰهُمَّ اجْعَلْ لَنَا مِنْ كُلِّ هَمٍّ فَرَجًا وَمِنْ كُلِّ ضِيقٍ مَخْرَجًا وَارْزُقْنَا مِنْ حَيْثُ لَا نَحْتَسِبُ، وَبِبَرَكَةِ الْحَبِيبِ أَحْمَدَ بْنِ عَلْوِي الْحَدَّادِ يَسِّرْ أُمُورَنَا وَتِجَارَتَنَا",
+        latin: "Allaahummaj'al lanaa min kulli hammin farajan wa min kulli dhiiqin makhrajan warzuqnaa min haitsu laa nahtasib, wa bi barakatil-Habiib Ahmad bin 'Alwii al-Haddaad yassir umuuranaa wa tijaaratanaa.",
+        translation: "Ya Allah, jadikanlah bagi kami kelapangan dari setiap kesusahan, jalan keluar dari setiap kesempitan, dan karuniakanlah rezeki dari arah yang tiada disangka-sangka; serta dengan keberkahan Habib Ahmad bin Alwi Al-Haddad, mudahkanlah segala urusan dan perniagaan kami."
+      }
     ]
   },
   {
@@ -728,9 +1011,31 @@ export const ziarahSites: ZiarahSite[] = [
     ],
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/69/Masjid_agung_banten_lama.jpg",
     imageSource: "Wikipedia Bahasa Indonesia / Wikimedia Commons — Masjid Agung Banten Lama & Makam Sultan Maulana Hasanuddin",
-    history: "Pangeran Sabakingkin diutus oleh ayahandanya, Sunan Gunung Jati, untuk berdakwah di wilayah Banten Girang dan Surosowan. Dengan kesantunan dakwah dan kemampuannya mengislamkan800 ajar (pendeta) Gunung Pulosari, beliau mendirikan Kesultanan Banten pada 1552 M yang menjelma menjadi salah satu pelabuhan lada terbesar di Asia Tenggara.",
+    history: "Pangeran Sabakingkin diutus oleh ayahandanya, Sunan Gunung Jati, untuk berdakwah di wilayah Banten Girang dan Surosowan. Dengan kesantunan dakwah dan kemampuannya mengislamkan 800 ajar (pendeta) Gunung Pulosari, beliau mendirikan Kesultanan Banten pada 1552 M yang menjelma menjadi salah satu pelabuhan lada terbesar di Asia Tenggara.",
+    untoldStory: "Ketika pertama kali mendaki lereng Gunung Pulosari untuk berdialog dengan pucuk pimpinan 800 pendeta Banten Girang, Pangeran Sabakingkin (Maulana Hasanuddin) tidak membawa pasukan perang, melainkan hanya membawa tasbih dan hati yang penuh kasih sayang<!--more-->\n\nDalam munajat malamnya di lereng gunung itu, beliau memohon agar masyarakat Banten ditaklukkan hatinya bukan dengan pedang, melainkan dengan cahaya akhlak dan kemakmuran bersama. Keesokan harinya, kelembutan tutur kata dan karomah tauhid beliau membuat 800 ajar Gunung Pulosari bersimpuh mengucapkan dua kalimat syahadat secara sukarela.",
     facilities: ["Masjid Agung Banten Lama & Menara Hendrik Lucasz Cardeel", "Museum Situs Kepurbakalaan Banten Lama", "Plaza Peziarah Terpadu", "Terminal Parkir Bus"],
-    openingHours: "Buka 24 Jam"
+    openingHours: "Buka 24 Jam",
+    karomah: [
+      "Mengislamkan 800 pendeta (ajar) Gunung Pulosari Banten Girang dengan kelembutan akhlak dan dialog hikmah tanpa pertumpahan darah.",
+      "Membangun Kota Surosowan dan Pelabuhan Karangantu atas isyarat spiritual ayahandanya Sunan Gunung Jati hingga menjadi poros maritim Islam dunia."
+    ],
+    haulSchedule: "Puncak Haul Agung Sultan Maulana Hasanuddin Banten: Bulan Muharram & Maulid Nabi (Rabiul Awal) di Kompleks Masjid Agung Banten Lama, Kasemen, Serang.",
+    localAdab: "Berjalan tertib melintasi Plaza Peziarah Masjid Agung Banten Lama, menitipkan alas kaki di loker resmi, tidak memberikan uang kepada pengemis yang memaksa di luar kotak infaq resmi kenadziran, serta menjaga ketenangan di serambi makam.",
+    barokahHajat: "Sebagai Sultan pertama yang mengubah pesisir Banten menjadi pusat niaga maritim dan keilmuan Islam yang makmur, peziarah yang datang ke Masjid Agung Banten Lama umumnya bertawassul memohon kepada Allah SWT agar dikaruniai keteguhan iman, kewibawaan dalam memimpin keluarga maupun lembaga, serta keberkahan usaha dan keselamatan negeri.",
+    doaKhusus: [
+      {
+        title: "Hadoroh & Tawassul Sultan Maulana Hasanuddin (Pangeran Sabakingkin) Banten",
+        text: "إِلَى حَضْرَةِ السُّلْطَانِ الْمَوْلَانَا حَسَنِ الدِّينِ بِنْ الشَّرِيفِ هِدَايَةِ اللهِ (بَانْتَنْ) قَدَّسَ اللهُ سِرَّهُ الْعَزِيزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati as-Sulthaan al-Maulaanaa Hasaniddiin bin asy-Syariif Hidaayatillaah (Baantan) qaddasallaahu sirrahul-'aziiz, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Sultan Maulana Hasanuddin bin Syarif Hidayatullah (Banten), semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Keteguhan Kepemimpinan, Kemakmuran Negeri & Keluasan Rezeki Halal",
+        text: "اللّٰهُمَّ أَعِزَّ الْإِسْلَامَ وَالْمُسْلِمِينَ، وَبَارِكْ لَنَا فِي بَلَدِنَا وَأَرْزَاقِنَا، وَارْزُقْنَا الْحِكْمَةَ وَالْأَمَانَةَ بِبَرَكَةِ السُّلْطَانِ مَوْلَانَا حَسَنِ الدِّينِ",
+        latin: "Allaahumma a'izzal-Islaama wal-muslimiin, wa baarik lanaa fii baladinaa wa arzaaqinaa, warzuqnal-hikmata wal-amaanata bi barakatis-Sulthaan Maulaanaa Hasaniddiin.",
+        translation: "Ya Allah, muliakanlah Islam dan kaum muslimin, berkahilah negeri dan rezeki kami, serta anugerahkanlah kepada kami kebijaksanaan dan sifat amanah dengan keberkahan Sultan Maulana Hasanuddin."
+      }
+    ]
   },
   {
     id: "ulama-6",
@@ -759,12 +1064,29 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/id/8/8f/Lukisan_Syekh_Nawawi_al-Bantani_oleh_Kang_Alam.jpg",
     imageSource: "Wikipedia Bahasa Indonesia — Potret Lukisan Syekh Nawawi Al-Bantani (Sayyidul Ulama al-Hijaz, Tanara)",
     history: "Lahir di Desa Tanara, Serang tahun 1813 M, Syekh Nawawi berangkat ke Makkah pada usia 15 tahun dan menjadi imam serta pengajar di Masjidil Haram yang dihormati ulama Timur Tengah hingga digelari 'Imam Nawawi Ats-Tsani' (Imam Nawawi Kedua). Meskipun jasad beliau wafat dan dimakamkan di Ma'la (Makkah) pada 1897 M, di Situs Tanara terdapat makam ayahanda beliau (Syekh Umar bin Arabi), petilasan tempat beliau berkhalwat, serta tanah makam dari Ma'la yang dibawa saat Haul.",
-    untoldStory: "Saat mengarang kitab di dalam kereta kuda yang gelap dalam perjalanan dari Kairo ke Makkah, jari telunjuk kiri Syekh Nawawi memancarkan cahaya terang seperti lampu minyak sehingga tangan kanannya dapat terus menulis naskah kitab hingga selesai.",
+    untoldStory: "Saat mengarang kitab di dalam kereta kuda yang gelap dalam perjalanan panjang dari Kairo menuju Makkah, pelita minyak yang dibawa habis tertiup angin gurun sementara ribuan bait ilmu sedang mengalir deras di benak Syekh Nawawi Al-Bantani<!--more-->\n\nBeliau menengadahkan tangan bermunajat agar waktu malam itu tidak terbuang sia-sia tanpa mengabdi pada ilmu agama. Seketika itu pula jari telunjuk kiri Syekh Nawawi memancarkan cahaya terang benderang bagaikan lentera sehingga tangan kanannya dapat terus menulis naskah kitab kuning hingga fajar menyingsing.",
     facilities: ["Masjid Jami' Syekh Nawawi Tanara", "Makam Syekh Umar bin Arabi (Ayahanda)", "Pondok Pesantren An-Nawawi Tanara", "Area Parkir Luas"],
     openingHours: "Buka 24 Jam",
     karomah: [
       "Jari telunjuk kiri beliau memancarkan cahaya lampu di tengah gelapnya malam saat menulis kitab di perjalanan.",
       "Jasad beliau di pemakaman Ma'la Makkah tetap utuh beserta kain kafannya saat petugas pemakaman hendak membuka liang lahatnya setelah satu tahun."
+    ],
+    haulSchedule: "Puncak Haul Agung Syekh Nawawi Al-Bantani: Jumat terakhir di bulan Syawal (bertepatan dengan wafat beliau 25 Syawal 1314 H) di Pondok Pesantren An-Nawawi Tanara, Serang, Banten.",
+    localAdab: "Menjaga kesopanan busana santri di lingkungan Pondok Pesantren An-Nawawi Tanara, berziarah ke makam ayahanda beliau (Syekh Umar bin Arabi) dengan tertib, serta menyempatkan shalat berjamaah di Masjid Jami' Syekh Nawawi.",
+    barokahHajat: "Karena Syekh Nawawi Al-Bantani adalah 'Sayyidul Ulama al-Hijaz' yang menulis lebih dari 115 kitab rujukan pesantren sedunia, para santri, pelajar, akademisi, dan orang tua yang berziarah ke Tanara umumnya bertawassul memohon kepada Allah SWT agar dibukakan kecerdasan akal dan kejernihan hati (futuhul 'arifin), dimudahkan menghafal dan memahami ilmu agama, serta diberkahi karya-karya yang bermanfaat sepanjang zaman.",
+    doaKhusus: [
+      {
+        title: "Hadoroh & Tawassul Sayyidul Ulama al-Hijaz Syekh Nawawi Al-Bantani",
+        text: "إِلَى حَضْرَةِ سَيِّدِ عُلَمَاءِ الْحِجَازِ الشَّيْخِ مُحَمَّدْ نَوَوِي بِنْ عُمَرَ الْجَاوِي الْبَنْتَنِي وَوَالِدِهِ الشَّيْخِ عُمَرَ بْنِ عَرَبِي، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati Sayyidi 'Ulamaa-il-Hijaaz asy-Syaikh Muhammad Nawawii bin 'Umar al-Jaawii al-Bantanii wa waalidihii asy-Syaikh 'Umar bin 'Arabii, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Pemuka Ulama Hijaz Syekh Muhammad Nawawi bin Umar Al-Jawi Al-Bantani beserta ayahandanya Syekh Umar bin Arabi di Tanara. Al-Fatihah."
+      },
+      {
+        title: "Doa Pembuka Cahaya Ilmu, Kecerdasan Santri & Keberkahan Karya",
+        text: "اللّٰهُمَّ أَخْرِجْنَا مِنْ ظُلُمَاتِ الْوَهْمِ وَأَكْرِمْنَا بِنُورِ الْفَهْمِ وَافْتَحْ عَلَيْنَا بِمَعْرِفَةِ الْعِلْمِ، وَأَفِضْ عَلَيْنَا مِنْ بَرَكَاتِ عُلُومِ الشَّيْخِ نَوَوِي الْبَنْتَنِي",
+        latin: "Allaahumma akhrijnaa min zhulumaatil-wahmi wa akrimnaa bi nuuril-fahmi waftah 'alainaa bi ma'rifatil-'ilmi, wa afidh 'alainaa min barakaati 'uluumisy-Syaikh Nawawii al-Bantanii.",
+        translation: "Ya Allah, keluarkanlah kami dari gelapnya keraguan, muliakanlah kami dengan cahaya pemahaman, bukakanlah bagi kami makrifat ilmu, dan limpahkanlah kepada kami keberkahan ilmu Syekh Nawawi Al-Bantani."
+      }
     ]
   },
   {
@@ -1318,7 +1640,7 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/7/70/MAKAM_SYAIKHONA_KHOLIL_MARTAJASAH.jpg",
     imageSource: "Wikimedia Commons — Kompleks Makam Syaikhona KH. Muhammad Kholil, Martajasah, Bangkalan Madura",
     history: "Lahir di Kampung Senenan, Kemayoran, Bangkalan pada 11 Jumadil Akhir 1235 H (1820 M), Syaikhona Kholil sudah hafal Alfiyah Ibnu Malik (1.000 bait) dan Al-Qur'an sejak belia. Setelah menimba ilmu di berbagai pesantren Jawa dan Makkah (1859 M), beliau mendirikan Pesantren Demangan Bangkalan yang mencetak hampir seluruh pendiri pesantren besar di Pulau Jawa dan Madura.",
-    untoldStory: "Pada tahun 1924, menjelang berdirinya Jam'iyyah Nahdlatul Ulama, Syaikhona Kholil mengutus santri mudanya, Kiai As'ad Syamsul Arifin (Situbondo), mengantarkan sebatang tongkat sambil membacakan Surat Thaha ayat 17–23 serta seuntai tasbih dengan wirid 'Ya Jabbar Ya Qahhar' kepada KH. Hasyim Asy'ari di Tebuireng Jombang. Menerima isyarat gurunya itu, KH. Hasyim Asy'ari menangis haru dan mantap mendirikan NU.",
+    untoldStory: "Pada tahun 1924, menjelang berdirinya Jam'iyyah Nahdlatul Ulama, Syaikhona Kholil mengutus santri mudanya, Kiai As'ad Syamsul Arifin (Situbondo), mengantarkan sebatang tongkat sambil membacakan Surat Thaha ayat 17–23 serta seuntai tasbih dengan wirid 'Ya Jabbar Ya Qahhar' kepada KH. Hasyim Asy'ari di Tebuireng Jombang<!--more-->\n\nSaat Kiai As'ad mengalungkan tasbih itu ke leher Hadratussyaikh KH. Hasyim Asy'ari, air mata sang murid tumpah membasahi janggutnya; beliau menangkap pesan batin gurunya bahwa perjuangan menjaga akidah Ahlussunnah wal Jamaah di Nusantara telah mendapat restu langit, hingga lahirlah Nahdlatul Ulama pada 1926.",
     facilities: ["Masjid Agung Syaikhona Muhammad Kholil Martajasah", "Kubah Makam Syaikhona Kholil", "Terminal Parkir Bus Martajasah", "Sentra Batik Tanjungbumi & Kuliner Bebek Sinjay"],
     openingHours: "Buka 24 Jam",
     karomah: [
@@ -1326,16 +1648,21 @@ export const ziarahSites: ZiarahSite[] = [
       "Menolong jamaah yang tertinggal kapal laut menuju Makkah hanya dengan menyuruhnya memejamkan mata sambil berpegangan pada jubah beliau hingga tiba di Masjidil Haram dalam sekejap.",
       "Menyembuhkan orang lumpuh hanya dengan kejutan gertakan sehingga orang tersebut langsung berdiri dan berlari sehat."
     ],
+    haulSchedule: "Puncak Haul Akbar Syaikhona Muhammad Kholil: 27–29 Ramadhan (Malam Ganjil Akhir Ramadhan) di Kompleks Masjid Agung Syaikhona Kholil, Martajasah, Bangkalan, Madura.",
+    localAdab: "Mengenakan busana muslim rapi (sarung dan kopiah bagi laki-laki, busana tertutup santun bagi perempuan), menjaga wudhu, duduk tertib di dalam Kubah Martajasah tanpa berdesakan di pagar maqbarah, serta dianjurkan membaca Shalawat Nariyah 11x atau 41x.",
+    barokahHajat: "Sebagai Mahaguru para pendiri pesantren besar se-Jawa dan Madura serta pengamal utama Shalawat Nariyah dan Asma 'Ya Jabbar Ya Qahhar', pusara Syaikhona Kholil di Martajasah menjadi muara jutaan santri dan orang tua yang bertawassul memohon kepada Allah SWT agar anak-anaknya dikaruniai ilmu yang bermanfaat dan menjadi ulama/pemimpin umat, serta diuraikan segala ikatan kesulitan hidup (tanhallu bihil 'uqad).",
     doaKhusus: [
       {
-        title: "Tawasul Syaikhona Muhammad Kholil Bangkalan",
-        text: "إِلَى حَضْرَةِ شَيْخِنَا الكَرِيمِ الشَّيْخِ مُحَمَّدْ خَلِيلْ بِنْ عَبْدِ اللَّطِيفْ البَانْغكَالَانِي قَدَّسَ اللهُ سِرَّهُ، الفَاتِحَة...",
-        translation: "Kepada kehadirat Mahaguru kami Syekh Muhammad Kholil bin Abdul Lathif Al-Bangkalani, semoga Allah mensucikan rahasianya. Al-Fatihah..."
+        title: "Hadoroh & Tawassul Mahaguru Nusantara Syaikhona KH. Muhammad Kholil Bangkalan",
+        text: "إِلَى حَضْرَةِ شَيْخِنَا الْكَرِيمِ وَمُرَبِّي رُوحِنَا الشَّيْخِ مُحَمَّدْ خَلِيلْ بِنْ عَبْدِ اللَّطِيفْ الْبَانْغكَالَانِي قَدَّسَ اللهُ سِرَّهُ الْعَزِيزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati Syaikhinal-Kariim wa Murabbii ruuhinaa asy-Syaikh Muhammad Khaliil bin 'Abdil-Lathiif al-Baangkaalaanii qaddasallaahu sirrahul-'aziiz, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Mahaguru kami yang mulia dan pendidik ruhani kami Syekh Muhammad Kholil bin Abdul Lathif Al-Bangkalani, semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
       },
       {
-        title: "Sholawat Nariyah (Amalan Utama Syaikhona Kholil)",
-        text: "اللَّهُمَّ صَلِّ صَلَاةً كَامِلَةً وَسَلِّمْ سَلَامًا تَامًّا عَلَى سَيِّدِنَا مُحَمَّدٍ الَّذِي تَنْحَلُّ بِهِ العُقَدُ وَتَنْفَرِجُ بِهِ الكُرَبُ...",
-        translation: "Ya Allah, limpahkanlah shalawat yang sempurna dan salam yang utuh kepada junjungan kami Nabi Muhammad SAW, yang dengannya terurai segala ikatan kesulitan dan dilapangkan segala kesempitan..."
+        title: "Shalawat Nariyah (Tafrijiyah) — Amalan Wasilah Pengurai Kesulitan Syaikhona Kholil",
+        text: "اللّٰهُمَّ صَلِّ صَلَاةً كَامِلَةً وَسَلِّمْ سَلَامًا تَامًّا عَلَى سَيِّدِنَا مُحَمَّدٍ الَّذِي تَنْحَلُّ بِهِ الْعُقَدُ، وَتَنْفَرِجُ بِهِ الْكُرَبُ، وَتُقْضَى بِهِ الْحَوَائِجُ، وَتُنَالُ بِهِ الرَّغَائِبُ وَحُسْنُ الْخَوَاتِمِ، وَيُسْتَسْقَى الْغَمَامُ بِوَجْهِهِ الْكَرِيمِ، وَعَلَى آلِهِ وَصَحْبِهِ فِي كُلِّ لَمْحَةٍ وَنَفَسٍ بِعَدَدِ كُلِّ مَعْلُومٍ لَكَ",
+        latin: "Allaahumma shalli shalaatan kaamilatan wa sallim salaaman taamman 'alaa Sayyidinaa Muhammadinil-ladzii tanhallu bihil-'uqadu, wa tanfariju bihil-kurabu, wa tuqdhaa bihil-hawaa-iju, wa tunaalu bihir-raghaa-ibu wa husnul-khawaatimi, wa yustasqal-ghamaamu bi wajhihil-kariimi, wa 'alaa aalihii wa shahbihii fii kulli lamhatin wa nafasin bi 'adadi kulli ma'luumin laka.",
+        translation: "Ya Allah, limpahkanlah shalawat yang sempurna dan salam yang utuh kepada junjungan kami Nabi Muhammad SAW, yang dengannya terurai segala ikatan kesulitan, dilapangkan segala kesempitan, ditunaikan segala hajat, diraih segala cita-cita dan husnul khatimah, serta diturunkan hujan rahmat berkat kemuliaan wajahnya; juga kepada keluarga dan sahabatnya di setiap kejapan mata dan tarikan napas sejumlah segala pengetahuan-Mu."
       }
     ]
   },
@@ -1368,18 +1695,28 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/92/Hasyim_Asyari.jpg",
     imageSource: "Wikipedia Bahasa Indonesia / Wikimedia Commons — Potret Resmi Hadratussyaikh KH. Muhammad Hasyim Asy'ari (Pendiri Pesantren Tebuireng)",
     history: "Didirikan oleh Hadratussyaikh KH. Hasyim Asy'ari pada tahun 1899 di dusun Tebuireng yang semula rawan kejahatan, Pesantren Tebuireng tumbuh menjadi mercusuar keilmuan hadis (Shahih Bukhari-Muslim) dan pergerakan kemerdekaan Indonesia. Di kompleks pemakaman keluarga pesantren ini bersemayam KH. Hasyim Asy'ari, KH. Abdul Wahid Hasyim, KH. Yusuf Hasyim, KH. Abdurrahman Wahid (Gus Dur), dan KH. Salahuddin Wahid (Gus Sholah).",
-    untoldStory: "Di batu nisan KH. Abdurrahman Wahid (Gus Dur) tertulis epitaf dalam empat bahasa (Indonesia, Arab, Inggris, dan Mandarin): 'Di Sini Beristirahat Pejuang Kemanusiaan' (Here Rests a Humanist). Ribuan peziarah lintas latar belakang datang setiap hari tanpa henti.",
+    untoldStory: "Ketika pertama kali membuka Pesantren Tebuireng pada 1899 dengan hanya 8 orang santri di bangunan bambu sederhana, setiap malam pondok dilempari batu dan diteror oleh para penjudi serta perampok sekitar pabrik gula Cukir<!--more-->\n\nNamun Hadratussyaikh KH. Hasyim Asy'ari tidak pernah membalas dengan kekerasan; beliau justru menjaga para santrinya yang tidur sambil mendirikan shalat malam dan mendoakan para pelempar batu itu agar diberi hidayah. Kelembutan yang diwarisi pula oleh cucunya, KH. Abdurrahman Wahid (Gus Dur), membuat batu nisan Tebuireng yang bertuliskan 'Di Sini Beristirahat Pejuang Kemanusiaan' terus diziarahi ribuan umat setiap hari.",
     facilities: ["Masjid Ulul Albab Pesantren Tebuireng", "Museum Islam Indonesia KH. Hasyim Asy'ari (MINHA)", "Lorong Peziarah & Pendopo Tahlil", "Terminal Parkir Bus Kawasan Wisata Religi Gus Dur"],
     openingHours: "07:00 - 21:00 WIB (Buka kembali pukul 01:00 - 03:30 WIB dini hari)",
     karomah: [
       "Mahaguru Syaikhona Kholil Bangkalan pernah datang sendiri ke Tebuireng untuk ikut mengaji hadis Shahih Bukhari-Muslim kepada muridnya, KH. Hasyim Asy'ari, sebagai penghormatan atas sanad hadis beliau.",
       "Fatwa Resolusi Jihad 22 Oktober 1945 menggerakkan ratusan ribu santri dan rakyat mempertahankan kemerdekaan RI di Surabaya."
     ],
+    haulSchedule: "Haul Hadratussyaikh KH. Hasyim Asy'ari: 7 Ramadhan; Haul KH. Abdurrahman Wahid (Gus Dur): Akhir bulan Desember (sekitar 30 Desember) di Pondok Pesantren Tebuireng, Jombang.",
+    localAdab: "Mematuhi jadwal buka-tutup pelataran makam Pondok Pesantren Tebuireng (tutup saat jam kegiatan belajar santri malam pukul 21.00–01.00 WIB), berpakaian santun khas pesantren, dan duduk berdoa dengan tertib di pendopo maqbarah tanpa melewati pagar pembatas nisan.",
+    barokahHajat: "Di Maqbarah Masyayikh Tebuireng tempat bersemayamnya Hadratussyaikh KH. Hasyim Asy'ari (pengarang Adabul 'Alim wal Muta'allim) dan Gus Dur (Pejuang Kemanusiaan), para peziarah umumnya bertawassul memohon kepada Allah SWT agar anak-cucunya dikaruniai adab mulia dan keberkahan ilmu pesantren, keteguhan membela kebenaran dan kemanusiaan, serta keluasan hati memaafkan sesama.",
     doaKhusus: [
       {
-        title: "Tawasul Masyayikh Tebuireng",
-        text: "إِلَى حَضْرَةِ حَضْرَةِ الشَّيْخِ مُحَمَّدْ هَاشِمْ أَشْعَرِي، وَالشَّيْخِ عَبْدِ الوَاحِدْ هَاشِمْ، وَالشَّيْخِ عَبْدِ الرَّحْمٰنْ وَاحِدْ (غُوسْ دُورْ)، الفَاتِحَة...",
-        translation: "Kepada kehadirat Hadratussyaikh KH. Muhammad Hasyim Asy'ari, KH. Abdul Wahid Hasyim, dan KH. Abdurrahman Wahid (Gus Dur). Al-Fatihah..."
+        title: "Hadoroh & Tawassul Masyayikh Tebuireng (KH. Hasyim Asy'ari, KH. Wahid Hasyim & Gus Dur)",
+        text: "إِلَى حَضْرَةِ حَضْرَةِ الشَّيْخِ مُحَمَّدْ هَاشِمْ أَشْعَرِي، وَالشَّيْخِ عَبْدِ الْوَاحِدْ هَاشِمْ، وَالشَّيْخِ عَبْدِ الرَّحْمٰنْ وَاحِدْ (غُوسْ دُورْ)، وَسَائِرِ مَشَايِخِ تَبُوإِيرَنْغ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhrati Hadhratisy-Syaikh Muhammad Haasyim Asy'arii, wasy-Syaikh 'Abdil-Waahid Haasyim, wasy-Syaikh 'Abdirrahmaan Waahid (Guus Duur), wa saa-iri masyaayikhi Tabuuiireng, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Hadratussyaikh KH. Muhammad Hasyim Asy'ari, KH. Abdul Wahid Hasyim, KH. Abdurrahman Wahid (Gus Dur), beserta seluruh masyayikh Pesantren Tebuireng. Al-Fatihah."
+      },
+      {
+        title: "Doa Keberkahan Ilmu Santri, Kemuliaan Adab & Keteguhan Khidmah Umat",
+        text: "اللّٰهُمَّ انْفَعْنَا وَأَوْلَادَنَا بِعُلُومِ حَضْرَةِ الشَّيْخِ هَاشِمْ أَشْعَرِي وَأَدَبِهِ، وَارْزُقْنَا سَعَةَ الصَّدْرِ وَخِدْمَةَ الْأُمَّةِ كَمَا أَكْرَمْتَ عَبْدَكَ عَبْدَ الرَّحْمٰنْ وَاحِدْ",
+        latin: "Allaahummanfa'naa wa aulaadanaa bi 'uluumi Hadhratisy-Syaikh Haasyim Asy'arii wa adabihii, warzuqnaa sa'atash-shadri wa khidmatal-ummati kamaa akramta 'abdaka 'Abdarrahmaan Waahid.",
+        translation: "Ya Allah, berikanlah kemanfaatan kepada kami dan anak-anak kami melalui ilmu dan adab Hadratussyaikh KH. Hasyim Asy'ari, serta karuniakanlah kepada kami kelapangan dada dan ketulusan mengabdi kepada umat sebagaimana Engkau memuliakan hamba-Mu KH. Abdurrahman Wahid."
       }
     ]
   },
@@ -1499,7 +1836,7 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/a/aa/Masjid_Agung_Pasuruan.jpg",
     imageSource: "Wikimedia Commons — Masjid Agung Al-Anwar Kota Pasuruan (Lokasi Makam KH. Abdul Hamid Pasuruan)",
     history: "Lahir di Desa Sumbergirang, Lasem tahun 1914 M dengan nama kecil Abdul Mu'thi, beliau hijrah ke Pasuruan setelah menikah dengan putri KH. Ahmad Qusyairi. Kedalaman ilmu, kezuhudan, dan kasih sayang beliau membuat rumahnya di Kebonsari, Pasuruan tak pernah sepi dari kunjungan ulama besar, habaib, pejabat, hingga rakyat kecil dari seluruh penjuru Nusantara.",
-    untoldStory: "Ketika masih muda dan belum dikenal orang di Pasuruan, wali besar Habib Ja'far bin Syaikhan Assegaf pernah mengumumkan di depan ribuan jamaah: 'Jika aku wafat nanti, datanglah kalian kepada Kiai Abdul Hamid, karena kunci kewalian Pasuruan telah diserahkan kepadanya.'",
+    untoldStory: "Ketika KH. Abdul Hamid masih muda dan belum dikenal orang di Pasuruan, berkali-kali beliau diuji dengan sikap kasar sebagian orang namun selalu membalasnya dengan senyuman tulus, jamuan makan, dan doa kebaikan di sepertiga malam<!--more-->\n\nHingga pada suatu hari, wali besar Habib Ja'far bin Syaikhan Assegaf mengumumkan di hadapan ribuan jamaah dengan mata berkaca-kaca: 'Jika aku wafat nanti, datanglah kalian kepada Kiai Abdul Hamid, karena kunci kewalian dan peneduh batin Pasuruan telah diserahkan Allah kepadanya.'",
     facilities: ["Masjid Agung Al-Anwar Kota Pasuruan", "Kompleks Makam KH. Abdul Hamid & Habib Taufiq", "Alun-Alun Kota Pasuruan", "Terminal Parkir Bus Wisata Religi"],
     openingHours: "Buka 24 Jam",
     karomah: [
@@ -1507,11 +1844,21 @@ export const ziarahSites: ZiarahSite[] = [
       "Tetap tersenyum sabar dan mendoakan kebaikan bagi orang yang mencacinya hingga orang tersebut menangis dan bertaubat.",
       "Beberapa jamaah haji bersaksi bertemu dan bersalaman dengan Mbah Hamid di depan Multazam Ka'bah, sementara keluarga di Pasuruan menyaksikan beliau tidak meninggalkan rumahnya."
     ],
+    haulSchedule: "Puncak Haul Agung KH. Abdul Hamid (Mbah Hamid Pasuruan): 9 Rabiul Awal di Kompleks Masjid Agung Al-Anwar & Pondok Pesantren Salafiyah Kota Pasuruan.",
+    localAdab: "Menjaga wudhu dan keheningan saat berjalan melewati selasar Masjid Agung Al-Anwar menuju cungkup belakang, memisahkan tempat duduk jamaah putra dan putri, serta dianjurkan membaca wirid 'Hasbunallah wa ni'mal wakil' yang sering diijazahkan Mbah Hamid.",
+    barokahHajat: "Karena kelembutan akhlak, kesabaran luar biasa, dan karomah kasyaf KH. Abdul Hamid bin Abdullah Umar (Mbah Hamid Pasuruan) yang semasa hidupnya menjadi tempat mengadu ribuan tamu dari berbagai kesulitan, peziarah yang datang ke Pasuruan umumnya bertawassul memohon kepada Allah SWT agar dilembutkan hati pasangan dan anak-anaknya, didamaikan perselisihan keluarga, serta dibukakan jalan keluar atas hajat rumah tangga dan perniagaan.",
     doaKhusus: [
       {
-        title: "Tawasul KH. Abdul Hamid Pasuruan",
-        text: "إِلَى حَضْرَةِ الوَلِيِّ الكَامِلِ الشَّيْخِ عَبْدِ الحَمِيدْ بِنْ عَبْدِ اللهِ عُمَرْ البَاسُورُوَانِي، الفَاتِحَة...",
-        translation: "Kepada kehadirat Wali Kamil Syekh KH. Abdul Hamid bin Abdullah Umar Pasuruan. Al-Fatihah..."
+        title: "Hadoroh & Tawassul Al-Arif Billah KH. Abdul Hamid bin Abdullah Umar Pasuruan",
+        text: "إِلَى حَضْرَةِ الْوَلِيِّ الْكَامِلِ وَالْعَارِفِ بِاللهِ الشَّيْخِ عَبْدِ الْحَمِيدْ بِنْ عَبْدِ اللهِ عُمَرَ الْبَاسُورُوَانِي قَدَّسَ اللهُ سِرَّهُ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhratil-Waliyyil-Kaamil wal-'Aarifi billaah asy-Syaikh 'Abdil-Hamiid bin 'Abdillaah 'Umar al-Baasuuruwaanii qaddasallaahu sirrahu, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Wali Kamil dan Al-Arif Billah Syekh KH. Abdul Hamid bin Abdullah Umar Pasuruan, semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Wirid Hasbunallah & Doa Kelembutan Hati Keluarga (Warisan Ijazah Mbah Hamid Pasuruan)",
+        text: "حَسْبُنَا اللهُ وَنِعْمَ الْوَكِيلُ نِعْمَ الْمَوْلَى وَنِعْمَ النَّصِيرُ ۝ اللّٰهُمَّ لَيِّنْ قُلُوبَنَا وَقُلُوبَ أَهْلِنَا وَأَوْلَادِنَا لِطَاعَتِكَ، وَاقْضِ حَوَائِجَنَا بِكَرَامَةِ الشَّيْخِ عَبْدِ الْحَمِيدْ",
+        latin: "Hasbunallaahu wa ni'mal-wakiil, ni'mal-maulaa wa ni'man-nashiir. Allaahumma layyin quluubanaa wa quluuba ahlinaa wa aulaadinaa li thaa'atika, waqdhi hawaa-ijanaa bi karaamatisy-Syaikh 'Abdil-Hamiid.",
+        translation: "Cukuplah Allah menjadi Penolong kami dan Allah adalah sebaik-baik Pelindung. Ya Allah, lembutkanlah hati kami, hati keluarga, dan anak-anak kami untuk taat kepada-Mu, serta kabulkanlah hajat-hajat kami dengan kemuliaan KH. Abdul Hamid Pasuruan."
       }
     ]
   },
@@ -1542,8 +1889,30 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/53/Aerial_of_Gresik%2C_and_Giri_Hills%2C_23_July_2015.jpg",
     imageSource: "Wikimedia Commons — Lanskap Udara Kota Tua & Alun-Alun Gresik (Kompleks Masjid Jami' & Makam Habib Abu Bakar Assegaf)",
     history: "Lahir di Besuki, Situbondo tahun 1285 H (1869 M), Habib Abu Bakar menuntut ilmu di Hadramaut sejak usia 8 tahun. Sekembalinya ke Gresik, atas isyarat rohani beliau menjalani khalwat (uzlah ibadah) di kamar rumahnya selama 15 tahun penuh sebelum akhirnya diperintahkan oleh gurunya, Habib Muhammad bin Idrus Al-Habsyi, untuk keluar membimbing umat.",
+    untoldStory: "Selama 15 tahun penuh di usia mudanya, Al-Habib Abu Bakar bin Muhammad Assegaf mengunci diri dalam khalwat ibadah di sebuah kamar kecil di rumahnya di Gresik, hanya ditemani air mata kerinduan kepada Allah dan Rasulullah SAW<!--more-->\n\nKetika gurunya, Habib Muhammad bin Idrus Al-Habsyi, datang menjemputnya keluar dari khalwat untuk membimbing umat, pancaran cahaya wajah dan kebersihan qalbu beliau begitu dahsyat hingga siapa pun yang memandang wajah beliau langsung teringat kepada akhirat dan menangis bertaubat.",
     facilities: ["Masjid Jami' Gresik (Alun-Alun Gresik)", "Kubah Makam Habib Abu Bakar Assegaf", "Rumah Bersejarah Jl. KH. Zubair (Lokasi Haul)", "Area Parkir Alun-Alun Gresik"],
-    openingHours: "Buka 24 Jam"
+    openingHours: "Buka 24 Jam",
+    karomah: [
+      "Menjalani khalwat ibadah selama 15 tahun hingga mencapai maqam Al-Qutb Al-Ghaus yang menjadi rujukan para habaib dari Hadramaut dan Haramain.",
+      "Doa dan pandangan mata kasih sayang beliau meluluhkan hati yang keras dan mengabulkan hajat ribuan tamu yang datang ke Gresik."
+    ],
+    haulSchedule: "Puncak Haul Agung Al-Qutb Habib Abu Bakar Assegaf: 16–17 Dzulhijjah (Diawali Rouhah di kediaman Jl. KH. Zubair dan puncak Maulid di Masjid Jami' Alun-Alun Gresik).",
+    localAdab: "Mengenakan busana muslim putih yang bersih dan sopan, menjaga ketertiban saat memasuki Kubah di sisi barat Masjid Jami' Gresik, memisahkan jalur peziarah pria dan wanita, serta memperbanyak shalawat kepada Rasulullah SAW.",
+    barokahHajat: "Karena maqam kewalian Al-Qutb Al-Ghaus Al-Habib Abu Bakar bin Muhammad Assegaf yang ditempa melalui 15 tahun khalwat ibadah dan mahabbah suci kepada Rasulullah SAW, peziarah yang datang ke Kubah Masjid Jami' Gresik umumnya bertawassul memohon kepada Allah SWT agar dibersihkan hatinya dari penyakit riya dan dengki, dikaruniai kelezatan beribadah, serta dikabulkan hajat-hajat besar keluarga.",
+    doaKhusus: [
+      {
+        title: "Hadoroh & Tawassul Al-Qutb Al-Ghaus Al-Habib Abu Bakar bin Muhammad Assegaf Gresik",
+        text: "إِلَى حَضْرَةِ الْقُطْبِ الْغَوْثِ الْحَبِيبِ أَبِي بَكْرِ بْنِ مُحَمَّدٍ السَّقَّافِ (غَرِيسِيكْ) قَدَّسَ اللهُ سِرَّهُ الْعَزِيزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhratil-Quthbil-Ghauts al-Habiib Abii Bakr bin Muhammad as-Saqqaaf (Gresiik) qaddasallaahu sirrahul-'aziiz, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Al-Qutb Al-Ghaus Al-Habib Abu Bakar bin Muhammad Assegaf Gresik, semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Doa Kejernihan Qalbu, Kelezatan Dzikir & Pengabulan Hajat (Wasilah Kubah Gresik)",
+        text: "اللّٰهُمَّ طَهِّرْ قُلُوبَنَا مِنْ كُلِّ وَصْفٍ يُبَاعِدُنَا عَنْ مُشَاهَدَتِكَ وَمَحَبَّتِكَ، وَبِكَرَامَةِ قُطْبِكَ الْحَبِيبِ أَبِي بَكْرٍ السَّقَّافِ اقْضِ حَوَائِجَنَا الدِّينِيَّةَ وَالدُّنْيَوِيَّةَ",
+        latin: "Allaahumma thahhir quluubanaa min kulli washfin yubaa'idunaa 'an musyaahadatika wa mahabbatika, wa bi karaamati quthbikal-Habiib Abii Bakrin as-Saqqaaf iqdhi hawaa-ijanad-diiniyyata wad-dun-yawiyyah.",
+        translation: "Ya Allah, sucikanlah hati kami dari segala sifat tercela yang menjauhkan kami dari memandang keagungan-Mu dan mencintai-Mu; serta dengan kemuliaan Wali Qutub-Mu Habib Abu Bakar Assegaf, tunaikanlah seluruh hajat agama dan dunia kami."
+      }
+    ]
   },
   {
     id: "habib-9",
@@ -1572,16 +1941,27 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Makam_Al_Habib_Husein_bin_Ali_Assegaf.jpg",
     imageSource: "Wikimedia Commons — Dokumentasi Kubah Makam Habaib Jawa Timur (Tradisi Ziarah Habib Sholeh Tanggul Jember)",
     history: "Habib Sholeh tiba di Indonesia pada tahun 1921 M dan menetap di Kecamatan Tanggul, Jember. Setelah berkhalwat selama lebih dari 3 tahun dan dibaiat oleh gurunya Habib Abu Bakar Assegaf di Gresik, beliau mengabdikan hidupnya untuk menyantuni fakir miskin, mendamaikan perselisihan masyarakat, dan mendoakan ribuan tamu yang datang.",
+    untoldStory: "Ketika kemarau panjang melanda Jember hingga sumur-sumur kering dan sawah gagal panen, ribuan warga memohon kepada Al-Habib Sholeh bin Muhsin Al-Hamid di Tanggul untuk memimpin shalat Istisqa<!--more-->\n\nHabib Sholeh keluar menuju lapangan sambil menuntun anak-anak yatim dan fakir miskin, lalu mengangkat kedua tangannya melantunkan Shalawat Mansub dengan air mata berlinang. Belum sempat jamaah membubarkan barisan dari lapangan, awan tebal menyelimuti langit Tanggul dan hujan lebat mengguyur bumi, membuktikan kemustajaban doa hamba yang dekat dengan Rasulullah SAW.",
     facilities: ["Masjid Jami' Riyadlus Sholihin Tanggul", "Kubah Makam Habib Sholeh Tanggul", "Dekat Stasiun Kereta Api Tanggul", "Area Parkir Bus Luas"],
     openingHours: "Buka 24 Jam",
     karomah: [
       "Doa beliau terkenal secepat kilat menyambar (mustajab) dalam menyembuhkan penyakit maupun mengentaskan kesulitan hidup.",
       "Turunnya hujan lebat seketika di wilayah yang mengalami kekeringan parah tepat setelah beliau mengangkat tangan berdoa di lapangan."
     ],
+    haulSchedule: "Puncak Haul Akbar Habib Sholeh Tanggul: Ahad kedua di bulan Syawal (bertepatan wafat beliau 8 Syawal) di Kompleks Masjid Riyadlus Sholihin, Tanggul, Jember.",
+    localAdab: "Mengambil wudhu di Masjid Riyadlus Sholihin Tanggul, memasuki kubah makam dengan tertib, dan sangat dianjurkan mengamalkan bacaan Shalawat Mansub sebanyak 11x atau 41x setelah bertahlil.",
+    barokahHajat: "Karena Al-Habib Sholeh bin Muhsin Al-Hamid (Tanggul) masyhur sebagai waliyullah yang doanya sangat cepat dikabulkan bagaikan kilat dan mewariskan ijazah 'Shalawat Mansub', peziarah yang datang ke Tanggul umumnya bertawassul memohon kepada Allah SWT agar dimudahkan segala urusan yang rumit dan mendesak (taliinu bihash-shu'uub), disembuhkan dari penyakit, serta dilancarkan jalan rezeki dan jodoh.",
     doaKhusus: [
       {
-        title: "Sholawat Mansub Habib Sholeh Tanggul",
+        title: "Hadoroh & Tawassul Al-Arif Billah Al-Habib Sholeh bin Muhsin Al-Hamid (Tanggul)",
+        text: "إِلَى حَضْرَةِ الْعَارِفِ بِاللهِ الْحَبِيبِ صَالِحِ بْنِ مُحْسِنِ الْحَامِدِ (تَانْغغُولْ جَمْبَرْ) قَدَّسَ اللهُ سِرَّهُ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ",
+        latin: "Ilaa hadhratil-'Aarifi billaah al-Habiib Shaalih bin Muhsin al-Haamid (Taangguul Jember) qaddasallaahu sirrahu, syai-un lillaahi lahumul-Faatihah.",
+        translation: "Kepada kehadirat Al-Arif Billah Al-Habib Sholeh bin Muhsin Al-Hamid Tanggul Jember, semoga Allah mensucikan rahasia kemuliaannya. Al-Fatihah."
+      },
+      {
+        title: "Sholawat Mansub Habib Sholeh Tanggul (Wasilah Pemudah Segala Kesulitan)",
         text: "اللَّهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ صَلَاةً تَغْفِرُ بِهَا الذُّنُوبَ، وَتُصْلِحُ بِهَا القُلُوبَ، وَتَنْطَلِقُ بِهَا العُصُوبُ، وَتَلِينُ بِهَا الصُّعُوبُ، وَعَلَى آلِهِ وَصَحْبِهِ وَمَنْ إِلَيْهِ مَنْسُوبٌ.",
+        latin: "Allaahumma shalli 'alaa Sayyidinaa Muhammadin shalaatan taghfiru bihad-dzunuub, wa tushlihu bihal-quluub, wa tanthaliqu bihal-'ushuub, wa taliinu bihash-shu'uub, wa 'alaa aalihii wa shahbihii wa man ilaihi mansuub.",
         translation: "Ya Allah, limpahkanlah rahmat kepada junjungan kami Nabi Muhammad SAW, yang dengan shalawat itu Engkau mengampuni dosa-dosa, memperbaiki hati, melancarkan urat-urat, dan memudahkan segala kesulitan, juga kepada keluarga, sahabat, dan siapa pun yang bernasab/terhubung kepadanya."
       }
     ]
@@ -1974,12 +2354,36 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/ed/Abdurrauf_Singkil.png",
     imageSource: "Wikipedia Bahasa Indonesia / Wikimedia Commons — Ilustrasi Sejarah Syekh Abdurrauf As-Singkili (Teungku Syiah Kuala, Aceh)",
     history: "Lahir di Singkil tahun 1615 M, Syekh Abdurrauf diangkat menjadi Mufti Besar Kesultanan Aceh pada masa empat ratu (Sultanah Tajul Alam Safiatuddin hingga Kamalat Syah). Gelar 'Teungku Syiah Kuala' berasal dari bahasa Aceh 'Syaikh di Kuala' (Syekh yang bermukim dan dimakamkan di muara sungai). Nama beliau diabadikan menjadi Universitas Syiah Kuala (USK).",
-    untoldStory: "Saat bencana gempa dan megatsunami Aceh pada 26 Desember 2004 menyapu rata seluruh bangunan di pesisir pantai Deah Raya, bangunan inti makam Teungku Syiah Kuala yang hanya berjarak beberapa puluh meter dari bibir pantai tetap bertahan.",
+    untoldStory: "Saat bencana gempa dan megatsunami Aceh pada 26 Desember 2004 menyapu rata seluruh bangunan di pesisir pantai Deah Raya, bangunan inti makam Teungku Syiah Kuala yang hanya berjarak beberapa puluh meter dari bibir pantai tetap bertahan.<!--more-->\n\nTiga abad sebelumnya, Kesultanan Aceh Darussalam hampir terbelah akibat pertikaian berdarah antara pengikut tasawuf wujudiyah dan ulama fikih istana. Sekembalinya dari sembilan belas tahun menuntut ilmu di Haramain pada 1661 M, Syekh Abdurrauf As-Singkili menulis kitab tafsir 'Tarjuman al-Mustafid'—tafsir Al-Qur'an 30 juz pertama dalam bahasa Melayu—serta merumuskan pepatah hukum adat Aceh: 'Adat bak Po Teumeureuhom, Hukom bak Syiah Kuala'. Dengan kelembutan ilmu dan keadilan fatwa, beliau menyatukan kembali ulama, umara (empat Ratu/Sultanah Aceh), dan rakyat tanpa menumpahkan darah.",
     facilities: ["Kompleks Makam Bersejarah Syiah Kuala", "Musholla & Bale Sejarah", "Area Parkir Pesisir Deah Raya"],
     openingHours: "07:00 - 18:00 WIB",
+    haulSchedule: "Setiap Bulan Syawal (Khenduri & Ziarah Akbar Makam Teungku Syiah Kuala di Muara Krueng Aceh)",
+    localAdab: [
+      "Berpakaian syar'i sesuai Qanun Syariat Islam Aceh (pria bercelana panjang/sarung dan berkopiah, wanita berbusana muslimah longgar dan berjilbab tertutup)",
+      "Membaca tahlil dan Samadiyah dengan tertib di bawah cungkup makam serta menjaga kebersihan kawasan pesisir Deah Raya"
+    ],
+    barokahHajat: [
+      "Wasilah memperdalam ilmu tafsir Al-Qur'an, fikih peradilan, dan kebijaksanaan memutuskan perkara yang rumit",
+      "Ikhtiar memohon keteduhan hati, perdamaian keluarga/masyarakat yang berselisih, dan perlindungan dari bencana alam",
+      "Teladan integritas ulama yang membimbing pemimpin negeri dengan adil dan sejuk"
+    ],
     karomah: [
       "Kompleks makam utama beliau tetap utuh meski diterjang gelombang megatsunami setinggi puluhan meter pada 26 Desember 2004.",
       "Mendamaikan pertikaian teologis antara aliran wujudiyah dan syariat di Aceh melalui karya-karya tasawuf neo-sufisme yang moderat."
+    ],
+    doaKhusus: [
+      {
+        title: "Hadiyah Fatihah Teungku Syiah Kuala (Syekh Abdurrauf As-Singkili)",
+        text: "إِلَى حَضْرَةِ قَاضِي المَالِكِ العَادِلِ الشَّيْخِ عَبْدِ الرَّؤُوفِ بْنِ عَلِيٍّ الفَنْصُورِيِّ السِّنْكِيلِيِّ (تُونْكُو شِيخْ كُوَالا)، شَيْءٌ لِلّٰهِ لَهُمُ الفَاتِحَة...",
+        latin: "Ilâ hadhrati Qâdhil Mâlikil 'Âdil Asy-Syaikh 'Abdirra'ûf bin 'Alî Al-Fanshûrî As-Singkîlî (Teungku Syiah Kuala), syai'un lillâhi lahumul Fâtihah...",
+        translation: "Kepada kehadirat Qadhi Malikul Adil Syekh Abdurrauf bin Ali Al-Fansuri As-Singkili (Teungku Syiah Kuala), segala kemuliaan milik Allah, untuk beliau Al-Fatihah..."
+      },
+      {
+        title: "Doa Munajat Keadilan Hukum & Kedamaian Negeri",
+        text: "اللَّهُمَّ أَرِنَا الحَقَّ حَقًّا وَارْزُقْنَا اتِّبَاعَهُ، وَأَرِنَا البَاطِلَ بَاطِلًا وَارْزُقْنَا اجْتِنَابَهُ، وَأَلِّفْ بَيْنَ قُلُوبِنَا وَأَصْلِحْ ذَاتَ بَيْنِنَا.",
+        latin: "Allâhumma arinal haqqa haqqan warzuqnat tibâ'ah, wa arinal bâthila bâthilan warzuqnaj tinâbah, wa allif baina qulûbinâ wa ashlih dzâta baininâ.",
+        translation: "Ya Allah, tampakkanlah kebenaran kepada kami sebagai kebenaran dan karuniakanlah kekuatan untuk mengikutinya, tampakkanlah kebatilan sebagai kebatilan dan karuniakanlah kekuatan untuk menjauhinya, serta satukanlah hati kami dan damaikanlah perselisihan di antara kami."
+      }
     ]
   },
   {
@@ -2040,8 +2444,37 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg",
     imageSource: "Wikipedia Bahasa Indonesia / Wikimedia Commons — Surau Gadang & Kompleks Makam Syekh Burhanuddin Ulakan, Padang Pariaman",
     history: "Setelah menuntut ilmu agama dan Tarekat Syattariyah kepada Syekh Abdurrauf As-Singkili di Aceh, Syekh Burhanuddin kembali ke Ulakan, Pariaman pada tahun 1680 M. Setiap bulan Shafar, ratusan ribu jamaah dari berbagai provinsi di Sumatera berkumpul di makam beliau dalam tradisi 'Basafa' (Bersafar) untuk berdzikir dan menyambung silaturahmi keilmuan.",
+    untoldStory: "Ketika Pono (Syekh Burhanuddin) kembali dari Aceh ke ranah Minangkabau pada tahun 1680 M, masyarakat pesisir dan darek masih terikat kuat pada adat lama yang kerap berbenturan dengan syariat.<!--more-->\n\nBeliau tidak merombak tatanan nagari secara paksa, melainkan mendirikan Surau Gadang Tanjung Medan di Ulakan sebagai pusat pendidikan anak kemenakan dan musyawarah penghulu adat. Dari surau inilah lahir kesepakatan luhur antara ulama (Tuanku) dan pemangku adat (Ninik Mamak) yang menjadi fondasi falsafah Minangkabau: 'Adat Basandi Syarak, Syarak Basandi Kitabullah'. Tradisi 'Basafa' setiap tanggal 10 Shafar yang dihadiri ratusan ribu jamaah adalah warisan abadi silaturahmi murid-murid surau beliau.",
     facilities: ["Masjid Agung Syekh Burhanuddin Ulakan", "Cungkup Makam Syekh Burhanuddin", "Surau Gadang Tanjung Medan", "Area Parkir Pantai Ulakan"],
-    openingHours: "Buka 24 Jam"
+    openingHours: "Buka 24 Jam",
+    haulSchedule: "Setiap Setelah 10 Shafar (Tradisi Ziarah Akbar 'Basafa' / Bersafar di Ulakan, Padang Pariaman)",
+    localAdab: [
+      "Menghormati tata tertib Tuanku dan pengurus Surau Gadang Ulakan serta menjaga kesopanan busana sesuai adat Minangkabau",
+      "Mengikuti dzikir ratib Tarekat Syattariyah dengan tenang tanpa merusak keheningan jamaah yang sedang bersuluk"
+    ],
+    barokahHajat: [
+      "Wasilah memohon keberkahan ilmu surau, keselarasan antara adat keluarga dan ketaatan syariat Islam",
+      "Ikhtiar memohon kelancaran usaha rantau, keselamatan perjalanan jauh, dan kerukunan sanak famili",
+      "Teladan dakwah kultural yang menghormati kearifan lokal tanpa mengorbankan kemurnian tauhid"
+    ],
+    karomah: [
+      "Menyatukan para penghulu adat Minangkabau dan ulama surau dalam falsafah Adat Basandi Syarak, Syarak Basandi Kitabullah.",
+      "Tradisi ziarah Basafa di makam beliau pada bulan Shafar bertahan lebih dari tiga abad dan selalu dihadiri ratusan ribu jamaah."
+    ],
+    doaKhusus: [
+      {
+        title: "Hadiyah Fatihah Syekh Burhanuddin Ulakan",
+        text: "إِلَى حَضْرَةِ الشَّيْخِ بُرْهَانِ الدِّينِ أُولَاكَانْ المِنَانْجْكَابَاوِيِّ خَلِيفَةِ الطَّرِيقَةِ الشَّطَّارِيَّةِ، شَيْءٌ لِلّٰهِ لَهُمُ الفَاتِحَة...",
+        latin: "Ilâ hadhratisy Syaikh Burhânuddîn Ulakan Al-Minangkabâwî Khalîfatith Tharîqatisy Syaththâriyyah, syai'un lillâhi lahumul Fâtihah...",
+        translation: "Kepada kehadirat Syekh Burhanuddin Ulakan Minangkabau, Khalifah Tarekat Syattariyah, segala kemuliaan milik Allah, untuk beliau Al-Fatihah..."
+      },
+      {
+        title: "Doa Munajat Keselamatan Rantau & Keberkahan Ilmu",
+        text: "اللَّهُمَّ احْفَظْنَا فِي أَسْفَارِنَا وَأَوْطَانِنَا، وَبارِكْ لَنَا فِي عُلُومِنَا وَأَرْزَاقِنَا، وَاجْعَلْنَا هُدَاةً مُهْتَدِينَ.",
+        latin: "Allâhummahfazhnâ fî asfârinâ wa authâninâ, wa bârik lanâ fî 'ulûminâ wa arzâqinâ, waj'alnâ hudâtan muhtadîn.",
+        translation: "Ya Allah, peliharalah kami dalam perjalanan rantau maupun di kampung halaman kami, berkahilah ilmu dan rezeki kami, serta jadikanlah kami penunjuk jalan kebaikan yang mendapat petunjuk."
+      }
+    ]
   },
   {
     id: "ulama-26",
@@ -2140,9 +2573,19 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/45/Guru-ijai-sekumpul.jpg",
     imageSource: "Wikipedia Bahasa Indonesia / Wikimedia Commons — Potret KH. Muhammad Zaini bin Abdul Ghani (Abah Guru Sekumpul, Martapura)",
     history: "Lahir di Tunggul Irang, Martapura pada 27 Muharram 1361 H (1942 M), KH. Muhammad Zaini Abdul Ghani (Guru Ijai / Abah Guru Sekumpul) menghafal Al-Qur'an dan tafsir Jalalain sejak usia kanak-kanak. Beliau membangun kawasan Sekumpul menjadi pusat pengajian tasawuf, maulid Nabi SAW, dan kemuliaan adab yang dicintai seluruh lapisan masyarakat.",
-    untoldStory: "Setiap pelaksanaan Haul Abah Guru Sekumpul di bulan Rajab, warga Martapura dan Kalimantan Selatan membuka ribuan dapur umum gratis di sepanjang jalan berpuluh-puluh kilometer untuk menjamu jutaan peziarah yang datang dari dalam dan luar negeri.",
+    untoldStory: "Setiap pelaksanaan Haul Abah Guru Sekumpul di bulan Rajab, warga Martapura dan Kalimantan Selatan membuka ribuan dapur umum gratis di sepanjang jalan berpuluh-puluh kilometer untuk menjamu jutaan peziarah yang datang dari dalam dan luar negeri.<!--more-->\n\nSemasa hidupnya, Abah Guru Sekumpul mengajarkan bahwa kemuliaan seorang mukmin terletak pada kecintaan kepada Rasulullah SAW, penghormatan kepada ulama dan dzurriyah Nabi, serta kedermawanan menutup aib sesama. Banyak tamu yang datang ke Musholla Ar-Raudhah dengan membawa beban utang atau kesempitan hidup; tanpa perlu mereka mengutarakan keluhannya, Abah Guru Sekumpul sering kali membisikkan nasihat yang persis menjawab isi hati mereka sembari menyelipkan amplop bantuan dengan senyum penuh kasih.",
     facilities: ["Musholla Ar-Raudhah Sekumpul", "Kubah Makam Abah Guru Sekumpul, Guru Seman Mulia, & Guru Salman Jalil", "Pusat Perbelanjaan Batu Permata & Kitab Martapura", "Area Parkir Luas"],
     openingHours: "Buka Sesuai Jadwal Musholla Ar-Raudhah (Umum & Pengajian Rutin Malam Senin)",
+    haulSchedule: "Setiap 5 Rajab (Haul Akbar Abah Guru Sekumpul di Musholla Ar-Raudhah Martapura, dihadiri 3+ juta jamaah)",
+    localAdab: [
+      "Mengenakan busana putih sopan (kopiah putih/sarung bagi pria, busana muslimah rapi bagi wanita) sebagaimana tradisi majelis Sekumpul",
+      "Mematuhi arahan relawan Ar-Raudhah, tidak mengambil foto/video secara berlebihan di depan terali kubah, dan memperbanyak shalawat Maulid Al-Habsyi"
+    ],
+    barokahHajat: [
+      "Wasilah menumbuhkan mahabbah (cinta mendalam) kepada Rasulullah SAW melalui lantunan Maulid Simthud Durar",
+      "Ikhtiar memohon kelapangan rezeki yang berkah, ketenangan rumah tangga, dan dikumpulkan bersama orang-orang shalih",
+      "Teladan kedermawanan, adab memuliakan tamu, dan husnudzon (berbaik sangka) kepada seluruh umat"
+    ],
     karomah: [
       "Aroma harum kasturi yang semerbak dari tubuh dan majelis beliau meskipun tanpa minyak wangi.",
       "Kemampuan kasyaf (mengetahui isi hati tamu) dan kemurahan hati beliau yang membagikan harta dalam jumlah sangat besar kepada para ulama dan fakir miskin.",
@@ -2152,7 +2595,14 @@ export const ziarahSites: ZiarahSite[] = [
       {
         title: "Tawasul Abah Guru Sekumpul",
         text: "إِلَى حَضْرَةِ العَارِفِ بِاللهِ الشَّيْخِ مُحَمَّدْ زَيْنِي بِنْ عَبْدِ الغَنِي البَنْجَرِي (غُورُو سَكُومْفُولْ)، الفَاتِحَة...",
+        latin: "Ilâ hadhratil 'Ârifi billâh Asy-Syaikh Muhammad Zainî bin 'Abdil Ghanî Al-Banjarî (Abah Guru Sekumpul), al-Fâtihah...",
         translation: "Kepada kehadirat Al-Arif Billah Syekh Muhammad Zaini bin Abdul Ghani Al-Banjari (Abah Guru Sekumpul). Al-Fatihah..."
+      },
+      {
+        title: "Shalawat & Munajat Mahabbah Majelis Sekumpul",
+        text: "يَا رَبِّ صَلِّ عَلَى مُحَمَّدٍ وَافْتَحْ مِنَ الخَيْرِ كُلَّ مُغْلَقٍ، وَاحْشُرْنَا فِي زُمْرَةِ الصَّالِحِينَ بِجَاهِ أَوْلِيَائِكَ المُقَرَّبِينَ.",
+        latin: "Yâ Rabbi shalli 'alâ Muhammadin waftah minal khairi kulla mughlaq, wahsyurnâ fî zumratish shâlihîna bijâhi auliyâ'ikal muqarrabîn.",
+        translation: "Ya Rabb, limpahkanlah shalawat atas Nabi Muhammad dan bukakanlah setiap pintu kebaikan yang tertutup, serta kumpulkanlah kami dalam rombongan orang-orang shalih dengan kemuliaan para kekasih-Mu yang dekat."
       }
     ]
   },
@@ -2184,12 +2634,36 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Muhammad_Arsyad_al-Banjari.jpg",
     imageSource: "Wikipedia Bahasa Indonesia / Wikimedia Commons — Lukisan Sejarah Maulana Syekh Muhammad Arsyad Al-Banjari (Datu Kalampayan)",
     history: "Lahir di Lok Gabang, Martapura pada 15 Shafar 1122 H (1710 M), kecerdasan Muhammad Arsyad kecil menarik perhatian Sultan Hamidullah (Sultan Banjar) hingga diangkat anak dan dibiayai menuntut ilmu di Makkah dan Madinah selama 35 tahun. Sekembalinya ke Banjar pada Ramadhan 1186 H (1772 M), beliau membuka perkampungan pendidikan Islam Dalam Pagar dan mengubah lahan rawa Kalampayan menjadi lumbung pertanian dan pusat syariat Islam.",
-    untoldStory: "Dalam perjalanan pulang dari Makkah menuju Kalimantan pada 1772 M, Syekh Muhammad Arsyad singgah di Batavia selama dua bulan dan mengoreksi arah kiblat beberapa masjid tua di Jakarta (Masjid Jembatan Lima, Masjid Pekojan, dan Masjid Luar Batang) hingga melenceng tepat 25 derajat ke kanan sesuai hisab falakiyah presisi. Peristiwa ini dicatat dalam prasasti batu Bahasa Arab di Masjid Jembatan Lima Jakarta Barat.",
+    untoldStory: "Dalam perjalanan pulang dari Makkah menuju Kalimantan pada 1772 M, Syekh Muhammad Arsyad singgah di Batavia selama dua bulan dan mengoreksi arah kiblat beberapa masjid tua di Jakarta (Masjid Jembatan Lima, Masjid Pekojan, dan Masjid Luar Batang) hingga melenceng tepat 25 derajat ke kanan sesuai hisab falakiyah presisi. Peristiwa ini dicatat dalam prasasti batu Bahasa Arab di Masjid Jembatan Lima Jakarta Barat.<!--more-->\n\nSetibanya di Kesultanan Banjar setelah 35 tahun menimba ilmu di Haramain, beliau mendapati anak-anak muda dan masyarakat pedalaman kesulitan memahami kitab-kitab fikih berbahasa Arab. Atas permintaan Sultan Tahmidullah II pada 1779 M, Datu Kalampayan menulis kitab monumental 'Sabilal Muhtadin' dalam bahasa Melayu Jawi yang menjadi rujukan utama umat Islam di Kalimantan, Sumatera, Malaysia, Brunei, hingga Pattani dan Filipina Selatan.",
     facilities: ["Kubah Agung Makam Datu Kalampayan", "Masjid Jami' Tuhfaturroghibin Dalam Pagar", "Dermaga Wisata Sungai Martapura & Jalur Darat", "Area Parkir Bus Luas"],
     openingHours: "Buka 24 Jam",
+    haulSchedule: "Setiap 6 Syawal (Haul Akbar Maulana Syekh Muhammad Arsyad Al-Banjari / Datu Kalampayan di Astambul & Dalam Pagar)",
+    localAdab: [
+      "Menjaga ketertiban antrean di dalam Kubah Datu Kalampayan, tidak berdesak-desakan, dan memisahkan barisan peziarah putra serta putri",
+      "Membaca Surah Yasin, Tahlil, dan mendoakan seluruh dzurriyah ulama Banjar yang menurunkan jaringan ilmu di Kalimantan"
+    ],
+    barokahHajat: [
+      "Wasilah memohon kefahaman ilmu fikih syariat (seperti warisan kitab Sabilal Muhtadin) dan ilmu falak",
+      "Ikhtiar memohon dikaruniai keturunan yang alim, shalih, serta menjadi penerang agama bagi keluarga dan masyarakat",
+      "Teladan ketekunan menuntut ilmu puluhan tahun dan pengabdian membangun kemandirian pangan serta pendidikan umat"
+    ],
     karomah: [
       "Mengoreksi arah kiblat masjid-masjid di Batavia pada tahun 1772 M dan memperlihatkan penampakan Ka'bah secara nyata kepada para penguasa dan ulama Batavia.",
       "Bijih tanaman cempedak yang beliau kirim dari Makkah ke Kalimantan sampai lebih dahulu dan tumbuh subur sebelum kapal beliau mendarat."
+    ],
+    doaKhusus: [
+      {
+        title: "Hadiyah Fatihah Datu Kalampayan (Syekh Muhammad Arsyad Al-Banjari)",
+        text: "إِلَى حَضْرَةِ مَوْلَانَا الشَّيْخِ مُحَمَّدْ أَرْشَدْ بِنْ عَبْدِ اللهِ البَنْجَرِيِّ صَاحِبِ كِتَابِ سَبِيلِ المُهْتَدِينَ، شَيْءٌ لِلّٰهِ لَهُمُ الفَاتِحَة...",
+        latin: "Ilâ hadhrati Maulânasy Syaikh Muhammad Arsyad bin 'Abdillâh Al-Banjarî shâhibi Kitâbi Sabîlil Muhtadîn, syai'un lillâhi lahumul Fâtihah...",
+        translation: "Kepada kehadirat Maulana Syekh Muhammad Arsyad bin Abdullah Al-Banjari pengarang Kitab Sabilal Muhtadin, segala kemuliaan milik Allah, untuk beliau Al-Fatihah..."
+      },
+      {
+        title: "Doa Munajat Kefahaman Fikih & Keberkahan Keturunan",
+        text: "اللَّهُمَّ فَقِّهْنَا فِي الدِّينِ وَعَلِّمْنَا التَّأْوِيلَ، وَاسْلُكْ بِنَا سَبِيلَ المُهْتَدِينَ، وَبارِكْ لَنَا فِي ذُرِّيَّاتِنَا إِلَى يَوْمِ الدِّينِ.",
+        latin: "Allâhumma faqqihnâ fid dîni wa 'allimnat ta'wîl, wasluk binâ sabîlal muhtadîn, wa bârik lanâ fî dzurriyyâtinâ ilâ yaumid dîn.",
+        translation: "Ya Allah, pahamkanlah kami dalam urusan agama dan ajarkanlah kepada kami takwil ilmu, tuntunlah kami di jalan orang-orang yang mendapat petunjuk (Sabilal Muhtadin), serta berkahilah keturunan kami hingga hari kiamat."
+      }
     ]
   },
   {
@@ -2278,8 +2752,37 @@ export const ziarahSites: ZiarahSite[] = [
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Masjid_Syekh_Muhammad_Yusuf_20220626_151617.jpg",
     imageSource: "Wikimedia Commons — Kompleks Masjid & Makam Syekh Yusuf Al-Makassari (Tuanta Salamaka ri Gowa)",
     history: "Lahir di Gowa pada 3 Juli 1626 M (dikenal masyarakat Sulawesi sebagai 'Tuanta Salamaka ri Gowa' — Guru Kami yang Agung dari Gowa). Setelah menuntut ilmu di Aceh, Yaman, Makkah, Madinah, dan Damaskus selama lebih dari 20 tahun, beliau menjadi mufti dan panglima perang Sultan Ageng Tirtayasa di Kesultanan Banten melawan VOC. Beliau ditangkap dan diasingkan VOC ke Sri Lanka (1684) lalu ke Macassar, Cape Town, Afrika Selatan (1694) hingga wafat tahun 1699 dan menjadi Bapak Islam Afrika Selatan. Atas permintaan Raja Gowa Sultan Abdul Jalil, jenazah beliau dipulangkan ke Lakiung, Gowa pada tahun 1705 M.",
+    untoldStory: "Ketika VOC mengasingkan Syekh Yusuf ke Tanjung Harapan (Cape Town, Afrika Selatan) pada tahun 1694 M di usia hampir 70 tahun, kolonial Belanda mengira semangat dakwah sang ulama Gowa akan padam di ujung benua yang terpencil.<!--more-->\n\nNamun di perbukitan Zandvliet (yang kini bernama distrik Macassar di Afrika Selatan), Syekh Yusuf justru membangun komunitas Muslim pertama bagi para budak dan tahanan politik yang tertindas, menyalakan obor kebebasan yang kelak menginspirasi Nelson Mandela menyebut beliau sebagai 'Salah Satu Putra Terbaik Afrika'. Di tengah pengasingan di Sri Lanka dan Afrika Selatan, pena beliau tetap melahirkan puluhan risalah tasawuf seperti 'Zubdat al-Asrar' dan 'Safinat an-Najah'.",
     facilities: ["Kubah Makam Tuanta Salamaka Syekh Yusuf Gowa", "Masjid Tua Katangka (Berdiri 1603 M — Dekat Lokasi)", "Area Parkir Luas"],
-    openingHours: "Buka 24 Jam"
+    openingHours: "Buka 24 Jam",
+    haulSchedule: "Setiap Bulan Mei / Dzulqa'dah (Peringatan Haul & Hari Lahir Tuanta Salamaka Syekh Yusuf Al-Makassari di Lakiung, Gowa)",
+    localAdab: [
+      "Memasuki Kubah Lakiung dengan menundukkan kepala (sikap 'Tabe' dalam adat Bugis-Makassar) dan menjaga kesopanan busana",
+      "Duduk bersila dengan tertib saat melantunkan dzikir Tarekat Khalwatiyah, Yasin, dan Tahlil tanpa meninggalkan sampah atau puntung lilin"
+    ],
+    barokahHajat: [
+      "Wasilah keteguhan iman dan kesabaran baja saat menghadapi ujian berat, pengasingan, atau kezaliman",
+      "Ikhtiar memohon keluasan ilmu tasawuf, keberanian membela kebenaran, dan kemuliaan martabat di manapun berada",
+      "Teladan ulama kosmopolitan yang menyebarkan cahaya Islam dan kemanusiaan lintas samudera"
+    ],
+    karomah: [
+      "Mengubah lokasi pengasingan di Sri Lanka dan Cape Town (Afrika Selatan) menjadi pusat dakwah Islam yang berkembang pesat hingga hari ini.",
+      "Air laut di sekitar kapal yang ditumpangi beliau menuju pengasingan berubah menjadi tawar saat persediaan air minum habis di tengah samudera."
+    ],
+    doaKhusus: [
+      {
+        title: "Hadiyah Fatihah Tuanta Salamaka Syekh Yusuf Al-Makassari",
+        text: "إِلَى حَضْرَةِ الشَّيْخِ يُوسُفَ أَبِي المَحَاسِنِ تَاجِ الخَلْوَتِيِّ المَقَاصَرِيِّ (تُوَانْتَا سَلَامَاكَا رِي غُووَا)، شَيْءٌ لِلّٰهِ لَهُمُ الفَاتِحَة...",
+        latin: "Ilâ hadhratisy Syaikh Yûsuf Abil Mahâsin Tâjil Khalwatî Al-Maqâsharî (Tuanta Salamaka ri Gowa), syai'un lillâhi lahumul Fâtihah...",
+        translation: "Kepada kehadirat Syekh Yusuf Abul Mahasin Tajul Khalwati Al-Makassari (Tuanta Salamaka ri Gowa), segala kemuliaan milik Allah, untuk beliau Al-Fatihah..."
+      },
+      {
+        title: "Doa Munajat Keteguhan Hati & Keselamatan (Safinat an-Najah)",
+        text: "اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ السَّلَامَةِ وَالإِخْلَاصِ، وَثَبِّتْ قُلُوبَنَا عَلَى دِينِكَ فِي الشَّدَائِدِ وَالمِحَنِ يَا أَرْحَمَ الرَّاحِمِينَ.",
+        latin: "Allâhummaj'alnâ min ahlis salâmati wal ikhlâsh, wa tsabbit qulûbanâ 'alâ dînika fisy syadâ'idi wal mihani yâ Arhamar Râhimîn.",
+        translation: "Ya Allah, jadikanlah kami termasuk golongan ahli keselamatan dan keikhlasan, serta teguhkanlah hati kami di atas agama-Mu di tengah segala kesulitan dan ujian, wahai Dzat Yang Maha Penyayang."
+      }
+    ]
   },
   {
     id: "auliya-17",
@@ -3193,3 +3696,154 @@ export const ziarahSites: ZiarahSite[] = [
   }
 ];
 
+function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
+  const rawAny = site as unknown as Record<string, unknown>;
+  const loc = site.location || {
+    lat: typeof rawAny.lat === 'number' ? rawAny.lat : -6.95,
+    lng: typeof rawAny.lng === 'number' ? rawAny.lng : 110.42,
+    address: typeof site.address === 'string' ? site.address : '',
+    district: typeof site.district === 'string' ? site.district : undefined,
+    city: typeof site.city === 'string' ? site.city : '',
+    province: typeof site.province === 'string' ? site.province : 'Indonesia',
+  };
+  const resolvedProvince = loc.province || site.province || 'Indonesia';
+  const resolvedCity = loc.city || site.city || '';
+  const resolvedAddress = loc.address || site.address || '';
+  const kecMatch = resolvedAddress.match(/Kec\.\s*([^,]+)/i);
+  const resolvedDistrict =
+    loc.district ||
+    site.district ||
+    (kecMatch ? `Kec. ${kecMatch[1].trim()}` : resolvedCity);
+
+  let normalizedKaromah = site.karomah;
+  if (typeof rawAny.karomah === 'string' && rawAny.karomah.trim()) {
+    normalizedKaromah = [rawAny.karomah.trim()];
+  }
+
+  let normalizedDoa = site.doaKhusus;
+  if (rawAny.doaKhusus && !Array.isArray(rawAny.doaKhusus) && typeof rawAny.doaKhusus === 'object') {
+    const dObj = rawAny.doaKhusus as Record<string, string>;
+    const arabText = dObj.arab || dObj.text || '';
+    const terjemahText = dObj.terjemahan || dObj.translation || '';
+    normalizedDoa = [
+      {
+        title: dObj.title || `Tawassul & Hadiah Fatihah Khusus ${site.title || site.name}`,
+        text: arabText,
+        arab: arabText,
+        latin: dObj.latin || '',
+        translation: terjemahText,
+        terjemahan: terjemahText,
+      },
+    ];
+  } else if (Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0) {
+    normalizedDoa = site.doaKhusus.map((d) => ({
+      ...d,
+      text: d.text || d.arab || '',
+      arab: d.arab || d.text || '',
+      translation: d.translation || d.terjemahan || '',
+      terjemahan: d.terjemahan || d.translation || '',
+    }));
+  }
+
+  if (Array.isArray(normalizedDoa) && normalizedDoa.length > 0) {
+    const first = normalizedDoa[0];
+    Object.defineProperties(normalizedDoa, {
+      arab: { value: first.arab || first.text || '', enumerable: false, configurable: true },
+      latin: { value: first.latin || '', enumerable: false, configurable: true },
+      terjemahan: {
+        value: first.terjemahan || first.translation || '',
+        enumerable: false,
+        configurable: true,
+      },
+    });
+  }
+
+  const mappedLegacyId = site.legacyId || REGIONAL_ID_TO_LEGACY_ID[site.id];
+
+  return {
+    ...site,
+    ...(mappedLegacyId ? { legacyId: mappedLegacyId } : {}),
+    karomah: normalizedKaromah,
+    doaKhusus: normalizedDoa,
+    province: resolvedProvince,
+    city: resolvedCity,
+    district: resolvedDistrict,
+    address: resolvedAddress,
+    location: {
+      ...loc,
+      province: resolvedProvince,
+      city: resolvedCity,
+      district: resolvedDistrict,
+      address: resolvedAddress,
+    },
+  };
+}
+
+/**
+ * Menggabungkan BASE_SITES dengan seluruh file regional di `src/data/regions/`
+ * dan melakukan deduplikasi berdasarkan `id` (maupun pemetaan `legacyId`). Jika sebuah makam
+ * diperbarui di file regional, versi file regional yang lebih lengkap akan menggantikan versi lama di `BASE_SITES`.
+ */
+export function mergeAndDeduplicateSites(
+  baseSites: ZiarahSite[],
+  regionalSites: ZiarahSite[]
+): ZiarahSite[] {
+  const byId = new Map<string, ZiarahSite>();
+  for (const item of baseSites) {
+    if (!item || !item.id) continue;
+    byId.set(item.id, normalizeSiteRecord(item));
+  }
+  for (const item of regionalSites) {
+    if (!item || !item.id) continue;
+    const legacyTargetId = item.legacyId || REGIONAL_ID_TO_LEGACY_ID[item.id];
+    const prevBySameId = byId.get(item.id);
+    const prevByLegacyId = legacyTargetId ? byId.get(legacyTargetId) : undefined;
+    const prev = prevBySameId || prevByLegacyId;
+
+    const merged = prev
+      ? normalizeSiteRecord({
+          ...prev,
+          ...item,
+          id: item.id,
+          legacyId: legacyTargetId || prev.legacyId,
+          location: {
+            ...(prev.location || {}),
+            ...(item.location || {}),
+          },
+        })
+      : normalizeSiteRecord(item);
+
+    if (prevByLegacyId && legacyTargetId && legacyTargetId !== item.id) {
+      // Replace in-place at the original Map position so ordering of Wali Songo etc. is preserved
+      const rebuilt = new Map<string, ZiarahSite>();
+      for (const [k, v] of byId.entries()) {
+        if (k === legacyTargetId) {
+          rebuilt.set(item.id, merged);
+        } else {
+          rebuilt.set(k, v);
+        }
+      }
+      byId.clear();
+      for (const [k, v] of rebuilt.entries()) {
+        byId.set(k, v);
+      }
+    } else {
+      byId.set(item.id, merged);
+    }
+  }
+  return Array.from(byId.values());
+}
+
+export const REGIONAL_SITES: ZiarahSite[] = [
+  ...JAWA_BARAT_BANTEN_DKI_SITES,
+  ...JAWA_TENGAH_DIY_SITES,
+  ...JAWA_TIMUR_MADURA_SITES,
+  ...SUMATERA_SITES,
+  ...KALIMANTAN_SULAWESI_SITES,
+  ...BALI_NUSA_MALUKU_PAPUA_SITES,
+];
+
+export const SITES: Site[] = mergeAndDeduplicateSites(BASE_SITES, REGIONAL_SITES);
+export const ziarahSites: ZiarahSite[] = SITES;
+export const TOTAL_SITES_COUNT: number = SITES.length;
+export const TOTAL_PROVINCES_COUNT: number = new Set(SITES.map((s) => s.province).filter(Boolean)).size;

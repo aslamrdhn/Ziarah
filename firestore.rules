@@ -39,7 +39,12 @@ service cloud.firestore {
     }
 
     function isValidContribution(data) {
-      return data.type in ['baru', 'karomah', 'doa'] &&
+      return data.keys().hasOnly([
+          'id', 'type', 'contributorName', 'contributorContact', 'targetName',
+          'category', 'city', 'province', 'mapsUrl', 'content', 'translation',
+          'status', 'authorUid', 'createdAt'
+        ]) &&
+        data.type in ['baru', 'karomah', 'doa'] &&
         data.contributorName is string && data.contributorName.size() >= 1 && data.contributorName.size() <= 100 &&
         data.targetName is string && data.targetName.size() >= 1 && data.targetName.size() <= 150 &&
         data.content is string && data.content.size() >= 3 && data.content.size() <= 3000 &&
@@ -57,7 +62,12 @@ service cloud.firestore {
     }
 
     function isValidDonation(data) {
-      return data.programId is string && data.programId.size() >= 1 && data.programId.size() <= 100 &&
+      return data.keys().hasOnly([
+          'id', 'programId', 'programTitle', 'siteId', 'siteName', 'amount',
+          'donorName', 'isAnonymous', 'paymentMethod', 'hasProof', 'referenceCode',
+          'doaHajat', 'authorUid', 'status', 'createdAt', 'aamiinCount', 'updatedAt'
+        ]) &&
+        data.programId is string && data.programId.size() >= 1 && data.programId.size() <= 100 &&
         data.amount is number && data.amount >= 5000 && data.amount <= 1000000000 &&
         data.donorName is string && data.donorName.size() >= 1 && data.donorName.size() <= 100 &&
         data.hasProof == true &&
@@ -66,7 +76,11 @@ service cloud.firestore {
     }
 
     function isValidDonationProof(data) {
-      return data.donationId is string && data.donationId.size() >= 1 && data.donationId.size() <= 128 &&
+      return data.keys().hasOnly([
+          'donationId', 'senderAccount', 'realDonorName', 'proofImageUrl',
+          'referenceCode', 'fileName', 'sizeKb', 'authorUid', 'createdAt'
+        ]) &&
+        data.donationId is string && data.donationId.size() >= 1 && data.donationId.size() <= 128 &&
         data.senderAccount is string && data.senderAccount.size() >= 2 && data.senderAccount.size() <= 100 &&
         data.proofImageUrl is string && data.proofImageUrl.size() >= 500 && data.proofImageUrl.size() <= 500000 &&
         data.proofImageUrl.matches('^data:image/(jpeg|jpg|png|webp);base64,.*');

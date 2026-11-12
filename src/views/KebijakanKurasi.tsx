@@ -2,6 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Scale, BookOpen, Globe, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
+import { SITES } from '../data/sites';
+
+const TOTAL_SITES = SITES.length;
+const TOTAL_PROVINCES = new Set(SITES.map((s) => s.province)).size;
 
 export const KebijakanKurasi: React.FC = () => {
   return (
@@ -16,13 +20,13 @@ export const KebijakanKurasi: React.FC = () => {
         <div className="relative z-10">
           <div className="flex items-center space-x-2 text-emerald-800 text-xs font-bold mb-4 tracking-wider uppercase">
             <span className="w-5 h-5 flex items-center justify-center bg-emerald-100/80 text-emerald-800 rounded-full text-[10px] font-black">✓</span>
-            <span>Pedoman Editorial & Standar Ilmiah</span>
+            <span>Pedoman Editorial &amp; Standar Ilmiah · {TOTAL_SITES} Makam di {TOTAL_PROVINCES} Provinsi</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-serif font-black mb-4 leading-tight tracking-tight text-slate-900">
-            Kebijakan Konten & <span className="bg-gradient-to-r from-emerald-700 to-teal-800 bg-clip-text text-transparent">Moderasi Data</span>
+            Kebijakan Konten &amp; <span className="bg-gradient-to-r from-emerald-700 to-teal-800 bg-clip-text text-transparent">Moderasi Data</span>
           </h1>
           <p className="text-slate-600 max-w-3xl leading-relaxed text-xs sm:text-base">
-            Mengingat sensitivitas dan kesucian nilai sejarah para Wali dan Ulama Nusantara, setiap data lokasi, silsilah, dan narasi sejarah yang dipublikasikan di platform Ziarah Nusantara tunduk pada proses kurasi multi-tahap yang transparan dan dapat dipertanggungjawabkan.
+            Mengingat sensitivitas dan kesucian nilai sejarah para Wali dan Ulama Nusantara, setiap data lokasi ({TOTAL_SITES} situs makam di {TOTAL_PROVINCES} provinsi), silsilah, dan narasi sejarah yang dipublikasikan di platform Ziarah Nusantara tunduk pada proses kurasi multi-tahap yang transparan dan dapat dipertanggungjawabkan. Seluruh layanan operasional didukung secara mandiri melalui Infaq Operasional &amp; Pemeliharaan Digital.
           </p>
         </div>
       </motion.div>

@@ -163,6 +163,18 @@ function buildWhatsAppCliffhangerUrl(
   return `https://wa.me/?text=${encodeURIComponent(shareText)}`;
 }
 
+export function getSiteGoogleMapsNavigationUrl(site: ZiarahSite): string {
+  if (site.googleMapsUrl && site.googleMapsUrl.trim()) {
+    return site.googleMapsUrl.trim();
+  }
+  const district = site.district || site.location?.district || site.location?.city || '';
+  const city = site.city || site.location?.city || '';
+  const province = site.province || site.location?.province || '';
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `Makam ${site.name}, ${district}, ${city}, ${province}`
+  )}`;
+}
+
 interface SiteDetailsProps {
   site: ZiarahSite | null;
   onClose: () => void;
@@ -354,9 +366,20 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   const renderBarokahDoaSection = (sectionId?: string) => (
     <section id={sectionId} className="mt-8 pt-6 border-t border-slate-200 space-y-5 scroll-mt-6">
       <div>
-        <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
-          <Lock className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} />
-          <span>{copy.barokahSectionTitle}</span>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
+            <Lock className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} />
+            <span>{copy.barokahSectionTitle}</span>
+          </div>
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-md border text-[11px] font-medium ${
+              completeBarokahGuide.isCuratedSpecific
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : 'bg-stone-100 text-stone-700 border-stone-300'
+            }`}
+          >
+            {completeBarokahGuide.curationStatusLabel}
+          </span>
         </div>
         <h3 className="font-serif text-2xl text-slate-900 mt-1">
           Wasilah Hajat &amp; Amalan Tawassul di {site.title}
@@ -572,6 +595,11 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           </div>
         </div>
       )}
+
+      {/* Catatan Transparansi Ilmiah / Epistemologis di bawah Karomah & Doa */}
+      <div className="p-4 rounded-xl bg-stone-100/90 border border-stone-200/90 text-xs text-stone-600 leading-relaxed font-serif italic">
+        Catatan Epistemologis: Riwayat sejarah disarikan dari literatur historiografi dan arsip cagar budaya, sedangkan kisah karomah dan fadhilah tawassul merupakan rekaman tradisi lisan (manaqib) masyarakat yang disajikan sebagai keteladanan spiritual.
+      </div>
     </section>
   );
 
@@ -657,7 +685,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     </h2>
                   </div>
                   <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${site.location.lat},${site.location.lng}`}
+                    href={getSiteGoogleMapsNavigationUrl(site)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="shrink-0 pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-700/95 hover:bg-emerald-600 text-white text-[11px] font-semibold border border-emerald-400/30 shadow-sm transition-colors"
@@ -1091,10 +1119,10 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                           </div>
                           <div className="text-left">
                             <span className="text-sm sm:text-base font-serif text-stone-900 block">
-                              Infaq Jariyah &amp; Pelestarian Arsip
+                              Infaq Operasional &amp; Pemeliharaan Digital
                             </span>
                             <span className="text-xs text-stone-600">
-                              Salurkan sedekah jariyah &amp; titipkan doa munajat
+                              Salurkan infaq operasional &amp; titipkan doa munajat (Dilindungi UU PDP · Opsi tampil sebagai &ldquo;Hamba Allah&rdquo; di ticker publik)
                             </span>
                           </div>
                         </div>
@@ -1348,7 +1376,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
               {/* Action Footer: Google Maps Navigation + Optional Interactive Map View */}
               <div className="px-6 sm:px-10 py-3.5 border-t border-stone-200/80 bg-white shrink-0 flex flex-col sm:flex-row items-center justify-between gap-2.5">
                 <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${site.location.lat},${site.location.lng}`}
+                  href={getSiteGoogleMapsNavigationUrl(site)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:flex-1 flex items-center justify-center py-2.5 px-4 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors"

@@ -13,12 +13,15 @@ const KumpulanDoa = lazy(() => import('./views/KumpulanDoa').then((m) => ({ defa
 const RubrikKisah = lazy(() => import('./views/RubrikKisah').then((m) => ({ default: m.RubrikKisah })));
 const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })));
 
-import type { ZiarahSite } from './data/sites';
+import { SITES, type ZiarahSite } from './data/sites';
 import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { SiteProvider } from './context/SiteContext';
 import { findSiteByParam, getSitePath } from './lib/siteSlugs';
 import { useSiteCopy } from './lib/siteCopy';
+
+const TOTAL_SITES_COUNT = SITES.length;
+const TOTAL_PROVINCES_COUNT = new Set(SITES.map((s) => s.province)).size;
 
 export default function App() {
   const location = useLocation();
@@ -104,16 +107,16 @@ export default function App() {
 
     const routeSeoMap: Record<string, { title: string; desc: string }> = {
       '/': {
-        title: 'Ziarah Kubur & Makam Wali Nusantara: Doa, Yasin, Tahlil & Peta 96 Wali | Ziarah Nusantara',
-        desc: 'Panduan lengkap ziarah kubur dan direktori 96 makam Wali Songo & Ulama Nusantara. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.',
+        title: `Ziarah Kubur & Makam Wali Nusantara: Doa, Yasin, Tahlil & Peta ${TOTAL_SITES_COUNT} Wali | Ziarah Nusantara`,
+        desc: `Panduan lengkap ziarah kubur dan direktori ${TOTAL_SITES_COUNT} makam Wali Songo & Ulama Nusantara di ${TOTAL_PROVINCES_COUNT} provinsi. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.`,
       },
       '/direktori': {
-        title: 'Direktori 96 Makam Walisongo, Ulama & Habaib di 18 Provinsi — Ziarah Nusantara',
-        desc: 'Jejak spiritual 96 lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di 18 provinsi Indonesia lengkap dengan alamat, peta rute GPS, kisah karomah, dan bacaan doa tawassul.',
+        title: `Direktori ${TOTAL_SITES_COUNT} Makam Walisongo, Ulama & Habaib di ${TOTAL_PROVINCES_COUNT} Provinsi — Ziarah Nusantara`,
+        desc: `Jejak spiritual ${TOTAL_SITES_COUNT} lokasi makam Wali Songo, Ulama Nusantara, Habaib, dan Auliya di ${TOTAL_PROVINCES_COUNT} provinsi Indonesia lengkap dengan alamat, peta rute GPS, kisah karomah, dan bacaan doa tawassul.`,
       },
       '/peta': {
         title: 'Peta Rute Ziarah Makam Wali Songo & Ulama Nusantara — Ziarah Nusantara',
-        desc: 'Peta interaktif titik lokasi GPS dan navigasi rute perjalanan ziarah ke 96 makam Waliyullah serta ulama besar di seluruh kepulauan Indonesia.',
+        desc: `Peta interaktif titik lokasi GPS dan navigasi rute perjalanan ziarah ke ${TOTAL_SITES_COUNT} makam Waliyullah serta ulama besar di seluruh kepulauan Indonesia.`,
       },
       '/panduan': {
         title: 'Panduan Ziarah Kubur Lengkap: Urutan Doa (Arab, Latin, Artinya), Tahlil, Yasin & Adab | Ziarah Nusantara',
@@ -128,16 +131,16 @@ export default function App() {
         desc: 'Bacaan salam ziarah kubur, susunan tawassul khusus para Waliyullah, Surah Yasin, dan tahlil lengkap teks Arab, transliterasi Latin, serta terjemahan Bahasa Indonesia.',
       },
       '/infaq': {
-        title: 'Infaq & Amal Jariyah Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
-        desc: 'Layanan infaq dan wakaf literasi digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori 96 makam Waliyullah tetap bebas akses.',
+        title: 'Infaq Operasional & Pemeliharaan Digital Arsip Sejarah Makam Wali — Ziarah Nusantara',
+        desc: `Layanan Infaq Operasional & Pemeliharaan Digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori ${TOTAL_SITES_COUNT} makam Waliyullah tetap bebas akses.`,
       },
       '/donasi': {
-        title: 'Infaq & Amal Jariyah Pelestarian Arsip Sejarah Makam Wali — Ziarah Nusantara',
-        desc: 'Layanan infaq dan wakaf literasi digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori 96 makam Waliyullah tetap bebas akses.',
+        title: 'Infaq Operasional & Pemeliharaan Digital Arsip Sejarah Makam Wali — Ziarah Nusantara',
+        desc: `Layanan Infaq Operasional & Pemeliharaan Digital QRIS resmi Ziarah Nusantara untuk menjaga riset sejarah, naskah doa ziarah, dan direktori ${TOTAL_SITES_COUNT} makam Waliyullah tetap bebas akses.`,
       },
       '/kurasi': {
         title: 'Standar Kurasi & Metodologi Referensi Sejarah — Ziarah Nusantara',
-        desc: 'Pedoman metodologi verifikasi sumber sejarah, jurnal akademik, naskah babad, dan kurasi 96 situs makam oleh Tim Kurator Arsip Ziarah Nusantara.',
+        desc: `Pedoman metodologi verifikasi sumber sejarah, jurnal akademik, naskah babad, dan kurasi ${TOTAL_SITES_COUNT} situs makam di ${TOTAL_PROVINCES_COUNT} provinsi oleh Tim Kurator Arsip Ziarah Nusantara.`,
       },
     };
 
@@ -304,10 +307,10 @@ export default function App() {
               },
               {
                 '@type': 'Question',
-                name: 'Di Mana Saja Lokasi 96 Makam Wali Songo dan Ulama di Ziarah Nusantara?',
+                name: `Di Mana Saja Lokasi ${TOTAL_SITES_COUNT} Makam Wali Songo dan Ulama di Ziarah Nusantara?`,
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Ziarah Nusantara mendokumentasikan 96 lokasi makam Waliyullah di 18 provinsi Indonesia lengkap dengan titik koordinat peta rute perjalanan, jadwal haul, kisah karomah, dan sanad keilmuan—mulai dari sembilan makam Wali Songo di Jawa Timur, Jawa Tengah, dan Jawa Barat hingga makam ulama besar dan habaib di Aceh, Sumatera, Banten, DKI Jakarta, Yogyakarta, Kalimantan, Sulawesi, Bali, Nusa Tenggara Barat, dan Maluku Utara.',
+                  text: `Ziarah Nusantara mendokumentasikan ${TOTAL_SITES_COUNT} lokasi makam Waliyullah di ${TOTAL_PROVINCES_COUNT} provinsi Indonesia lengkap dengan titik koordinat peta rute perjalanan, jadwal haul, kisah karomah, dan sanad keilmuan—mulai dari sembilan makam Wali Songo di Jawa Timur, Jawa Tengah, dan Jawa Barat hingga makam ulama besar dan habaib di Aceh, Sumatera, Banten, DKI Jakarta, Yogyakarta, Kalimantan, Sulawesi, Bali, Nusa Tenggara Barat, dan Maluku Utara.`,
                 },
               },
             ],

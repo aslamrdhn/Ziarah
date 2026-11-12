@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle2, ScrollText, HeartHandshake, Loader2, Copy, MessageSquareHeart, Lock, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ZiarahSite } from '../data/sites';
+import { ZiarahSite, SITES } from '../data/sites';
 import { Link } from 'react-router-dom';
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -11,7 +11,7 @@ import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from './TransferProofUploadField';
 import { CompressedReceiptResult, saveVerifiedDonationRecord, submitDonationWithPrivateProof } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
-import { useSiteCopy } from '../lib/siteCopy';
+import { useSiteCopy, ADMIN_WHATSAPP_NUMBER } from '../lib/siteCopy';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -34,7 +34,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
   const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>('QRIS');
   const [senderAccount, setSenderAccount] = useState('');
   const [receipt, setReceipt] = useState<CompressedReceiptResult | null>(null);
-  const [agreedToAkad, setAgreedToAkad] = useState(false);
+  const [agreedToAkad, setAgreedToAkad] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [bankSettings, setBankSettings] = useState({
@@ -49,7 +50,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
     if (isOpen) {
       setIsSuccess(false);
       setReceipt(null);
-      setAgreedToAkad(false);
+      setAgreedToAkad(true);
+      setIsAnonymous(false);
       setSubmitError(null);
       setSelectedNominal(type === 'barokah_doa' ? barokahMinAmount : type === 'untold' ? rubrikMinAmount : 25000);
       if (auth.currentUser?.displayName && !senderAccount) {
@@ -78,8 +80,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
   const amount =
     sanitizeDonationAmount(selectedNominal, minAmount, 1000000000) || minAmount;
   const cleanSender = sanitizePlainText(senderAccount, 80);
-  const donorName = cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
-  const isProofComplete = Boolean(receipt && cleanSender.length >= 3);
+  const donorName = isAnonymous
+    ? 'Hamba Allah'
+    : cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
+  const isProofComplete = Boolean(receipt && cleanSender.length >= 3 && agreedToAkad);
 
   const programId =
     type === 'barokah_doa'
@@ -93,14 +97,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       ? `Barokah & Doa Khusus: ${site.name}`.slice(0, 150)
       : type === 'untold'
         ? `Rubrik & Khazanah: ${site.name}`.slice(0, 150)
-        : 'Pemeliharaan & Revitalisasi Makam';
+        : 'Infaq Operasional & Pemeliharaan Digital';
 
   const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer ${
     type === 'barokah_doa'
-      ? 'Infaq Pembuka Barokah & Doa Khusus (Rp 5.000)'
+      ? 'Infaq Operasional Pembuka Barokah & Doa Khusus (Rp 5.000)'
       : type === 'infaq'
-        ? 'Donasi Pemeliharaan Makam'
-        : 'Donasi Literasi Pembuka Rubrik & Khazanah'
+        ? 'Infaq Operasional & Pemeliharaan Digital'
+        : 'Infaq Operasional Pembuka Rubrik & Khazanah'
   } di sistem:\n\n` +
     `• *Kode Referensi:* ${receipt?.referenceCode || '-'}\n` +
     `• *Nama Pengirim:* ${donorName}\n` +
@@ -108,7 +112,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
     `• *Tujuan Makam:* ${site.name}\n` +
     `• *Nominal:* Rp ${amount.toLocaleString('id-ID')}\n\n` +
     `Bukti screenshot transfer telah terlampir di sistem Admin Kurator. Terima kasih.`;
-  const waConfirmUrl = `https://wa.me/6285717378885?text=${encodeURIComponent(waMessage)}`;
+  const cleanAdminWa = (copy.adminWhatsappNumber || ADMIN_WHATSAPP_NUMBER).replace(/[^0-9]/g, '');
+  const waConfirmUrl = `https://wa.me/${cleanAdminWa}?text=${encodeURIComponent(waMessage)}`;
 
   const handleCopyAccount = () => {
     navigator.clipboard.writeText(bankSettings.accountNumber.replace(/[^0-9]/g, '') || bankSettings.accountNumber);
@@ -126,6 +131,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
     }
     if (cleanSender.length < 3) {
       setSubmitError('Wajib mengisi nama pengirim sesuai akun E-Wallet atau rekening bank (minimal 3 karakter).');
+      return;
+    }
+    if (!agreedToAkad) {
+      setSubmitError('Mohon centang persetujuan akad Infaq Operasional & kebijakan privasi (UU PDP).');
       return;
     }
 
@@ -349,15 +358,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                       Pembuka Seluruh Khazanah Nusantara
                     </div>
                     <h4 className="font-serif font-semibold text-stone-900 text-sm sm:text-base mb-1">
-                      Akses Penuh 96+ Makam &amp; Wasiat Rahasia
+                      Akses Penuh {SITES.length}+ Makam &amp; Wasiat Rahasia
                     </h4>
                     <p className="text-xs text-stone-600 leading-relaxed">
-                      Buka akses penuh ke seluruh catatan manuskrip, karomah lanjutan, dan wasiat rahasia melalui infaq literasi minimal <strong className="font-semibold text-stone-900">Rp {rubrikMinAmount.toLocaleString('id-ID')}</strong> serta mengunggah bukti transfer.
+                      Buka akses penuh ke seluruh catatan manuskrip, karomah lanjutan, dan wasiat rahasia melalui Infaq Operasional &amp; Pemeliharaan Digital minimal <strong className="font-semibold text-stone-900">Rp {rubrikMinAmount.toLocaleString('id-ID')}</strong> serta mengunggah bukti transfer.
                     </p>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-stone-800 mb-2">
-                      Pilih Nominal Infaq Khazanah (Min. Rp {rubrikMinAmount.toLocaleString('id-ID')}):
+                      Pilih Nominal Infaq Operasional (Min. Rp {rubrikMinAmount.toLocaleString('id-ID')}):
                     </label>
                     <div className="grid grid-cols-3 gap-2">
                       {[rubrikMinAmount, Math.max(15000, rubrikMinAmount + 5000), Math.max(25000, rubrikMinAmount + 15000)].map((nominal) => (
@@ -417,6 +426,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 onReceiptChange={setReceipt}
                 agreedToAkad={agreedToAkad}
                 onAgreedToAkadChange={setAgreedToAkad}
+                isAnonymous={isAnonymous}
+                onIsAnonymousChange={setIsAnonymous}
                 accentColor="emerald"
                 requiredForUnlock
               />

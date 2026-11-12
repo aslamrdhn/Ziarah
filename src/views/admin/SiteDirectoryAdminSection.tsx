@@ -445,7 +445,11 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                 </label>
                 <textarea
                   rows={3}
-                  value={editingSite.localAdab || ''}
+                  value={
+                    Array.isArray(editingSite.localAdab)
+                      ? editingSite.localAdab.join(' • ')
+                      : editingSite.localAdab || ''
+                  }
                   onChange={(e) => onChangeEditingSite({ ...editingSite, localAdab: e.target.value })}
                   placeholder="Contoh: Berpakaian muslim sopan, melepas alas kaki di batas serambi, menjaga ketenangan dzikir..."
                   className="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-xs leading-relaxed"
@@ -718,7 +722,11 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
               </label>
               <textarea
                 rows={3}
-                value={editingSite.barokahHajat || ''}
+                value={
+                  Array.isArray(editingSite.barokahHajat)
+                    ? editingSite.barokahHajat.join(' • ')
+                    : editingSite.barokahHajat || ''
+                }
                 onChange={(e) => onChangeEditingSite({ ...editingSite, barokahHajat: e.target.value })}
                 placeholder="Contoh: Biasanya peziarah yang datang ke makam ini bertawassul mengharapkan wasilah dimudahkan jodoh pendamping hidup, kelancaran perniagaan, dan ketenangan batin keluarga... (Kosongkan untuk gunakan generator cerdas otomatis)"
                 className="w-full px-3.5 py-2 bg-white border border-amber-200 rounded-xl text-xs leading-relaxed text-stone-800"

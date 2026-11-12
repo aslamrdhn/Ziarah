@@ -30,7 +30,7 @@ import {
   submitDonationWithPrivateProof,
 } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
-import { useSiteCopy } from '../lib/siteCopy';
+import { useSiteCopy, ADMIN_WHATSAPP_NUMBER } from '../lib/siteCopy';
 
 interface DonationRecord {
   id: string;
@@ -56,11 +56,11 @@ export interface InfaqProgramItem {
 export const DEFAULT_INFAQ_PROGRAMS: InfaqProgramItem[] = [
   {
     id: 'riset-web',
-    title: 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
-    desc: 'Wasilah jariyah untuk pelestarian manuskrip sejarah, verifikasi sanad keilmuan, dokumentasi karomah, serta penyebaran riwayat para Wali dan Ulama Nusantara ke seluruh penjuru.',
+    title: 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
+    desc: 'Infaq Operasional & Pemeliharaan Digital untuk perawatan server ensiklopedia sejarah, verifikasi sanad keilmuan, dokumentasi karomah, serta penyebaran riwayat para Wali dan Ulama Nusantara ke seluruh penjuru.',
     iconName: 'Database',
     color: 'from-emerald-600 to-brand-900',
-    tag: 'Wasilah Jariyah Utama'
+    tag: 'Infaq Operasional Utama'
   }
 ];
 
@@ -141,8 +141,8 @@ export const InfaqDigital: React.FC = () => {
                   p.id === 'riset-web'
                     ? {
                         ...p,
-                        title: 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
-                        desc: 'Wasilah jariyah untuk pelestarian manuskrip sejarah, verifikasi sanad keilmuan, dokumentasi karomah, serta penyebaran riwayat para Wali dan Ulama Nusantara ke seluruh penjuru.',
+                        title: 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
+                        desc: 'Infaq Operasional & Pemeliharaan Digital untuk perawatan server ensiklopedia sejarah, verifikasi sanad keilmuan, dokumentasi karomah, serta penyebaran riwayat para Wali dan Ulama Nusantara ke seluruh penjuru.',
                       }
                     : p
                 )
@@ -186,9 +186,9 @@ export const InfaqDigital: React.FC = () => {
               id: docSnap.id,
               donorName: d.isAnonymous ? 'Hamba Allah' : (d.donorName || 'Hamba Allah'),
               amount: Number(d.amount) || 0,
-              programTitle: d.programTitle || 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara',
+              programTitle: d.programTitle || 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
               siteName: d.siteName || 'Khazanah Auliya Nusantara',
-              doaHajat: d.doaHajat || 'Semoga menjadi amal jariyah dan wasilah keberkahan keluarga.',
+              doaHajat: d.doaHajat || 'Semoga menjadi amal kebaikan dan wasilah keberkahan keluarga.',
               dateLabel,
               createdAtMs: ts,
               baseAamiinCount: Number(d.aamiinCount) || 0,
@@ -220,15 +220,15 @@ export const InfaqDigital: React.FC = () => {
 
   const currentAmount = sanitizeDonationAmount(customNominal ? customNominal : nominal, 1000, 1000000000);
   const targetSiteName = selectedSiteId === 'web-riset'
-    ? 'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara'
-    : 'Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)';
+    ? 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara'
+    : 'Umum (Disalurkan untuk Operasional & Dokumentasi Makam)';
   const activeProgramTitle =
     programs.find(p => p.id === selectedProgram)?.title ||
     programs[0]?.title ||
-    'Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara';
+    'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara';
 
   const cleanSender = sanitizePlainText(senderAccount, 80);
-  const isProofComplete = Boolean(receipt && cleanSender.length >= 3);
+  const isProofComplete = Boolean(receipt && cleanSender.length >= 3 && agreedToAkad);
 
   const handleBayar = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,6 +241,10 @@ export const InfaqDigital: React.FC = () => {
     }
     if (cleanSender.length < 3) {
       setSubmitError('Wajib mengisi nama pengirim sesuai bukti transfer (minimal 3 karakter).');
+      return;
+    }
+    if (!agreedToAkad) {
+      setSubmitError('Mohon centang persetujuan akad Infaq Operasional & kebijakan privasi (UU PDP).');
       return;
     }
 
@@ -277,7 +281,7 @@ export const InfaqDigital: React.FC = () => {
       setIsSuccessModal(true);
       setDoaHajat('');
       setReceipt(null);
-      setAgreedToAkad(false);
+      setAgreedToAkad(true);
     } catch (error) {
       console.error('Error recording infaq in Firestore:', error);
       setSubmitError('Gagal mengunggah bukti transfer ke database. Periksa koneksi internet Anda dan coba kembali.');
@@ -303,16 +307,17 @@ export const InfaqDigital: React.FC = () => {
 
   const finalDonorDisplay = isAnonim ? 'Hamba Allah' : (donorName.trim() || senderAccount.trim() || 'Hamba Allah');
   const activeRefCode = lastSubmittedReceipt?.referenceCode || receipt?.referenceCode || '-';
-  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq Jariyah di sistem:\n\n` +
+  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq Operasional & Pemeliharaan Digital di sistem:\n\n` +
     `• *Kode Referensi Bukti:* ${activeRefCode}\n` +
-    `• *Nama Pewakif / Pengirim:* ${finalDonorDisplay} (${senderAccount.trim() || '-'})\n` +
+    `• *Nama Munfiq / Pengirim:* ${finalDonorDisplay} (${senderAccount.trim() || '-'})\n` +
     `• *Metode Pembayaran:* ${paymentMethod}\n` +
     `• *Program:* ${activeProgramTitle}\n` +
     `• *Tujuan Alokasi:* ${targetSiteName}\n` +
     `• *Nominal Infaq:* Rp ${currentAmount.toLocaleString('id-ID')}` +
     (doaHajat.trim() ? `\n• *Titip Doa / Hajat:* "${sanitizePlainText(doaHajat, 200)}"` : '') +
     `\n\nScreenshot bukti transfer telah terunggah di sistem Admin Kurator. Terima kasih.`;
-  const waConfirmUrl = `https://wa.me/6285717378885?text=${encodeURIComponent(waMessage)}`;
+  const cleanAdminWa = (copy.adminWhatsappNumber || ADMIN_WHATSAPP_NUMBER).replace(/[^0-9]/g, '');
+  const waConfirmUrl = `https://wa.me/${cleanAdminWa}?text=${encodeURIComponent(waMessage)}`;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24">
@@ -327,7 +332,7 @@ export const InfaqDigital: React.FC = () => {
           <div className="max-w-2xl">
             <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-gold-300 text-xs font-semibold mb-4">
               <HeartHandshake className="w-4 h-4" />
-              <span>Sedekah Jariyah &amp; Wasilah Kebaikan</span>
+              <span>Infaq Operasional &amp; Pemeliharaan Digital</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
               {copy.infaqTitle}
@@ -340,7 +345,7 @@ export const InfaqDigital: React.FC = () => {
             <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 shrink-0 min-w-[200px]">
               <p className="text-[11px] uppercase tracking-wider text-emerald-300 font-bold mb-1">Total Infaq Tercatat</p>
               <p className="text-xl sm:text-2xl font-serif font-black text-white">Rp {totalTerkumpul.toLocaleString('id-ID')}</p>
-              <p className="text-[11px] text-slate-300 mt-0.5">Dari {recentDonations.length} konfirmasi pewakif</p>
+              <p className="text-[11px] text-slate-300 mt-0.5">Dari {recentDonations.length} konfirmasi munfiq / peziarah</p>
             </div>
           )}
         </div>
@@ -353,7 +358,7 @@ export const InfaqDigital: React.FC = () => {
           <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
             <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-3.5 flex items-center">
               <span className="w-6 h-6 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center mr-2.5">1</span>
-              Pilih Program Amal Jariyah
+              Pilih Program Infaq Operasional &amp; Pemeliharaan Digital
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {programs.map((p, idx) => {
@@ -413,15 +418,15 @@ export const InfaqDigital: React.FC = () => {
           <div className="bg-white rounded-2xl p-5 sm:p-6 border border-stone-200/70 shadow-2xs">
             <h2 className="text-sm sm:text-base font-serif text-stone-900 mb-3 flex items-center">
               <span className="w-6 h-6 rounded-lg bg-stone-100 text-stone-800 text-xs font-semibold flex items-center justify-center mr-2.5">2</span>
-              Tujuan Alokasi Infaq Jariyah
+              Tujuan Alokasi Infaq Operasional &amp; Pemeliharaan Digital
             </h2>
             <select
               value={selectedSiteId}
               onChange={(e) => setSelectedSiteId(e.target.value)}
               className="w-full px-4 py-3 bg-[#FAF8F5] border border-stone-200 rounded-xl text-stone-800 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-700 cursor-pointer"
             >
-              <option value="web-riset">Penjagaan Arsip Digital &amp; Penyebaran Riwayat Auliya Nusantara</option>
-              <option value="all">Umum (Disalurkan ke Makam yang Membutuhkan Revitalisasi)</option>
+              <option value="web-riset">Infaq Operasional &amp; Pemeliharaan Digital Arsip Auliya Nusantara</option>
+              <option value="all">Umum (Disalurkan untuk Operasional &amp; Dokumentasi Makam)</option>
             </select>
             <p className="text-[11px] text-stone-500 mt-2">
               {copy.infaqTransparencyNote}
@@ -482,7 +487,7 @@ export const InfaqDigital: React.FC = () => {
             </h2>
             
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Nama Pewakif / Peziarah</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Nama Munfiq / Peziarah</label>
               <input
                 type="text"
                 maxLength={100}
@@ -499,7 +504,7 @@ export const InfaqDigital: React.FC = () => {
                   onChange={(e) => setIsAnonim(e.target.checked)}
                   className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 mr-2"
                 />
-                Infaq sebagai Hamba Allah (Anonim)
+                Tampilkan sebagai &quot;Hamba Allah&quot; pada ticker publik &amp; Dinding Munajat
               </label>
             </div>
 
@@ -524,8 +529,8 @@ export const InfaqDigital: React.FC = () => {
           {/* Ringkasan Infaq */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs sticky top-24">
             <h3 className="font-bold text-slate-900 text-base mb-3 flex items-center justify-between">
-              <span>Ringkasan Infaq Jariyah</span>
-              <span className="text-[11px] px-2.5 py-1 bg-emerald-50 text-emerald-800 font-bold rounded-xl border border-emerald-200/60">Akad Jariyah</span>
+              <span>Ringkasan Infaq Operasional</span>
+              <span className="text-[11px] px-2.5 py-1 bg-emerald-50 text-emerald-800 font-bold rounded-xl border border-emerald-200/60">Akad Infaq</span>
             </h3>
 
             {/* Kutipan Hikmah di atas form konfirmasi infaq */}
@@ -549,7 +554,7 @@ export const InfaqDigital: React.FC = () => {
                 </span>
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-slate-500 shrink-0">Nama Pewakif</span>
+                <span className="text-slate-500 shrink-0">Nama Munfiq / Peziarah</span>
                 <span className="font-semibold text-slate-900">
                   {finalDonorDisplay}
                 </span>
@@ -613,6 +618,8 @@ export const InfaqDigital: React.FC = () => {
                 onReceiptChange={setReceipt}
                 agreedToAkad={agreedToAkad}
                 onAgreedToAkadChange={setAgreedToAkad}
+                isAnonymous={isAnonim}
+                onIsAnonymousChange={setIsAnonim}
                 accentColor="emerald"
                 requiredForUnlock
               />
@@ -772,7 +779,7 @@ export const InfaqDigital: React.FC = () => {
                   <span className="font-semibold text-slate-900 text-right">{activeProgramTitle}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Pewakif</span>
+                  <span className="text-slate-500">Munfiq / Peziarah</span>
                   <span className="font-semibold text-slate-900">{finalDonorDisplay}</span>
                 </div>
                 <div className="flex justify-between">

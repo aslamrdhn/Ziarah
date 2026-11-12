@@ -101,12 +101,13 @@ export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntent
         'al-haddad',
         'al-aydrus',
       ];
+      const effId = site.legacyId || site.id;
       return (
         keywords.some((kw) => primaryCorpus.includes(kw)) ||
         site.category === 'Habaib' ||
-        site.id === 'wali-4' ||
-        site.id === 'wali-8' ||
-        site.id === 'wali-9'
+        effId === 'wali-4' ||
+        effId === 'wali-8' ||
+        effId === 'wali-9'
       );
     }
     case 'ikhtiar': {
@@ -129,12 +130,13 @@ export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntent
         'kwitang',
         'empang bogor',
       ];
+      const effId = site.legacyId || site.id;
       return (
         keywords.some((kw) => primaryCorpus.includes(kw)) ||
-        site.id === 'wali-1' ||
-        site.id === 'wali-2' ||
-        site.id === 'wali-6' ||
-        site.id === 'wali-9'
+        effId === 'wali-1' ||
+        effId === 'wali-2' ||
+        effId === 'wali-6' ||
+        effId === 'wali-9'
       );
     }
     case 'keteguhan': {
@@ -157,11 +159,12 @@ export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntent
         'yusuf al-makassari',
         'abdul jalil',
       ];
+      const effId = site.legacyId || site.id;
       return (
         keywords.some((kw) => primaryCorpus.includes(kw)) ||
-        site.id === 'wali-3' ||
-        site.id === 'wali-5' ||
-        site.id === 'wali-7'
+        effId === 'wali-3' ||
+        effId === 'wali-5' ||
+        effId === 'wali-7'
       );
     }
     case 'ilmu': {
@@ -894,7 +897,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <div className="flex items-center gap-3.5 min-w-0">
               <img
                 src="/favicon.svg"
-                alt="Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil & Direktori 96 Makam Wali"
+                alt={`Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil & Direktori ${sites.length || TOTAL_SITE_COUNT} Makam Wali`}
                 width={44}
                 height={44}
                 loading="lazy"
@@ -964,10 +967,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 
             <div className="space-y-2">
               <h3 className="font-serif font-semibold text-base text-stone-900">
-                Di Mana Saja Lokasi 96 Makam Wali Songo dan Ulama di Ziarah Nusantara?
+                Di Mana Saja Lokasi {sites.length || TOTAL_SITE_COUNT} Makam Wali Songo dan Ulama di Ziarah Nusantara?
               </h3>
               <p>
-                <strong>Ziarah Nusantara</strong> mendokumentasikan 96 lokasi makam Waliyullah di 18 provinsi Indonesia lengkap dengan titik koordinat peta rute perjalanan, jadwal haul, kisah karomah, dan sanad keilmuan.
+                <strong>Ziarah Nusantara</strong> mendokumentasikan {sites.length || TOTAL_SITE_COUNT} lokasi makam Waliyullah di {ALL_PROVINCES.length} provinsi Indonesia lengkap dengan titik koordinat peta rute perjalanan, jadwal haul, kisah karomah, dan sanad keilmuan.
               </p>
               <p>
                 Direktori ini mencakup sembilan makam <strong>Wali Songo</strong> di Jawa Timur, Jawa Tengah, dan Jawa Barat (Sunan Gresik, Sunan Ampel, Sunan Bonang, Sunan Drajat, Sunan Giri, Sunan Kalijaga, Sunan Kudus, Sunan Muria, dan Sunan Gunung Jati) hingga makam ulama besar, raja kesultanan Islam, dan habaib di Aceh, Sumatera, Banten, DKI Jakarta, Yogyakarta, Kalimantan, Sulawesi, Bali, Nusa Tenggara Barat, dan Maluku Utara.

@@ -149,7 +149,7 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
             Alamat: {selectedSite.location.address}, {selectedSite.location.city}, {selectedSite.location.province}
           </p>
           <Link to="/panduan">Bacaan Doa Ziarah Kubur Lengkap</Link>
-          <Link to="/direktori">Direktori 96 Makam Waliyullah</Link>
+          <Link to="/direktori">Direktori {ziarahSites.length} Makam Waliyullah</Link>
         </article>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { ZiarahSite } from '../data/sites';
+import { ZiarahSite, REGIONAL_ID_TO_LEGACY_ID } from '../data/sites';
 
 export function slugifySiteText(input: string): string {
   return String(input || '')
@@ -26,8 +26,16 @@ export function findSiteByParam(sites: ZiarahSite[], rawParam?: string | null): 
   const param = decodeURIComponent(rawParam).trim().toLowerCase();
   if (!param) return null;
 
-  // 1. Exact ID match (e.g. "wali-2")
-  const byId = sites.find((s) => s.id.toLowerCase() === param);
+  const mappedLegacy = REGIONAL_ID_TO_LEGACY_ID[param];
+
+  // 1. Exact ID or legacyId match (e.g. "wali-2", "wali-9", or "sunan-gunung-jati")
+  const byId = sites.find(
+    (s) =>
+      s.id.toLowerCase() === param ||
+      (s.legacyId && s.legacyId.toLowerCase() === param) ||
+      (mappedLegacy && s.id.toLowerCase() === mappedLegacy.toLowerCase()) ||
+      (mappedLegacy && s.legacyId && s.legacyId.toLowerCase() === mappedLegacy.toLowerCase())
+  );
   if (byId) return byId;
 
   // 2. Exact canonical SEO slug match (e.g. "sunan-ampel-surabaya")
