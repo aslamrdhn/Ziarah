@@ -105,39 +105,15 @@ export function extractShortEra(era?: string): string {
   return era.split('(')[0].trim().slice(0, 22);
 }
 
+export const HONEST_UNVERIFIED_LOGISTICS_FALLBACK =
+  'Informasi fadhilah wasilah dan jadwal haul spesifik untuk lokasi ini sedang dalam proses verifikasi literatur oleh Tim Kurator Ziarah Nusantara.';
+
 export function getSiteLogistics(site: ZiarahSite): SiteLogisticsInfo {
   const preset = HISTORICAL_LOGISTICS_BY_ID[site.id] || (site.legacyId ? HISTORICAL_LOGISTICS_BY_ID[site.legacyId] : undefined);
-  const titleLower = `${site.title} ${site.name}`.toLowerCase();
 
-  let fallbackHaul = 'Setiap Tahun (Mengikuti Kalender Hijriah Majelis & Pengurus Maqbarah Setempat)';
-  let fallbackAdab =
-    'Berwudhu sebelum masuk maqbarah, berpakaian sopan menutup aurat, melepas alas kaki di batas suci, dan mematuhi arahan juru kunci setempat.';
-
-  if (titleLower.includes('sekumpul') || titleLower.includes('zaini abdul ghani')) {
-    fallbackHaul = '5 Rajab (Haul Akbar Abah Guru Sekumpul Martapura)';
-    fallbackAdab = 'Mengikuti jalur relawan Sekumpul, menjaga kebersihan musholla Ar-Raudhah, dan mengutamakan adab majelis.';
-  } else if (titleLower.includes('kholil') || titleLower.includes('bangkalan')) {
-    fallbackHaul = '27 Ramadhan (Haul Akbar Syaikhona Kholil Bangkalan, Martajasah)';
-    fallbackAdab = 'Berpakaian muslim rapi, menjaga ketenangan di dalam Masjid Syaikhona Kholil, dan tertib saat pergantian rombongan.';
-  } else if (titleLower.includes('hasyim asy') || titleLower.includes('tebuireng') || titleLower.includes('gus dur')) {
-    fallbackHaul = 'Bulan Dzulhijjah / Muharram (Haul Masyayikh Pesantren Tebuireng Jombang)';
-    fallbackAdab = 'Mematuhi jadwal buka-tutup area makam Pesantren Tebuireng (tutup saat jam kegiatan santri tertentu) dan berpakaian sopan.';
-  } else if (titleLower.includes('luar batang') || titleLower.includes('husein bin abubakar')) {
-    fallbackHaul = 'Minggu Terakhir Bulan Syawal (Haul Akbar Habib Husein Luar Batang Jakarta)';
-    fallbackAdab = 'Melepas alas kaki sebelum masuk serambi masjid, memisahkan barisan jamaah pria dan wanita, serta menjaga ketenangan.';
-  } else if (titleLower.includes('kwitang') || titleLower.includes('ali al-habsyi')) {
-    fallbackHaul = 'Kamis Sore Akhir Rabiul Akhir (Haul Agung Habib Ali bin Abdurrahman Al-Habsyi Kwitang)';
-    fallbackAdab = 'Mengenakan busana muslim sopan (dianjurkan putih) dan mengikuti ketertiban pengurus Islamic Center Kwitang.';
-  } else if (titleLower.includes('mbah priok') || titleLower.includes('hasan bin muhammad al-haddad')) {
-    fallbackHaul = 'Akhir Bulan Sya’ban (Haul Akbar Gubah Al-Haddad / Mbah Priok Tanjung Priok)';
-    fallbackAdab = 'Menjaga adab di area majelis dan maqbarah Gubah Al-Haddad serta mengikuti petunjuk petugas parkir & keamanan makam.';
-  } else if (site.category === 'Walisongo') {
-    fallbackHaul = 'Bulan Muharram / Dzulhijjah (Agenda Haul Tahunan & Tradisi Buka Luwur)';
-    fallbackAdab = 'Menjaga kesopanan pakaian, melepas alas kaki di batas cungkup, serta menghormati kearifan adat dan arahan juru kunci.';
-  } else if (site.category === 'Habaib') {
-    fallbackHaul = 'Rabiul Awal / Sya’ban (Haul Tahunan & Pembacaan Maulid / Ratib)';
-    fallbackAdab = 'Menjaga adab majelis dzikir, memisahkan shaf peziarah laki-laki dan perempuan, serta tidak meninggikan suara di dekat cungkup.';
-  }
+  const fallbackHaul = HONEST_UNVERIFIED_LOGISTICS_FALLBACK;
+  const fallbackAdab =
+    'Berwudhu sebelum memasuki area maqbarah, mengenakan pakaian muslim/muslimah yang sopan dan menutup aurat, melepas alas kaki di batas suci cungkup, serta mematuhi tata tertib juru kunci setempat.';
 
   const explicitAdab = Array.isArray(site.localAdab)
     ? site.localAdab.map((item) => item.trim()).filter(Boolean).join(' • ')
@@ -152,7 +128,8 @@ export function getSiteLogistics(site: ZiarahSite): SiteLogisticsInfo {
 
 /**
  * Menghasilkan deskripsi Berkah & Wasilah Hajat yang biasa diharapkan peziarah di makam tersebut.
- * Menggunakan nilai `site.barokahHajat` dari Admin jika tersedia, atau fallback kontekstual cerdas untuk seluruh 96+ makam.
+ * Menggunakan nilai eksplisit `site.barokahHajat` yang telah terkurasi, atau mengembalikan pemberitahuan
+ * jujur tanpa menebak klaim sejarah berdasar kata kunci kota.
  */
 export function getSiteBarokahHajat(site: ZiarahSite): string {
   if (Array.isArray(site.barokahHajat)) {
@@ -164,73 +141,12 @@ export function getSiteBarokahHajat(site: ZiarahSite): string {
     return site.barokahHajat.trim();
   }
 
-  const corpus = `${site.id} ${site.title} ${site.name} ${site.description} ${site.history || ''}`.toLowerCase();
-
-  if (
-    corpus.includes('drajat') ||
-    corpus.includes('kuncung') ||
-    corpus.includes('malik ibrahim') ||
-    corpus.includes('gresik') ||
-    corpus.includes('giri') ||
-    corpus.includes('dagang') ||
-    corpus.includes('niaga') ||
-    corpus.includes('ekonomi')
-  ) {
-    return `Di ${site.title}, peziarah umumnya bertawassul mengharapkan wasilah kelancaran ikhtiar usaha & perniagaan, terbukanya pintu rezeki yang halal lagi berkah, kemudahan melunasi tanggungan hutang, serta kedermawanan hati dalam menolong sesama.`;
-  }
-
-  if (
-    corpus.includes('muria') ||
-    corpus.includes('kwitang') ||
-    corpus.includes('empang bogor') ||
-    corpus.includes('ayu') ||
-    corpus.includes('nyai') ||
-    corpus.includes('ratu') ||
-    corpus.includes('jodoh') ||
-    corpus.includes('keluarga')
-  ) {
-    return `Biasanya peziarah yang datang ke ${site.title} memanjatkan doa dan tawassul dengan mengharapkan wasilah dimudahkan bertemu jodoh pendamping hidup yang shalih/shalihah, kerukunan rumah tangga (sakinah mawaddah warahmah), serta kelembutan hati seluruh anggota keluarga.`;
-  }
-
-  if (
-    corpus.includes('kholil') ||
-    corpus.includes('hamid') ||
-    corpus.includes('pasuruan') ||
-    corpus.includes('hasyim asy') ||
-    corpus.includes('tebuireng') ||
-    corpus.includes('ampel') ||
-    corpus.includes('bonang') ||
-    corpus.includes('sekumpul') ||
-    corpus.includes('pesantren') ||
-    corpus.includes('kitab')
-  ) {
-    return `Di ${site.title}, para santri, orang tua, dan peziarah umumnya bertawassul mengharapkan wasilah ilmu yang bermanfaat & penuh berkah, dikaruniai keturunan yang shalih-shalihah penghafal Al-Qur'an, serta dibukakan jalan keluar (makhraja) dari berbagai himpitan batin dan kesulitan hidup.`;
-  }
-
-  if (
-    corpus.includes('kalijaga') ||
-    corpus.includes('kudus') ||
-    corpus.includes('gunung jati') ||
-    corpus.includes('hasanuddin') ||
-    corpus.includes('sultan') ||
-    corpus.includes('adipati') ||
-    corpus.includes('raja') ||
-    corpus.includes('luar batang') ||
-    corpus.includes('priok')
-  ) {
-    return `Peziarah yang berziarah ke ${site.title} umumnya bertawassul memohon kepada Allah SWT agar dikaruniai keteguhan iman di tengah ujian, kewibawaan & amanah dalam kepemimpinan/pekerjaan, keselamatan keluarga dari bala bencana, serta dikabulkannya hajat-hajat besar yang sedang diperjuangkan.`;
-  }
-
-  if (site.category === 'Habaib') {
-    return `Di ${site.title}, jamaah dan peziarah umumnya bertawassul mengharapkan syafaat kecintaan kepada Dzurriyah Rasulullah SAW, keteduhan batin dari kegelisahan dunia, kesembuhan penyakit lahir maupun batin, serta keberkahan rezeki keluarga.`;
-  }
-
-  return `Biasanya peziarah yang berziarah ke ${site.title} (${site.location.city}) bertawassul memohon kepada Allah SWT dengan wasilah keshalihan beliau agar dikabulkan hajat-hajat terbaik: ketenangan batin, kemudahan jodoh & keturunan yang shalih, kelapangan rezeki keluarga, serta husnul khatimah.`;
+  return HONEST_UNVERIFIED_LOGISTICS_FALLBACK;
 }
 
 /**
  * Mengembalikan daftar `doaKhusus` makam. Jika makam belum memiliki item `doaKhusus` kustom di database,
- * fungsi ini menghasilkan bacaan Tawassul, Wirid & Doa Munajat Hajat Khusus yang relevan untuk makam tersebut.
+ * fungsi ini menghasilkan bacaan Tawassul & Doa Munajat Ziarah Kubur umum Ahlussunnah wal Jamaah.
  */
 export interface EnrichedDoaKhususItem {
   title: string;
@@ -250,7 +166,7 @@ export interface CompleteBarokahGuide {
 }
 
 /**
- * Mengembalikan daftar `doaKhusus` makam yang dilengkapi transliterasi Latin dan doa hajat kontekstual.
+ * Mengembalikan daftar `doaKhusus` makam yang dilengkapi transliterasi Latin dan terjemahan.
  */
 export function getEffectiveSiteDoaKhusus(
   site: ZiarahSite
@@ -265,69 +181,13 @@ export function getEffectiveSiteDoaKhusus(
  * 3) Wirid Penutup & Adab Pulang Ziarah
  */
 export function getSiteCompleteBarokahGuide(site: ZiarahSite): CompleteBarokahGuide {
-  const corpus = `${site.id} ${site.title} ${site.name} ${site.description} ${site.history || ''}`.toLowerCase();
-
-  let contextualDoa: EnrichedDoaKhususItem = {
+  const contextualDoa: EnrichedDoaKhususItem = {
     title: `Doa Munajat Wasilah Hajat & Keberkahan di ${site.title}`,
     text: 'اللّٰهُمَّ إِنِّي أَسْأَلُكَ وَأَتَوَجَّهُ إِلَيْكَ بِنَبِيِّكَ مُحَمَّدٍ نَبِيِّ الرَّحْمَةِ، وَبِكَرَامَةِ أَوْلِيَائِكَ الصَّالِحِينَ أَهْلِ هٰذِهِ الْمَقْبَرَةِ، أَنْ تَقْضِيَ حَاجَاتِنَا وَتَفْتَحَ لَنَا أَبْوَابَ الْخَيْرِ وَالتَّيْسِيرِ وَالْبَرَكَةِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ',
     latin:
-      "Allaahumma innii as-aluka wa atawajjahu ilaika bi nabiyyika Muhammadin nabiyyir-rahmah, wa bi karaamati auliyaa-ikash-shaalihiina ahli haadzihil-maqbarah, an taqdhiya haajaatinaa wa taftaha lanaa abwaabal-khairi wat-taisiiri wal-barakati fid-diini wad-dun-yaa wal-aakhirah.",
-    translation:
-      `Ya Allah, sesungguhnya aku memohon dan menghadapkan diri kepada-Mu dengan wasilah Nabi-Mu Muhammad pembawa rahmat, serta dengan kemuliaan para kekasih-Mu yang shalih penghuni maqbarah ini (${site.name}), kabulkanlah hajat-hajat kami, dan bukakanlah bagi kami pintu-pintu kebaikan, kemudahan, serta keberkahan dalam agama, dunia, dan akhirat.`,
+      'Allaahumma innii as-aluka wa atawajjahu ilaika bi nabiyyika Muhammadin nabiyyir-rahmah, wa bi karaamati auliyaa-ikash-shaalihiina ahli haadzihil-maqbarah, an taqdhiya haajaatinaa wa taftaha lanaa abwaabal-khairi wat-taisiiri wal-barakati fid-diini wad-dun-yaa wal-aakhirah.',
+    translation: `Ya Allah, sesungguhnya aku memohon dan menghadapkan diri kepada-Mu dengan wasilah Nabi-Mu Muhammad pembawa rahmat, serta dengan kemuliaan para kekasih-Mu yang shalih penghuni maqbarah ini (${site.name}), kabulkanlah hajat-hajat kami, dan bukakanlah bagi kami pintu-pintu kebaikan, kemudahan, serta keberkahan dalam agama, dunia, dan akhirat.`,
   };
-
-  if (
-    corpus.includes('drajat') ||
-    corpus.includes('kuncung') ||
-    corpus.includes('malik ibrahim') ||
-    corpus.includes('gresik') ||
-    corpus.includes('giri') ||
-    corpus.includes('dagang') ||
-    corpus.includes('niaga')
-  ) {
-    contextualDoa = {
-      title: `Doa Khusus Wasilah Kelapangan Rezeki, Perniagaan & Lunas Hutang di ${site.title}`,
-      text: 'اللّٰهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ، اللّٰهُمَّ يَا فَتَّاحُ يَا رَزَّاقُ بَارِكْ لَنَا فِي تِجَارَتِنَا وَأَرْزَاقِنَا كَمَا بَارَكْتَ لِأَوْلِيَائِكَ الصَّالِحِينَ وَاقْضِ عَنَّا الدَّيْنَ وَأَغْنِنَا مِنَ الْفَقْرِ',
-      latin:
-        "Allaahummakfinii bi halaalika 'an haraamik, wa aghninii bi fadhlika 'amman siwaak. Allaahumma yaa Fattaahu yaa Razzaaqu baarik lanaa fii tijaaratinaa wa arzaaqinaa kamaa baarakta li auliyaa-ikash-shaalihiin, waqdhi 'annad-daina wa aghninaa minal-faqr.",
-      translation:
-        'Ya Allah, cukupkanlah aku dengan rezeki halal-Mu sehingga terjaga dari yang haram, dan kayakanlah aku dengan karunia-Mu sehingga tidak bergantung kepada selain-Mu. Wahai Dzat Maha Pembuka pintu rezeki, berkahilah usaha dan perniagaan kami sebagaimana Engkau memberkahi para kekasih-Mu yang shalih, lunaskanlah seluruh tanggungan hutang kami, dan angkatlah kami dari kefakiran.',
-    };
-  } else if (
-    corpus.includes('muria') ||
-    corpus.includes('kwitang') ||
-    corpus.includes('empang bogor') ||
-    corpus.includes('ayu') ||
-    corpus.includes('nyai') ||
-    corpus.includes('ratu')
-  ) {
-    contextualDoa = {
-      title: `Doa Khusus Wasilah Kemudahan Jodoh Shalih & Keluarga Sakinah di ${site.title}`,
-      text: 'رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا ۝ اللّٰهُمَّ أَلِّفْ بَيْنَ قُلُوبِنَا وَأَصْلِحْ ذَاتَ بَيْنِنَا وَارْزُقْنَا زَوْجًا صَالِحًا وَمَوَدَّةً وَرَحْمَةً وَسَكِينَةً دَائِمَةً',
-      latin:
-        "Rabbanaa hab lanaa min azwaajinaa wa dzurriyyaatinaa qurrata a'yunin waj'alnaa lil-muttaqiina imaamaa. Allaahumma allif baina quluubinaa wa ashlih dzaata baininaa warzuqnaa zaujan shaalihan wa mawaddatan wa rahmatan wa sakiinatan daa-imah.",
-      translation:
-        'Ya Tuhan kami, anugerahkanlah kepada kami pasangan hidup dan keturunan yang menjadi penyejuk mata kami, dan jadikanlah kami pemimpin bagi orang-orang yang bertakwa. Ya Allah, tautkanlah hati kami dalam kasih sayang, damaikanlah rumah tangga kami, dan karuniakanlah pendamping hidup yang shalih/shalihah beserta ketenteraman batin yang abadi.',
-    };
-  } else if (
-    corpus.includes('kholil') ||
-    corpus.includes('hamid') ||
-    corpus.includes('pasuruan') ||
-    corpus.includes('hasyim asy') ||
-    corpus.includes('tebuireng') ||
-    corpus.includes('ampel') ||
-    corpus.includes('bonang') ||
-    corpus.includes('sekumpul')
-  ) {
-    contextualDoa = {
-      title: `Doa Khusus Wasilah Ilmu Bermanfaat, Keturunan Ahlul Qur'an & Jalan Keluar di ${site.title}`,
-      text: 'اللّٰهُمَّ انْفَعْنَا بِمَا عَلَّمْتَنَا وَعَلِّمْنَا مَا يَنْفَعُنَا وَزِدْنَا عِلْمًا نَافِعًا وَعَمَلًا مُتَقَبَّلًا، وَأَفِضْ عَلَيْنَا مِنْ بَرَكَاتِ عُلَمَائِكَ وَأَوْلِيَائِكَ الصَّالِحِينَ، وَاجْعَلْ لَنَا مِنْ كُلِّ هَمٍّ فَرَجًا وَمِنْ كُلِّ ضِيقٍ مَخْرَجًا',
-      latin:
-        "Allaahummanfa'naa bimaa 'allamtanaa wa 'allimnaa maa yanfa'unaa wa zidnaa 'ilman naafi'an wa 'amalan mutaqabbalaa, wa afidh 'alainaa min barakaati 'ulamaa-ika wa auliyaa-ikash-shaalihiin, waj'al lanaa min kulli hammin farajan wa min kulli dhiiqin makhrajaa.",
-      translation:
-        'Ya Allah, berikanlah kemanfaatan atas ilmu yang telah Engkau ajarkan kepada kami, ajarkanlah ilmu yang membawa maslahat bagi kami, limpahkanlah kepada keluarga dan keturunan kami keberkahan ilmu para ulama dan kekasih-Mu yang shalih, serta bukakanlah kelapangan dari setiap kesedihan dan jalan keluar dari setiap kesempitan hidup.',
-    };
-  }
 
   const baseItems: EnrichedDoaKhususItem[] = [];
 

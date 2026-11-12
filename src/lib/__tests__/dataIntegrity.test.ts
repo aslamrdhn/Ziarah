@@ -5,8 +5,10 @@ import { JAWA_TENGAH_DIY_SITES } from '../../data/regions/jawaTengahDiy';
 import { JAWA_TIMUR_MADURA_SITES } from '../../data/regions/jawaTimurMadura';
 import { SUMATERA_SITES } from '../../data/regions/sumatera';
 import { KALIMANTAN_SULAWESI_SITES } from '../../data/regions/kalimantanSulawesi';
+import { BALI_NUSA_MALUKU_PAPUA_SITES } from '../../data/regions/baliNusaMalukuPapua';
 import { getSiteGoogleMapsNavigationUrl } from '../../components/SiteDetails';
 import { ADMIN_WHATSAPP_NUMBER } from '../../config/siteCopy';
+import { getSiteBarokahHajat, getSiteLogistics, HONEST_UNVERIFIED_LOGISTICS_FALLBACK } from '../siteLogistics';
 
 describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
   it('memastikan tidak ada id makam yang duplikat di seluruh katalog SITES', () => {
@@ -427,5 +429,104 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
       expect(site.lastVerified).toBe('2026-11-11');
     }
   });
+
+  it('memverifikasi kelengkapan seluruh 25 makam Tahap 7 (Bali, NTB, NTT, Maluku, Maluku Utara & Papua) serta 100% kurasi logistik tanpa tebakan kata kunci', () => {
+    const requiredTahap7Ids = [
+      'habib-ali-bafaqih-negara',
+      'habib-ali-kusamba',
+      'karangrupit-buleleng',
+      'the-kwan-lie-buleleng',
+      'makam-keramat-kembar-denpasar',
+      'pangeran-mas-sepuh-seseh',
+      'siti-khotijah-denpasar',
+      'habib-umar-bedugul-tabanan',
+      'wali-kembar-karangasem',
+      'tgkh-zainuddin-abdul-madjid',
+      'wali-nyatoq-lombok',
+      'makam-loang-baloq',
+      'makam-batu-layar-lombok',
+      'makam-dana-traha-bima',
+      'makam-sultan-menanga-solor',
+      'makam-keramat-kampung-solor-kupang',
+      'makam-raja-islam-pulau-ende',
+      'masjid-tua-wapauwe-kaitetu',
+      'makam-penyebar-islam-banda-neira',
+      'sultan-zainal-abidin-ternate',
+      'sultan-baabullah-ternate',
+      'sultan-nuku-tidore',
+      'masjid-tua-patimburak-fakfak',
+      'makam-raja-rumbati-fakfak',
+      'makam-kesultanan-misool-raja-ampat',
+    ];
+
+    const expectedEasternProvinces = [
+      'Bali',
+      'Nusa Tenggara Barat',
+      'Nusa Tenggara Timur',
+      'Maluku',
+      'Maluku Utara',
+      'Papua Barat',
+      'Papua Barat Daya',
+    ];
+
+    const regionalIds = new Set(BALI_NUSA_MALUKU_PAPUA_SITES.map((s) => s.id));
+    for (const reqId of requiredTahap7Ids) {
+      expect(regionalIds.has(reqId)).toBe(true);
+    }
+
+    const coveredProvinces = new Set(BALI_NUSA_MALUKU_PAPUA_SITES.map((s) => s.province));
+    for (const prov of expectedEasternProvinces) {
+      expect(coveredProvinces.has(prov)).toBe(true);
+    }
+
+    for (const site of BALI_NUSA_MALUKU_PAPUA_SITES) {
+      expect(expectedEasternProvinces).toContain(site.province);
+      expect(site.district).toBeTruthy();
+      expect(site.era).toBeTruthy();
+      const historyParagraphs = site.history.split(/\n\s*\n/).filter(Boolean);
+      expect(historyParagraphs.length).toBeGreaterThanOrEqual(3);
+
+      const karomahText = Array.isArray(site.karomah) ? site.karomah.join('\n\n') : String(site.karomah || '');
+      expect(karomahText).toContain('<!--more-->');
+
+      expect(site.untoldStory).toBeTruthy();
+      expect(site.untoldStory).toContain('<!--more-->');
+
+      expect(site.barokahHajat).toBeTruthy();
+      expect(site.doaKhusus && site.doaKhusus.length).toBeGreaterThan(0);
+      expect(site.doaKhusus?.[0]?.arab).toBeTruthy();
+      expect(site.doaKhusus?.[0]?.latin).toBeTruthy();
+      expect(site.doaKhusus?.[0]?.terjemahan).toBeTruthy();
+      expect(site.haulSchedule).toBeTruthy();
+      expect(site.localAdab).toBeTruthy();
+      expect(site.references && site.references.length).toBeGreaterThanOrEqual(2);
+      expect(site.verifiedBy).toBe('Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara');
+      expect(site.lastVerified).toBe('2026-11-11');
+    }
+
+    // Pastikan 100% seluruh makam di SITES telah memiliki field eksplisit barokahHajat, doaKhusus, haulSchedule, dan localAdab
+    for (const site of SITES) {
+      expect(site.barokahHajat, `Missing barokahHajat on ${site.id}`).toBeTruthy();
+      expect(site.doaKhusus && site.doaKhusus.length > 0, `Missing doaKhusus on ${site.id}`).toBe(true);
+      expect(site.haulSchedule, `Missing haulSchedule on ${site.id}`).toBeTruthy();
+      expect(site.localAdab, `Missing localAdab on ${site.id}`).toBeTruthy();
+    }
+
+    // Pastikan fallback siteLogistics mengembalikan teks jujur jika ada makam usulan baru yang belum memiliki barokahHajat / haulSchedule
+    const unverifiedNewSite = {
+      ...SITES[0],
+      id: 'usulan-pengunjung-baru',
+      legacyId: undefined,
+      barokahHajat: undefined,
+      haulSchedule: undefined,
+    };
+    expect(getSiteBarokahHajat(unverifiedNewSite)).toBe(
+      'Informasi fadhilah wasilah dan jadwal haul spesifik untuk lokasi ini sedang dalam proses verifikasi literatur oleh Tim Kurator Ziarah Nusantara.'
+    );
+    expect(getSiteLogistics(unverifiedNewSite).haulSchedule).toBe(
+      HONEST_UNVERIFIED_LOGISTICS_FALLBACK
+    );
+  });
 });
+
 

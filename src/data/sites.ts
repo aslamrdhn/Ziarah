@@ -185,6 +185,8 @@ export const REGIONAL_ID_TO_LEGACY_ID: Record<string, string> = {
   'karangrupit-buleleng': 'auliya-22',
   'pangeran-mas-sepuh-seseh': 'auliya-13',
   'siti-khotijah-denpasar': 'auliya-23',
+  'habib-umar-bedugul-tabanan': 'auliya-14',
+  'wali-kembar-karangasem': 'auliya-24',
   'tgkh-zainuddin-abdul-madjid': 'ulama-23',
   'makam-loang-baloq': 'auliya-15',
   'sultan-baabullah-ternate': 'auliya-29',
