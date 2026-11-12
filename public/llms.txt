@@ -1,23 +1,23 @@
 # Ziarah Nusantara
 
-> Situs resmi Ziarah Nusantara (https://ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Platform direktori ensiklopedis 153 makam para Waliyullah, Wali Songo, dan Ulama Nusantara di 24 provinsi Indonesia, dilengkapi peta rute geospasial, panduan adab ziarah, kumpulan doa tahlil & tawassul, serta literasi sejarah Islam Nusantara berbasis referensi jurnal ilmiah dan naskah babad.
+> Situs resmi Ziarah Nusantara (https://ziarahnusantara.my.id) dikelola oleh Tim Kurator Arsip Ziarah Nusantara. Platform direktori ensiklopedis 168 makam para Waliyullah, Wali Songo, dan Ulama Nusantara di 30 provinsi Indonesia, dilengkapi peta rute geospasial, panduan adab ziarah, kumpulan doa tahlil & tawassul, serta literasi sejarah Islam Nusantara berbasis referensi jurnal ilmiah dan naskah babad.
 
-Ziarah Nusantara menyediakan dokumentasi terverifikasi mengenai 153 lokasi makam di 24 provinsi, biografi sejarah, jaringan sanad keilmuan, karya tulis (kitab kuning/manuskrip), karomah, serta tuntunan doa ziarah kubur di seluruh Indonesia. Seluruh data dikurasi oleh Tim Kurator Arsip Ziarah Nusantara.
+Ziarah Nusantara menyediakan dokumentasi terverifikasi mengenai 168 lokasi makam di 30 provinsi, biografi sejarah, jaringan sanad keilmuan, karya tulis (kitab kuning/manuskrip), karomah, serta tuntunan doa ziarah kubur di seluruh Indonesia. Seluruh data dikurasi oleh Tim Kurator Arsip Ziarah Nusantara.
 
 ## Direktori & Layanan Utama
 
-- [Beranda & Katalog Direktori Makam](https://ziarahnusantara.my.id/): Halaman utama dan indeks pencarian seluruh 153 situs makam Waliyullah, Wali Songo, Ulama Pesantren, Habaib, dan Auliya Nusantara di 24 provinsi.
-- [Arsip & Direktori Makam Waliyullah](https://ziarahnusantara.my.id/direktori): Katalog lengkap 153 situs ziarah di Aceh, Bali, Banten, Bengkulu, DI Yogyakarta, DKI Jakarta, Jambi, Jawa Barat, Jawa Tengah, Jawa Timur, Kalimantan Barat, Kalimantan Selatan, Kepulauan Bangka Belitung, Kepulauan Riau, Lampung, Maluku Utara, Nusa Tenggara Barat, Riau, Sulawesi Selatan, Sulawesi Tengah, Sulawesi Utara, Sumatera Barat, Sumatera Selatan, Sumatera Utara beserta rujukan akademik.
-- [Peta Rute Geospasial Ziarah](https://ziarahnusantara.my.id/peta): Peta interaktif lokasi 153 makam Waliyullah dengan perhitungan rute jalan raya dan estimasi waktu tempuh peziarah.
+- [Beranda & Katalog Direktori Makam](https://ziarahnusantara.my.id/): Halaman utama dan indeks pencarian seluruh 168 situs makam Waliyullah, Wali Songo, Ulama Pesantren, Habaib, dan Auliya Nusantara di 30 provinsi.
+- [Arsip & Direktori Makam Waliyullah](https://ziarahnusantara.my.id/direktori): Katalog lengkap 168 situs ziarah di Aceh, Bali, Banten, Bengkulu, DI Yogyakarta, DKI Jakarta, Gorontalo, Jambi, Jawa Barat, Jawa Tengah, Jawa Timur, Kalimantan Barat, Kalimantan Selatan, Kalimantan Tengah, Kalimantan Timur, Kalimantan Utara, Kepulauan Bangka Belitung, Kepulauan Riau, Lampung, Maluku Utara, Nusa Tenggara Barat, Riau, Sulawesi Barat, Sulawesi Selatan, Sulawesi Tengah, Sulawesi Tenggara, Sulawesi Utara, Sumatera Barat, Sumatera Selatan, Sumatera Utara beserta rujukan akademik.
+- [Peta Rute Geospasial Ziarah](https://ziarahnusantara.my.id/peta): Peta interaktif lokasi 168 makam Waliyullah dengan perhitungan rute jalan raya dan estimasi waktu tempuh peziarah.
 - [Panduan Adab & Tata Cara Ziarah](https://ziarahnusantara.my.id/panduan): Pedoman adab sopan santun, niat, salam ziarah, dan tuntunan ziarah kubur sesuai tradisi Ahlussunnah wal Jamaah.
 - [Rubrik Kisah, Karomah & Naskah Sejarah](https://ziarahnusantara.my.id/rubrik): Kajian biografi mendalam, sanad keilmuan Haramain-Nusantara, dan keteladanan dakwah para Waliyullah.
 - [Kumpulan Doa Khusus, Tahlil & Tawassul](https://ziarahnusantara.my.id/doa): Bacaan salam ziarah, susunan tawassul, Surah Yasin, dan tahlil lengkap teks Arab, Latin, dan terjemahan Bahasa Indonesia.
-- [Infaq Operasional & Pemeliharaan Digital](https://ziarahnusantara.my.id/infaq): Layanan Infaq Operasional & Pemeliharaan Digital QRIS resmi Ziarah Nusantara untuk riset literasi sejarah dan pemeliharaan direktori 153 situs makam.
+- [Infaq Operasional & Pemeliharaan Digital](https://ziarahnusantara.my.id/infaq): Layanan Infaq Operasional & Pemeliharaan Digital QRIS resmi Ziarah Nusantara untuk riset literasi sejarah dan pemeliharaan direktori 168 situs makam.
 
 ## Dokumentasi, Kebijakan & Metadata Agen
 
 - [Standar & Kebijakan Kurasi Ilmiah](https://ziarahnusantara.my.id/kurasi): Metodologi verifikasi sumber sejarah, jurnal akademik, skripsi, dan naskah babad oleh Tim Kurator Arsip Ziarah Nusantara.
 - [Dokumentasi Lengkap LLMs](https://ziarahnusantara.my.id/llms-full.txt): Ringkasan komprehensif seluruh kategori makam, daftar tokoh Wali Songo & Ulama Nusantara, serta struktur data platform.
-- [Indeks JSON Situs Makam](https://ziarahnusantara.my.id/ziarah-sites.json): Data terstruktur JSON seluruh 153 makam di 24 provinsi.
+- [Indeks JSON Situs Makam](https://ziarahnusantara.my.id/ziarah-sites.json): Data terstruktur JSON seluruh 168 makam di 30 provinsi.
 - [Katalog AI & WebMCP](https://ziarahnusantara.my.id/.well-known/ai-catalog.json): Skema katalog terstruktur untuk penjelajahan agen AI dan integrasi indeks pengetahuan.
 - [Peta Situs XML](https://ziarahnusantara.my.id/sitemap.xml): Daftar indeks seluruh halaman publik Ziarah Nusantara.

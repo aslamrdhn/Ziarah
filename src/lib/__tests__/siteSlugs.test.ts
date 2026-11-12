@@ -33,15 +33,15 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
     expect(findSiteByParam(initialSites, '')).toBeNull();
 
     // Resolves AGH. Muhammad As'ad by both full canonical slug and legacy pre-apostrophe slug
-    expect(findSiteByParam(ziarahSites, 'agh-muhammad-as-ad-wajo')?.id).toBe('ulama-39');
-    expect(findSiteByParam(ziarahSites, 'agh-muhammad-as-wajo')?.id).toBe('ulama-39');
+    expect(findSiteByParam(ziarahSites, 'agh-muhammad-as-ad-wajo')?.id).toBe('agh-muhammad-asad-sengkang');
+    expect(findSiteByParam(ziarahSites, 'agh-muhammad-as-wajo')?.id).toBe('agh-muhammad-asad-sengkang');
   });
 
   it('extracts all sites in vercel-postbuild.mjs without apostrophe truncation or <!--more--> leakage', () => {
     const extracted = extractSitesFromSource();
     expect(extracted.length).toBe(SITES.length);
 
-    const asadSite = extracted.find((s: any) => s.id === 'ulama-39');
+    const asadSite = extracted.find((s: any) => s.id === 'agh-muhammad-asad-sengkang');
     expect(asadSite).toBeDefined();
     expect(asadSite.title).toContain("AGH. Muhammad As'ad");
     expect(asadSite.description).toContain("As'adiyah Sengkang");

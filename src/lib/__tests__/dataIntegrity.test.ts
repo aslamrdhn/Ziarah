@@ -4,6 +4,7 @@ import { JAWA_BARAT_BANTEN_DKI_SITES } from '../../data/regions/jawaBaratBantenD
 import { JAWA_TENGAH_DIY_SITES } from '../../data/regions/jawaTengahDiy';
 import { JAWA_TIMUR_MADURA_SITES } from '../../data/regions/jawaTimurMadura';
 import { SUMATERA_SITES } from '../../data/regions/sumatera';
+import { KALIMANTAN_SULAWESI_SITES } from '../../data/regions/kalimantanSulawesi';
 import { getSiteGoogleMapsNavigationUrl } from '../../components/SiteDetails';
 import { ADMIN_WHATSAPP_NUMBER } from '../../config/siteCopy';
 
@@ -343,4 +344,88 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
       expect(site.lastVerified).toBe('2026-11-11');
     }
   });
+
+  it('memverifikasi kelengkapan seluruh 29 makam Tahap 6 (5 Provinsi Kalimantan & 6 Provinsi Sulawesi) sesuai standar filologi dan anti-halusinasi', () => {
+    const requiredTahap6Ids = [
+      'syekh-muhammad-arsyad-al-banjari',
+      'guru-sekumpul-martapura',
+      'sultan-suriansyah-banjarmasin',
+      'habib-basirih-banjarmasin',
+      'datu-sanggul-rantau',
+      'syekh-kasyful-anwar-martapura',
+      'datu-abulung-sungai-batang',
+      'sultan-syarif-abdurrahman-alkadrie-pontianak',
+      'habib-husein-alkadrie-mempawah',
+      'kyai-gede-kotawaringin',
+      'tunggang-parangan-kutai-lama',
+      'kh-abul-hasan-samarinda',
+      'makam-raja-bulungan-tanjung-palas',
+      'syekh-yusuf-al-makassari',
+      'datuk-ri-bandang',
+      'datuk-patimang-luwu',
+      'datuk-ri-tiro',
+      'pangeran-diponegoro-makassar',
+      'agh-muhammad-asad-sengkang',
+      'agh-abdurrahman-ambo-dalle-barru',
+      'imam-lapeo-polewali-mandar',
+      'syekh-abdul-mannan-salabose-majene',
+      'habib-idrus-bin-salim-al-jufri-palu',
+      'datuk-karama-palu',
+      'kyai-mojo-tondano',
+      'tuanku-imam-bonjol-minahasa',
+      'sultan-amai-gorontalo',
+      'ju-panggola-gorontalo',
+      'sultan-murhum-buton',
+    ];
+
+    const expectedKalimantanSulawesiProvinces = [
+      'Kalimantan Selatan',
+      'Kalimantan Barat',
+      'Kalimantan Tengah',
+      'Kalimantan Timur',
+      'Kalimantan Utara',
+      'Sulawesi Selatan',
+      'Sulawesi Barat',
+      'Sulawesi Tengah',
+      'Sulawesi Utara',
+      'Gorontalo',
+      'Sulawesi Tenggara',
+    ];
+
+    const regionalIds = new Set(KALIMANTAN_SULAWESI_SITES.map((s) => s.id));
+    for (const reqId of requiredTahap6Ids) {
+      expect(regionalIds.has(reqId)).toBe(true);
+    }
+
+    const coveredProvinces = new Set(KALIMANTAN_SULAWESI_SITES.map((s) => s.province));
+    for (const prov of expectedKalimantanSulawesiProvinces) {
+      expect(coveredProvinces.has(prov)).toBe(true);
+    }
+
+    for (const site of KALIMANTAN_SULAWESI_SITES) {
+      expect(expectedKalimantanSulawesiProvinces).toContain(site.province);
+      expect(site.district).toBeTruthy();
+      expect(site.era).toBeTruthy();
+      const historyParagraphs = site.history.split(/\n\s*\n/).filter(Boolean);
+      expect(historyParagraphs.length).toBeGreaterThanOrEqual(3);
+
+      const karomahText = Array.isArray(site.karomah) ? site.karomah.join('\n\n') : String(site.karomah || '');
+      expect(karomahText).toContain('<!--more-->');
+
+      expect(site.untoldStory).toBeTruthy();
+      expect(site.untoldStory).toContain('<!--more-->');
+
+      expect(site.barokahHajat).toBeTruthy();
+      expect(site.doaKhusus && site.doaKhusus.length).toBeGreaterThan(0);
+      expect(site.doaKhusus?.[0]?.arab).toBeTruthy();
+      expect(site.doaKhusus?.[0]?.latin).toBeTruthy();
+      expect(site.doaKhusus?.[0]?.terjemahan).toBeTruthy();
+      expect(site.haulSchedule).toBeTruthy();
+      expect(site.localAdab).toBeTruthy();
+      expect(site.references && site.references.length).toBeGreaterThanOrEqual(2);
+      expect(site.verifiedBy).toBe('Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara');
+      expect(site.lastVerified).toBe('2026-11-11');
+    }
+  });
 });
+
