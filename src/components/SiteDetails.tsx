@@ -482,10 +482,10 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
         </div>
         <div className="flex flex-wrap gap-1.5">
           {[
-            "Ikhtiar Kesembuhan dari Penyakit (Syifa')",
-            'Kelapangan Rezeki Halal & Bebas Hutang',
-            'Ketenangan Hati & Sakinah Keluarga',
-            'Keberkahan Ilmu & Keturunan Shalih',
+            'Ikhtiar Kesembuhan dari Penyakit & Kesehatan Keluarga',
+            'Kelapangan Rezeki & Bebas Lilitan Hutang',
+            'Ketenangan Batin & Jalan Keluar Masalah',
+            'Ilmu Berkah & Keturunan Shalih',
           ].map((chipText) => (
             <button
               key={chipText}
@@ -517,7 +517,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       </div>
 
 
-      {/* 3 Bagian Panduan Amalan Lengkap (Terbuka Penuh saat isBarokahUnlocked, atau BLUR saat Terkunci Rp 5.000) */}
+      {/* 3 Bagian Panduan Amalan Lengkap (Terbuka Penuh saat isBarokahUnlocked, atau BLUR saat Terkunci Rp 2.000) */}
       {isBarokahUnlocked ? (
         <div className="space-y-5">
           {/* Bila Peziarah Menuliskan Hajat Pribadi, Tampilkan di Kartu Munajat Khusus */}
@@ -763,7 +763,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           <div className="mt-4 pt-4 border-t border-slate-200 bg-white space-y-3">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
               <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
-              <span>Khazanah Doa Khusus &amp; Tasbih Digital · Rp {barokahAmount.toLocaleString('id-ID')}</span>
+              <span>KHAZANAH DOA KHUSUS &amp; TASBIH DIGITAL · RP {barokahAmount.toLocaleString('id-ID')}</span>
             </div>
             <h4 className="font-serif text-xl text-slate-900">
               {copy.barokahPaywallTitle}
@@ -780,7 +780,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Lock className="w-4 h-4" strokeWidth={1.75} />
-                <span>{copy.barokahPaywallButtonText} (Rp {barokahAmount.toLocaleString('id-ID')})</span>
+                <span>Buka Barokah &amp; Doa Khusus (Rp {barokahAmount.toLocaleString('id-ID')})</span>
               </button>
             </div>
           </div>

@@ -318,42 +318,29 @@ export const ZiarahStoryReel: React.FC = () => {
     window.setTimeout(() => URL.revokeObjectURL(url), 3000);
   };
 
-  const handleDownloadStoryImage = async () => {
+  const handleShareStory = async (
+    slide: StoryReelSlide,
+    slideIndex: number,
+    mode: 'share' | 'download'
+  ) => {
     if (isGeneratingStory) return;
     setIsGeneratingStory(true);
     setIsInteracting(true);
     try {
-      const blob = await renderStorySlideCanvasBlob(currentSlide, safeIndex, totalSlides);
-      const fileName = `hikmah-ziarah-slide-${safeIndex + 1}.png`;
-      triggerBlobDownload(blob, fileName);
-      setStoryFeedback(
-        'Gambar Story 9:16 berhasil diunduh! Siap langsung diunggah ke Instagram Story atau WhatsApp Status Anda.'
-      );
-    } catch {
-      setStoryFeedback('Gagal menyiapkan gambar Story. Silakan coba kembali.');
-    } finally {
-      setIsGeneratingStory(false);
-    }
-  };
-
-  const handleShareToStory = async () => {
-    if (isGeneratingStory) return;
-    setIsGeneratingStory(true);
-    setIsInteracting(true);
-    try {
-      const blob = await renderStorySlideCanvasBlob(currentSlide, safeIndex, totalSlides);
-      const fileName = `hikmah-ziarah-slide-${safeIndex + 1}.png`;
-      const file = new File([blob], fileName, { type: 'image/png' });
+      const blob = await renderStorySlideCanvasBlob(slide, slideIndex, totalSlides);
+      const fileName = `ziarah-nusantara-story-slide-${slideIndex + 1}.png`;
+      const pngFile = new File([blob], fileName, { type: 'image/png' });
 
       if (
+        mode === 'share' &&
         typeof navigator !== 'undefined' &&
         typeof navigator.canShare === 'function' &&
-        navigator.canShare({ files: [file] })
+        navigator.canShare({ files: [pngFile] })
       ) {
         await navigator.share({
-          files: [file],
-          title: currentSlide.title,
-          text: `${currentSlide.title} — Baca selengkapnya di https://ziarahnusantara.my.id`,
+          files: [pngFile],
+          title: slide.title,
+          text: `${slide.title} — https://ziarahnusantara.my.id`,
         });
         setStoryFeedback('Slide Story 9:16 siap dibagikan ke Instagram Story atau WhatsApp Status.');
       } else {
@@ -366,7 +353,7 @@ export const ZiarahStoryReel: React.FC = () => {
       if (err instanceof Error && err.name === 'AbortError') {
         // User closed native share sheet
       } else {
-        setStoryFeedback('Gagal membagikan gambar Story. Silakan gunakan tombol Unduh Gambar 9:16.');
+        setStoryFeedback('Gagal menyiapkan gambar Story. Silakan coba kembali.');
       }
     } finally {
       setIsGeneratingStory(false);
@@ -630,24 +617,24 @@ export const ZiarahStoryReel: React.FC = () => {
 
           {/* 9:16 Story Share & Download Actions (IG Story / WA Status) */}
           <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={handleShareToStory}
+                onClick={() => handleShareStory(currentSlide, safeIndex, 'share')}
                 disabled={isGeneratingStory}
-                className="py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white text-[11px] font-semibold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                className="py-2.5 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white text-[11px] font-semibold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Share2 className="w-3.5 h-3.5 shrink-0" />
-                <span>{isGeneratingStory ? 'Menyiapkan...' : 'Post ke IG / WA Story'}</span>
+                <span>{isGeneratingStory ? 'Menyiapkan...' : '📲 Post ke IG / WA Story (9:16)'}</span>
               </button>
               <button
                 type="button"
-                onClick={handleDownloadStoryImage}
+                onClick={() => handleShareStory(currentSlide, safeIndex, 'download')}
                 disabled={isGeneratingStory}
-                className="py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 disabled:opacity-60 text-slate-800 border border-slate-200 text-[11px] font-semibold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                className="py-2.5 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 disabled:opacity-60 text-slate-800 border border-slate-200 text-[11px] font-semibold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                <span>Unduh Gambar 9:16</span>
+                <span>⬇ Unduh Gambar Story</span>
               </button>
             </div>
             {storyFeedback && (

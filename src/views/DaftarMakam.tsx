@@ -14,7 +14,7 @@ import { ALL_PROVINCES, TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/
 import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
-import { getSitePath, formatMakamHeading } from '../lib/siteSlugs';
+import { getSitePath, getSiteSlug, formatMakamHeading } from '../lib/siteSlugs';
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { useSiteCopy } from '../lib/siteCopy';
 import { ZiarahStoryReel } from '../components/ZiarahStoryReel';
@@ -71,6 +71,13 @@ const EMOTIONAL_INTENTS: Array<{
       'Menampilkan maqbarah para Waliyullah pelopor perniagaan jujur, pertanian, dan kedermawanan sosial yang menjadi rujukan peziarah saat memohon dibukakan pintu rezeki halal serta terbebas dari himpitan hutang.',
   },
   {
+    id: 'syifa',
+    label: "Ikhtiar Kesembuhan & Syifa' Penyakit",
+    empathyTitle: 'Wasilah Ikhtiar Kesembuhan dari Penyakit, Ketabiban & Kesehatan Keluarga',
+    empathyMessage:
+      "Menampilkan maqbarah para Waliyullah pelopor pengobatan tradisional Nusantara, mata air berkah, dan doa-doa syifa' tempat para peziarah bertawassul memohon kesembuhan lahir batin kepada Allah Asy-Syafi.",
+  },
+  {
     id: 'ilmu',
     label: 'Memohon Ilmu Berkah & Keshalihan Keturunan',
     empathyTitle: 'Sanad Keilmuan Pesantren, Futuhul Arifin & Doa Anak Cucu Shalih',
@@ -110,11 +117,15 @@ export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntent
 
   const primaryCorpus = [
     site.id,
+    site.legacyId || '',
     site.title,
     site.name,
     site.category,
     site.era || '',
     (site.description || '').replace(/<!--more-->/g, ' '),
+    (site.history || '').replace(/<!--more-->/g, ' '),
+    site.barokahHajat || '',
+    Array.isArray(site.karomah) ? site.karomah.join(' ') : site.karomah || '',
   ]
     .join(' ')
     .toLowerCase();
@@ -177,6 +188,60 @@ export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntent
         effId === 'wali-2' ||
         effId === 'wali-6' ||
         effId === 'wali-9'
+      );
+    }
+    case 'syifa': {
+      const syifaKeywords = [
+        'sembuh',
+        'kesembuhan',
+        'penyakit',
+        'sakit',
+        'syifa',
+        'tabib',
+        'pengobatan',
+        'obat',
+        'sumur',
+        'mata air',
+        'kesehatan',
+        'afiat',
+      ];
+      const syifaSiteMatchers = [
+        'sunan-gresik',
+        'sunan gresik',
+        'malik ibrahim',
+        'sunan-muria',
+        'sunan muria',
+        'sunan-drajat',
+        'sunan drajat',
+        'syekh-abdul-muhyi',
+        'abdul muhyi',
+        'habib-husein-luar-batang',
+        'luar batang',
+        'mbah-priok',
+        'mbah priok',
+        'habib-kuncung',
+        'habib kuncung',
+        'habib-abdullah-empang',
+        'empang bogor',
+        'syekh-jangkung',
+        'syekh jangkung',
+        'kh-dalhar',
+        'mbah dalhar',
+        'kh-abdul-hamid-pasuruan',
+        'hamid pasuruan',
+        'guru-sekumpul',
+        'guru sekumpul',
+        'tuan-guru-babussalam',
+        'babussalam',
+      ];
+      const effId = site.legacyId || site.id;
+      const slug = getSiteSlug(site);
+      return (
+        syifaKeywords.some((kw) => primaryCorpus.includes(kw)) ||
+        syifaSiteMatchers.some((m) => primaryCorpus.includes(m) || slug.includes(m)) ||
+        effId === 'wali-1' ||
+        effId === 'wali-6' ||
+        effId === 'wali-8'
       );
     }
     case 'keteguhan': {
@@ -255,7 +320,7 @@ export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntent
       return keywords.some((kw) => primaryCorpus.includes(kw)) || site.category === 'Habaib';
     }
     default:
-      return true;
+      return false;
   }
 }
 
@@ -697,8 +762,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
           </div>
 
           {/* Minimalist Underline Tabs for Category + Clean Text Chips for Emotional Intent */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-stone-200">
-            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+          <div className="flex flex-col gap-3 border-b border-stone-200">
+            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar border-b border-stone-200/70">
               {categories.map((cat) => {
                 const isSelected = selectedCategory === cat.id;
                 return (
@@ -723,11 +788,11 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             </div>
 
             {/* Clean Text Chips for Emotional Intent ("Apa yang Sedang Dicari Hati Anda Hari Ini?") */}
-            <div className="flex flex-col gap-1.5 pb-2.5 lg:pb-2">
+            <div className="w-full max-w-full flex flex-col gap-2 pb-3">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
                 Apa yang Sedang Dicari Hati Anda Hari Ini?
               </span>
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+              <div className="flex flex-wrap items-center gap-2 w-full">
                 {dynamicEmotionalIntents.map((intent) => {
                   const isSelected = emotionalFilter === intent.id;
                   const count = intentCountMap[intent.id];
@@ -740,10 +805,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                         ensureFullSitesLoaded();
                         setEmotionalFilter(intent.id);
                       }}
-                      className={`px-3 py-1.5 min-h-[32px] rounded-lg text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                      className={`px-3 py-1.5 min-h-[34px] rounded-xl text-xs text-left leading-snug transition-colors cursor-pointer border ${
                         isSelected
-                          ? 'bg-emerald-900 text-white font-medium'
-                          : 'bg-stone-100 text-stone-700 hover:text-stone-900 hover:bg-stone-200/70'
+                          ? 'bg-emerald-900 text-white border-emerald-900 font-medium shadow-2xs'
+                          : 'bg-stone-100 text-stone-700 border-stone-200/80 hover:text-stone-900 hover:bg-stone-200/70 hover:border-stone-300'
                       }`}
                     >
                       {intent.label} ({count})

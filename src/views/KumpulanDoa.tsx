@@ -450,7 +450,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
               <div className="bg-white rounded-3xl border-2 border-emerald-700/30 p-6 sm:p-8 shadow-sm space-y-4 text-center">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold uppercase tracking-wider">
                   <Lock className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} />
-                  <span>{copy.barokahSectionTitle}</span>
+                  <span>KHAZANAH DOA KHUSUS &amp; TASBIH DIGITAL · RP {barokahAmount.toLocaleString('id-ID')}</span>
                 </div>
                 <h3 className="font-serif text-xl sm:text-2xl text-slate-900 max-w-xl mx-auto leading-snug">
                   Buka Seluruh {allDoaKaromah.length}+ Khazanah Doa &amp; Wirid Khusus Para Wali — Infaq Rp {barokahAmount.toLocaleString('id-ID')}
@@ -465,7 +465,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                     className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                   >
                     <Lock className="w-4 h-4" strokeWidth={1.75} />
-                    <span>Buka Seluruh 250+ Khazanah Doa &amp; Wirid Khusus Para Wali — Infaq Rp {barokahAmount.toLocaleString('id-ID')}</span>
+                    <span>Buka Barokah &amp; Doa Khusus (Rp {barokahAmount.toLocaleString('id-ID')})</span>
                   </button>
                 </div>
               </div>
@@ -488,7 +488,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
               onClick={() => openBarokahUnlockModal()}
               className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
             >
-              {copy.barokahPaywallButtonText} (Infaq Rp {barokahAmount.toLocaleString('id-ID')})
+              Buka Barokah &amp; Doa Khusus (Rp {barokahAmount.toLocaleString('id-ID')})
             </button>
             <Link
               to="/rubrik"

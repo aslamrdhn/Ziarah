@@ -780,7 +780,7 @@ export const SiteCopyAdminSection: React.FC<SiteCopyAdminSectionProps> = ({
               <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-stone-900 mb-1">
-                    Nominal Gembok Barokah &amp; Doa Khusus (barokahLockAmount — Default: Rp 5.000)
+                    Nominal Gembok Barokah &amp; Doa Khusus (barokahLockAmount — Default: Rp 2.000)
                   </label>
                   <p className="text-[11px] text-stone-600 mb-2">
                     Nominal infaq pembuka amalan &amp; doa khusus di setiap detail makam serta halaman /doa.
@@ -788,8 +788,8 @@ export const SiteCopyAdminSection: React.FC<SiteCopyAdminSectionProps> = ({
                   <input
                     type="number"
                     step={1000}
-                    min={1000}
-                    value={formCopy.barokahLockAmount || 5000}
+                    min={2000}
+                    value={formCopy.barokahLockAmount || 2000}
                     onChange={(e) => handleLockAmountChange('barokahLockAmount', e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-white border border-emerald-300 rounded-xl text-sm font-mono font-bold text-emerald-950 tabular-nums"
                   />
@@ -804,7 +804,7 @@ export const SiteCopyAdminSection: React.FC<SiteCopyAdminSectionProps> = ({
                   <input
                     type="number"
                     step={1000}
-                    min={1000}
+                    min={2000}
                     value={formCopy.rubrikLockAmount || 10000}
                     onChange={(e) => handleLockAmountChange('rubrikLockAmount', e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-white border border-emerald-300 rounded-xl text-sm font-mono font-bold text-emerald-950 tabular-nums"
@@ -813,23 +813,24 @@ export const SiteCopyAdminSection: React.FC<SiteCopyAdminSectionProps> = ({
               </div>
             )}
 
-            {/* c) Label 5 Filter Suasana Hati */}
+            {/* c) Label 6 Filter Suasana Hati */}
             {includeIntentLabels && (
               <div className="p-4 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
                 <div>
                   <h4 className="text-xs font-bold text-stone-900">
-                    Label 5 Filter Suasana Hati / Niat Ziarah (intentLabels)
+                    Label 6 Filter Suasana Hati / Niat Ziarah (intentLabels)
                   </h4>
                   <p className="text-[11px] text-stone-500">
-                    Label 5 tombol filter niat peziarah di Beranda Direktori Makam.
+                    Label tombol filter niat peziarah di Beranda Direktori Makam.
                   </p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {(
                     [
                       ['all', 'Semua Riwayat'],
                       ['keteduhan', 'Penawar Hati'],
                       ['ikhtiar', 'Ikhtiar & Rezeki'],
+                      ['syifa', "Ikhtiar Kesembuhan & Syifa' Penyakit"],
                       ['keteguhan', 'Keteguhan Uji'],
                       ['ilmu', 'Sanad Keilmuan'],
                     ] as Array<[keyof SiteIntentLabels, string]>

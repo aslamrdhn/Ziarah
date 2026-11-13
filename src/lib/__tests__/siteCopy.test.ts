@@ -16,7 +16,7 @@ describe('siteCopy & cliffhanger utilities', () => {
   });
 
   it('matches syifa emotional intent for healing/syifa sites like Sunan Muria, Sunan Gresik, and Sunan Drajat', () => {
-    expect(DEFAULT_SITE_COPY.intentLabels.syifa).toBe("Kesembuhan & Syifa' Penyakit");
+    expect(DEFAULT_SITE_COPY.intentLabels.syifa).toBe("Ikhtiar Kesembuhan & Syifa' Penyakit");
     const syifaSites = ziarahSites.filter((s) => matchesEmotionalIntent(s, 'syifa'));
     expect(syifaSites.length).toBeGreaterThanOrEqual(5);
     const muria = ziarahSites.find((s) => s.title.toLowerCase().includes('sunan muria'));

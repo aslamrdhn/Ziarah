@@ -163,7 +163,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
     all: 'Semua Riwayat',
     keteduhan: 'Penawar Hati',
     ikhtiar: 'Ikhtiar & Rezeki',
-    syifa: "Kesembuhan & Syifa' Penyakit",
+    syifa: "Ikhtiar Kesembuhan & Syifa' Penyakit",
     keteguhan: 'Keteguhan Uji',
     ilmu: 'Sanad Keilmuan',
   },
@@ -337,7 +337,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   footerCopyrightText: 'Dikelola secara resmi oleh Tim Kurator Arsip Ziarah Nusantara',
 };
 
-const SITE_COPY_CACHE_KEY = 'zn_site_copy_cache_v2';
+const SITE_COPY_CACHE_KEY = 'zn_site_copy_cache_v3';
 const SITE_COPY_EVENT = 'zn-site-copy-updated';
 const SITE_COPY_LEGACY_EVENT = 'zn_site_copy_updated';
 const ADMIN_DIRTY_TS_KEY = 'zn_admin_dirty_ts';
@@ -346,7 +346,8 @@ function normalizeDynamicCountsInCopy(input: string): string {
   if (!input) return input;
   return input
     .replace(/\b(?:96|105|125|144)(\+?\s*(?:makam|Makam|lokasi makam|situs|Situs|kisah|Wali))/g, `${DYNAMIC_SITE_COUNT}$1`)
-    .replace(/\b(?:18|19|25|29)(\s*(?:provinsi|Provinsi))/g, `${DYNAMIC_PROVINCE_COUNT}$1`);
+    .replace(/\b(?:18|19|25|29)(\s*(?:provinsi|Provinsi))/g, `${DYNAMIC_PROVINCE_COUNT}$1`)
+    .replace(/\bRp\s*1\.000\b/gi, 'Rp 2.000');
 }
 
 function sanitizePackages(raw: unknown): QuickNominalPackage[] {
