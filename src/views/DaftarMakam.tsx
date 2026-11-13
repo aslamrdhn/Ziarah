@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useDeferredValue, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useDeferredValue, lazy, Suspense } from 'react';
 import {
   Search,
   X,
@@ -8,6 +8,8 @@ import {
   BookOpen,
   Map as MapIcon,
   Film,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import type { ZiarahSite } from '../data/sites';
 import { ALL_PROVINCES, TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/initialSites';
@@ -347,6 +349,15 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   const [visibleCount, setVisibleCount] = useState<number>(INITIAL_VISIBLE_SITES);
   const [activeSiteModal, setActiveSiteModal] = useState<ZiarahSite | null>(null);
   const [originPathBeforeModal, setOriginPathBeforeModal] = useState<string>('/');
+  const intentScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const handleScrollIntents = React.useCallback((direction: 'left' | 'right') => {
+    if (!intentScrollRef.current) return;
+    intentScrollRef.current.scrollBy({
+      left: direction === 'left' ? -280 : 280,
+      behavior: 'smooth',
+    });
+  }, []);
 
   const handleOpenReaderModal = React.useCallback(
     (site: ZiarahSite, e?: React.MouseEvent) => {
@@ -762,8 +773,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
           </div>
 
           {/* Minimalist Underline Tabs for Category + Clean Text Chips for Emotional Intent */}
-          <div className="flex flex-col gap-3 border-b border-stone-200">
-            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar border-b border-stone-200/70">
+          <div className="w-full max-w-full overflow-hidden flex flex-col lg:flex-row lg:items-end justify-between gap-3 border-b border-stone-200">
+            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar shrink-0">
               {categories.map((cat) => {
                 const isSelected = selectedCategory === cat.id;
                 return (
@@ -788,11 +799,41 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             </div>
 
             {/* Clean Text Chips for Emotional Intent ("Apa yang Sedang Dicari Hati Anda Hari Ini?") */}
-            <div className="w-full max-w-full flex flex-col gap-2 pb-3">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
-                Apa yang Sedang Dicari Hati Anda Hari Ini?
-              </span>
-              <div className="flex flex-wrap items-center gap-2 w-full">
+            <div className="min-w-0 flex-1 max-w-full lg:max-w-[58%] flex flex-col gap-1.5 pb-2.5 lg:pb-2 overflow-hidden">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800 truncate">
+                  Apa yang Sedang Dicari Hati Anda Hari Ini?
+                </span>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleScrollIntents('left')}
+                    aria-label="Geser filter ke kiri"
+                    title="Geser ke kiri"
+                    className="w-6 h-6 rounded-md bg-stone-100 hover:bg-stone-200 border border-stone-200/80 text-stone-700 hover:text-stone-900 inline-flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" strokeWidth={2} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleScrollIntents('right')}
+                    aria-label="Geser filter ke kanan"
+                    title="Geser ke kanan"
+                    className="w-6 h-6 rounded-md bg-stone-100 hover:bg-stone-200 border border-stone-200/80 text-stone-700 hover:text-stone-900 inline-flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" strokeWidth={2} />
+                  </button>
+                </div>
+              </div>
+              <div
+                ref={intentScrollRef}
+                onWheel={(e) => {
+                  if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    e.currentTarget.scrollLeft += e.deltaY;
+                  }
+                }}
+                className="w-full max-w-full flex items-center gap-2 overflow-x-auto scroll-smooth no-scrollbar py-0.5"
+              >
                 {dynamicEmotionalIntents.map((intent) => {
                   const isSelected = emotionalFilter === intent.id;
                   const count = intentCountMap[intent.id];
@@ -805,10 +846,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                         ensureFullSitesLoaded();
                         setEmotionalFilter(intent.id);
                       }}
-                      className={`px-3 py-1.5 min-h-[34px] rounded-xl text-xs text-left leading-snug transition-colors cursor-pointer border ${
+                      className={`px-3 py-1.5 min-h-[32px] rounded-lg text-xs whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
                         isSelected
-                          ? 'bg-emerald-900 text-white border-emerald-900 font-medium shadow-2xs'
-                          : 'bg-stone-100 text-stone-700 border-stone-200/80 hover:text-stone-900 hover:bg-stone-200/70 hover:border-stone-300'
+                          ? 'bg-emerald-900 text-white font-medium'
+                          : 'bg-stone-100 text-stone-700 hover:text-stone-900 hover:bg-stone-200/70'
                       }`}
                     >
                       {intent.label} ({count})
