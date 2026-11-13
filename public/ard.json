@@ -9,19 +9,19 @@
       "displayName": "Panduan & Ringkasan Arsip Ziarah Nusantara (LLMs.txt)",
       "type": "text/markdown",
       "url": "https://ziarahnusantara.my.id/llms.txt",
-      "description": "Dokumentasi ringkas dalam format Markdown untuk agen AI mengenai hukum ziarah kubur, urutan bacaan doa ziarah kubur, tahlil, tawassul, dan indeks direktori 96 makam Waliyullah di 18 provinsi Indonesia.",
+      "description": "Dokumentasi ringkas dalam format Markdown untuk agen AI mengenai hukum ziarah kubur, urutan bacaan doa ziarah kubur, tahlil, tawassul, dan indeks direktori 183 makam Waliyullah di 34 provinsi Indonesia.",
       "representativeQueries": [
         "Bagaimana urutan bacaan doa ziarah kubur lengkap Arab Latin dan artinya?",
-        "Apa saja daftar 96 lokasi makam Wali Songo dan Ulama Nusantara di Indonesia?",
+        "Apa saja daftar 183 lokasi makam Wali Songo dan Ulama Nusantara di Indonesia?",
         "Apa tujuan dan hukum ziarah kubur dalam Islam menurut hadits?"
       ]
     },
     {
       "identifier": "urn:air:ziarahnusantara.my.id:docs:llms-full-catalog",
-      "displayName": "Katalog Lengkap 96 Situs Makam Waliyullah Nusantara (LLMs-Full.txt)",
+      "displayName": "Katalog Lengkap 183 Situs Makam Waliyullah Nusantara (LLMs-Full.txt)",
       "type": "text/markdown",
       "url": "https://ziarahnusantara.my.id/llms-full.txt",
-      "description": "Katalog ensiklopedis lengkap dalam format Markdown yang memuat profil sejarah, sanad keilmuan, alamat, koordinat geospasial, dan riwayat 96 makam Wali Songo, Ulama, Habaib, dan Auliya Nusantara.",
+      "description": "Katalog ensiklopedis lengkap dalam format Markdown yang memuat profil sejarah, sanad keilmuan, alamat, koordinat geospasial, dan riwayat 183 makam Wali Songo, Ulama, Habaib, dan Auliya Nusantara di 34 provinsi.",
       "representativeQueries": [
         "Dimana alamat lengkap dan koordinat makam Sunan Ampel dan Sunan Gunung Jati?",
         "Siapa saja tokoh ulama dan habaib yang dimakamkan di Jawa, Sumatera, Kalimantan, dan Sulawesi?",
@@ -33,7 +33,7 @@
       "displayName": "Peta Situs Kanonis Ziarah Nusantara (Sitemap XML)",
       "type": "application/xml",
       "url": "https://ziarahnusantara.my.id/sitemap.xml",
-      "description": "Indeks XML seluruh 105 halaman kanonis Ziarah Nusantara meliputi direktori makam, peta rute geospasial, panduan doa ziarah kubur, rubrik sejarah, dan profil 96 situs makam.",
+      "description": "Indeks XML seluruh 190 halaman kanonis Ziarah Nusantara meliputi direktori makam, peta rute geospasial, panduan doa ziarah kubur, rubrik sejarah, dan profil 183 situs makam di 34 provinsi.",
       "representativeQueries": [
         "Daftar lengkap URL halaman makam wali di Ziarah Nusantara",
         "Indeks halaman panduan doa dan direktori makam Nusantara"
@@ -44,7 +44,7 @@
       "displayName": "Umpan Sindikasi Arsip & Profil Makam Wali (RSS 2.0)",
       "type": "application/rss+xml",
       "url": "https://ziarahnusantara.my.id/rss.xml",
-      "description": "Umpan RSS 2.0 berisi pembaruan artikel sejarah, panduan adab ziarah, dan katalog 96 lokasi makam Waliyullah Nusantara.",
+      "description": "Umpan RSS 2.0 berisi pembaruan artikel sejarah, panduan adab ziarah, dan katalog 183 lokasi makam Waliyullah Nusantara di 34 provinsi.",
       "representativeQueries": [
         "Artikel terbaru rubrik kisah karomah dan sejarah wali Nusantara",
         "Pembaruan direktori lokasi makam ulama dan habaib di Indonesia"

@@ -1,9 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { SITES } from '../../data/sites';
 import { INITIAL_SITES } from '../../data/initialSites';
 import {
   getSiteBarokahHajat,
   getEffectiveSiteDoaKhusus,
+  getSiteCompleteBarokahGuide,
   getSiteLogistics,
 } from '../siteLogistics';
 // @ts-expect-error postbuild script is an untyped ESM module
@@ -379,6 +382,39 @@ describe('storySyncAudit — Historical Narrative Uniqueness & Anti-Template Fal
     const misool = SITES.find((s) => s.id === 'makam-kesultanan-misool-raja-ampat');
     expect(JSON.stringify(misool)).toContain('Lilinta');
     expect(JSON.stringify(misool)).toContain('Fafanlap');
+  });
+
+  it('guarantees zero legacy strings ("Raden Prawoto", "96 Makam", "18 provinsi", "dimudahkan bertemu jodoh pendamping hidup") in Sunan Muria logistics and index.html snapshot', () => {
+    const sunanMuria = SITES.find((s) => s.id === 'sunan-muria');
+    expect(sunanMuria).toBeDefined();
+    expect(sunanMuria?.name).toBe('Raden Umar Said (Sunan Muria)');
+
+    const muriaLogisticsJson = JSON.stringify(getSiteLogistics(sunanMuria!));
+    const muriaCompleteGuideJson = JSON.stringify(getSiteCompleteBarokahGuide(sunanMuria!));
+    expect(muriaLogisticsJson).not.toContain('Raden Prawoto');
+    expect(muriaCompleteGuideJson).not.toContain('Raden Prawoto');
+    expect(muriaLogisticsJson).toContain('Raden Umar Said (Sunan Muria)');
+
+    const kwitang = SITES.find((s) => s.id === 'habib-ali-kwitang');
+    expect(kwitang).toBeDefined();
+    const kwitangHajat = getSiteBarokahHajat(kwitang!);
+    expect(kwitangHajat).not.toContain('dimudahkan bertemu jodoh pendamping hidup');
+    expect(kwitangHajat).toContain(
+      'memohon kepada Allah SWT kecintaan tulus kepada Nabi Muhammad SAW, keberkahan majelis ilmu dan dakwah, serta keteguhan iman keluarga'
+    );
+
+    const indexHtmlPath = path.resolve(process.cwd(), 'index.html');
+    const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
+    expect(indexHtml).not.toContain('Raden Prawoto');
+    expect(indexHtml).not.toMatch(/\b96\s+(?:Makam|makam|lokasi makam|Wali|Situs)\b/i);
+    expect(indexHtml).not.toMatch(/\b18\s+provinsi\b/i);
+    expect(indexHtml).not.toContain('dimudahkan bertemu jodoh pendamping hidup');
+    expect(indexHtml).toContain('183 makam');
+    expect(indexHtml).toContain('34 provinsi');
+    expect(indexHtml).toContain('Raden Umar Said (Sunan Muria)');
+    expect(indexHtml).toContain(
+      'memohon kepada Allah SWT kecintaan tulus kepada Nabi Muhammad SAW, keberkahan majelis ilmu dan dakwah, serta keteguhan iman keluarga'
+    );
   });
 });
 

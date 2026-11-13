@@ -10,7 +10,7 @@ import {
   Film,
 } from 'lucide-react';
 import type { ZiarahSite } from '../data/sites';
-import { ALL_PROVINCES, TOTAL_SITE_COUNT } from '../data/initialSites';
+import { ALL_PROVINCES, TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/initialSites';
 import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
@@ -987,7 +987,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <div className="flex items-center gap-3.5 min-w-0">
               <img
                 src="/favicon.svg"
-                alt={`Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil & Direktori ${sites.length || TOTAL_SITE_COUNT} Makam Wali`}
+                alt={`Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil & Direktori ${totalCatalogCount} Makam Wali`}
                 width={44}
                 height={44}
                 loading="lazy"
@@ -1057,10 +1057,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 
             <div className="space-y-2">
               <h3 className="font-serif font-semibold text-base text-stone-900">
-                Di Mana Saja Lokasi {sites.length || TOTAL_SITE_COUNT} Makam Wali Songo dan Ulama di Ziarah Nusantara?
+                Di Mana Saja Lokasi {totalCatalogCount} Makam Wali Songo dan Ulama di Ziarah Nusantara?
               </h3>
               <p>
-                <strong>Ziarah Nusantara</strong> mendokumentasikan {sites.length || TOTAL_SITE_COUNT} lokasi makam Waliyullah di {ALL_PROVINCES.length} provinsi Indonesia lengkap dengan titik koordinat peta rute perjalanan, jadwal haul, kisah karomah, dan sanad keilmuan.
+                <strong>Ziarah Nusantara</strong> mendokumentasikan {totalCatalogCount} lokasi makam Waliyullah di {TOTAL_PROVINCES_COUNT} provinsi Indonesia lengkap dengan titik koordinat peta rute perjalanan, jadwal haul, kisah karomah, dan sanad keilmuan.
               </p>
               <p>
                 Direktori ini mencakup sembilan makam <strong>Wali Songo</strong> di Jawa Timur, Jawa Tengah, dan Jawa Barat (Sunan Gresik, Sunan Ampel, Sunan Bonang, Sunan Drajat, Sunan Giri, Sunan Kalijaga, Sunan Kudus, Sunan Muria, dan Sunan Gunung Jati) hingga makam ulama besar, raja kesultanan Islam, dan habaib di Aceh, Sumatera, Banten, DKI Jakarta, Yogyakarta, Kalimantan, Sulawesi, Bali, Nusa Tenggara Barat, dan Maluku Utara.

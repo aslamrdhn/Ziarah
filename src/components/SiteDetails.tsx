@@ -8,7 +8,7 @@ import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRec
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useVerifiedDonationUnlock, useVerifiedBarokahUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
-import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide, estimateHaulGregorian2026 } from '../lib/siteLogistics';
+import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide, estimateHaulGregorian2026, sanitizeHistoricalLogisticsText } from '../lib/siteLogistics';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
 import { getSiteSlug, formatMakamHeading } from '../lib/siteSlugs';
 import { useSiteCopy } from '../lib/siteCopy';
@@ -350,6 +350,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
 
   if (!site) return null;
 
+  const safeSiteName = sanitizeHistoricalLogisticsText(site.name);
   const hasKaromah = site.karomah && site.karomah.length > 0;
   const completeBarokahGuide = getSiteCompleteBarokahGuide(site);
   const effectiveDoaKhusus = completeBarokahGuide.doaItems;
@@ -417,9 +418,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       )
       .join('\n\n');
     const hajatLine = personalHajat.trim()
-      ? `\nNiat & Hajat Pribadi Saya di ${site.name}:\n"${personalHajat.trim()}"\n`
+      ? `\nNiat & Hajat Pribadi Saya di ${safeSiteName}:\n"${personalHajat.trim()}"\n`
       : '';
-    const fullSheet = `LEMBAR AMALAN TAWASSUL & MUNAJAT HAJAT\n${formatMakamHeading(site.title)} (${site.name}) — ${site.location.city}, ${site.location.province}\n${hajatLine}\n${doaLines}\n\nSumber: https://ziarahnusantara.my.id/situs/${getSiteSlug(site)}`;
+    const fullSheet = `LEMBAR AMALAN TAWASSUL & MUNAJAT HAJAT\n${formatMakamHeading(site.title)} (${safeSiteName}) — ${site.location.city}, ${site.location.province}\n${hajatLine}\n${doaLines}\n\nSumber: https://ziarahnusantara.my.id/situs/${getSiteSlug(site)}`;
     try {
       navigator.clipboard?.writeText(fullSheet);
       setCopiedPrayerSheet(true);
@@ -458,7 +459,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           {copy.barokahHookPrefix}
         </div>
         <h4 className="font-serif text-lg sm:text-xl text-slate-900 leading-snug">
-          Mengapa Banyak Peziarah Membawa Hajat Ini ke Pusara {site.name}?
+          Mengapa Banyak Peziarah Membawa Hajat Ini ke Pusara {safeSiteName}?
         </h4>
         <p className="text-sm sm:text-[15.5px] text-slate-700 leading-relaxed">
           {barokahHajatText}
@@ -484,7 +485,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           maxLength={400}
           value={personalHajat}
           onChange={(e) => handleSavePersonalHajat(e.target.value)}
-          placeholder={`Tuliskan hajat khusus yang ingin Anda munajatkan saat berziarah ke ${site.name} (misal: kelancaran usaha, kesembuhan orang tua, ketenangan rumah tangga)...`}
+          placeholder={`Tuliskan hajat khusus yang ingin Anda munajatkan saat berziarah ke ${safeSiteName} (misal: kelancaran usaha, kesembuhan orang tua, ketenangan rumah tangga)...`}
           className="w-full text-xs sm:text-sm p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-emerald-700 text-slate-800 placeholder:text-slate-400 resize-none"
         />
       </div>
@@ -496,7 +497,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           {personalHajat.trim() && (
             <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
               <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-900">
-                Niat &amp; Munajat Hajat Pribadi Anda di {site.name}
+                Niat &amp; Munajat Hajat Pribadi Anda di {safeSiteName}
               </div>
               <p className="text-sm font-serif italic text-slate-900 leading-relaxed">
                 &ldquo;{personalHajat.trim()}&rdquo;
@@ -519,7 +520,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
               </button>
             </div>
             <h4 className="font-serif text-lg sm:text-xl text-slate-900">
-              1. Tata Cara &amp; Waktu Terbaik Bertawassul Hajat di {site.name}
+              1. Tata Cara &amp; Waktu Terbaik Bertawassul Hajat di {safeSiteName}
             </h4>
             <ul className="space-y-2.5 text-sm text-slate-700 leading-relaxed">
               {completeBarokahGuide.tataCaraWaktu.map((step, sIdx) => (
@@ -687,14 +688,14 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           {/* 1 Baris Kalimat Pembuka Panduan Kaifiyah Secara Terbuka Sebelum Lafaz Arab yang Di-Blur */}
           <div className="mb-4 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-xs sm:text-sm text-slate-800 leading-relaxed">
             <strong className="font-semibold text-emerald-900">Panduan Kaifiyah Hajat:</strong>{' '}
-            Awali dengan hadiah Al-Fatihah khusus sebanyak 3 kali ke hadirat {site.name}, hadirkan niat hajat pribadi Anda, lalu bacalah wirid pegangan (Istighfar 3x, Shalawat 11x, Kalimat Tauhid 33x) dan munajat khusus berikut...
+            Awali dengan hadiah Al-Fatihah khusus sebanyak 3 kali ke hadirat {safeSiteName}, hadirkan niat hajat pribadi Anda, lalu bacalah wirid pegangan (Istighfar 3x, Shalawat 11x, Kalimat Tauhid 33x) dan munajat khusus berikut...
           </div>
 
           {/* Seluruh 3 Bagian Panduan Amalan Lengkap dalam keadaan BLUR */}
           <div className="blur-[6px] select-none pointer-events-none opacity-50 space-y-5" aria-hidden="true">
             <div className="space-y-1.5">
               <div className="text-xs font-bold text-slate-900">
-                1. Tata Cara &amp; Waktu Terbaik Bertawassul Hajat di {site.name}
+                1. Tata Cara &amp; Waktu Terbaik Bertawassul Hajat di {safeSiteName}
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 {completeBarokahGuide.tataCaraWaktu.join(' ')}
@@ -981,7 +982,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                         </button>
                       </div>
                       <h1 className="font-serif text-2xl sm:text-3xl text-slate-900 leading-snug">
-                        {site.name}
+                        {safeSiteName}
                       </h1>
                       <p className="text-xs sm:text-sm text-slate-600 mt-1">
                         Babak I — Jejak Kehidupan, Dakwah &amp; Perjuangan Beliau

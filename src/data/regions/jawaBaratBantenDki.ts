@@ -1594,7 +1594,7 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     untoldStory:
       'Pertemuan batin dan kebangsaan antara Al-Habib Ali bin Abdurrahman Al-Habsyi dengan Bung Karno serta para tokoh pergerakan nasional di serambi rumah Kwitang memiliki arti sejarah yang krusial dalam penentuan waktu Proklamasi Kemerdekaan Indonesia pada bulan suci Ramadhan 1364 H (Agustus 1945).<!--more-->\n\nSelain itu, Habib Ali Kwitang adalah ulama pelopor yang pertama kali menyebarluaskan pembacaan *Maulid Simthud Durar* karya gurunya (Habib Ali bin Muhammad Al-Habsyi Sewun) di tanah Jawa dan Betawi, yang kini menjadi bacaan maulid paling populer di majelis-majelis Indonesia.',
     barokahHajat:
-      'Wasilah keberkahan ilmu agama, kecintaan (mahabbah) kepada Rasulullah SAW dan Ahlul Bait, keistiqamahan menghadiri majelis ilmu, serta keberkahan keluarga.',
+      'Wasilah keberkahan ilmu agama, kecintaan (mahabbah) kepada Rasulullah SAW dan Ahlul Bait, tempat peziarah memohon kepada Allah SWT kecintaan tulus kepada Nabi Muhammad SAW, keberkahan majelis ilmu dan dakwah, serta keteguhan iman keluarga.',
     doaKhusus: [
       {
         title: 'Tawassul & Hadiah Fatihah Khusus Al-Habib Ali bin Abdurrahman Al-Habsyi Kwitang',

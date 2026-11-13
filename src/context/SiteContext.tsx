@@ -25,12 +25,23 @@ const SiteContext = createContext<SiteContextType>({
   refreshCloudSites: async () => {},
 });
 
-export const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v1';
+export const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v2';
 const ADMIN_DIRTY_TS_KEY = 'zn_admin_dirty_ts';
 
 interface CachedCloudSitesPayload {
   ts: number;
   sites: Array<ZiarahSite & { isDeleted?: boolean }>;
+}
+
+function sanitizeCloudText(val?: string): string | undefined {
+  if (typeof val !== 'string') return val;
+  return val
+    .replace(/Raden\s+Umar\s+Said\s*\(\s*Raden\s+Prawoto\s*\)/gi, 'Raden Umar Said (Sunan Muria)')
+    .replace(/\bRaden\s+Prawoto\b/gi, 'Raden Umar Said (Sunan Muria)')
+    .replace(
+      /dimudahkan\s+bertemu\s+jodoh\s+pendamping\s+hidup/gi,
+      'memohon kepada Allah SWT kecintaan tulus kepada Nabi Muhammad SAW, keberkahan majelis ilmu dan dakwah, serta keteguhan iman keluarga'
+    );
 }
 
 /**
@@ -121,34 +132,52 @@ export function mergeLocalAndCloudSites(
 
       const resolvedDescription =
         cloudSite.description !== undefined
-          ? cloudSite.description
+          ? sanitizeCloudText(cloudSite.description) || baseLocal.description
           : cloudSite.summary !== undefined
-            ? cloudSite.summary
+            ? sanitizeCloudText(cloudSite.summary) || baseLocal.description
             : baseLocal.description;
 
       const resolvedKaromah = Array.isArray(cloudSite.karomah)
-        ? cloudSite.karomah
+        ? cloudSite.karomah.map((k) => sanitizeCloudText(String(k)) || String(k))
         : typeof cloudSite.karomah === 'string' && String(cloudSite.karomah).trim()
-          ? [String(cloudSite.karomah).trim()]
+          ? [sanitizeCloudText(String(cloudSite.karomah).trim()) || String(cloudSite.karomah).trim()]
           : baseLocal.karomah;
+
+      const safeCloudName = sanitizeCloudText(cloudSite.name);
 
       const resolvedDoaKhusus = Array.isArray(cloudSite.doaKhusus)
         ? cloudSite.doaKhusus.map((d) => ({
             ...d,
-            title: d.title || `Doa Tawassul & Munajat ${cloudSite.name || baseLocal.name}`,
-            text: d.text || d.arab || '',
+            title: sanitizeCloudText(d.title) || `Doa Tawassul & Munajat ${safeCloudName || baseLocal.name}`,
+            text: sanitizeCloudText(d.text || d.arab || '') || '',
+            ...(d.latin ? { latin: sanitizeCloudText(d.latin) } : {}),
             ...(d.translation || d.terjemahan
-              ? { translation: d.translation || d.terjemahan }
+              ? { translation: sanitizeCloudText(d.translation || d.terjemahan) }
               : {}),
           }))
         : baseLocal.doaKhusus;
+
+      const resolvedBarokahHajat = Array.isArray(cloudSite.barokahHajat)
+        ? cloudSite.barokahHajat.map((b) => sanitizeCloudText(String(b)) || String(b))
+        : typeof cloudSite.barokahHajat === 'string'
+          ? sanitizeCloudText(cloudSite.barokahHajat)
+          : baseLocal.barokahHajat;
+
+      const resolvedHaulSchedule =
+        (baseLocal.id === 'sunan-ampel' || baseLocal.legacyId === 'wali-2') &&
+        typeof cloudSite.haulSchedule === 'string' &&
+        /pekan\s+terakhir\s+sya'?ban/i.test(cloudSite.haulSchedule)
+          ? baseLocal.haulSchedule
+          : cloudSite.haulSchedule !== undefined
+            ? sanitizeCloudText(cloudSite.haulSchedule)
+            : baseLocal.haulSchedule;
 
       const mergedSite: ZiarahSite = {
         ...baseLocal,
         ...cloudSite,
         id: baseLocal.id,
-        name: cloudSite.name !== undefined ? cloudSite.name : baseLocal.name,
-        title: cloudSite.title !== undefined ? cloudSite.title : baseLocal.title,
+        name: safeCloudName !== undefined ? safeCloudName : baseLocal.name,
+        title: cloudSite.title !== undefined ? sanitizeCloudText(cloudSite.title) || baseLocal.title : baseLocal.title,
         category: cloudSite.category !== undefined ? cloudSite.category : baseLocal.category,
         era: cloudSite.era !== undefined ? cloudSite.era : baseLocal.era,
         address: resolvedAddress,
@@ -161,18 +190,16 @@ export function mergeLocalAndCloudSites(
             ? cloudSite.googleMapsUrl
             : baseLocal.googleMapsUrl,
         description: resolvedDescription,
-        history: cloudSite.history !== undefined ? cloudSite.history : baseLocal.history,
+        history: cloudSite.history !== undefined ? sanitizeCloudText(cloudSite.history) || baseLocal.history : baseLocal.history,
         karomah: resolvedKaromah,
         untoldStory:
-          cloudSite.untoldStory !== undefined ? cloudSite.untoldStory : baseLocal.untoldStory,
-        barokahHajat:
-          cloudSite.barokahHajat !== undefined ? cloudSite.barokahHajat : baseLocal.barokahHajat,
+          cloudSite.untoldStory !== undefined ? sanitizeCloudText(cloudSite.untoldStory) || baseLocal.untoldStory : baseLocal.untoldStory,
+        barokahHajat: resolvedBarokahHajat,
         doaKhusus: resolvedDoaKhusus,
-        haulSchedule:
-          cloudSite.haulSchedule !== undefined ? cloudSite.haulSchedule : baseLocal.haulSchedule,
+        haulSchedule: resolvedHaulSchedule,
         localAdab:
           cloudSite.localAdab !== undefined ? cloudSite.localAdab : baseLocal.localAdab,
-        sanad: cloudSite.sanad !== undefined ? cloudSite.sanad : baseLocal.sanad,
+        sanad: cloudSite.sanad !== undefined ? sanitizeCloudText(cloudSite.sanad) : baseLocal.sanad,
         karya: Array.isArray(cloudSite.karya) ? cloudSite.karya : baseLocal.karya,
         openingHours:
           cloudSite.openingHours !== undefined ? cloudSite.openingHours : baseLocal.openingHours,

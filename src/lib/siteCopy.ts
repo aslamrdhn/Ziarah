@@ -328,10 +328,17 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   footerCopyrightText: 'Dikelola secara resmi oleh Tim Kurator Arsip Ziarah Nusantara',
 };
 
-const SITE_COPY_CACHE_KEY = 'zn_site_copy_cache_v1';
+const SITE_COPY_CACHE_KEY = 'zn_site_copy_cache_v2';
 const SITE_COPY_EVENT = 'zn-site-copy-updated';
 const SITE_COPY_LEGACY_EVENT = 'zn_site_copy_updated';
 const ADMIN_DIRTY_TS_KEY = 'zn_admin_dirty_ts';
+
+function normalizeDynamicCountsInCopy(input: string): string {
+  if (!input) return input;
+  return input
+    .replace(/\b(?:96|105|125|144)(\+?\s*(?:makam|Makam|lokasi makam|situs|Situs|kisah|Wali))/g, `${DYNAMIC_SITE_COUNT}$1`)
+    .replace(/\b(?:18|19|25|29)(\s*(?:provinsi|Provinsi))/g, `${DYNAMIC_PROVINCE_COUNT}$1`);
+}
 
 function sanitizePackages(raw: unknown): QuickNominalPackage[] {
   if (!Array.isArray(raw) || raw.length === 0) {
@@ -368,8 +375,8 @@ function sanitizeStoryReelSlides(raw: unknown): StoryReelSlide[] {
       const id = sanitizePlainText(rec.id, 60) || fallback.id;
       const stepLabel = sanitizePlainText(rec.stepLabel, 80) || fallback.stepLabel;
       const shortTabTitle = sanitizePlainText(rec.shortTabTitle, 80) || fallback.shortTabTitle;
-      const title = sanitizePlainText(rec.title, 140) || fallback.title;
-      const narrative = sanitizeMultilineText(rec.narrative, 600) || fallback.narrative;
+      const title = normalizeDynamicCountsInCopy(sanitizePlainText(rec.title, 140) || fallback.title);
+      const narrative = normalizeDynamicCountsInCopy(sanitizeMultilineText(rec.narrative, 600) || fallback.narrative);
       const arabicQuote =
         typeof rec.arabicQuote === 'string'
           ? sanitizeMultilineText(rec.arabicQuote, 600)
@@ -378,7 +385,7 @@ function sanitizeStoryReelSlides(raw: unknown): StoryReelSlide[] {
         typeof rec.arabicSource === 'string'
           ? sanitizeMultilineText(rec.arabicSource, 400)
           : fallback.arabicSource || '';
-      const ctaLabel = sanitizePlainText(rec.ctaLabel, 60) || fallback.ctaLabel;
+      const ctaLabel = normalizeDynamicCountsInCopy(sanitizePlainText(rec.ctaLabel, 60) || fallback.ctaLabel);
       const ctaTarget = sanitizePlainText(rec.ctaTarget, 120) || fallback.ctaTarget;
       return {
         id,
@@ -421,7 +428,7 @@ export function mergeWithDefaultSiteCopy(raw?: Partial<SiteCopyConfig> | null): 
     const cleaned = multiline
       ? sanitizeMultilineText(val, maxLen)
       : sanitizePlainText(val, maxLen);
-    return cleaned.trim().length > 0 ? cleaned : fallback;
+    return cleaned.trim().length > 0 ? normalizeDynamicCountsInCopy(cleaned) : fallback;
   };
 
   const pickPair = (

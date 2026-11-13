@@ -118,7 +118,7 @@ export const initialSites: ZiarahSite[] = [
       'Sepertiga malam di serambi Masjid Agung Ampel Denta terasa begitu hening, hanya terdengar gemericik air wudhu dan desir angin dari arah Sungai Kalimas. Tiba-tiba seorang pemuda bangsawan Majapahit yang hancur hidupnya akibat judi, minuman keras, dan lilitan utang datang merangkak di lantai kayu sambil menangis tersedu-sedu.<!--more-->\n\nDi hadapan Raden Rahmat (Sunan Ampel), pemuda itu mengaku ingin mengakhiri hidupnya karena merasa terlalu kotor untuk diampuni Tuhan. Sunan Ampel meletakkan telapak tangannya yang hangat di pundak pemuda itu, membimbingnya mengambil air wudhu dari sumur pesantren, lalu membisikkan lima janji penyucian diri yang kelak dikenal di seluruh Tanah Jawa sebagai falsafah "Moh Limo".',
     facilities: ['Masjid Agung Sunan Ampel (Berdiri 1421 M)', 'Sumur Karomah Nadzir', 'Area Wudhu & Toilet Terpadu'],
     openingHours: 'Buka 24 Jam',
-    haulSchedule: 'Setiap Akhir Bulan Sya\'ban (Jumat/Sabtu/Ahad Terakhir Sya\'ban — Haul Akbar Kanjeng Sunan Ampel Surabaya)',
+    haulSchedule: 'Pertengahan bulan Sya\'ban (sekitar 15–17 Sya\'ban / pekan Nisfu Sya\'ban — Haul Akbar Kanjeng Sunan Ampel Surabaya)',
     localAdab: [
       'Menjaga adab pemisahan jalur peziarah laki-laki dan perempuan di pelataran cungkup makam Sunan Ampel dan Nyai Condrowati',
       'Berwudhu terlebih dahulu di area Masjid Agung Sunan Ampel dan tidak melangkahi bahu jamaah yang sedang bertahlil'
@@ -524,7 +524,7 @@ export const initialSites: ZiarahSite[] = [
       'Menjaga ketertiban di dalam Kubah Masjid Al-Riyadh Kwitang (tempat bersemayam Habib Ali Kwitang, Syarifah Ni\'mah, dan Habib Muhammad bin Ali Al-Habsyi)'
     ],
     barokahHajat: [
-      'Wasilah kecintaan kepada Rasulullah SAW dan Ahlul Bait melalui keistiqomahan membaca Maulid Simthud Durar',
+      'Wasilah keberkahan ilmu agama, kecintaan (mahabbah) kepada Rasulullah SAW dan Ahlul Bait, tempat peziarah memohon kepada Allah SWT kecintaan tulus kepada Nabi Muhammad SAW, keberkahan majelis ilmu dan dakwah, serta keteguhan iman keluarga',
       'Ikhtiar menyejukkan hati yang keras, mempererat ukhuwah ulama-umara, dan memohon keberkahan majelis ilmu di perkotaan',
       'Keteguhan menjaga tradisi ngaji Minggu pagi bersama keluarga'
     ],

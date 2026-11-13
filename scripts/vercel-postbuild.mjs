@@ -59,6 +59,12 @@ export function cleanSeoText(val) {
     .replace(/\\"/g, '"')
     .replace(/\\n/g, ' ')
     .replace(/<!--more-->/g, ' ')
+    .replace(/Raden Umar Said\s*\(\s*Raden Prawoto\s*\)/gi, 'Raden Umar Said (Sunan Muria)')
+    .replace(/\bRaden Prawoto\b/gi, 'Raden Umar Said (Sunan Muria)')
+    .replace(
+      /dimudahkan bertemu jodoh pendamping hidup/gi,
+      'memohon kepada Allah SWT kecintaan tulus kepada Nabi Muhammad SAW, keberkahan majelis ilmu dan dakwah, serta keteguhan iman keluarga'
+    )
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -565,10 +571,86 @@ function buildDirectoryLinksHtml() {
 function buildHomepageRootHtml() {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <header>
-          <h1>Ziarah Kubur &amp; Makam Wali Nusantara: Doa, Yasin, Tahlil &amp; Peta ${sites.length} Wali | Ziarah Nusantara</h1>
-          <p><strong>Panduan lengkap ziarah kubur dan direktori ${sites.length} makam Wali Songo &amp; Ulama Nusantara.</strong> Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS di ${uniqueProvinces.length} provinsi Indonesia.</p>
+          <span class="zn-badge">Arsip Sejarah &amp; Panduan Ziarah Nusantara</span>
+          <h1 class="zn-h1">Jejak Langkah Para Kekasih Allah di Bumi Nusantara</h1>
+          <p class="zn-lead">Panduan lengkap ziarah kubur dan direktori <strong>${sites.length} makam Wali Songo, Ulama Pesantren, dan Habaib di ${uniqueProvinces.length} provinsi Indonesia</strong>. Dilengkapi urutan bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, jadwal haul, dan peta rute GPS.</p>
+          <nav class="zn-nav" aria-label="Pintasan Utama Ziarah Nusantara">
+            <a class="zn-btn-primary" href="/panduan">Baca Doa Ziarah Kubur, Yasin &amp; Tahlil</a>
+            <a class="zn-btn-secondary" href="/peta">Buka Peta Rute ${sites.length} Makam Wali</a>
+            <a class="zn-btn-secondary" href="/rubrik">Rubrik Kisah Karomah &amp; Sejarah</a>
+            <a class="zn-btn-secondary" href="/donasi">Layanan Infaq Operasional</a>
+          </nav>
         </header>
-        <section>
+        <section aria-label="Daftar Pilihan Lokasi Makam Wali Songo dan Ulama Nusantara">
+          <div class="zn-grid">
+            <article class="zn-card">
+              <span class="zn-card-meta">Walisongo · Gresik, Jawa Timur</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-syekh-maulana-malik-ibrahim-gresik">Makam Syekh Maulana Malik Ibrahim (Sunan Gresik)</a></h2>
+              <p class="zn-card-desc">Pelopor dakwah Wali Songo tertua di Tanah Jawa (wafat 1419 M) yang memadukan pengobatan cuma-cuma, irigasi pertanian, dan penghapusan kasta.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Walisongo · Surabaya, Jawa Timur</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-sunan-ampel-surabaya">Makam Sunan Ampel (Raden Rahmat)</a></h2>
+              <p class="zn-card-desc">Sesepuh dewan Wali Songo dan pendiri Pesantren Ampel Denta Surabaya yang melahirkan falsafah Moh Limo serta jaringan ulama Jawa.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Walisongo · Tuban, Jawa Timur</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-sunan-bonang-tuban">Makam Sunan Bonang (Raden Makhdum Ibrahim)</a></h2>
+              <p class="zn-card-desc">Maestro dakwah kebudayaan dan suluk tasawuf Jawa melalui instrumen gamelan Bonang serta karya sastra Suluk Wujil.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Walisongo · Lamongan, Jawa Timur</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-sunan-drajat-lamongan">Makam Sunan Drajat (Raden Qasim)</a></h2>
+              <p class="zn-card-desc">Pelopor filantropi Islam Nusantara dengan empat ajaran Catur Piwulang tentang kepedulian sosial terhadap fakir miskin.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Walisongo · Gresik, Jawa Timur</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-sunan-giri-gresik">Makam Sunan Giri (Raden Paku / Prabu Satmata)</a></h2>
+              <p class="zn-card-desc">Pendiri Kedaton Giri yang menjadi pusat jaringan pendidikan dakwah Islam hingga Maluku, Lombok, Sulawesi, dan Kalimantan.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Walisongo · Demak, Jawa Tengah</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-sunan-kalijaga-demak">Makam Sunan Kalijaga (Raden Mas Said)</a></h2>
+              <p class="zn-card-desc">Wali budayawan pencipta tembang Ilir-Ilir dan Lingsir Wengi yang mengislamkan masyarakat Jawa melalui seni wayang dan filosofi hidup.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Walisongo · Kudus, Jawa Tengah</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-sunan-kudus-kudus">Makam Sunan Kudus (Ja'far Shadiq)</a></h2>
+              <p class="zn-card-desc">Wali al-Ilmi pendiri Masjid Menara Kudus yang mengajarkan toleransi luhur dan kearifan fikih kemasyarakatan.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Walisongo · Kudus, Jawa Tengah</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-sunan-muria-kudus">Makam Sunan Muria — Raden Umar Said (Sunan Muria)</a></h2>
+              <p class="zn-card-desc">Putra Sunan Kalijaga yang berdakwah membina kaum petani, nelayan, dan pedagang kecil di lereng Gunung Muria melalui tembang Sinom dan Kinanthi.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Walisongo · Cirebon, Jawa Barat</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-sunan-gunung-jati-cirebon">Makam Sunan Gunung Jati (Syarif Hidayatullah)</a></h2>
+              <p class="zn-card-desc">Ulama-sultan pendiri Kesultanan Cirebon dan Banten dengan wasiat abadi: Ingsun titip tajug lan fakir miskin.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Ulama · Jombang, Jawa Timur</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-kh-hasyim-asy-ari-jombang">Makam Hadratussyaikh KH. Hasyim Asy'ari (Tebuireng)</a></h2>
+              <p class="zn-card-desc">Pendiri Pesantren Tebuireng dan Nahdlatul Ulama serta pencetus Resolusi Jihad yang membela kemerdekaan Republik Indonesia.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Ulama · Banjar, Kalimantan Selatan</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-guru-sekumpul-banjar">Makam Abah Guru Sekumpul (KH. Muhammad Zaini Abdul Ghani)</a></h2>
+              <p class="zn-card-desc">Ulama kharismatik Kalimantan Selatan pengasuh Majelis Ar-Raudhah Martapura yang dihadiri jutaan jamaah dari seluruh penjuru dunia.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Habaib · Jakarta Pusat, DKI Jakarta</span>
+              <h2 class="zn-card-title"><a href="/situs/makam-habib-ali-kwitang-jakarta-pusat">Makam Habib Ali Kwitang (Al-Habib Ali bin Abdurrahman Al-Habsyi)</a></h2>
+              <p class="zn-card-desc">Pelopor Majelis Taklim Ahad Pagi Kwitang sejak abad ke-19, tempat peziarah memohon kepada Allah SWT kecintaan tulus kepada Nabi Muhammad SAW, keberkahan majelis ilmu dan dakwah, serta keteguhan iman keluarga.</p>
+            </article>
+            <article class="zn-card">
+              <span class="zn-card-meta">Direktori Nasional · ${uniqueProvinces.length} Provinsi Indonesia</span>
+              <h2 class="zn-card-title"><a href="/direktori">Buka Seluruh ${sites.length} Situs di ${uniqueProvinces.length} Provinsi</a></h2>
+              <p class="zn-card-desc">Jelajahi direktori lengkap ${sites.length} makam Wali Songo, Ulama Pesantren, Raja Kesultanan Islam, dan Habaib di ${uniqueProvinces.length} provinsi seluruh kepulauan Nusantara.</p>
+            </article>
+          </div>
+        </section>
+        <section class="zn-faq" aria-label="Tanya Jawab Seputar Ziarah Kubur dan Direktori ${sites.length} Makam">
           <h2>Apa Tujuan dan Hukum Ziarah Kubur dalam Islam?</h2>
           <p>Secara bahasa, kata <strong>ziarah</strong> berarti berkunjung atau menengok. Dalam syariat Islam, hukum melaksanakan ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW dalam Hadits Riwayat Muslim: <em>&ldquo;Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu dapat melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada kehidupan akhirat.&rdquo;</em> Tujuan utama berziarah adalah melembutkan hati yang sedang penat oleh urusan dunia, mengingatkan diri akan kematian dan hari akhirat, mendoakan ampunan bagi orang tua serta kaum muslimin yang telah wafat, dan meneladani kesalehan maupun perjuangan dakwah para Waliyullah.</p>
           <h2>Bagaimana Urutan Bacaan Doa Ziarah Kubur Singkat dan Lengkap?</h2>
@@ -578,6 +660,8 @@ function buildHomepageRootHtml() {
             <li><strong>Membaca Istighfar dan Tawassul Al-Fatihah:</strong> Membaca istighfar tiga kali kemudian menghadiahkan pahala bacaan Surah Al-Fatihah kepada Nabi Muhammad SAW, para sahabat, para Waliyullah, ulama, orang tua, serta ahli kubur yang diziarahi.</li>
             <li><strong>Membaca Surah Yasin, Tahlil, dan Doa Arwah:</strong> Melantunkan Surah Yasin, Surah Al-Ikhlas tiga kali, Surah Al-Falaq, Surah An-Nas, Ayat Kursi, kalimat dzikir tahlil, shalawat Nabi, lalu menutup dengan doa permohonan ampunan dan rahmat bagi ahli kubur.</li>
           </ol>
+          <h2>Di Mana Saja Lokasi ${sites.length} Makam Wali Songo dan Ulama di Ziarah Nusantara?</h2>
+          <p><strong>Ziarah Nusantara</strong> mendokumentasikan <strong>${sites.length} lokasi makam Waliyullah di ${uniqueProvinces.length} provinsi Indonesia</strong> lengkap dengan titik koordinat peta rute perjalanan, jadwal haul, kisah karomah, dan sanad keilmuan. Direktori ini mencakup sembilan makam Wali Songo di Jawa Timur, Jawa Tengah, dan Jawa Barat (Sunan Gresik, Sunan Ampel, Sunan Bonang, Sunan Drajat, Sunan Giri, Sunan Kalijaga, Sunan Kudus, Sunan Muria — Raden Umar Said (Sunan Muria), dan Sunan Gunung Jati) hingga makam ulama besar, raja kesultanan Islam, dan habaib di seluruh ${uniqueProvinces.length} provinsi Indonesia.</p>
           <h2>Layanan dan Direktori Utama Ziarah Nusantara</h2>
           <ul>
             <li><a href="${SITE_ORIGIN}/direktori">Direktori ${sites.length} Makam Walisongo, Ulama, dan Habaib di ${uniqueProvinces.length} Provinsi Indonesia</a></li>
@@ -991,7 +1075,66 @@ if (!process.env.VITEST) {
     '',
   ].join('\n');
 
-  // Write generated sitemaps, feeds, llms.txt, and ziarah-sites.json to both public/ and dist/
+  const aiCatalogJsonContent = JSON.stringify(
+    {
+      specVersion: '1.0',
+      host: {
+        displayName: 'Ziarah Nusantara — Tim Kurator Arsip Ziarah Nusantara',
+      },
+      entries: [
+        {
+          identifier: 'urn:air:ziarahnusantara.my.id:docs:llms-summary',
+          displayName: 'Panduan & Ringkasan Arsip Ziarah Nusantara (LLMs.txt)',
+          type: 'text/markdown',
+          url: `${SITE_ORIGIN}/llms.txt`,
+          description: `Dokumentasi ringkas dalam format Markdown untuk agen AI mengenai hukum ziarah kubur, urutan bacaan doa ziarah kubur, tahlil, tawassul, dan indeks direktori ${sites.length} makam Waliyullah di ${uniqueProvinces.length} provinsi Indonesia.`,
+          representativeQueries: [
+            'Bagaimana urutan bacaan doa ziarah kubur lengkap Arab Latin dan artinya?',
+            `Apa saja daftar ${sites.length} lokasi makam Wali Songo dan Ulama Nusantara di Indonesia?`,
+            'Apa tujuan dan hukum ziarah kubur dalam Islam menurut hadits?',
+          ],
+        },
+        {
+          identifier: 'urn:air:ziarahnusantara.my.id:docs:llms-full-catalog',
+          displayName: `Katalog Lengkap ${sites.length} Situs Makam Waliyullah Nusantara (LLMs-Full.txt)`,
+          type: 'text/markdown',
+          url: `${SITE_ORIGIN}/llms-full.txt`,
+          description: `Katalog ensiklopedis lengkap dalam format Markdown yang memuat profil sejarah, sanad keilmuan, alamat, koordinat geospasial, dan riwayat ${sites.length} makam Wali Songo, Ulama, Habaib, dan Auliya Nusantara di ${uniqueProvinces.length} provinsi.`,
+          representativeQueries: [
+            'Dimana alamat lengkap dan koordinat makam Sunan Ampel dan Sunan Gunung Jati?',
+            'Siapa saja tokoh ulama dan habaib yang dimakamkan di Jawa, Sumatera, Kalimantan, dan Sulawesi?',
+            'Bagaimana sejarah dakwah dan sanad keilmuan para Wali Songo?',
+          ],
+        },
+        {
+          identifier: 'urn:air:ziarahnusantara.my.id:feeds:sitemap-xml',
+          displayName: 'Peta Situs Kanonis Ziarah Nusantara (Sitemap XML)',
+          type: 'application/xml',
+          url: `${SITE_ORIGIN}/sitemap.xml`,
+          description: `Indeks XML seluruh ${sitemapEntries.length} halaman kanonis Ziarah Nusantara meliputi direktori makam, peta rute geospasial, panduan doa ziarah kubur, rubrik sejarah, dan profil ${sites.length} situs makam di ${uniqueProvinces.length} provinsi.`,
+          representativeQueries: [
+            'Daftar lengkap URL halaman makam wali di Ziarah Nusantara',
+            'Indeks halaman panduan doa dan direktori makam Nusantara',
+          ],
+        },
+        {
+          identifier: 'urn:air:ziarahnusantara.my.id:feeds:rss-feed',
+          displayName: 'Umpan Sindikasi Arsip & Profil Makam Wali (RSS 2.0)',
+          type: 'application/rss+xml',
+          url: `${SITE_ORIGIN}/rss.xml`,
+          description: `Umpan RSS 2.0 berisi pembaruan artikel sejarah, panduan adab ziarah, dan katalog ${sites.length} lokasi makam Waliyullah Nusantara di ${uniqueProvinces.length} provinsi.`,
+          representativeQueries: [
+            'Artikel terbaru rubrik kisah karomah dan sejarah wali Nusantara',
+            'Pembaruan direktori lokasi makam ulama dan habaib di Indonesia',
+          ],
+        },
+      ],
+    },
+    null,
+    2
+  ) + '\n';
+
+  // Write generated sitemaps, feeds, llms.txt, ziarah-sites.json, and AI catalogs to both public/ and dist/
   for (const targetFolder of [rootPublic, rootDist]) {
     if (fs.existsSync(targetFolder)) {
       fs.writeFileSync(path.join(targetFolder, 'sitemap.xml'), sitemapXmlContent, 'utf8');
@@ -1003,6 +1146,12 @@ if (!process.env.VITEST) {
       fs.writeFileSync(path.join(targetFolder, 'robots.txt'), robotsTxtContent, 'utf8');
       fs.writeFileSync(path.join(targetFolder, 'ziarah-sites.json'), ziarahSitesJsonContent, 'utf8');
       fs.writeFileSync(path.join(targetFolder, 'llms.txt'), llmsTxtContent, 'utf8');
+      fs.writeFileSync(path.join(targetFolder, 'ai-catalog.json'), aiCatalogJsonContent, 'utf8');
+      fs.writeFileSync(path.join(targetFolder, 'ard.json'), aiCatalogJsonContent, 'utf8');
+      const wellKnownDir = path.join(targetFolder, '.well-known');
+      fs.mkdirSync(wellKnownDir, { recursive: true });
+      fs.writeFileSync(path.join(wellKnownDir, 'ai-catalog.json'), aiCatalogJsonContent, 'utf8');
+      fs.writeFileSync(path.join(wellKnownDir, 'ard.json'), aiCatalogJsonContent, 'utf8');
     }
   }
 

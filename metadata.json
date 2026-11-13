@@ -1,6 +1,6 @@
 {
   "name": "Ziarah Nusantara",
-  "description": "Panduan lengkap ziarah kubur dan direktori 96 makam Wali Songo & Ulama Nusantara. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.",
+  "description": "Panduan lengkap ziarah kubur dan direktori 183 makam Wali Songo & Ulama Nusantara di 34 provinsi. Dilengkapi bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, dan peta rute GPS.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

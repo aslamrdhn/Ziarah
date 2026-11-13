@@ -146,12 +146,26 @@ export function extractShortEra(era?: string): string {
   return cleaned.length > 28 ? `${cleaned.slice(0, 26).trim()}…` : cleaned;
 }
 
+export function sanitizeHistoricalLogisticsText(input?: string): string {
+  if (!input) return '';
+  return String(input)
+    .replace(/Raden\s+Umar\s+Said\s*\(\s*Raden\s+Prawoto\s*\)/gi, 'Raden Umar Said (Sunan Muria)')
+    .replace(/\bRaden\s+Prawoto\b/gi, 'Raden Umar Said (Sunan Muria)')
+    .replace(
+      /dimudahkan\s+bertemu\s+jodoh\s+pendamping\s+hidup/gi,
+      'memohon kepada Allah SWT kecintaan tulus kepada Nabi Muhammad SAW, keberkahan majelis ilmu dan dakwah, serta keteguhan iman keluarga'
+    )
+    .trim();
+}
+
 function normalizeStringOrArray(value?: string | string[]): string[] {
   if (!value) return [];
   if (Array.isArray(value)) {
-    return value.map((item) => String(item || '').trim()).filter(Boolean);
+    return value
+      .map((item) => sanitizeHistoricalLogisticsText(String(item || '')))
+      .filter(Boolean);
   }
-  const trimmed = String(value).trim();
+  const trimmed = sanitizeHistoricalLogisticsText(String(value));
   return trimmed ? [trimmed] : [];
 }
 
@@ -163,10 +177,10 @@ function normalizeStringOrArray(value?: string | string[]): string[] {
 export function buildRoleBasedBarokahHajat(
   site: Pick<ZiarahSite, 'name' | 'title' | 'category' | 'city' | 'province' | 'location'>
 ): string {
-  const name = (site.name || site.title || 'Waliyullah').trim();
+  const name = sanitizeHistoricalLogisticsText(site.name || site.title || 'Waliyullah');
   const city = (site.city || site.location?.city || 'Nusantara').trim();
   const province = (site.province || site.location?.province || 'Indonesia').trim();
-  const roleContext = `${site.name || ''} ${site.title || ''} ${site.category || ''}`.toLowerCase();
+  const roleContext = `${name} ${site.title || ''} ${site.category || ''}`.toLowerCase();
 
   const isSultanOrHero =
     /\b(sultan|raja|pangeran|panembahan|adipati|ratu|pahlawan|diponegoro|imam bonjol|raden intan|sentot|mangkurat|cakraningrat|baabullah|hasanuddin|iskandar muda|ageng tirtayasa|malikussaleh|suriansyah)\b/i.test(
@@ -199,10 +213,10 @@ export function getSiteBarokahHajat(
   site: Pick<ZiarahSite, 'id' | 'name' | 'title' | 'category' | 'location' | 'city' | 'province' | 'barokahHajat'>
 ): string {
   if (typeof site.barokahHajat === 'string' && site.barokahHajat.trim()) {
-    return site.barokahHajat.trim();
+    return sanitizeHistoricalLogisticsText(site.barokahHajat);
   }
   if (Array.isArray(site.barokahHajat) && site.barokahHajat.length > 0 && site.barokahHajat[0]?.trim()) {
-    return site.barokahHajat[0].trim();
+    return sanitizeHistoricalLogisticsText(site.barokahHajat[0]);
   }
   return buildRoleBasedBarokahHajat(site);
 }
@@ -212,8 +226,8 @@ export function getSiteBarokahHajat(
  * Memastikan lafaz Arab, Latin, dan Terjemahan senantiasa menyertakan nama tokoh `site.name` secara spesifik.
  */
 export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[] {
-  const siteName = (site.name || site.title || 'Waliyullah').trim();
-  const siteTitle = (site.title || siteName).trim();
+  const siteName = sanitizeHistoricalLogisticsText(site.name || site.title || 'Waliyullah');
+  const siteTitle = sanitizeHistoricalLogisticsText(site.title || siteName);
 
   const wiridPeganganEntry: SiteDoaKhususEntry = {
     title: `Wirid Pegangan & Dzikir Munajat Hajat di Maqbarah ${siteName}`,
@@ -228,10 +242,10 @@ export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[
   if (Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0) {
     const validEntries = site.doaKhusus
       .map((d) => {
-        const rawArab = (d.text || d.arab || '').trim();
-        const rawLatin = (d.latin || '').trim();
-        const rawTranslation = (d.translation || d.terjemahan || '').trim();
-        const rawKaifiyah = (d.kaifiyah || '').trim();
+        const rawArab = sanitizeHistoricalLogisticsText(d.text || d.arab || '');
+        const rawLatin = sanitizeHistoricalLogisticsText(d.latin || '');
+        const rawTranslation = sanitizeHistoricalLogisticsText(d.translation || d.terjemahan || '');
+        const rawKaifiyah = sanitizeHistoricalLogisticsText(d.kaifiyah || '');
 
         const arabWithPerson = rawArab.includes(siteName)
           ? rawArab
@@ -248,7 +262,7 @@ export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[
           : `Khusus ke hadirat ${siteName} (${siteTitle}), kami bertawassul memohon keberkahan ilmu, keteguhan iman, dan ridha Allah SWT.`;
 
         return {
-          title: d.title || `Tawassul & Munajat Khusus di Maqbarah ${siteName}`,
+          title: sanitizeHistoricalLogisticsText(d.title) || `Tawassul & Munajat Khusus di Maqbarah ${siteName}`,
           text: arabWithPerson,
           arab: arabWithPerson,
           latin: latinWithPerson,
@@ -320,19 +334,22 @@ export function getSiteCompleteBarokahGuide(site: ZiarahSite): CompleteBarokahGu
   const effectiveDoas = getEffectiveSiteDoaKhusus(site);
   const primary = effectiveDoas[0];
 
+  const safeName = sanitizeHistoricalLogisticsText(site.name || site.title || 'Waliyullah');
+  const safeTitle = sanitizeHistoricalLogisticsText(site.title || safeName);
+
   const customKaifiyah = primary.kaifiyah
     ? primary.kaifiyah
         .split(/\n+/)
-        .map((s) => s.trim())
+        .map((s) => sanitizeHistoricalLogisticsText(s))
         .filter(Boolean)
     : [
-        `Mengucapkan salam penghormatan ahli kubur saat memasuki area maqbarah ${site.name} dalam keadaan suci berwudhu.`,
-        `Membaca Istighfar 3x, Syahadat, dan Shalawat Nabi 11x, kemudian menghadiahkan Surah Al-Fatihah khusus kepada ${site.name} (${site.title}).`,
+        `Mengucapkan salam penghormatan ahli kubur saat memasuki area maqbarah ${safeName} dalam keadaan suci berwudhu.`,
+        `Membaca Istighfar 3x, Syahadat, dan Shalawat Nabi 11x, kemudian menghadiahkan Surah Al-Fatihah khusus kepada ${safeName} (${safeTitle}).`,
         `Membaca Surah Yasin, Tahlil, Wirid Pegangan 33x, lalu memanjatkan Doa Tawassul & Munajat Hajat di atas dengan khusyuk semata-mata memohon ridha Allah SWT.`,
       ];
 
   const wiridPenutupAdab = [
-    `Menutup doa munajat di maqbarah ${site.name} dengan membaca Shalawat Nabi 11 kali dan Surah Al-Fatihah.`,
+    `Menutup doa munajat di maqbarah ${safeName} dengan membaca Shalawat Nabi 11 kali dan Surah Al-Fatihah.`,
     'Menjaga ketenangan, tidak melangkahi pusara, serta mundur secara perlahan dengan penuh adab saat meninggalkan area cungkup makam.',
     'Menyempurnakan ikhtiar batin dengan sedekah kepada fakir miskin atau kotak pemeliharaan maqbarah setempat.',
   ];
@@ -429,23 +446,27 @@ export function getSiteLogistics(
     | 'untoldStory'
   >
 ): SiteLogisticsInfo {
-  const explicitHaul = site.haulSchedule?.trim();
+  const safeName = sanitizeHistoricalLogisticsText(site.name || site.title || 'Waliyullah');
+  const explicitHaul = sanitizeHistoricalLogisticsText(site.haulSchedule);
   const explicitAdab = normalizeStringOrArray(site.localAdab);
   const explicitHajat = normalizeStringOrArray(site.barokahHajat);
   const explicitKaromah = normalizeStringOrArray(site.karomah);
 
-  const resolvedDoas = getEffectiveSiteDoaKhusus(site as ZiarahSite);
+  const resolvedDoas = getEffectiveSiteDoaKhusus({
+    ...(site as ZiarahSite),
+    name: safeName,
+  });
 
   return {
     haulSchedule: explicitHaul || HONEST_UNVERIFIED_LOGISTICS_FALLBACK,
     localAdab:
       explicitAdab.length > 0
         ? explicitAdab.join(' ')
-        : `Berpakaian muslim/muslimah yang sopan dan menutup aurat saat memasuki kompleks pemakaman ${site.name}. Menjaga ketenangan, ketertiban, serta meluruskan niat ziarah dan tawassul semata-mata mengharap ridha Allah SWT.`,
-    barokahHajat: explicitHajat.length > 0 ? explicitHajat : [getSiteBarokahHajat(site)],
+        : `Berpakaian muslim/muslimah yang sopan dan menutup aurat saat memasuki kompleks pemakaman ${safeName}. Menjaga ketenangan, ketertiban, serta meluruskan niat ziarah dan tawassul semata-mata mengharap ridha Allah SWT.`,
+    barokahHajat: explicitHajat.length > 0 ? explicitHajat : [getSiteBarokahHajat({ ...site, name: safeName })],
     doaKhusus: resolvedDoas,
     karomah: explicitKaromah,
-    untoldStory: site.untoldStory ? String(site.untoldStory) : '',
+    untoldStory: site.untoldStory ? sanitizeHistoricalLogisticsText(String(site.untoldStory)) : '',
   };
 }
 
