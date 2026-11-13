@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { QrisPaymentCard } from './QrisPaymentCard';
-import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
+import { MIN_DONATION_AMOUNT, OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from './TransferProofUploadField';
 import { CompressedReceiptResult, saveVerifiedDonationRecord, submitDonationWithPrivateProof } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
@@ -24,11 +24,13 @@ interface TransactionModalProps {
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, site, type, onSuccess }) => {
   const { copy } = useSiteCopy();
-  const barokahMinAmount = copy.barokahLockAmount || 5000;
-  const rubrikMinAmount = copy.rubrikLockAmount || 10000;
+  const barokahMinAmount = Math.max(MIN_DONATION_AMOUNT, copy.barokahLockAmount || MIN_DONATION_AMOUNT);
+  const rubrikMinAmount = Math.max(MIN_DONATION_AMOUNT, copy.rubrikLockAmount || 10000);
   const [selectedNominal, setSelectedNominal] = useState(
     type === 'barokah_doa' ? barokahMinAmount : type === 'untold' ? rubrikMinAmount : 25000
   );
+  const [customNominalText, setCustomNominalText] = useState('');
+  const [minAmountWarning, setMinAmountWarning] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [copiedBank, setCopiedBank] = useState(false);
@@ -54,6 +56,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       setAgreedToAkad(true);
       setIsAnonymous(false);
       setSubmitError(null);
+      setCustomNominalText('');
+      setMinAmountWarning(false);
       setSelectedNominal(type === 'barokah_doa' ? barokahMinAmount : type === 'untold' ? rubrikMinAmount : 25000);
       if (auth.currentUser?.displayName && !senderAccount) {
         setSenderAccount(auth.currentUser.displayName);
@@ -77,14 +81,37 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
 
   if (!isOpen) return null;
 
-  const minAmount = type === 'barokah_doa' ? barokahMinAmount : rubrikMinAmount;
-  const amount =
-    sanitizeDonationAmount(selectedNominal, minAmount, 1000000000) || minAmount;
+  const minAmount = type === 'barokah_doa' ? barokahMinAmount : type === 'untold' ? rubrikMinAmount : MIN_DONATION_AMOUNT;
+  const amount = Math.max(
+    MIN_DONATION_AMOUNT,
+    sanitizeDonationAmount(selectedNominal, minAmount, 1000000000) || minAmount
+  );
   const cleanSender = sanitizePlainText(senderAccount, 80);
   const donorName = isAnonymous
     ? 'Hamba Allah'
     : cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
   const isProofComplete = Boolean(receipt && cleanSender.length >= 3 && agreedToAkad);
+
+  const handleManualNominalChange = (rawVal: string) => {
+    const digitsOnly = rawVal.replace(/[^0-9]/g, '');
+    if (!digitsOnly) {
+      setCustomNominalText('');
+      setMinAmountWarning(false);
+      setSelectedNominal(minAmount);
+      return;
+    }
+    const parsed = parseInt(digitsOnly, 10);
+    if (parsed < MIN_DONATION_AMOUNT) {
+      setMinAmountWarning(true);
+      setCustomNominalText(String(MIN_DONATION_AMOUNT));
+      setSelectedNominal(Math.max(minAmount, MIN_DONATION_AMOUNT));
+    } else {
+      setMinAmountWarning(false);
+      const clamped = Math.min(parsed, 1000000000);
+      setCustomNominalText(String(clamped));
+      setSelectedNominal(Math.max(minAmount, clamped));
+    }
+  };
 
   const programId =
     type === 'barokah_doa'
@@ -102,7 +129,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
 
   const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer ${
     type === 'barokah_doa'
-      ? 'Infaq Operasional Pembuka Barokah & Doa Khusus (Rp 5.000)'
+      ? `Infaq Operasional Pembuka Barokah & Doa Khusus (Rp ${amount.toLocaleString('id-ID')})`
       : type === 'infaq'
         ? 'Infaq Operasional & Pemeliharaan Digital'
         : 'Infaq Operasional Pembuka Rubrik & Khazanah'
@@ -125,6 +152,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
   const handleConfirmPayment = async () => {
     if (isSaving) return;
     setSubmitError(null);
+
+    if (amount < MIN_DONATION_AMOUNT) {
+      setMinAmountWarning(true);
+      setSubmitError('Nominal infaq terkunci minimal Rp 2.000 untuk menghindari transaksi tidak valid (Rp 1).');
+      return;
+    }
 
     if (!receipt || !receipt.dataUrl) {
       setSubmitError('Wajib mengunggah screenshot / foto bukti transfer terlebih dahulu.');
@@ -215,7 +248,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
               {type === 'barokah_doa' ? (
                 <>
                   <ScrollText className="w-3.5 h-3.5" strokeWidth={1.75} />
-                  <span>{copy.barokahSectionTitle} · Rp {barokahMinAmount.toLocaleString('id-ID')}</span>
+                  <span>{copy.barokahSectionTitle} · Min. Rp {barokahMinAmount.toLocaleString('id-ID')}</span>
                 </>
               ) : type === 'infaq' ? (
                 <>
@@ -245,7 +278,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         </div>
 
         {/* Content */}
-        <div className="p-5 sm:p-6 pb-6 sm:pb-6 overflow-y-auto">
+        <div className="p-5 sm:p-6 pb-24 sm:pb-6 overflow-y-auto">
           {isSuccess ? (
             <div className="text-center py-3">
               <div className="w-14 h-14 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-emerald-200/80">
@@ -307,21 +340,25 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                       Wasilah Tawassul &amp; Doa Khusus Makam
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed">
-                      Infaq mulai <strong className="font-semibold text-slate-900">Rp {barokahMinAmount.toLocaleString('id-ID')}</strong> untuk membuka penuh lafaz Arab, Latin, terjemahan, dan tata cara amalan hajat khusus di <strong>{site.title}</strong>.
+                      Infaq terkunci minimal <strong className="font-semibold text-slate-900">Rp {MIN_DONATION_AMOUNT.toLocaleString('id-ID')}</strong> untuk membuka penuh lafaz Arab, Latin, terjemahan, dan tata cara amalan hajat khusus di <strong>{site.title}</strong>.
                     </p>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-stone-800 mb-2">
+                  <div className="space-y-2.5">
+                    <label className="block text-xs font-semibold text-stone-800">
                       Pilih Nominal Infaq Barokah &amp; Doa:
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[barokahMinAmount, Math.max(10000, barokahMinAmount * 2), Math.max(25000, barokahMinAmount * 5)].map((nominal) => (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[2000, 5000, 10000, 25000].map((nominal) => (
                         <button
                           key={nominal}
                           type="button"
-                          onClick={() => setSelectedNominal(nominal)}
+                          onClick={() => {
+                            setSelectedNominal(nominal);
+                            setCustomNominalText('');
+                            setMinAmountWarning(false);
+                          }}
                           className={`py-2.5 px-2 text-xs font-semibold rounded-xl border transition-colors cursor-pointer ${
-                            selectedNominal === nominal
+                            selectedNominal === nominal && !customNominalText
                               ? 'bg-emerald-900 border-emerald-900 text-white'
                               : 'bg-[#FAF8F5] border-stone-200/80 text-stone-700 hover:border-stone-400'
                           }`}
@@ -330,19 +367,48 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                         </button>
                       ))}
                     </div>
+                    <div>
+                      <label className="block text-[11px] font-medium text-stone-600 mb-1">
+                        Atau Ketik Nominal Manual (Minimal Rp 2.000):
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-stone-500">
+                          Rp
+                        </span>
+                        <input
+                          type="number"
+                          min={2000}
+                          step={1000}
+                          inputMode="numeric"
+                          value={customNominalText}
+                          onChange={(e) => handleManualNominalChange(e.target.value)}
+                          placeholder="Minimal 2000"
+                          className="w-full pl-9 pr-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-[#FAF8F5] border border-stone-200/90 focus:outline-none focus:border-emerald-700 text-stone-900"
+                        />
+                      </div>
+                      {minAmountWarning && (
+                        <p className="mt-1.5 text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5">
+                          Nominal infaq terkunci minimal Rp 2.000 untuk menghindari transaksi tidak valid (Rp 1).
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : type === 'infaq' ? (
-                <div>
-                  <label className="block text-xs font-semibold text-stone-800 mb-2">Pilih Nominal Infaq:</label>
+                <div className="space-y-2.5">
+                  <label className="block text-xs font-semibold text-stone-800">Pilih Nominal Infaq:</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[10000, 25000, 50000, 100000, 250000, 500000].map((nominal) => (
                       <button
                         key={nominal}
                         type="button"
-                        onClick={() => setSelectedNominal(nominal)}
+                        onClick={() => {
+                          setSelectedNominal(nominal);
+                          setCustomNominalText('');
+                          setMinAmountWarning(false);
+                        }}
                         className={`py-2.5 px-2 text-xs font-semibold rounded-xl border transition-colors cursor-pointer ${
-                          selectedNominal === nominal 
+                          selectedNominal === nominal && !customNominalText
                             ? 'bg-stone-900 border-stone-900 text-white' 
                             : 'bg-[#FAF8F5] border-stone-200/80 text-stone-700 hover:border-stone-400'
                         }`}
@@ -350,6 +416,31 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                         Rp {nominal.toLocaleString('id-ID')}
                       </button>
                     ))}
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-stone-600 mb-1">
+                      Atau Ketik Nominal Manual (Minimal Rp 2.000):
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-stone-500">
+                        Rp
+                      </span>
+                      <input
+                        type="number"
+                        min={2000}
+                        step={1000}
+                        inputMode="numeric"
+                        value={customNominalText}
+                        onChange={(e) => handleManualNominalChange(e.target.value)}
+                        placeholder="Minimal 2000"
+                        className="w-full pl-9 pr-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-[#FAF8F5] border border-stone-200/90 focus:outline-none focus:border-emerald-700 text-stone-900"
+                      />
+                    </div>
+                    {minAmountWarning && (
+                      <p className="mt-1.5 text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5">
+                        Nominal infaq terkunci minimal Rp 2.000 untuk menghindari transaksi tidak valid (Rp 1).
+                      </p>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -494,3 +585,4 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
 
   return typeof document !== 'undefined' ? createPortal(modalNode, document.body) : modalNode;
 };
+

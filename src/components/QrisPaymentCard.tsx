@@ -3,10 +3,11 @@ import QRCode from 'qrcode';
 import { QrCode, Download, Copy, Check, Maximize2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
+  MIN_DONATION_AMOUNT,
   OFFICIAL_QRIS_STATIC_PAYLOAD,
   resolveOfficialQrisPayload,
   parseQrisMerchantInfo,
-  buildQrisPayload,
+  injectQrisAmountTag54,
 } from '../lib/qris';
 
 interface QrisPaymentCardProps {
@@ -22,17 +23,21 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
   selectedAmount,
   compact = false,
 }) => {
-  const [qrMode, setQrMode] = useState<'static_exact' | 'dynamic_amount'>('static_exact');
+  const [qrMode, setQrMode] = useState<'static_exact' | 'dynamic_amount'>('dynamic_amount');
   const [generatedQrDataUrl, setGeneratedQrDataUrl] = useState<string>('');
   const [copiedPayload, setCopiedPayload] = useState(false);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
 
   const effectiveBasePayload = resolveOfficialQrisPayload(qrisPayload);
+  const lockedDonationAmount = Math.max(
+    MIN_DONATION_AMOUNT,
+    Math.round(Number(selectedAmount) || MIN_DONATION_AMOUNT)
+  );
 
-  const activePayload = buildQrisPayload(effectiveBasePayload, {
-    useSelectedAmount: qrMode === 'dynamic_amount',
-    amount: selectedAmount,
-  });
+  const activePayload =
+    qrMode === 'dynamic_amount'
+      ? injectQrisAmountTag54(effectiveBasePayload, lockedDonationAmount)
+      : effectiveBasePayload;
 
   const merchantInfo = parseQrisMerchantInfo(activePayload);
 
@@ -128,8 +133,8 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
       ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 20px sans-serif';
       const modeText =
-        qrMode === 'dynamic_amount' && selectedAmount
-          ? `Nominal Terkunci: Rp ${selectedAmount.toLocaleString('id-ID')}`
+        qrMode === 'dynamic_amount'
+          ? `Nominal Terkunci: Rp ${lockedDonationAmount.toLocaleString('id-ID')}`
           : 'QRIS Statis Resmi Ziarah Nusantara';
       ctx.fillText(modeText, canvas.width / 2, 895);
 
@@ -146,7 +151,7 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
       );
 
       const link = document.createElement('a');
-      link.download = `QRIS-Ziarah-Nusantara-${merchantInfo.nmid}.png`;
+      link.download = `QRIS-Ziarah-Nusantara-${merchantInfo.nmid}-Rp${lockedDonationAmount}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (err) {
@@ -172,6 +177,9 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
               Standar Pembayaran Nasional
             </span>
           </div>
+          <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-900 border border-emerald-200 text-[10px] font-bold">
+            Terkunci Rp {lockedDonationAmount.toLocaleString('id-ID')}
+          </span>
         </div>
 
         {/* Merchant Identity */}
@@ -187,33 +195,31 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
           </p>
         </div>
 
-        {/* Mode Toggle: Barcode Statis Asli vs Nominal Otomatis */}
-        {selectedAmount && selectedAmount > 0 && (
-          <div className="inline-flex p-0.5 bg-slate-200/80 rounded-xl mb-3 text-[10px] font-bold">
-            <button
-              type="button"
-              onClick={() => setQrMode('static_exact')}
-              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                qrMode === 'static_exact'
-                  ? 'bg-white text-emerald-900 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Barcode Statis Resmi
-            </button>
-            <button
-              type="button"
-              onClick={() => setQrMode('dynamic_amount')}
-              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                qrMode === 'dynamic_amount'
-                  ? 'bg-white text-emerald-900 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Nominal Otomatis (Rp {selectedAmount.toLocaleString('id-ID')})
-            </button>
-          </div>
-        )}
+        {/* Mode Toggle: Nominal Otomatis (Default Tag 54) vs Barcode Statis Resmi */}
+        <div className="inline-flex p-0.5 bg-slate-200/80 rounded-xl mb-3 text-[10px] font-bold">
+          <button
+            type="button"
+            onClick={() => setQrMode('dynamic_amount')}
+            className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+              qrMode === 'dynamic_amount'
+                ? 'bg-white text-emerald-900 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Nominal Otomatis (Rp {lockedDonationAmount.toLocaleString('id-ID')})
+          </button>
+          <button
+            type="button"
+            onClick={() => setQrMode('static_exact')}
+            className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+              qrMode === 'static_exact'
+                ? 'bg-white text-emerald-900 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Barcode Statis Resmi
+          </button>
+        </div>
 
         {/* QR Code Frame */}
         <div className="relative inline-block bg-white p-3 rounded-2xl border-2 border-slate-200 shadow-xs mb-2.5 group">
@@ -254,6 +260,13 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
           </button>
         </div>
 
+        {/* Yellow-Gold Instruction Banner Directly Below QRIS Image */}
+        <div className="mb-3 px-3 py-2 rounded-xl bg-[#FEF9C3]/85 border border-[#CA8A04]/40 text-center">
+          <p className="text-[11px] font-semibold text-[#713F12] leading-relaxed">
+            PENTING: Nominal minimum sistem dikunci pada Rp 2.000. Bukti transfer di bawah Rp 2.000 (seperti Rp 1) otomatis ditolak oleh sistem verifikasi.
+          </p>
+        </div>
+
         {/* Action Buttons: Download QR Image & Copy Payload */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-2.5">
           <button
@@ -278,7 +291,7 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
             ) : (
               <>
                 <Copy className="w-3.5 h-3.5" />
-                <span>Salin Kode Statis</span>
+                <span>Salin Kode QRIS</span>
               </>
             )}
           </button>
@@ -289,6 +302,7 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
           <strong>BCA, Mandiri, BRI, BNI, BSI, DANA, GoPay, OVO, atau ShopeePay</strong>.
         </p>
       </div>
+
 
       {/* Fullscreen Zoom Modal */}
       <AnimatePresence>

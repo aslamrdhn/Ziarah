@@ -497,7 +497,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     const finalDonor = isAnonymous
       ? 'Hamba Allah'
       : cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
-    const cleanAmount = sanitizeDonationAmount(activeEffectiveNominal, 1000, 1000000000) || 25000;
+    const cleanAmount = sanitizeDonationAmount(activeEffectiveNominal, 2000, 1000000000) || 25000;
     const cleanPrayerIntent = sanitizePlainText(prayerIntent, 200);
     const finalDoaHajat =
       cleanPrayerIntent ||
@@ -550,7 +550,8 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   const waUnlockUrl = `https://wa.me/${cleanAdminWa}?text=${encodeURIComponent(waUnlockMessage)}`;
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-28">
+
       {/* Header */}
       <div className="mb-6 pb-6 border-b border-stone-200/80 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="max-w-2xl space-y-2">

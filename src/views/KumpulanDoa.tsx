@@ -4,7 +4,7 @@ import { BookOpen, Bookmark, BookmarkCheck, Search, Copy, Check, Lock } from 'lu
 import { db } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
-import { useVerifiedBarokahUnlock } from '../lib/transferProof';
+import { useVerifiedBarokahUnlock, MIN_DONATION_AMOUNT } from '../lib/transferProof';
 import { useSiteCopy } from '../lib/siteCopy';
 import { getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { TransactionModal } from '../components/TransactionModal';
@@ -35,7 +35,8 @@ interface DoaKaromahItem extends CuratedDoaItem {
 export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, onToggleSaveDoa }) => {
   const { sites: ziarahSites, isLoading, ensureFullSitesLoaded } = useSites();
   const { copy } = useSiteCopy();
-  const barokahAmount = copy.barokahLockAmount || 5000;
+  const barokahAmount = Math.max(MIN_DONATION_AMOUNT, copy.barokahLockAmount || MIN_DONATION_AMOUNT);
+
 
   useEffect(() => {
     void ensureFullSitesLoaded();
@@ -220,8 +221,9 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   }
 
   return (
-    <div className="flex-1 overflow-y-auto pb-20 bg-slate-50">
+    <div className="flex-1 overflow-y-auto pb-28 bg-slate-50">
       {/* Header Hub */}
+
       <div className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20 transition-all">
         <div className="max-w-4xl mx-auto px-4 py-5 sm:py-7">
           {/* Sub-Tab Switcher: Amalan & Doa Hub (/panduan & /doa) */}

@@ -40,7 +40,14 @@ interface DaftarMakamProps {
   onOpenKontribusi?: () => void;
 }
 
-export type EmotionalIntentId = 'all' | 'keteduhan' | 'ikhtiar' | 'keteguhan' | 'ilmu' | 'keluarga';
+export type EmotionalIntentId =
+  | 'all'
+  | 'keteduhan'
+  | 'ikhtiar'
+  | 'syifa'
+  | 'keteguhan'
+  | 'ilmu'
+  | 'keluarga';
 
 const EMOTIONAL_INTENTS: Array<{
   id: EmotionalIntentId;
@@ -380,6 +387,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         intents: {
           keteduhan: matchesEmotionalIntent(site, 'keteduhan'),
           ikhtiar: matchesEmotionalIntent(site, 'ikhtiar'),
+          syifa: matchesEmotionalIntent(site, 'syifa'),
           keteguhan: matchesEmotionalIntent(site, 'keteguhan'),
           ilmu: matchesEmotionalIntent(site, 'ilmu'),
           keluarga: matchesEmotionalIntent(site, 'keluarga'),
@@ -406,6 +414,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       all: baseFilteredSites.length,
       keteduhan: 0,
       ikhtiar: 0,
+      syifa: 0,
       keteguhan: 0,
       ilmu: 0,
       keluarga: 0,
@@ -414,6 +423,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       const indexed = siteSearchIndexMap.get(site.id);
       if (indexed ? indexed.intents.keteduhan : matchesEmotionalIntent(site, 'keteduhan')) counts.keteduhan++;
       if (indexed ? indexed.intents.ikhtiar : matchesEmotionalIntent(site, 'ikhtiar')) counts.ikhtiar++;
+      if (indexed ? indexed.intents.syifa : matchesEmotionalIntent(site, 'syifa')) counts.syifa++;
       if (indexed ? indexed.intents.keteguhan : matchesEmotionalIntent(site, 'keteguhan')) counts.keteguhan++;
       if (indexed ? indexed.intents.ilmu : matchesEmotionalIntent(site, 'ilmu')) counts.ilmu++;
       if (indexed ? indexed.intents.keluarga : matchesEmotionalIntent(site, 'keluarga')) counts.keluarga++;
@@ -454,7 +464,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   }
 
   return (
-    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 px-4 py-5 sm:py-10 md:px-8 relative z-10">
+    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 px-4 py-5 pb-28 sm:py-10 sm:pb-14 md:px-8 relative z-10">
+
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         {/* =====================================================================
             1. EDITORIAL HEADER: Kompak di Ponsel (< 640px), Tanpa Kapsul Berlapis

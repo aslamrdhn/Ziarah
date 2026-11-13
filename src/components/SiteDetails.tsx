@@ -226,8 +226,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   const { isUnlocked: isDonationVerified } = useVerifiedDonationUnlock(site?.id);
   const { isUnlocked: isBarokahDonationVerified } = useVerifiedBarokahUnlock(site?.id);
   const { copy } = useSiteCopy();
-  const barokahAmount = copy.barokahLockAmount || 5000;
-  const rubrikAmount = copy.rubrikLockAmount || 10000;
+  const barokahAmount = Math.max(2000, copy.barokahLockAmount || 2000);
+  const rubrikAmount = Math.max(2000, copy.rubrikLockAmount || 10000);
+
 
   // Pre-fill author name if logged in & load saved personal hajat for this site
   useEffect(() => {
@@ -479,6 +480,31 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
             {hajatSavedNotice ? 'Tersimpan di perangkat Anda' : 'Privat di perangkat Anda'}
           </span>
         </div>
+        <div className="flex flex-wrap gap-1.5">
+          {[
+            "Ikhtiar Kesembuhan dari Penyakit (Syifa')",
+            'Kelapangan Rezeki Halal & Bebas Hutang',
+            'Ketenangan Hati & Sakinah Keluarga',
+            'Keberkahan Ilmu & Keturunan Shalih',
+          ].map((chipText) => (
+            <button
+              key={chipText}
+              type="button"
+              onClick={() =>
+                handleSavePersonalHajat(
+                  personalHajat.trim()
+                    ? personalHajat.includes(chipText)
+                      ? personalHajat
+                      : `${personalHajat.trim()}; ${chipText}`
+                    : `Ya Allah, dengan wasilah amal shalih dan kecintaan kepada kekasih-Mu ${safeSiteName}, kabulkanlah hajat kami: ${chipText}.`
+                )
+              }
+              className="px-2.5 py-1 rounded-lg bg-emerald-50/80 hover:bg-emerald-100 text-emerald-900 border border-emerald-200/80 text-[11px] font-medium transition-colors cursor-pointer"
+            >
+              + {chipText}
+            </button>
+          ))}
+        </div>
         <textarea
           id={`input-hajat-${sectionId || 'tab'}`}
           rows={2}
@@ -489,6 +515,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           className="w-full text-xs sm:text-sm p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-emerald-700 text-slate-800 placeholder:text-slate-400 resize-none"
         />
       </div>
+
 
       {/* 3 Bagian Panduan Amalan Lengkap (Terbuka Penuh saat isBarokahUnlocked, atau BLUR saat Terkunci Rp 5.000) */}
       {isBarokahUnlocked ? (

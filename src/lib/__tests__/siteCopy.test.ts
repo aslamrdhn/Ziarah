@@ -1,13 +1,28 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_SITE_COPY, mergeWithDefaultSiteCopy } from '../siteCopy';
+import { DEFAULT_SITE_COPY, MIN_DONATION_AMOUNT, mergeWithDefaultSiteCopy } from '../siteCopy';
 import { getEmotionalCliffhanger } from '../../components/SiteDetails';
 import { mergeLocalAndCloudSites } from '../../context/SiteContext';
-import { ZiarahSite } from '../../data/sites';
+import { ziarahSites, ZiarahSite } from '../../data/sites';
+import { matchesEmotionalIntent } from '../../views/DaftarMakam';
 
 describe('siteCopy & cliffhanger utilities', () => {
-  it('returns DEFAULT_SITE_COPY when input is null or undefined', () => {
+  it('returns DEFAULT_SITE_COPY when input is null or undefined and enforces MIN_DONATION_AMOUNT >= 2000', () => {
     expect(mergeWithDefaultSiteCopy(null)).toEqual(DEFAULT_SITE_COPY);
     expect(mergeWithDefaultSiteCopy(undefined)).toEqual(DEFAULT_SITE_COPY);
+    expect(MIN_DONATION_AMOUNT).toBe(2000);
+    expect(DEFAULT_SITE_COPY.barokahLockAmount).toBeGreaterThanOrEqual(2000);
+    const pkg100k = DEFAULT_SITE_COPY.quickNominalPackages.find((p) => p.amount === 100000);
+    expect(pkg100k?.tag).toBe('Infaq Literasi Utama');
+  });
+
+  it('matches syifa emotional intent for healing/syifa sites like Sunan Muria, Sunan Gresik, and Sunan Drajat', () => {
+    expect(DEFAULT_SITE_COPY.intentLabels.syifa).toBe("Kesembuhan & Syifa' Penyakit");
+    const syifaSites = ziarahSites.filter((s) => matchesEmotionalIntent(s, 'syifa'));
+    expect(syifaSites.length).toBeGreaterThanOrEqual(5);
+    const muria = ziarahSites.find((s) => s.title.toLowerCase().includes('sunan muria'));
+    const gresik = ziarahSites.find((s) => s.title.toLowerCase().includes('sunan gresik'));
+    expect(muria && matchesEmotionalIntent(muria, 'syifa')).toBe(true);
+    expect(gresik && matchesEmotionalIntent(gresik, 'syifa')).toBe(true);
   });
 
   it('merges custom fields, lock amounts, and maps legacy alias keys cleanly', () => {

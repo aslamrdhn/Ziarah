@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { sanitizePlainText, sanitizeMultilineText, sanitizeDonationAmount } from './sanitize';
+import {
+  MIN_DONATION_AMOUNT,
+  sanitizePlainText,
+  sanitizeMultilineText,
+  sanitizeDonationAmount,
+} from './sanitize';
 import { TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/initialSites';
+
+export { MIN_DONATION_AMOUNT };
 
 const DYNAMIC_SITE_COUNT = TOTAL_SITE_COUNT;
 const DYNAMIC_PROVINCE_COUNT = TOTAL_PROVINCES_COUNT;
@@ -33,6 +40,7 @@ export interface SiteIntentLabels {
   all: string;
   keteduhan: string;
   ikhtiar: string;
+  syifa: string;
   keteguhan: string;
   ilmu: string;
 }
@@ -155,6 +163,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
     all: 'Semua Riwayat',
     keteduhan: 'Penawar Hati',
     ikhtiar: 'Ikhtiar & Rezeki',
+    syifa: "Kesembuhan & Syifa' Penyakit",
     keteguhan: 'Keteguhan Uji',
     ilmu: 'Sanad Keilmuan',
   },
@@ -223,7 +232,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   ],
 
   // 2. Ruang Baca, Modal Detail Makam & Harga Gembok
-  barokahLockAmount: 5000,
+  barokahLockAmount: 2000,
   rubrikLockAmount: 10000,
   readerTabMainStory: 'Kisah Hidup & Karomah',
   readerTabPrayerGuide: 'Tuntunan Ziarah & Doa Khusus',
@@ -287,7 +296,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
     {
       amount: 100000,
       label: 'Rp 100rb',
-      tag: 'Pemeliharaan Digital',
+      tag: 'Infaq Literasi Utama',
       desc: 'Kontribusi utama pelestarian ensiklopedia Nusantara',
     },
     {
@@ -348,12 +357,14 @@ function sanitizePackages(raw: unknown): QuickNominalPackage[] {
     .map((item) => {
       if (!item || typeof item !== 'object') return null;
       const rec = item as Record<string, unknown>;
-      const amount = sanitizeDonationAmount(rec.amount, 5000, 100000000);
-      if (amount < 5000) return null;
+      const amount = sanitizeDonationAmount(rec.amount, MIN_DONATION_AMOUNT, 100000000);
+      if (amount < MIN_DONATION_AMOUNT) return null;
       const label =
         sanitizePlainText(rec.label, 40) || `Rp ${(amount / 1000).toLocaleString('id-ID')}rb`;
-      const tag = sanitizePlainText(rec.tag, 60) || 'Infaq Jariyah';
-      const desc = sanitizePlainText(rec.desc, 160) || 'Dukungan pelestarian arsip digital';
+      const rawTag = sanitizePlainText(rec.tag, 60) || 'Infaq Literasi Utama';
+      const tag = rawTag.replace(/wakaf\s*literasi/gi, 'Infaq Literasi Utama');
+      const rawDesc = sanitizePlainText(rec.desc, 160) || 'Dukungan pelestarian arsip digital';
+      const desc = rawDesc.replace(/wakaf\s*literasi/gi, 'Infaq Literasi Utama');
       return { amount, label, tag, desc };
     })
     .filter((x): x is QuickNominalPackage => x !== null)
@@ -413,6 +424,7 @@ function sanitizeIntentLabels(raw: unknown): SiteIntentLabels {
     all: sanitizePlainText(rec.all, 50) || def.all,
     keteduhan: sanitizePlainText(rec.keteduhan, 50) || def.keteduhan,
     ikhtiar: sanitizePlainText(rec.ikhtiar, 50) || def.ikhtiar,
+    syifa: sanitizePlainText(rec.syifa, 50) || def.syifa,
     keteguhan: sanitizePlainText(rec.keteguhan, 50) || def.keteguhan,
     ilmu: sanitizePlainText(rec.ilmu, 50) || def.ilmu,
   };
@@ -515,11 +527,12 @@ export function mergeWithDefaultSiteCopy(raw?: Partial<SiteCopyConfig> | null): 
   );
 
   const barokahLockAmount =
-    sanitizeDonationAmount(raw.barokahLockAmount, 1000, 10000000) ||
+    sanitizeDonationAmount(raw.barokahLockAmount, MIN_DONATION_AMOUNT, 10000000) ||
     DEFAULT_SITE_COPY.barokahLockAmount;
   const rubrikLockAmount =
-    sanitizeDonationAmount(raw.rubrikLockAmount, 1000, 10000000) ||
+    sanitizeDonationAmount(raw.rubrikLockAmount, MIN_DONATION_AMOUNT, 10000000) ||
     DEFAULT_SITE_COPY.rubrikLockAmount;
+
 
   const rawAdminWa =
     typeof raw.adminWhatsappNumber === 'string'

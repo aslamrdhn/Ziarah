@@ -18,7 +18,7 @@ import {
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { collection, doc, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
-import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
+import { MIN_DONATION_AMOUNT, OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
 import { TransferProofUploadField } from '../components/TransferProofUploadField';
 import {
   CompressedReceiptResult,
@@ -97,7 +97,9 @@ export const InfaqDigital: React.FC = () => {
   const [selectedSiteId, setSelectedSiteId] = useState<string>('web-riset');
   const [nominal, setNominal] = useState<number>(25000);
   const [customNominal, setCustomNominal] = useState<string>('');
+  const [minAmountWarning, setMinAmountWarning] = useState<boolean>(false);
   const [donorName, setDonorName] = useState<string>('');
+
   const [isAnonim, setIsAnonim] = useState<boolean>(false);
   const [doaHajat, setDoaHajat] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>('QRIS');
@@ -218,7 +220,28 @@ export const InfaqDigital: React.FC = () => {
     setTimeout(() => setCopiedAccount(null), 2500);
   };
 
-  const currentAmount = sanitizeDonationAmount(customNominal ? customNominal : nominal, 1000, 1000000000);
+  const currentAmount = Math.max(
+    MIN_DONATION_AMOUNT,
+    sanitizeDonationAmount(customNominal ? customNominal : nominal, MIN_DONATION_AMOUNT, 1000000000) || MIN_DONATION_AMOUNT
+  );
+
+  const handleCustomNominalChange = (rawVal: string) => {
+    const digits = rawVal.replace(/[^0-9]/g, '');
+    if (!digits) {
+      setCustomNominal('');
+      setMinAmountWarning(false);
+      return;
+    }
+    const parsed = parseInt(digits, 10);
+    if (parsed < MIN_DONATION_AMOUNT) {
+      setMinAmountWarning(true);
+      setCustomNominal(String(MIN_DONATION_AMOUNT));
+    } else {
+      setMinAmountWarning(false);
+      setCustomNominal(String(Math.min(parsed, 1000000000)));
+    }
+  };
+
   const targetSiteName = selectedSiteId === 'web-riset'
     ? 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara'
     : 'Umum (Disalurkan untuk Operasional & Dokumentasi Makam)';
@@ -232,7 +255,7 @@ export const InfaqDigital: React.FC = () => {
 
   const handleBayar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentAmount < 5000 || isSubmitting) return;
+    if (currentAmount < MIN_DONATION_AMOUNT || isSubmitting) return;
     setSubmitError(null);
 
     if (!receipt || !receipt.dataUrl) {
@@ -320,7 +343,7 @@ export const InfaqDigital: React.FC = () => {
   const waConfirmUrl = `https://wa.me/${cleanAdminWa}?text=${encodeURIComponent(waMessage)}`;
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-28">
       {/* Header Banner */}
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
@@ -442,6 +465,10 @@ export const InfaqDigital: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-3">
               {quickNominalPackages.map((pkg, idx) => {
                 const isSelected = !customNominal && nominal === pkg.amount;
+                const displayTag =
+                  pkg.amount === 100000
+                    ? 'Infaq Literasi Utama'
+                    : (pkg.tag || pkg.label).replace(/wakaf\s*literasi/gi, 'Infaq Literasi Utama');
                 return (
                   <button
                     key={`${pkg.amount}-${idx}`}
@@ -449,6 +476,7 @@ export const InfaqDigital: React.FC = () => {
                     onClick={() => {
                       setNominal(pkg.amount);
                       setCustomNominal('');
+                      setMinAmountWarning(false);
                     }}
                     className={`py-3 px-3 rounded-xl text-left transition-colors border cursor-pointer ${
                       isSelected 
@@ -460,7 +488,7 @@ export const InfaqDigital: React.FC = () => {
                       Rp {pkg.amount.toLocaleString('id-ID')}
                     </div>
                     <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-emerald-100' : 'text-stone-500'}`}>
-                      {pkg.tag || pkg.label}
+                      {displayTag}
                     </div>
                   </button>
                 );
@@ -471,13 +499,22 @@ export const InfaqDigital: React.FC = () => {
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-stone-400">Rp</span>
               <input
                 type="number"
-                placeholder="Nominal lainnya (minimal Rp 5.000)"
+                min={2000}
+                step={1000}
+                inputMode="numeric"
+                placeholder="Nominal lainnya (minimal Rp 2.000)"
                 value={customNominal}
-                onChange={(e) => setCustomNominal(e.target.value)}
+                onChange={(e) => handleCustomNominalChange(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-[#FAF8F5] border border-stone-200 rounded-xl text-stone-900 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-700"
               />
             </div>
+            {minAmountWarning && (
+              <p className="mt-2 text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5">
+                Nominal infaq terkunci minimal Rp 2.000 untuk menghindari transaksi tidak valid (Rp 1).
+              </p>
+            )}
           </div>
+
 
           {/* 4. Data Peziarah / Titip Doa & Hajat */}
           <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs space-y-4">
@@ -638,13 +675,14 @@ export const InfaqDigital: React.FC = () => {
               whileTap={isProofComplete ? { scale: 0.97 } : {}}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
               onClick={handleBayar}
-              disabled={currentAmount < 5000 || isSubmitting || !isProofComplete}
+              disabled={currentAmount < MIN_DONATION_AMOUNT || isSubmitting || !isProofComplete}
               className={`w-full py-3.5 font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 ${
-                currentAmount < 5000 || !isProofComplete
+                currentAmount < MIN_DONATION_AMOUNT || !isProofComplete
                   ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-emerald-700 via-emerald-800 to-brand-900 hover:from-emerald-800 hover:to-brand-950 text-white shadow-emerald-950/10 border border-emerald-600/30 cursor-pointer'
               }`}
             >
+
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />

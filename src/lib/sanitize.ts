@@ -53,8 +53,11 @@ export function isSafeExternalUrl(input: unknown): boolean {
   }
 }
 
-export function sanitizeDonationAmount(input: unknown, min = 1000, max = 1000000000): number {
+export const MIN_DONATION_AMOUNT = 2000;
+
+export function sanitizeDonationAmount(input: unknown, min = MIN_DONATION_AMOUNT, max = 1000000000): number {
   const num = typeof input === 'number' ? input : Number(String(input || '').replace(/[^0-9]/g, ''));
   if (!Number.isFinite(num) || num < min) return 0;
   return Math.min(Math.round(num), max);
 }
+

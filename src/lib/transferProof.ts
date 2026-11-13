@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { collection, doc, getDoc, onSnapshot, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import { MIN_DONATION_AMOUNT } from './sanitize';
+
+export { MIN_DONATION_AMOUNT };
 
 export const RUBRIK_DONATION_ID_KEY = 'zn_verified_rubrik_donation_id_v3';
+
 export const SITE_DONATION_MAP_KEY = 'zn_verified_site_donation_map_v3';
 export const BAROKAH_DONATION_ID_KEY = 'zn_verified_barokah_donation_id_v3';
 export const BAROKAH_SITE_MAP_KEY = 'zn_verified_barokah_site_map_v3';
@@ -175,6 +179,11 @@ export async function validateAndCompressReceipt(file: File): Promise<Compressed
  * and isolates the real sender identity + compressed Base64 receipt in `/donations/{id}/private/proof` atomically via `writeBatch`.
  */
 export async function submitDonationWithPrivateProof(payload: SubmitDonationPayload): Promise<string> {
+  const numericAmount = Number(payload.amount);
+  if (!Number.isFinite(numericAmount) || numericAmount < MIN_DONATION_AMOUNT) {
+    throw new Error('Nominal minimum infaq adalah Rp 2.000');
+  }
+
   const donationRef = doc(collection(db, 'donations'));
   const donationId = donationRef.id;
   const authorUid = auth.currentUser?.uid || 'guest';
@@ -192,7 +201,8 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
     programTitle: payload.programTitle,
     siteId: payload.siteId,
     siteName: payload.siteName,
-    amount: payload.amount,
+    amount: Math.round(numericAmount),
+
     donorName: publicDonorName,
     isAnonymous: hideIdentityPublicly,
     paymentMethod: payload.paymentMethod,

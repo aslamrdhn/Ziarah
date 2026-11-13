@@ -68,12 +68,13 @@ service cloud.firestore {
           'doaHajat', 'authorUid', 'status', 'createdAt', 'aamiinCount', 'updatedAt'
         ]) &&
         data.programId is string && data.programId.size() >= 1 && data.programId.size() <= 100 &&
-        data.amount is number && data.amount >= 5000 && data.amount <= 1000000000 &&
+        data.amount is number && data.amount >= 2000 && data.amount <= 1000000000 &&
         data.donorName is string && data.donorName.size() >= 1 && data.donorName.size() <= 100 &&
         data.hasProof == true &&
         !('proofImageUrl' in data) &&
         data.status in ['pending', 'confirmed', 'verified', 'rejected'];
     }
+
 
     function isValidDonationProof(data) {
       return data.keys().hasOnly([
@@ -152,9 +153,10 @@ service cloud.firestore {
     match /donations/{donationId} {
       allow get: if true;
       allow list: if isAdmin() || resource.data.status in ['confirmed', 'verified'];
-      allow create: if isValidId(donationId) && isValidDonation(incoming()) && incoming().status == 'pending' && (incoming().hasProof == false || existsAfter(/databases/$(database)/documents/donations/$(donationId)/private/proof));
+      allow create: if isValidId(donationId) && isValidDonation(incoming()) && request.resource.data.amount is number && request.resource.data.amount >= 2000 && incoming().status == 'pending' && (incoming().hasProof == false || existsAfter(/databases/$(database)/documents/donations/$(donationId)/private/proof));
       allow update: if isAdmin() && isValidId(donationId);
       allow delete: if isAdmin() && isValidId(donationId);
+
 
       match /private/{docId} {
         allow get: if isAdmin() || (isSignedIn() && existing().authorUid == request.auth.uid);

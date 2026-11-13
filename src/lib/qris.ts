@@ -1,3 +1,5 @@
+export const MIN_DONATION_AMOUNT = 2000;
+
 export const OFFICIAL_QRIS_STATIC_PAYLOAD =
   '00020101021126570011ID.DANA.WWW011893600915303643613302090364361330303UMI51440014ID.CO.QRIS.WWW0215ID10266259717610303UMI5204839853033605802ID5925Ziarah Nusantara, Organis6015Jakarta Selatan61051261063040F4A';
 
@@ -101,22 +103,18 @@ export function parseQrisMerchantInfo(rawPayload: string = OFFICIAL_QRIS_STATIC_
 }
 
 /**
- * Builds either the exact static QRIS string or a dynamic-amount QRIS string with a recalculated CRC-16.
+ * Menginjeksi EMVCo Tag 54 (Transaction Amount) ke dalam payload QRIS dengan
+ * batas bawah mutlak MIN_DONATION_AMOUNT (Rp 2.000), mengubah Tag 01 menjadi '12'
+ * (Dynamic QRIS), dan menghitung ulang checksum CRC-16/CCITT-FALSE (Tag 6304).
  */
-export function buildQrisPayload(
-  basePayload: string = OFFICIAL_QRIS_STATIC_PAYLOAD,
-  options: { useSelectedAmount?: boolean; amount?: number } = {}
-): string {
-  const clean = resolveOfficialQrisPayload(basePayload);
-  if (!options.useSelectedAmount || !options.amount || options.amount <= 0) {
-    return clean;
-  }
+export function injectQrisAmountTag54(rawQrisPayload: string, amount: number): string {
+  const lockedAmount = Math.max(MIN_DONATION_AMOUNT, Math.round(Number(amount) || MIN_DONATION_AMOUNT));
+  const clean = resolveOfficialQrisPayload(rawQrisPayload);
 
-  // Parse TLV tags except 63 (CRC), replace or insert Tag 54 (Transaction Amount), and recompute CRC16
   const entries: Array<{ tag: string; value: string }> = [];
   let idx = 0;
   let inserted54 = false;
-  const amountStr = String(Math.round(options.amount));
+  const amountStr = String(lockedAmount);
 
   while (idx + 4 <= clean.length) {
     const tag = clean.slice(idx, idx + 2);
@@ -154,3 +152,19 @@ export function buildQrisPayload(
   const crc = computeQrisCrc16(body);
   return `${body}${crc}`;
 }
+
+/**
+ * Builds either the exact static QRIS string or a dynamic-amount QRIS string with a recalculated CRC-16.
+ */
+export function buildQrisPayload(
+  basePayload: string = OFFICIAL_QRIS_STATIC_PAYLOAD,
+  options: { useSelectedAmount?: boolean; amount?: number } = {}
+): string {
+  const clean = resolveOfficialQrisPayload(basePayload);
+  if (!options.useSelectedAmount || options.amount === undefined || options.amount === null || options.amount <= 0) {
+    return clean;
+  }
+
+  return injectQrisAmountTag54(clean, options.amount);
+}
+
