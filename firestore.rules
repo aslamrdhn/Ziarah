@@ -98,7 +98,26 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow get: if isOwner(userId);
-      allow create, update: if isOwner(userId) && isValidId(userId) && incoming().userId == userId;
+      allow create, update: if isOwner(userId) &&
+        isValidId(userId) &&
+        incoming().userId == userId &&
+        incoming().keys().hasOnly([
+          'userId',
+          'savedSiteIds',
+          'savedDoas',
+          'savedRubrik',
+          'unlockedSites',
+          'unlockedBarokah',
+          'personalHajat',
+          'displayName',
+          'email',
+          'photoURL',
+          'role',
+          'updatedAt',
+          'createdAt'
+        ]) &&
+        (!('savedSiteIds' in incoming()) || (incoming().savedSiteIds is list && incoming().savedSiteIds.size() <= 500)) &&
+        (!('savedDoas' in incoming()) || (incoming().savedDoas is list && incoming().savedDoas.size() <= 500));
       allow delete: if isOwner(userId) && isValidId(userId);
     }
 

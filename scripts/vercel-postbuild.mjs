@@ -57,16 +57,53 @@ export function cleanSeoText(val) {
   return String(val || '')
     .replace(/\\'/g, "'")
     .replace(/\\"/g, '"')
+    .replace(/\\n/g, ' ')
     .replace(/<!--more-->/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-export function extractQuotedField(block, fieldName, fallback = '') {
+export function getPublicTeaserOnly(val) {
+  if (Array.isArray(val)) {
+    const firstItem = val.find((item) => typeof item === 'string' && item.trim().length > 0) || '';
+    return cleanSeoText(String(firstItem).split('<!--more-->')[0]);
+  }
+  return cleanSeoText(String(val || '').split('<!--more-->')[0]);
+}
+
+export function formatMakamHeading(rawTitle) {
+  const cleaned = cleanSeoText(rawTitle).replace(/^(?:Makam\s+){2,}/i, 'Makam ');
+  if (!cleaned) return 'Makam Waliyullah';
+  if (/^(?:makam|kompleks\s+makam|kompleks\s+pemakaman|kompleks\s+masjid|kompleks\s+cagar|situs|astana|kubah)\b/i.test(cleaned)) {
+    return cleaned;
+  }
+  return `Makam ${cleaned}`;
+}
+
+export function extractRawQuotedField(block, fieldName, fallback = '') {
   const regex = new RegExp(`\\b${fieldName}:\\s*(['"])((?:\\\\.|(?!\\1).)*)\\1`);
   const m = block.match(regex);
   if (!m) return fallback;
-  return cleanSeoText(m[2]) || fallback;
+  return m[2] || fallback;
+}
+
+export function extractQuotedField(block, fieldName, fallback = '') {
+  const rawVal = extractRawQuotedField(block, fieldName, '');
+  if (!rawVal) return fallback;
+  return cleanSeoText(rawVal) || fallback;
+}
+
+export function extractPublicTeaserField(block, fieldName, fallback = '') {
+  const directRaw = extractRawQuotedField(block, fieldName, '');
+  if (directRaw) {
+    return getPublicTeaserOnly(directRaw) || fallback;
+  }
+  const arrayRegex = new RegExp(`\\b${fieldName}:\\s*\\[\\s*(['"])((?:\\\\.|(?!\\1).)*)\\1`);
+  const mArr = block.match(arrayRegex);
+  if (mArr && mArr[2]) {
+    return getPublicTeaserOnly(mArr[2]) || fallback;
+  }
+  return fallback;
 }
 
 function parseSiteBlocksFromRawTs(raw) {
@@ -92,8 +129,8 @@ function parseSiteBlocksFromRawTs(raw) {
     const province = extractQuotedField(block, 'province', '');
     const era = extractQuotedField(block, 'era', '');
     const sanad = extractQuotedField(block, 'sanad', '');
-    const karomah = extractQuotedField(block, 'karomah', '');
-    const untoldStory = extractQuotedField(block, 'untoldStory', '');
+    const karomah = extractPublicTeaserField(block, 'karomah', '');
+    const untoldStory = extractPublicTeaserField(block, 'untoldStory', '');
     const slug = getSiteSlug(title, city, id);
     extracted.push({
       id,
@@ -445,7 +482,7 @@ async function fetchCloudSitesForSeo(localSites) {
       const locFields = f.location?.mapValue?.fields || {};
       const baseById = mergedById.get(docId);
       const name = parseFirestoreStringField(f, 'name', baseById?.name || docId);
-      const title = parseFirestoreStringField(f, 'title', baseById?.title || `Makam ${name}`);
+      const title = parseFirestoreStringField(f, 'title', baseById?.title || formatMakamHeading(name));
       const city = parseFirestoreStringField(locFields, 'city', baseById?.city || 'Nusantara');
       const slug = getSiteSlug(title, city, docId);
 
@@ -461,8 +498,8 @@ async function fetchCloudSitesForSeo(localSites) {
       const province = parseFirestoreStringField(locFields, 'province', base?.province || 'Indonesia');
       const era = parseFirestoreStringField(f, 'era', base?.era || '');
       const sanad = parseFirestoreStringField(f, 'sanad', base?.sanad || '');
-      const karomah = parseFirestoreStringField(f, 'karomah', base?.karomah || '');
-      const untoldStory = parseFirestoreStringField(f, 'untoldStory', base?.untoldStory || '');
+      const karomah = getPublicTeaserOnly(parseFirestoreStringField(f, 'karomah', base?.karomah || ''));
+      const untoldStory = getPublicTeaserOnly(parseFirestoreStringField(f, 'untoldStory', base?.untoldStory || ''));
 
       if (!base) addedCloudCount++;
       const mergedEntry = {
@@ -515,7 +552,7 @@ function buildDirectoryLinksHtml() {
                 ${provSites
                   .map(
                     (s) =>
-                      `<li><a href="${SITE_ORIGIN}/situs/${escapeHtml(s.slug)}">Panduan Rute dan Sejarah Makam ${escapeHtml(s.title)} di Kota ${escapeHtml(s.city)}, Provinsi ${escapeHtml(s.province)}</a></li>`
+                      `<li><a href="${SITE_ORIGIN}/situs/${escapeHtml(s.slug)}">Panduan Rute dan Sejarah ${escapeHtml(formatMakamHeading(s.title))} di Kota ${escapeHtml(s.city)}, Provinsi ${escapeHtml(s.province)}</a></li>`
                   )
                   .join('\n                ')}
               </ul>
@@ -592,12 +629,13 @@ export function buildRubrikRootHtml() {
     .slice(0, 24);
   const itemsHtml = featuredSites
     .map((s) => {
-      const safeTitle = escapeHtml(s.title || s.name || s.id || 'Makam Waliyullah');
+      const safeTitle = escapeHtml(formatMakamHeading(s.title || s.name || s.id || 'Makam Waliyullah'));
       const safeName = escapeHtml(s.name || s.title || s.id || 'Waliyullah');
       const safeCity = escapeHtml(s.city || 'Nusantara');
       const safeProv = escapeHtml(s.province || 'Indonesia');
       const safeSlug = escapeHtml(s.slug || s.id || '');
-      const safeStory = escapeHtml(s.untoldStory || s.karomah || s.history || s.description || '');
+      const rawTeaser = getPublicTeaserOnly(s.untoldStory || s.karomah || s.history || s.description || '');
+      const safeStory = escapeHtml(rawTeaser);
       return `<li>
               <article>
                 <h3><a href="${SITE_ORIGIN}/situs/${safeSlug}">Kisah &amp; Keteladanan ${safeTitle} (${safeName}) — ${safeCity}, ${safeProv}</a></h3>
@@ -621,28 +659,32 @@ export function buildRubrikRootHtml() {
       </main>`;
 }
 
-function buildSiteRootHtml(site) {
+export function buildSiteRootHtml(site) {
   const sameProvince = sites.filter((s) => s.id !== site.id && s.province === site.province);
   const otherSites = sites.filter((s) => s.id !== site.id && s.province !== site.province);
   const relatedSites = [...sameProvince, ...otherSites].slice(0, 6);
   const relatedLinksHtml = relatedSites
     .map(
       (rel) =>
-        `<li><a href="${SITE_ORIGIN}/situs/${escapeHtml(rel.slug)}">Makam ${escapeHtml(rel.title)} (${escapeHtml(rel.city)}, ${escapeHtml(rel.province)})</a></li>`
+        `<li><a href="${SITE_ORIGIN}/situs/${escapeHtml(rel.slug)}">${escapeHtml(formatMakamHeading(rel.title))} (${escapeHtml(rel.city)}, ${escapeHtml(rel.province)})</a></li>`
     )
     .join('\n              ');
 
+  const safeKaromahTeaser = getPublicTeaserOnly(site.karomah || '');
+  const safeUntoldTeaser = getPublicTeaserOnly(site.untoldStory || '');
+  const headingTitle = formatMakamHeading(site.title || site.name || site.id || 'Makam Waliyullah');
+
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <article>
-          <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori Provinsi ${escapeHtml(site.province)}</a> &rsaquo; Makam ${escapeHtml(site.title)}</p>
-          <h1>Makam ${escapeHtml(site.title)} (${escapeHtml(site.name)}) — ${escapeHtml(site.city)}, ${escapeHtml(site.province)}</h1>
+          <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori Provinsi ${escapeHtml(site.province)}</a> &rsaquo; ${escapeHtml(headingTitle)}</p>
+          <h1>${escapeHtml(headingTitle)} (${escapeHtml(site.name)}) — ${escapeHtml(site.city)}, ${escapeHtml(site.province)}</h1>
           <p><strong>Kategori Tokoh:</strong> ${escapeHtml(site.category)} ${site.era ? `| <strong>Periode Sejarah:</strong> ${escapeHtml(site.era)}` : ''}</p>
           <p><strong>Alamat Lokasi Pemakaman:</strong> ${escapeHtml(site.address)}, Kota/Kabupaten ${escapeHtml(site.city)}, Provinsi ${escapeHtml(site.province)}, Indonesia.</p>
           <h2>Profil, Riwayat Dakwah, dan Sejarah ${escapeHtml(site.title)}</h2>
           <p>${escapeHtml(site.description)}</p>
           <p>${escapeHtml(site.history)}</p>
-          ${site.karomah ? `<h2>Kisah Keteladanan dan Karomah ${escapeHtml(site.name)}</h2><p>${escapeHtml(site.karomah)}</p>` : ''}
-          ${site.untoldStory ? `<h2>Jejak Batin dan Kisah di Balik Layar ${escapeHtml(site.name)}</h2><p>${escapeHtml(site.untoldStory)}</p>` : ''}
+          ${safeKaromahTeaser ? `<h2>Kisah Keteladanan dan Karomah ${escapeHtml(site.name)}</h2><p>${escapeHtml(safeKaromahTeaser)}</p>` : ''}
+          ${safeUntoldTeaser ? `<h2>Jejak Batin dan Kisah di Balik Layar ${escapeHtml(site.name)}</h2><p>${escapeHtml(safeUntoldTeaser)}</p>` : ''}
           ${site.sanad ? `<h2>Sanad Keilmuan dan Jaringan Dakwah</h2><p>${escapeHtml(site.sanad)}</p>` : ''}
           <nav aria-label="Makam Wali Terkait">
             <h2>Makam Wali Terkait &amp; Panduan Bacaan Ziarah</h2>
@@ -703,7 +745,7 @@ function buildRouteJsonLd(entry) {
     graphNodes.push({
       '@type': 'TouristAttraction',
       '@id': `${canonicalHref}#place`,
-      name: `Makam ${cleanSeoText(entry.site.title)} (${cleanSeoText(entry.site.name)})`,
+      name: `${cleanSeoText(formatMakamHeading(entry.site.title))} (${cleanSeoText(entry.site.name)})`,
       description: cleanSeoText(entry.site.description),
       url: canonicalHref,
       address: {
@@ -819,13 +861,14 @@ if (!process.env.VITEST) {
       const legacyApostropheSlug = s.title.includes("'")
         ? getSiteSlug(s.title.split("'")[0], s.city, s.id)
         : null;
+      const headingTitle = formatMakamHeading(s.title);
       return {
         loc: `${SITE_ORIGIN}/situs/${encodeURIComponent(s.slug)}`,
         canonicalLoc: `${SITE_ORIGIN}/situs/${encodeURIComponent(s.slug)}`,
         isAliasRoute: false,
         changefreq: 'weekly',
         priority: '0.8',
-        title: cleanSeoText(`Makam ${s.title} (${s.city}, ${s.province}) — Rute, Kisah Karomah & Doa Ziarah | Ziarah Nusantara`),
+        title: cleanSeoText(`${headingTitle} (${s.city}, ${s.province}) — Rute, Kisah Karomah & Doa Ziarah | Ziarah Nusantara`),
         description: cleanSeoText(`${s.description} Lokasi: ${s.address}, ${s.city}, ${s.province}. Lengkap dengan peta rute, riwayat karomah, dan doa tawassul.`),
         path: `/situs/${s.slug}`,
         legacyPath: `/makam/${s.id}`,

@@ -101,7 +101,11 @@ describe('Barokah & Doa Khusus (Rp 5.000) & Pemisahan Kunci Donasi', () => {
     };
     const fallbackGuide = getSiteCompleteBarokahGuide(fallbackSite);
     expect(fallbackGuide.isCuratedSpecific).toBe(false);
-    expect(fallbackGuide.curationStatusLabel).toContain('Menunggu Kurasi Spesifik Makam');
+    expect(fallbackGuide.curationStatusLabel).toBe(
+      'Panduan Tawassul, Wirid Pegangan & Wasilah Hajat Khusus Maqbarah'
+    );
+    expect(fallbackGuide.doaItems.length).toBeGreaterThanOrEqual(2);
+    expect(fallbackGuide.doaItems[1].title).toContain('Wirid Pegangan');
   });
 
   it('memisahkan kunci localStorage antara Barokah & Doa Khusus (Rp 5.000) dan Rubrik & Khazanah (Rp 10.000)', () => {

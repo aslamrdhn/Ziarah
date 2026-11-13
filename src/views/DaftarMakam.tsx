@@ -14,7 +14,7 @@ import { ALL_PROVINCES, TOTAL_SITE_COUNT } from '../data/initialSites';
 import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
-import { getSitePath } from '../lib/siteSlugs';
+import { getSitePath, formatMakamHeading } from '../lib/siteSlugs';
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { useSiteCopy } from '../lib/siteCopy';
 import { ZiarahStoryReel } from '../components/ZiarahStoryReel';
@@ -40,17 +40,50 @@ interface DaftarMakamProps {
   onOpenKontribusi?: () => void;
 }
 
-export type EmotionalIntentId = 'all' | 'keteduhan' | 'ikhtiar' | 'keteguhan' | 'ilmu';
+export type EmotionalIntentId = 'all' | 'keteduhan' | 'ikhtiar' | 'keteguhan' | 'ilmu' | 'keluarga';
 
 const EMOTIONAL_INTENTS: Array<{
   id: EmotionalIntentId;
   label: string;
+  empathyTitle?: string;
+  empathyMessage?: string;
 }> = [
   { id: 'all', label: 'Semua Riwayat' },
-  { id: 'keteduhan', label: 'Penawar Hati' },
-  { id: 'ikhtiar', label: 'Ikhtiar & Rezeki' },
-  { id: 'keteguhan', label: 'Keteguhan Uji' },
-  { id: 'ilmu', label: 'Sanad Keilmuan' },
+  {
+    id: 'keteduhan',
+    label: 'Hati Gelisah & Mencari Ketenangan Batin',
+    empathyTitle: 'Munajat Keteduhan Jiwa & Penawar Hati yang Penat',
+    empathyMessage:
+      'Menampilkan maqbarah para Waliyullah dan mursyid tasawuf yang dikenal dengan kelembutan kasih sayang, dzikir penenang batin, serta wasilah melembutkan hati di saat diuji kegelisahan hidup.',
+  },
+  {
+    id: 'ikhtiar',
+    label: 'Ikhtiar Rezeki, Usaha & Bebas Lilitan Hutang',
+    empathyTitle: 'Wasilah Kelapangan Rezeki Halal, Perniagaan & Jalan Keluar Kesempitan',
+    empathyMessage:
+      'Menampilkan maqbarah para Waliyullah pelopor perniagaan jujur, pertanian, dan kedermawanan sosial yang menjadi rujukan peziarah saat memohon dibukakan pintu rezeki halal serta terbebas dari himpitan hutang.',
+  },
+  {
+    id: 'ilmu',
+    label: 'Memohon Ilmu Berkah & Keshalihan Keturunan',
+    empathyTitle: 'Sanad Keilmuan Pesantren, Futuhul Arifin & Doa Anak Cucu Shalih',
+    empathyMessage:
+      'Menampilkan maqbarah para mahaguru pesantren, pengarang kitab kuning, dan ulama penjaga Al-Qur’an tempat para orang tua dan santri bertawassul memohon keberkahan ilmu serta keturunan yang menjaga iman.',
+  },
+  {
+    id: 'keteguhan',
+    label: 'Keteguhan Iman, Wibawa & Amanah Kepemimpinan',
+    empathyTitle: 'Keteguhan Prinsip, Keberanian Membela Kebenaran & Amanah Memimpin',
+    empathyMessage:
+      'Menampilkan maqbarah para Sultan adil, panglima jihad, dan ulama pejuang kemerdekaan yang teguh memegang amanah di tengah badai ujian besar.',
+  },
+  {
+    id: 'keluarga',
+    label: 'Keluarga Sakinah & Melembutkan Hati',
+    empathyTitle: 'Wasilah Kerukunan Rumah Tangga, Mahabbah & Keutuhan Keluarga',
+    empathyMessage:
+      'Menampilkan maqbarah para Auliya dan Habaib penjaga silaturahmi umat yang menjadi tujuan peziarah dalam memohon keharmonisan keluarga sakinah mawaddah warahmah.',
+  },
 ];
 
 function extractCoreWasilahHajat(rawHajat: string): string {
@@ -192,6 +225,28 @@ export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntent
       ];
       return keywords.some((kw) => primaryCorpus.includes(kw));
     }
+    case 'keluarga': {
+      const keywords = [
+        'keluarga',
+        'sakinah',
+        'rukun',
+        'kerukunan',
+        'mahabbah',
+        'kasih sayang',
+        'keturunan',
+        'dzurriyah',
+        'ibu',
+        'istri',
+        'muria',
+        'kalijaga',
+        'ampel',
+        'kwitang',
+        'empang',
+        'sekumpul',
+        'tanggul',
+      ];
+      return keywords.some((kw) => primaryCorpus.includes(kw)) || site.category === 'Habaib';
+    }
     default:
       return true;
   }
@@ -279,9 +334,11 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
     () =>
       EMOTIONAL_INTENTS.map((item) => ({
         id: item.id,
-        label: copy.intentLabels?.[item.id] || item.label,
+        label: item.label,
+        empathyTitle: item.empathyTitle,
+        empathyMessage: item.empathyMessage,
       })),
-    [copy.intentLabels]
+    []
   );
 
   const provinces = useMemo(() => {
@@ -325,6 +382,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
           ikhtiar: matchesEmotionalIntent(site, 'ikhtiar'),
           keteguhan: matchesEmotionalIntent(site, 'keteguhan'),
           ilmu: matchesEmotionalIntent(site, 'ilmu'),
+          keluarga: matchesEmotionalIntent(site, 'keluarga'),
         },
       });
     }
@@ -350,6 +408,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       ikhtiar: 0,
       keteguhan: 0,
       ilmu: 0,
+      keluarga: 0,
     };
     for (const site of baseFilteredSites) {
       const indexed = siteSearchIndexMap.get(site.id);
@@ -357,6 +416,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       if (indexed ? indexed.intents.ikhtiar : matchesEmotionalIntent(site, 'ikhtiar')) counts.ikhtiar++;
       if (indexed ? indexed.intents.keteguhan : matchesEmotionalIntent(site, 'keteguhan')) counts.keteguhan++;
       if (indexed ? indexed.intents.ilmu : matchesEmotionalIntent(site, 'ilmu')) counts.ilmu++;
+      if (indexed ? indexed.intents.keluarga : matchesEmotionalIntent(site, 'keluarga')) counts.keluarga++;
     }
     return counts;
   }, [baseFilteredSites, siteSearchIndexMap]);
@@ -651,32 +711,61 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               })}
             </div>
 
-            {/* Clean Text Chips for Emotional Intent */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2.5 lg:pb-2">
-              {dynamicEmotionalIntents.map((intent) => {
-                const isSelected = emotionalFilter === intent.id;
-                const count = intentCountMap[intent.id];
-                return (
-                  <button
-                    key={intent.id}
-                    type="button"
-                    aria-pressed={isSelected}
-                    onClick={() => {
-                      ensureFullSitesLoaded();
-                      setEmotionalFilter(intent.id);
-                    }}
-                    className={`px-3 py-1.5 min-h-[32px] rounded-lg text-xs whitespace-nowrap transition-colors cursor-pointer ${
-                      isSelected
-                        ? 'bg-emerald-900 text-white font-medium'
-                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
-                    }`}
-                  >
-                    {intent.label} ({count})
-                  </button>
-                );
-              })}
+            {/* Clean Text Chips for Emotional Intent ("Apa yang Sedang Dicari Hati Anda Hari Ini?") */}
+            <div className="flex flex-col gap-1.5 pb-2.5 lg:pb-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
+                Apa yang Sedang Dicari Hati Anda Hari Ini?
+              </span>
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                {dynamicEmotionalIntents.map((intent) => {
+                  const isSelected = emotionalFilter === intent.id;
+                  const count = intentCountMap[intent.id];
+                  return (
+                    <button
+                      key={intent.id}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => {
+                        ensureFullSitesLoaded();
+                        setEmotionalFilter(intent.id);
+                      }}
+                      className={`px-3 py-1.5 min-h-[32px] rounded-lg text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                        isSelected
+                          ? 'bg-emerald-900 text-white font-medium'
+                          : 'bg-stone-100 text-stone-700 hover:text-stone-900 hover:bg-stone-200/70'
+                      }`}
+                    >
+                      {intent.label} ({count})
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
+
+          {emotionalFilter !== 'all' && (() => {
+            const activeIntentObj = dynamicEmotionalIntents.find((i) => i.id === emotionalFilter);
+            if (!activeIntentObj?.empathyMessage) return null;
+            return (
+              <div className="mt-3 p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-start justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-serif font-bold text-emerald-950">
+                    {activeIntentObj.empathyTitle}
+                  </div>
+                  <p className="text-xs text-stone-700 leading-relaxed">
+                    {activeIntentObj.empathyMessage}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEmotionalFilter('all')}
+                  className="text-[11px] font-semibold text-emerald-900 hover:underline shrink-0 cursor-pointer"
+                >
+                  Tampilkan Semua
+                </button>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Subtle Results Status Row */}
@@ -721,8 +810,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             const shortEra = extractShortEra(site.era);
             const badgeLabel = site.category === 'Walisongo' ? 'Wali Songo' : site.category;
             const isLcpCandidate = index < 3;
-            const snippetText = (site.untoldStory || site.description || '')
-              .replace(/<!--more-->/g, ' ')
+            const snippetText = String(site.untoldStory || site.description || '')
+              .split('<!--more-->')[0]
               .trim();
             const coreHajatText = extractCoreWasilahHajat(getSiteBarokahHajat(site));
             const karomahCount = Array.isArray(site.karomah) && site.karomah.length > 0 ? site.karomah.length : 1;
@@ -732,13 +821,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               : site.openingHours
                 ? `Buka: ${site.openingHours}`
                 : 'Buka Setiap Hari';
+            const cardHeading = formatMakamHeading(site.title);
 
             return (
               <article key={site.id} className={index >= 3 ? 'group content-auto' : 'group'}>
                 <a
                   href={siteUrl}
                   onClick={(e) => handleOpenReaderModal(site, e)}
-                  aria-label={`Baca kisah, karomah, dan panduan Makam ${site.title} (${site.name}) di ${site.location.city}, ${site.location.province}`}
+                  aria-label={`Baca kisah, karomah, dan panduan ${cardHeading} (${site.name}) di ${site.location.city}, ${site.location.province}`}
                   className="block cursor-pointer space-y-3 focus:outline-none"
                 >
                   {/* 1. Foto Rasio 4:3 dengan sudut membulat (rounded-2xl) & 1 Label Sudut */}
@@ -748,7 +838,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       srcSet={thumbSrcSet}
                       sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 360px"
                       onError={(e) => handleOptimizedImageError(e, site.imageUrl)}
-                      alt={`Makam ${site.title} (${site.name}) — ${site.location.city}, ${site.location.province}`}
+                      alt={`${cardHeading} (${site.name}) — ${site.location.city}, ${site.location.province}`}
                       width={400}
                       height={300}
                       loading={isLcpCandidate ? 'eager' : 'lazy'}
@@ -774,7 +864,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                     </div>
 
                     <h2 className="font-serif text-xl text-slate-900 group-hover:text-emerald-800 transition-colors line-clamp-1">
-                      Makam {site.title}
+                      {cardHeading}
                     </h2>
 
                     <div className="text-[11px] text-slate-700 font-medium truncate">

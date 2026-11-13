@@ -504,13 +504,29 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
       expect(site.lastVerified).toBe('2026-11-11');
     }
 
-    // Pastikan 100% seluruh makam di SITES telah memiliki field eksplisit barokahHajat, doaKhusus, haulSchedule, dan localAdab
+    // Pastikan 100% seluruh makam di SITES telah memiliki field eksplisit barokahHajat, doaKhusus, haulSchedule, localAdab, historySourceType, karomahSourceType, dan verifiedBy 2 tingkat
+    const validVerifiedByTiers = new Set([
+      'Terverifikasi Silang Literatur Primer & Arsip Nasional',
+      'Kurasi Literatur Daerah & Tradisi Lisan (Terbuka untuk Tinjauan Pengurus Maqbarah)',
+    ]);
     for (const site of SITES) {
       expect(site.barokahHajat, `Missing barokahHajat on ${site.id}`).toBeTruthy();
       expect(site.doaKhusus && site.doaKhusus.length > 0, `Missing doaKhusus on ${site.id}`).toBe(true);
       expect(site.haulSchedule, `Missing haulSchedule on ${site.id}`).toBeTruthy();
       expect(site.localAdab, `Missing localAdab on ${site.id}`).toBeTruthy();
+      expect(site.historySourceType, `Missing historySourceType on ${site.id}`).toBeTruthy();
+      expect(site.karomahSourceType, `Missing karomahSourceType on ${site.id}`).toBeTruthy();
+      expect(validVerifiedByTiers.has(site.verifiedBy || ''), `Invalid verifiedBy on ${site.id}: ${site.verifiedBy}`).toBe(true);
+
+      const refsJoined = (site.references || []).join(' ');
+      expect(refsJoined).not.toContain('Feener, R. Michael (2015)');
+      expect(refsJoined).not.toContain('Mene, Bau (2015)');
+      expect(`${site.name} ${site.title} ${site.history}`).not.toContain('Raden Prawoto');
     }
+
+    const sunanAmpel = SITES.find((s) => s.id === 'sunan-ampel' || s.legacyId === 'wali-2');
+    expect(sunanAmpel?.haulSchedule).toContain("Pertengahan bulan Sya'ban (sekitar 15–17 Sya'ban / pekan Nisfu Sya'ban");
+    expect(sunanAmpel?.verifiedBy).toBe('Terverifikasi Silang Literatur Primer & Arsip Nasional');
 
     // Pastikan fallback siteLogistics menyusun narasi spesifik berbasis peran sejarah (nama, kota, provinsi)
     // dan jadwal haul jujur jika ada makam usulan baru yang belum memiliki barokahHajat / haulSchedule eksplisit

@@ -18,7 +18,7 @@ import { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from './data/initialSites';
 import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { SiteProvider } from './context/SiteContext';
-import { findSiteByParam, getSitePath } from './lib/siteSlugs';
+import { findSiteByParam, getSitePath, formatMakamHeading } from './lib/siteSlugs';
 import { useSiteCopy } from './lib/siteCopy';
 
 export default function App() {
@@ -163,7 +163,8 @@ export default function App() {
 
       if (matchedSite) {
         const cleanSiteDesc = (matchedSite.description || '').replace(/<!--more-->/g, ' ').replace(/\s+/g, ' ').trim();
-        activeTitle = `Makam ${matchedSite.title} (${matchedSite.location.city}, ${matchedSite.location.province}) — Rute, Sejarah & Doa Ziarah | Ziarah Nusantara`;
+        const headingTitle = formatMakamHeading(matchedSite.title);
+        activeTitle = `${headingTitle} (${matchedSite.location.city}, ${matchedSite.location.province}) — Rute, Sejarah & Doa Ziarah | Ziarah Nusantara`;
         activeDesc = `${cleanSiteDesc} Lokasi: ${matchedSite.location.address}, ${matchedSite.location.city}, ${matchedSite.location.province}. Lengkap dengan peta rute, riwayat karomah, dan doa tawassul.`;
         canonicalUrl = `${baseOrigin}${getSitePath(matchedSite)}`;
       }
@@ -263,7 +264,7 @@ export default function App() {
           graphNodes.push({
             '@type': 'TouristAttraction',
             '@id': `${canonicalUrl}#place`,
-            name: `Makam ${matchedSite.title} (${matchedSite.name})`,
+            name: `${formatMakamHeading(matchedSite.title)} (${matchedSite.name})`,
             description: cleanSiteDesc,
             url: canonicalUrl,
             address: {

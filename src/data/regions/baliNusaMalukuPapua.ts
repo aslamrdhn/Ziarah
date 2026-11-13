@@ -1507,7 +1507,7 @@ export const BALI_NUSA_MALUKU_PAPUA_SITES: ZiarahSite[] = [
     openingHours: 'Buka Setiap Hari 07.00 – 18.00 WIT',
     references: [
       'Wanggai, Toni Victor Mandawiri (2009). Rekonstruksi Sejarah Umat Islam di Tanah Papua. Jakarta: Badan Litbang dan Diklat Departemen Agama RI.',
-      'Mene, Bau (2015). Jejak Arkeologi Islam di Semenanjung Onin Fakfak (Masjid Tua Patimburak dan Petuanan Wertuar-Rumbati). Jurnal Papua Balai Arkeologi Jayapura.',
+      'Dokumentasi Balai Arkeologi Papua & BPCB Maluku Utara: Sejarah Masjid Tua Patimburak Kokas dan Kesultanan Rumbati/Wertuar di Fakfak.',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',

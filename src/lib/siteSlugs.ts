@@ -72,3 +72,20 @@ export function findSiteByParam(sites: ZiarahSite[], rawParam?: string | null): 
 
   return null;
 }
+
+/**
+ * Formats a tomb/site heading so that "Makam" is never duplicated ("Makam Makam ...")
+ * when site.title or site.name already begins with "Makam", "Kompleks Makam", "Astana", or "Masjid".
+ */
+export function formatMakamHeading(rawTitle?: string | null): string {
+  const cleaned = String(rawTitle || '')
+    .replace(/\s+/g, ' ')
+    .replace(/^(Makam\s+)+/i, 'Makam ')
+    .trim();
+  if (!cleaned) return 'Makam Waliyullah';
+  if (/^(makam|kompleks\s+makam|astana|kubah|pasarean|masjid)\b/i.test(cleaned)) {
+    return cleaned;
+  }
+  return `Makam ${cleaned}`;
+}
+

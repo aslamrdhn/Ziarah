@@ -581,7 +581,7 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1">Jam Operasional (`openingHours`)</label>
                   <input
@@ -611,18 +611,94 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Diverifikasi Oleh (`verifiedBy`)</label>
-                  <input
-                    type="text"
-                    value={editingSite.verifiedBy || 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara'}
-                    onChange={(e) => setEditing({ ...editingSite, verifiedBy: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-white border border-stone-300 rounded-xl text-sm"
-                  />
+                  <label className="block text-xs font-bold text-stone-700 mb-1">
+                    Klasifikasi Sumber Sejarah (`historySourceType`)
+                  </label>
+                  <select
+                    value={editingSite.historySourceType || 'Literatur Sejarah Pesantren & Sanad Ulama'}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editingSite,
+                        historySourceType: e.target.value as ZiarahSite['historySourceType'],
+                      })
+                    }
+                    className="w-full px-3.5 py-2 bg-white border border-stone-300 rounded-xl text-xs font-semibold"
+                  >
+                    <option value="Arsip Cagar Budaya & Historiografi Kesultanan">
+                      Arsip Cagar Budaya &amp; Historiografi Kesultanan
+                    </option>
+                    <option value="Literatur Sejarah Pesantren & Sanad Ulama">
+                      Literatur Sejarah Pesantren &amp; Sanad Ulama
+                    </option>
+                    <option value="inskripsi_primer">Inskripsi &amp; Sumber Primer</option>
+                    <option value="catatan_sejarah">Catatan Sejarah &amp; Literatur</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1">
-                    Tanggal Verifikasi (`lastVerified`)
+                    Klasifikasi Sumber Karomah (`karomahSourceType`)
                   </label>
+                  <select
+                    value={editingSite.karomahSourceType || 'Tradisi Lisan & Kesaksian Jamaah Maqbarah'}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editingSite,
+                        karomahSourceType: e.target.value as ZiarahSite['karomahSourceType'],
+                      })
+                    }
+                    className="w-full px-3.5 py-2 bg-white border border-stone-300 rounded-xl text-xs font-semibold"
+                  >
+                    <option value="Kitab Manaqib & Riwayat Tertulis">
+                      Kitab Manaqib &amp; Riwayat Tertulis
+                    </option>
+                    <option value="Tradisi Lisan & Kesaksian Jamaah Maqbarah">
+                      Tradisi Lisan &amp; Kesaksian Jamaah Maqbarah
+                    </option>
+                    <option value="tradisi_lisan">Riwayat Tradisi Lisan</option>
+                    <option value="hikmah_keagamaan">Tradisi Keagamaan &amp; Hikmah</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">
+                    Status Kurasi &amp; Verifikasi (`verifiedBy` — Sistem 2 Tingkat)
+                  </label>
+                  <select
+                    value={
+                      editingSite.verifiedBy ||
+                      'Kurasi Literatur Daerah & Tradisi Lisan (Terbuka untuk Tinjauan Pengurus Maqbarah)'
+                    }
+                    onChange={(e) => setEditing({ ...editingSite, verifiedBy: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-white border border-stone-300 rounded-xl text-xs font-semibold"
+                  >
+                    <option value="Terverifikasi Silang Literatur Primer & Arsip Nasional">
+                      Tingkat 1: Terverifikasi Silang Literatur Primer &amp; Arsip Nasional
+                    </option>
+                    <option value="Kurasi Literatur Daerah & Tradisi Lisan (Terbuka untuk Tinjauan Pengurus Maqbarah)">
+                      Tingkat 2: Kurasi Literatur Daerah &amp; Tradisi Lisan (Terbuka untuk Tinjauan Pengurus Maqbarah)
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-stone-700">
+                      Tanggal Tinjauan Kurator (`lastVerified`)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditing({
+                          ...editingSite,
+                          lastVerified: new Date().toISOString().slice(0, 10),
+                        })
+                      }
+                      className="text-[11px] font-bold text-emerald-800 hover:underline cursor-pointer"
+                    >
+                      Tandai Ditinjau Hari Ini
+                    </button>
+                  </div>
                   <input
                     type="text"
                     value={editingSite.lastVerified || '2026-11-11'}

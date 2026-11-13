@@ -141,7 +141,7 @@ export const JAWA_TIMUR_MADURA_SITES: ZiarahSite[] = [
       },
     ],
     haulSchedule:
-      'Pekan Terakhir Bulan Sya’ban menjelang Ramadhan (Puncak Haul Akbar Tahunan Sunan Ampel yang dihadiri ratusan ribu jamaah dari seluruh Nusantara di Kawasan Wisata Religi Ampel Surabaya).',
+      "Pertengahan bulan Sya'ban (sekitar 15–17 Sya'ban / pekan Nisfu Sya'ban, Puncak Haul Agung Kanjeng Sunan Ampel Surabaya)",
     localAdab:
       'Wajib mengenakan pakaian muslim yang sopan dan menutup aurat, mengikuti jalur pemisahan jamaah laki-laki dan perempuan di pelataran makam Sunan Ampel, menjaga barang bawaan saat melintasi lorong Pasar Ampel, serta tidak melangkahi makam para dzurriyah dan santri.',
     facilities: ['Masjid Agung Sunan Ampel (Cagar Budaya)', 'Area Maqbarah Utama & Makam Mbah Sholeh / Mbah Bolong', 'Sumur Air Berkah Ampel', 'Kawasan Pasar Arab & Kuliner Ampel', 'Terminal Parkir Bus Pegirian'],

@@ -719,7 +719,8 @@ export const AdminKurator: React.FC = () => {
       description: cleanDesc,
       summary: cleanDesc,
       history: cleanHistory,
-      historySourceType: editingSite.historySourceType || 'catatan_sejarah',
+      historySourceType:
+        editingSite.historySourceType || 'Literatur Sejarah Pesantren & Sanad Ulama',
       imageUrl: cleanImageUrl,
       imageSource: sanitizePlainText(editingSite.imageSource, 400),
       openingHours: sanitizePlainText(editingSite.openingHours, 120) || 'Buka 24 Jam',
@@ -738,7 +739,8 @@ export const AdminKurator: React.FC = () => {
         province: cleanProvince,
       },
       karomah: (editingSite.karomah || []).map((k) => sanitizeMultilineText(k, 3000)).filter(Boolean),
-      karomahSourceType: editingSite.karomahSourceType || 'tradisi_lisan',
+      karomahSourceType:
+        editingSite.karomahSourceType || 'Tradisi Lisan & Kesaksian Jamaah Maqbarah',
       barokahHajat: sanitizeMultilineText(
         Array.isArray(editingSite.barokahHajat)
           ? editingSite.barokahHajat.join(' • ')
@@ -758,10 +760,9 @@ export const AdminKurator: React.FC = () => {
       references: (editingSite.references || []).map((r) => sanitizePlainText(r, 400)).filter(Boolean),
       verifiedBy:
         sanitizePlainText(editingSite.verifiedBy, 240) ||
-        'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
+        'Kurasi Literatur Daerah & Tradisi Lisan (Terbuka untuk Tinjauan Pengurus Maqbarah)',
       lastVerified:
-        sanitizePlainText(editingSite.lastVerified, 40) ||
-        new Date().toISOString().slice(0, 10),
+        sanitizePlainText(editingSite.lastVerified, 40) || '2026-11-11',
       isDeleted: false,
       updatedAt: new Date().toISOString(),
     };

@@ -215,6 +215,16 @@ export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[
   const siteName = (site.name || site.title || 'Waliyullah').trim();
   const siteTitle = (site.title || siteName).trim();
 
+  const wiridPeganganEntry: SiteDoaKhususEntry = {
+    title: `Wirid Pegangan & Dzikir Munajat Hajat di Maqbarah ${siteName}`,
+    text: `أَسْتَغْفِرُ اللهَ الْعَظِيْمَ (٣×) • اَللّٰهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ (١١×) • لَا إِلٰهَ إِلَّا اللهُ الْمَلِكُ الْحَقُّ الْمُبِيْنُ، يَا فَتَّاحُ يَا رَزَّاقُ يَا كَافِي يَا مُغْنِي (٣٣×) • اللّٰهُمَّ بِحَقِّ أَوْلِيَائِكَ الصَّالِحِيْنَ خُصُوْصًا ${siteName} اقْضِ حَوَائِجَنَا وَيَسِّرْ أُمُوْرَنَا`,
+    arab: `أَسْتَغْفِرُ اللهَ الْعَظِيْمَ (٣×) • اَللّٰهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ (١١×) • لَا إِلٰهَ إِلَّا اللهُ الْمَلِكُ الْحَقُّ الْمُبِيْنُ، يَا فَتَّاحُ يَا رَزَّاقُ يَا كَافِي يَا مُغْنِي (٣٣×) • اللّٰهُمَّ بِحَقِّ أَوْلِيَائِكَ الصَّالِحِيْنَ خُصُوْصًا ${siteName} اقْضِ حَوَائِجَنَا وَيَسِّرْ أُمُوْرَنَا`,
+    latin: `Astaghfirullâhal 'azhîm (3x) • Allâhumma shalli 'alâ Sayyidinâ Muhammadin wa 'alâ âli Sayyidinâ Muhammad (11x) • Lâ ilâha illallâhul Malikul Haqqul Mubîn, Yâ Fattâhu Yâ Razzâqu Yâ Kâfî Yâ Mughnî (33x) • Allâhumma bi haqqi auliyâ-ikash shâlihîn khushûshan ${siteName} iqdhi hawâ-ijanâ wa yassir umûranâ.`,
+    translation: `Aku memohon ampun kepada Allah Yang Maha Agung (3x). Ya Allah limpahkanlah rahmat kepada Junjungan kami Nabi Muhammad dan keluarganya (11x). Tiada Tuhan selain Allah Raja Yang Maha Benar lagi Maha Nyata; Wahai Maha Pembuka, Maha Pemberi Rezeki, Maha Mencukupi, Maha Memberi Kekayaan (33x). Ya Allah, dengan kemuliaan para kekasih-Mu yang shalih khususnya ${siteName} (${siteTitle}), kabulkanlah segala hajat kami dan mudahkanlah urusan kami.`,
+    terjemahan: `Aku memohon ampun kepada Allah Yang Maha Agung (3x). Ya Allah limpahkanlah rahmat kepada Junjungan kami Nabi Muhammad dan keluarganya (11x). Tiada Tuhan selain Allah Raja Yang Maha Benar lagi Maha Nyata; Wahai Maha Pembuka, Maha Pemberi Rezeki, Maha Mencukupi, Maha Memberi Kekayaan (33x). Ya Allah, dengan kemuliaan para kekasih-Mu yang shalih khususnya ${siteName} (${siteTitle}), kabulkanlah segala hajat kami dan mudahkanlah urusan kami.`,
+    kaifiyah: `Dibaca dengan khusyuk setelah menghadiahkan Surah Al-Fatihah dan Surah Yasin di dekat maqbarah ${siteName}, atau diamalkan secara istiqamah selesai shalat fardhu / tahajud sambil menghadirkan niat hajat pribadi.`,
+  };
+
   if (Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0) {
     const validEntries = site.doaKhusus
       .map((d) => {
@@ -249,7 +259,10 @@ export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[
       })
       .filter((d) => Boolean(d.text));
 
-    if (validEntries.length > 0) {
+    if (validEntries.length === 1) {
+      return [...validEntries, wiridPeganganEntry];
+    }
+    if (validEntries.length > 1) {
       return validEntries;
     }
   }
@@ -268,6 +281,7 @@ export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[
       terjemahan: fallbackTranslation,
       kaifiyah: `1) Hadiahkan bacaan Surah Al-Fatihah kepada Nabi Muhammad SAW, para Sahabat, dan khusus kepada ${siteName}. 2) Bacalah Surah Yasin, Tahlil, dan shalawat Nabi dengan khusyuk. 3) Panjatkan doa munajat ini dengan penuh ketawadhuan seraya memohon ridha Allah SWT.`,
     },
+    wiridPeganganEntry,
   ];
 }
 
@@ -300,7 +314,7 @@ export function getSiteCompleteBarokahGuide(site: ZiarahSite): CompleteBarokahGu
   const isCuratedSpecific = hasExplicitHajat && hasExplicitDoa;
   const curationStatusLabel = isCuratedSpecific
     ? 'Khazanah Doa & Wasilah Terkurasi Khusus Makam Ini'
-    : 'Tawassul & Munajat Waliyullah (Menunggu Kurasi Spesifik Makam)';
+    : 'Panduan Tawassul, Wirid Pegangan & Wasilah Hajat Khusus Maqbarah';
 
   const hajatUtama = getSiteBarokahHajat(site);
   const effectiveDoas = getEffectiveSiteDoaKhusus(site);
@@ -313,8 +327,8 @@ export function getSiteCompleteBarokahGuide(site: ZiarahSite): CompleteBarokahGu
         .filter(Boolean)
     : [
         `Mengucapkan salam penghormatan ahli kubur saat memasuki area maqbarah ${site.name} dalam keadaan suci berwudhu.`,
-        `Membaca Istighfar 3x, Syahadat, dan Shalawat Nabi, kemudian menghadiahkan Surah Al-Fatihah khusus kepada ${site.name} (${site.title}).`,
-        `Membaca Surah Yasin, Tahlil singkat, lalu memanjatkan Doa Tawassul & Munajat di atas dengan khusyuk semata-mata memohon ridha Allah SWT.`,
+        `Membaca Istighfar 3x, Syahadat, dan Shalawat Nabi 11x, kemudian menghadiahkan Surah Al-Fatihah khusus kepada ${site.name} (${site.title}).`,
+        `Membaca Surah Yasin, Tahlil, Wirid Pegangan 33x, lalu memanjatkan Doa Tawassul & Munajat Hajat di atas dengan khusyuk semata-mata memohon ridha Allah SWT.`,
       ];
 
   const wiridPenutupAdab = [
@@ -337,6 +351,59 @@ export function getSiteCompleteBarokahGuide(site: ZiarahSite): CompleteBarokahGu
     isCuratedSpecific,
     curationStatusLabel,
   };
+}
+
+/**
+ * Mengembalikan estimasi konversi kalender Hijriah ke Masehi (2026 / 2027 M) untuk jadwal Haul.
+ */
+export function estimateHaulGregorian2026(haulSchedule?: string, siteId?: string): string | null {
+  if (!haulSchedule || haulSchedule === HONEST_UNVERIFIED_LOGISTICS_FALLBACK) return null;
+  const text = haulSchedule.toLowerCase();
+  const id = (siteId || '').toLowerCase();
+
+  if (id === 'sunan-ampel' || id === 'wali-2') {
+    return 'Estimasi Kalender Masehi: Sekitar Februari 2026 / Januari–Februari 2027 M (Pertengahan Sya’ban 1447/1448 H)';
+  }
+  if (id === 'sunan-kudus' || id === 'wali-5' || text.includes('10 muharram') || text.includes('asyura')) {
+    return 'Estimasi Kalender Masehi: Sekitar Akhir Juni 2026 / Pertengahan Juni 2027 M (10 Muharram 1448/1449 H)';
+  }
+  if (text.includes('muharram') || text.includes('suro')) {
+    return 'Estimasi Kalender Masehi: Sekitar Juni–Juli 2026 / Juni 2027 M (Bulan Muharram 1448/1449 H)';
+  }
+  if (text.includes('safar') || text.includes('sapar')) {
+    return 'Estimasi Kalender Masehi: Sekitar Juli–Agustus 2026 / Juli 2027 M (Bulan Safar 1448/1449 H)';
+  }
+  if (text.includes('rabiul awal') || text.includes('maulid') || text.includes('mulud')) {
+    return 'Estimasi Kalender Masehi: Sekitar Agustus–September 2026 / Agustus 2027 M (Bulan Rabiul Awal 1448/1449 H)';
+  }
+  if (text.includes('rabiul akhir') || text.includes('bakda mulud')) {
+    return 'Estimasi Kalender Masehi: Sekitar September–Oktober 2026 M (Bulan Rabiul Akhir 1448 H)';
+  }
+  if (text.includes('jumadil awal')) {
+    return 'Estimasi Kalender Masehi: Sekitar Oktober–November 2026 M (Bulan Jumadil Awal 1448 H)';
+  }
+  if (text.includes('jumadil akhir') || text.includes('jumadil tsaniyah')) {
+    return 'Estimasi Kalender Masehi: Sekitar November–Desember 2026 M (Bulan Jumadil Akhir 1448 H)';
+  }
+  if (text.includes('rajab') || text.includes('rejeb')) {
+    return 'Estimasi Kalender Masehi: Sekitar Desember 2026 – Januari 2027 M (Bulan Rajab 1448 H)';
+  }
+  if (text.includes("sya'ban") || text.includes('syaban') || text.includes('ruwah')) {
+    return 'Estimasi Kalender Masehi: Sekitar Januari–Februari 2027 M (Bulan Sya’ban 1448 H)';
+  }
+  if (text.includes('ramadhan') || text.includes('ramadan') || text.includes('likuran')) {
+    return 'Estimasi Kalender Masehi: Sekitar Februari–Maret 2027 M (Bulan Suci Ramadhan 1448 H)';
+  }
+  if (text.includes('syawal') || text.includes('syawalan')) {
+    return 'Estimasi Kalender Masehi: Sekitar Maret–April 2027 M (Bulan Syawal 1448 H)';
+  }
+  if (text.includes('dzulqaidah') || text.includes("dzulqa'dah") || text.includes('apit')) {
+    return 'Estimasi Kalender Masehi: Sekitar April–Mei 2027 M (Bulan Dzulqa’dah 1448 H)';
+  }
+  if (text.includes('dzulhijjah') || text.includes('besar') || text.includes('idul adha')) {
+    return 'Estimasi Kalender Masehi: Sekitar Mei–Juni 2026 / Mei 2027 M (Bulan Dzulhijjah 1447/1448 H)';
+  }
+  return 'Estimasi Kalender Masehi: Mengikuti Penetapan Takwim Hijriah 1447–1448 H (2026/2027 M) Pengurus Maqbarah';
 }
 
 /**
@@ -381,3 +448,4 @@ export function getSiteLogistics(
     untoldStory: site.untoldStory ? String(site.untoldStory) : '',
   };
 }
+

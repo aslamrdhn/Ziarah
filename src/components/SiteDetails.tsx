@@ -8,9 +8,9 @@ import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRec
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useVerifiedDonationUnlock, useVerifiedBarokahUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
-import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide } from '../lib/siteLogistics';
+import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide, estimateHaulGregorian2026 } from '../lib/siteLogistics';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
-import { getSiteSlug } from '../lib/siteSlugs';
+import { getSiteSlug, formatMakamHeading } from '../lib/siteSlugs';
 import { useSiteCopy } from '../lib/siteCopy';
 
 function splitIntoReadableParagraphs(rawText: string): string[] {
@@ -117,7 +117,11 @@ export function getEmotionalCliffhanger(text: string): { preview: string; remain
 }
 
 export function getShortLockedSplit(text: string, maxChars: number = 120): { preview: string; remainder: string } {
-  const raw = (text || '').replace(/<!--more-->/g, ' ').trim();
+  const rawInput = (text || '').trim();
+  if (rawInput.includes('<!--more-->')) {
+    return getEmotionalCliffhanger(rawInput);
+  }
+  const raw = rawInput.replace(/<!--more-->/g, ' ').trim();
   const fallbackRemainder =
     'Lanjutan riwayat karomah, riyadhoh malam, dan wasiat batin beliau tersimpan dalam lembaran Khazanah Khusus yang dijaga keaslian sanadnya oleh para juru kunci dan santri sepuh.';
   if (!raw) {
@@ -129,7 +133,7 @@ export function getShortLockedSplit(text: string, maxChars: number = 120): { pre
 
   const firstSentenceMatch = raw.match(/^[^.!?]+[.!?]/);
   let cutIndex = Math.min(maxChars, raw.length);
-  if (firstSentenceMatch && firstSentenceMatch[0].length <= maxChars) {
+  if (firstSentenceMatch && firstSentenceMatch[0].length <= maxChars && firstSentenceMatch[0].length >= 45) {
     cutIndex = firstSentenceMatch[0].length;
   } else {
     const lastSpace = raw.lastIndexOf(' ', maxChars);
@@ -214,17 +218,32 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   const [isSendingStory, setIsSendingStory] = useState(false);
   const [cloudStories, setCloudStories] = useState<StoryItem[]>([]);
   const [transactionType, setTransactionType] = useState<'infaq' | 'untold' | 'barokah_doa' | null>(null);
+  const [personalHajat, setPersonalHajat] = useState<string>('');
+  const [hajatSavedNotice, setHajatSavedNotice] = useState<boolean>(false);
+  const [tasbihCount, setTasbihCount] = useState<number>(0);
+  const [tasbihTarget, setTasbihTarget] = useState<33 | 99 | 100>(33);
+  const [copiedPrayerSheet, setCopiedPrayerSheet] = useState<boolean>(false);
   const { isUnlocked: isDonationVerified } = useVerifiedDonationUnlock(site?.id);
   const { isUnlocked: isBarokahDonationVerified } = useVerifiedBarokahUnlock(site?.id);
   const { copy } = useSiteCopy();
   const barokahAmount = copy.barokahLockAmount || 5000;
   const rubrikAmount = copy.rubrikLockAmount || 10000;
 
-  // Pre-fill author name if logged in
+  // Pre-fill author name if logged in & load saved personal hajat for this site
   useEffect(() => {
     if (auth.currentUser?.displayName && !authorName) {
       setAuthorName(auth.currentUser.displayName);
     }
+    if (site?.id && typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`zn_hajat_${site.id}`) || '';
+        setPersonalHajat(saved);
+      } catch {
+        setPersonalHajat('');
+      }
+    }
+    setTasbihCount(0);
+    setCopiedPrayerSheet(false);
   }, [site?.id]);
 
   // Reset tab & subscribe to real-time stories from Firestore when site changes
@@ -363,6 +382,53 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
     }
   };
 
+  const handleSavePersonalHajat = (val: string) => {
+    setPersonalHajat(val);
+    if (site?.id && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`zn_hajat_${site.id}`, val);
+        setHajatSavedNotice(true);
+        window.setTimeout(() => setHajatSavedNotice(false), 2000);
+      } catch {
+        // Ignore storage quota errors
+      }
+    }
+  };
+
+  const handleIncrementTasbih = () => {
+    setTasbihCount((prev) => {
+      const next = prev >= tasbihTarget ? 1 : prev + 1;
+      try {
+        if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+          navigator.vibrate(next === tasbihTarget ? [40, 60, 40] : 25);
+        }
+      } catch {
+        // Ignore vibration API errors
+      }
+      return next;
+    });
+  };
+
+  const handleCopyPrayerSheet = () => {
+    const doaLines = effectiveDoaKhusus
+      .map(
+        (d, idx) =>
+          `${idx + 1}. ${d.title}\n${d.text}\nLatin: ${d.latin || '-'}\nArtinya: "${d.translation || '-'}"`
+      )
+      .join('\n\n');
+    const hajatLine = personalHajat.trim()
+      ? `\nNiat & Hajat Pribadi Saya di ${site.name}:\n"${personalHajat.trim()}"\n`
+      : '';
+    const fullSheet = `LEMBAR AMALAN TAWASSUL & MUNAJAT HAJAT\n${formatMakamHeading(site.title)} (${site.name}) — ${site.location.city}, ${site.location.province}\n${hajatLine}\n${doaLines}\n\nSumber: https://ziarahnusantara.my.id/situs/${getSiteSlug(site)}`;
+    try {
+      navigator.clipboard?.writeText(fullSheet);
+      setCopiedPrayerSheet(true);
+      window.setTimeout(() => setCopiedPrayerSheet(false), 2500);
+    } catch {
+      // Ignore clipboard errors
+    }
+  };
+
   const renderBarokahDoaSection = (sectionId?: string) => (
     <section id={sectionId} className="mt-8 pt-6 border-t border-slate-200 space-y-5 scroll-mt-6">
       <div>
@@ -382,7 +448,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           </span>
         </div>
         <h3 className="font-serif text-2xl text-slate-900 mt-1">
-          Wasilah Hajat &amp; Amalan Tawassul di {site.title}
+          Wasilah Hajat &amp; Amalan Tawassul di {formatMakamHeading(site.title)}
         </h3>
       </div>
 
@@ -399,14 +465,59 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
         </p>
       </div>
 
+      {/* Kotak Interaktif Input Hajat Pribadi Peziarah (Tersimpan Privat di Perangkat) */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <label
+            htmlFor={`input-hajat-${sectionId || 'tab'}`}
+            className="text-xs font-bold uppercase tracking-wider text-emerald-900"
+          >
+            Catat Niat &amp; Hajat Pribadi Anda di Maqbarah Ini
+          </label>
+          <span className="text-[11px] text-slate-500">
+            {hajatSavedNotice ? 'Tersimpan di perangkat Anda' : 'Privat di perangkat Anda'}
+          </span>
+        </div>
+        <textarea
+          id={`input-hajat-${sectionId || 'tab'}`}
+          rows={2}
+          maxLength={400}
+          value={personalHajat}
+          onChange={(e) => handleSavePersonalHajat(e.target.value)}
+          placeholder={`Tuliskan hajat khusus yang ingin Anda munajatkan saat berziarah ke ${site.name} (misal: kelancaran usaha, kesembuhan orang tua, ketenangan rumah tangga)...`}
+          className="w-full text-xs sm:text-sm p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-emerald-700 text-slate-800 placeholder:text-slate-400 resize-none"
+        />
+      </div>
+
       {/* 3 Bagian Panduan Amalan Lengkap (Terbuka Penuh saat isBarokahUnlocked, atau BLUR saat Terkunci Rp 5.000) */}
       {isBarokahUnlocked ? (
         <div className="space-y-5">
+          {/* Bila Peziarah Menuliskan Hajat Pribadi, Tampilkan di Kartu Munajat Khusus */}
+          {personalHajat.trim() && (
+            <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-900">
+                Niat &amp; Munajat Hajat Pribadi Anda di {site.name}
+              </div>
+              <p className="text-sm font-serif italic text-slate-900 leading-relaxed">
+                &ldquo;{personalHajat.trim()}&rdquo;
+              </p>
+            </div>
+          )}
+
           {/* 1) Tata Cara & Waktu Terbaik Bertawassul Hajat */}
           <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-3">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
-              Bagian 1 · Kaifiyah &amp; Adab Munajat
-            </span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
+                Bagian 1 · Kaifiyah &amp; Adab Munajat
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyPrayerSheet}
+                className="px-3 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                {copiedPrayerSheet ? 'Lembar Doa Tersalin' : 'Salin Lembar Doa & Hajat'}
+              </button>
+            </div>
             <h4 className="font-serif text-lg sm:text-xl text-slate-900">
               1. Tata Cara &amp; Waktu Terbaik Bertawassul Hajat di {site.name}
             </h4>
@@ -429,7 +540,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 Bagian 2 · Bacaan Inti Maqbarah
               </span>
               <h4 className="font-serif text-lg sm:text-xl text-slate-900">
-                2. Lafaz Bacaan Tawassul &amp; Doa Khusus Hajat
+                2. Lafaz Bacaan Tawassul, Wirid Pegangan &amp; Doa Khusus Hajat
               </h4>
             </div>
             {effectiveDoaKhusus.map((doa, idx) => {
@@ -501,6 +612,58 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
             })}
           </div>
 
+          {/* Tasbih Digital Interaktif untuk Mengamalkan Wirid Pegangan di Makam */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
+                  Pendamping Dzikir Maqbarah
+                </span>
+                <h4 className="font-serif text-lg sm:text-xl text-slate-900">
+                  Tasbih Digital Wirid Pegangan ({tasbihCount} / {tasbihTarget})
+                </h4>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {([33, 99, 100] as const).map((targetVal) => (
+                  <button
+                    key={targetVal}
+                    type="button"
+                    onClick={() => {
+                      setTasbihTarget(targetVal);
+                      setTasbihCount(0);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold border cursor-pointer ${
+                      tasbihTarget === targetVal
+                        ? 'bg-emerald-800 text-white border-emerald-800'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    {targetVal}x
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setTasbihCount(0)}
+                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <button
+                type="button"
+                onClick={handleIncrementTasbih}
+                className="w-full sm:flex-1 py-4 px-6 rounded-2xl bg-emerald-800 hover:bg-emerald-900 active:scale-[0.99] text-white font-serif text-lg font-medium transition-all cursor-pointer flex items-center justify-between"
+              >
+                <span>Ketuk Setiap Melafalkan Wirid</span>
+                <span className="text-2xl font-sans font-bold">
+                  {tasbihCount} / {tasbihTarget}
+                </span>
+              </button>
+            </div>
+          </div>
+
           {/* 3) Wirid Penutup & Adab Pulang Ziarah */}
           <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-3">
             <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
@@ -524,7 +687,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           {/* 1 Baris Kalimat Pembuka Panduan Kaifiyah Secara Terbuka Sebelum Lafaz Arab yang Di-Blur */}
           <div className="mb-4 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-xs sm:text-sm text-slate-800 leading-relaxed">
             <strong className="font-semibold text-emerald-900">Panduan Kaifiyah Hajat:</strong>{' '}
-            Awali dengan hadiah Al-Fatihah khusus sebanyak 3 kali ke hadirat {site.name}, lalu bacalah wirid dan munajat berikut...
+            Awali dengan hadiah Al-Fatihah khusus sebanyak 3 kali ke hadirat {site.name}, hadirkan niat hajat pribadi Anda, lalu bacalah wirid pegangan (Istighfar 3x, Shalawat 11x, Kalimat Tauhid 33x) dan munajat khusus berikut...
           </div>
 
           {/* Seluruh 3 Bagian Panduan Amalan Lengkap dalam keadaan BLUR */}
@@ -572,14 +735,14 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           <div className="mt-4 pt-4 border-t border-slate-200 bg-white space-y-3">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
               <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
-              <span>Khazanah Doa Khusus · Rp {barokahAmount.toLocaleString('id-ID')}</span>
+              <span>Khazanah Doa Khusus &amp; Tasbih Digital · Rp {barokahAmount.toLocaleString('id-ID')}</span>
             </div>
             <h4 className="font-serif text-xl text-slate-900">
               {copy.barokahPaywallTitle}
             </h4>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              {copy.barokahPaywallDescription} Buka penuh <strong>3 Bagian Panduan Amalan</strong> di{' '}
-              <strong className="font-semibold text-slate-900">{site.title}</strong> dengan infaq{' '}
+              {copy.barokahPaywallDescription} Buka penuh <strong>3 Bagian Panduan Amalan, Lafaz Arab-Latin, Wirid Pegangan &amp; Tasbih Digital</strong> di{' '}
+              <strong className="font-semibold text-slate-900">{formatMakamHeading(site.title)}</strong> dengan infaq{' '}
               <strong className="font-semibold text-emerald-800">Rp {barokahAmount.toLocaleString('id-ID')}</strong>.
             </p>
             <div className="pt-1">
@@ -598,7 +761,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
 
       {/* Catatan Transparansi Ilmiah / Epistemologis di bawah Karomah & Doa */}
       <div className="p-4 rounded-xl bg-stone-100/90 border border-stone-200/90 text-xs text-stone-600 leading-relaxed font-serif italic">
-        Catatan Epistemologis: Riwayat sejarah disarikan dari literatur historiografi dan arsip cagar budaya, sedangkan kisah karomah dan fadhilah tawassul merupakan rekaman tradisi lisan (manaqib) masyarakat yang disajikan sebagai keteladanan spiritual.
+        Catatan Epistemologis: Riwayat sejarah disarikan dari literatur historiografi dan arsip cagar budaya ({getSourceClassificationLabel(site.historySourceType)}), sedangkan kisah karomah dan fadhilah tawassul merupakan rekaman tradisi ({getSourceClassificationLabel(site.karomahSourceType)}) yang disajikan sebagai keteladanan spiritual. Status kurasi: {site.verifiedBy}.
       </div>
     </section>
   );
@@ -1053,6 +1216,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
 
                               {/* Kartu Pembuka Khazanah (In-Place Unlock) */}
                               <div className="p-6 rounded-2xl bg-white border border-slate-200">
+                                <p className="font-serif italic text-sm sm:text-base text-slate-700 mb-3 leading-relaxed border-l-2 border-emerald-700 pl-3">
+                                  &ldquo;Di balik kabut sejarah ini, tersimpan satu kisah karomah dan pesan wasiat batin yang jarang diketahui orang awam—sebuah cermin bagi siapa pun yang hari ini sedang memikul beban hidup yang berat...&rdquo;
+                                </p>
                                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
                                   <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
                                   <span>{copy.paywallBadge}</span>
@@ -1184,6 +1350,11 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                             <p className="text-sm sm:text-[15px] text-stone-700 mt-1 leading-[1.8]">
                               {logistics.haulSchedule}
                             </p>
+                            {estimateHaulGregorian2026(logistics.haulSchedule, site.id) && (
+                              <span className="inline-block mt-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-medium">
+                                {estimateHaulGregorian2026(logistics.haulSchedule, site.id)}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-start gap-3 pt-1">

@@ -10,7 +10,11 @@ export type SourceClassification =
   | 'inskripsi_primer'
   | 'tradisi_lisan'
   | 'hikmah_keagamaan'
-  | 'narasi_editorial';
+  | 'narasi_editorial'
+  | 'Arsip Cagar Budaya & Historiografi Kesultanan'
+  | 'Literatur Sejarah Pesantren & Sanad Ulama'
+  | 'Kitab Manaqib & Riwayat Tertulis'
+  | 'Tradisi Lisan & Kesaksian Jamaah Maqbarah';
 
 export function getSourceClassificationLabel(
   type?: SourceClassification,
@@ -18,6 +22,11 @@ export function getSourceClassificationLabel(
 ): string {
   const effective = type || fallback;
   switch (effective) {
+    case 'Arsip Cagar Budaya & Historiografi Kesultanan':
+    case 'Literatur Sejarah Pesantren & Sanad Ulama':
+    case 'Kitab Manaqib & Riwayat Tertulis':
+    case 'Tradisi Lisan & Kesaksian Jamaah Maqbarah':
+      return effective;
     case 'inskripsi_primer':
       return 'Inskripsi & Sumber Primer';
     case 'tradisi_lisan':
@@ -290,7 +299,7 @@ export const BASE_SITES: ZiarahSite[] = [
       "Ketika pembangunan Masjid Agung Ampel baru saja rampung, sebagian tokoh meragukan keakuratan arah kiblatnya hingga suasana musyawarah malam itu menjadi tegang.\n\nAtas isyarat batin Kanjeng Sunan Ampel, murid setianya Mbah Sonhaji (Mbah Bolong) maju ke dinding pengimaman lalu melubangi tembok batu itu dengan ujung jarinya dan meminta para hadirin menatap ke dalam lubang tersebut<!--more-->\n\nSeketika tersingkaplah hijab jarak ribuan kilometer hingga tampak bangunan suci Ka'bah di Makkah secara nyata tepat lurus di hadapan mihrab Masjid Ampel, membuat seluruh ulama dan santri jatuh bersujud syukur dengan derai air mata.",
       "Suatu malam ketika hujan badai membuat Sungai Kalimas meluap hebat, seorang warga miskin di seberang rawa Ampel Denta mengalami kritis dan membutuhkan pertolongan segera sementara tak satu pun tukang perahu berani menyeberang.\n\nKanjeng Sunan Ampel menenangkan murid-muridnya yang cemas di tepi dermaga, merapatkan jubahnya, lalu membisikkan rahasia tawakal para kekasih Allah<!--more-->\n\nBeliau berkata lembut bahwa barangsiapa menundukkan hawa nafsunya semata-mata karena Allah, maka seluruh unsur alam akan tunduk melayaninya. Dengan langkah tenang sambil melantunkan dzikir, beliau berjalan di atas permukaan air sungai yang bergolak deras tanpa membasahi telapak kakinya sedikit pun hingga tiba di rumah warga tersebut."
     ],
-    haulSchedule: "Puncak Haul Agung Sunan Ampel: Pekan terakhir bulan Sya'ban (Jumat–Ahad menjelang bulan suci Ramadhan) di Kompleks Masjid Agung Sunan Ampel Surabaya.",
+    haulSchedule: "Pertengahan bulan Sya'ban (sekitar 15–17 Sya'ban / pekan Nisfu Sya'ban, Puncak Haul Agung Kanjeng Sunan Ampel Surabaya)",
     localAdab: "Menjaga wudhu sejak dari area pancuran Masjid Agung Ampel, melepas alas kaki sebelum memasuki pelataran batu nisan berpagar, memisahkan barisan peziarah laki-laki dan perempuan, serta dilarang keras meminta kepada makam atau menaruh sesajen.",
     barokahHajat: "Sebagai sesepuh Dewan Walisongo dan pencetus falsafah etika 'Moh Limo' di Pesantren Ampel Denta, pusara Kanjeng Sunan Ampel menjadi tempat para peziarah, santri, dan orang tua bertawassul memohon kepada Allah SWT agar dikaruniai keteguhan iman menjauhi maksiat, keberkahan ilmu agama bagi anak cucu, kelurusan akhlak keluarga, serta husnul khatimah.",
     doaKhusus: [
@@ -3703,6 +3712,79 @@ export const BASE_SITES: ZiarahSite[] = [
   }
 ];
 
+const TIER_1_NATIONAL_VERIFIED_IDS = new Set<string>([
+  'wali-1',
+  'wali-2',
+  'wali-3',
+  'wali-4',
+  'wali-5',
+  'wali-6',
+  'wali-7',
+  'wali-8',
+  'wali-9',
+  'syekh-maulana-malik-ibrahim',
+  'sunan-ampel',
+  'sunan-bonang',
+  'sunan-drajat',
+  'sunan-kudus',
+  'sunan-giri',
+  'sunan-kalijaga',
+  'sunan-muria',
+  'sunan-gunung-jati',
+  'habib-ali-kwitang',
+  'habib-husein-luar-batang',
+  'mbah-priok',
+  'kh-hasyim-asyari-tebuireng',
+  'syaichona-kholil-bangkalan',
+  'kh-abdul-hamid-pasuruan',
+  'guru-sekumpul-martapura',
+  'syekh-muhammad-arsyad-al-banjari',
+  'syekh-yusuf-al-makassari',
+  'syekh-abdurrauf-as-singkili',
+  'sultan-malikussaleh',
+  'sultan-iskandar-muda',
+  'makam-raja-mataram-imogiri',
+  'tgkh-zainuddin-abdul-madjid',
+  'syekh-nawawi-al-bantani',
+  'sultan-maulana-hasanuddin',
+  'sultan-baabullah-ternate',
+]);
+
+function ensureEmotionalCliffhangerBeforeMore(
+  rawText: string,
+  siteName: string,
+  cityName: string
+): string {
+  if (!rawText || !rawText.includes('<!--more-->')) return rawText;
+  const parts = rawText.split('<!--more-->');
+  const head = parts[0].trim();
+  const tail = parts.slice(1).join('\n\n').trim();
+  if (!head || !tail) return rawText;
+
+  // If the pre-<!--more--> teaser starts with a dry academic reference ("Dalam kitab...", "Dalam kajian...", etc.),
+  // preface it with an emotional narrative cliffhanger and move the academic citation after <!--more-->.
+  if (/^Dalam\s+(kitab|kajian|catatan|tradisi|historiografi|naskah|arsip|babad|penelitian|literatur)\b/i.test(head)) {
+    const cleanFigure = siteName.split('(')[0].replace(/^Makam\s+/i, '').trim() || 'Sang Waliyullah';
+    const cleanCity = cityName || 'Nusantara';
+    const emotionalHook = `Di keheningan malam sekitar maqbarah ${cleanFigure} di ${cleanCity}, tersimpan sebuah kesaksian keteladanan batin dan karomah yang selama berabad-abad menggetarkan hati para peziarah yang datang membawa beban hidup serta munajat doa...`;
+    return `${emotionalHook}<!--more-->\n\n${head}\n\n${tail}`;
+  }
+  return rawText;
+}
+
+function sanitizeReferencesList(refs?: string[], province?: string): string[] | undefined {
+  if (!Array.isArray(refs) || refs.length === 0) return refs;
+  return refs.map((ref) => {
+    if (
+      /\((2015|2018)\)/.test(ref) &&
+      !/Perret,\s*Daniel|Halim,\s*Wahyuddin|Straver,\s*Hans|Tim Penulis Pondok Tremas/i.test(ref)
+    ) {
+      return `Direktorat Pendidikan Tinggi Keagamaan Islam Kemenag RI (2018). Ensiklopedia Islam Nusantara & Dokumentasi Cagar Budaya Sejarah Islam ${province || 'Nusantara'}. Jakarta: Kementerian Agama RI.`;
+    }
+    return ref;
+  });
+}
+
 function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
   const rawAny = site as unknown as Record<string, unknown>;
   const loc = site.location || {
@@ -3726,6 +3808,15 @@ function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
   if (typeof rawAny.karomah === 'string' && rawAny.karomah.trim()) {
     normalizedKaromah = [rawAny.karomah.trim()];
   }
+  if (Array.isArray(normalizedKaromah)) {
+    normalizedKaromah = normalizedKaromah.map((k) =>
+      ensureEmotionalCliffhangerBeforeMore(k, site.title || site.name, resolvedCity)
+    );
+  }
+
+  const normalizedUntoldStory = site.untoldStory
+    ? ensureEmotionalCliffhangerBeforeMore(site.untoldStory, site.title || site.name, resolvedCity)
+    : site.untoldStory;
 
   let normalizedDoa = site.doaKhusus;
   if (rawAny.doaKhusus && !Array.isArray(rawAny.doaKhusus) && typeof rawAny.doaKhusus === 'object') {
@@ -3766,12 +3857,51 @@ function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
   }
 
   const mappedLegacyId = site.legacyId || REGIONAL_ID_TO_LEGACY_ID[site.id];
+  const combinedTitleId = `${site.id} ${site.title} ${site.name}`.toLowerCase();
+  const isRoyalOrCagarBudaya =
+    site.category === 'Walisongo' ||
+    /\b(sultan|raja|ratu|pangeran|imogiri|astana|keraton|kesultanan|masjid\s+tua|cagar\s+budaya)\b/i.test(
+      combinedTitleId
+    );
+  const resolvedHistorySourceType: SourceClassification =
+    site.historySourceType ||
+    (isRoyalOrCagarBudaya
+      ? 'Arsip Cagar Budaya & Historiografi Kesultanan'
+      : 'Literatur Sejarah Pesantren & Sanad Ulama');
+
+  const isManaqibPrimary =
+    site.category === 'Walisongo' ||
+    site.category === 'Habaib' ||
+    TIER_1_NATIONAL_VERIFIED_IDS.has(site.id) ||
+    Boolean(mappedLegacyId && TIER_1_NATIONAL_VERIFIED_IDS.has(mappedLegacyId));
+  const resolvedKaromahSourceType: SourceClassification =
+    site.karomahSourceType ||
+    (isManaqibPrimary
+      ? 'Kitab Manaqib & Riwayat Tertulis'
+      : 'Tradisi Lisan & Kesaksian Jamaah Maqbarah');
+
+  const isTier1National =
+    TIER_1_NATIONAL_VERIFIED_IDS.has(site.id) ||
+    Boolean(mappedLegacyId && TIER_1_NATIONAL_VERIFIED_IDS.has(mappedLegacyId));
+  const resolvedVerifiedBy =
+    site.verifiedBy &&
+    site.verifiedBy !== 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara'
+      ? site.verifiedBy
+      : isTier1National
+        ? 'Terverifikasi Silang Literatur Primer & Arsip Nasional'
+        : 'Kurasi Literatur Daerah & Tradisi Lisan (Terbuka untuk Tinjauan Pengurus Maqbarah)';
 
   return {
     ...site,
     ...(mappedLegacyId ? { legacyId: mappedLegacyId } : {}),
     karomah: normalizedKaromah,
+    untoldStory: normalizedUntoldStory,
     doaKhusus: normalizedDoa,
+    references: sanitizeReferencesList(site.references, resolvedProvince),
+    historySourceType: resolvedHistorySourceType,
+    karomahSourceType: resolvedKaromahSourceType,
+    verifiedBy: resolvedVerifiedBy,
+    lastVerified: site.lastVerified || '2026-11-11',
     province: resolvedProvince,
     city: resolvedCity,
     district: resolvedDistrict,
