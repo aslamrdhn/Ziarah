@@ -958,11 +958,11 @@ export const AdminKurator: React.FC = () => {
       ...prev,
       {
         id: newId,
-        title: 'Program Kebaikan Baru',
-        desc: 'Tuliskan deskripsi program dukungan khazanah & infaq literasi arsip di sini...',
-        tag: 'Prioritas',
+        title: 'Infaq Dokumentasi Sejarah & Sanad Pesantren',
+        desc: 'Mendukung digitalisasi literatur manaqib, dokumentasi fotografi makam cagar budaya, dan pemeliharaan arsip riwayat Auliya Nusantara.',
+        tag: 'Literasi & Sanad',
         iconName: 'HeartHandshake',
-        color: 'from-emerald-500 to-teal-700',
+        color: 'from-emerald-600 to-teal-800',
       },
     ]);
   };

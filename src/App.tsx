@@ -140,6 +140,10 @@ export default function App() {
         title: 'Standar Kurasi & Metodologi Referensi Sejarah — Ziarah Nusantara',
         desc: `Pedoman metodologi verifikasi sumber sejarah, jurnal akademik, naskah babad, dan kurasi ${TOTAL_SITES_COUNT} situs makam di ${TOTAL_PROVINCES_COUNT} provinsi oleh Tim Kurator Arsip Ziarah Nusantara.`,
       },
+      '/kebijakan-kurasi': {
+        title: 'Standar Kurasi & Metodologi Referensi Sejarah — Ziarah Nusantara',
+        desc: `Pedoman metodologi verifikasi sumber sejarah, jurnal akademik, naskah babad, dan kurasi ${TOTAL_SITES_COUNT} situs makam di ${TOTAL_PROVINCES_COUNT} provinsi oleh Tim Kurator Arsip Ziarah Nusantara.`,
+      },
     };
 
     let cancelled = false;
@@ -598,6 +602,7 @@ export default function App() {
               <Route path="/infaq" element={<InfaqDigital />} />
               <Route path="/donasi" element={<InfaqDigital />} />
               <Route path="/kurasi" element={<KebijakanKurasi />} />
+              <Route path="/kebijakan-kurasi" element={<KebijakanKurasi />} />
               <Route path="/admin" element={<AdminKurator />} />
               <Route path="/kurator-admin" element={<AdminKurator />} />
               <Route

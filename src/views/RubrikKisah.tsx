@@ -41,6 +41,7 @@ import {
 } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
 import { useSiteCopy, ADMIN_WHATSAPP_NUMBER } from '../lib/siteCopy';
+import { renderFormattedText, stripMarkdownAsterisks } from '../lib/formatText';
 
 export interface RubrikItem {
   id: string;
@@ -695,7 +696,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       }`}
                     >
                       <Heart className={`w-3 h-3 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
-                      <span>Aamiin{totalAamiin > 0 ? ` · ${totalAamiin}` : ''}</span>
+                      <span>Aamiinkan Doa Ini ({totalAamiin})</span>
                     </button>
                   </div>
                 </div>
@@ -812,19 +813,19 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                     {isUnlocked ? (
                       <div className="mt-2 mb-4 space-y-1.5">
                         <p className="font-serif italic text-slate-800 text-sm leading-relaxed">
-                          &ldquo;{openingHookSentence}&rdquo;
+                          &ldquo;{renderFormattedText(openingHookSentence)}&rdquo;
                         </p>
                         <p className="text-sm text-slate-600 mt-2 line-clamp-3 leading-relaxed">
-                          {cleanContent}
+                          {renderFormattedText(cleanContent)}
                         </p>
                       </div>
                     ) : (
                       <div className="mt-2 mb-4 space-y-2">
                         <p className="font-serif italic text-slate-800 text-sm leading-relaxed">
-                          &ldquo;{openingHookSentence}&rdquo;
+                          &ldquo;{renderFormattedText(openingHookSentence)}&rdquo;
                         </p>
                         <p className="text-sm text-slate-600 blur-[5px] select-none pointer-events-none opacity-60 line-clamp-3">
-                          {rawBeforeMore}. Kisah di balik layar, riyadhoh malam, dan pesan wasiat beliau pada bagian ini disimpan dalam Khazanah Khusus.
+                          {stripMarkdownAsterisks(rawBeforeMore)}. Kisah di balik layar, riyadhoh malam, dan pesan wasiat beliau pada bagian ini disimpan dalam Khazanah Khusus.
                         </p>
                       </div>
                     )}
@@ -1267,7 +1268,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                                 : `${readerParagraphFontClass} text-stone-800`
                             }
                           >
-                            {para}
+                            {renderFormattedText(para)}
                           </p>
                         ))}
 
@@ -1281,7 +1282,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                                 key={`cont-${cIdx}`}
                                 className={`${readerParagraphFontClass} text-stone-800`}
                               >
-                                {para}
+                                {renderFormattedText(para)}
                               </p>
                             ))}
                           </>

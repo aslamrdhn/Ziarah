@@ -222,17 +222,38 @@ export function getSiteBarokahHajat(
 }
 
 /**
+/**
+ * Menjamin teks Arab (dir="rtl") murni berhuruf Arab tanpa sisipan huruf Latin [a-zA-Z]
+ * yang dapat merusak algoritma bidirectional Unicode dan tanda kurung RTL.
+ */
+export function sanitizePureArabicText(rawArab?: string | null): string {
+  const fallbackPureArab =
+    'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى حَضْرَةِ هٰذَا الْوَلِيِّ الصَّالِحِ قَدَّسَ اللهُ سِرَّهُ الْعَزِيْزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ.';
+  if (!rawArab) return fallbackPureArab;
+  const cleaned = String(rawArab)
+    .replace(/\(\s*إِلَى حَضْرَةِ[^)]*[a-zA-Z][^)]*\)/g, '')
+    .replace(/[a-zA-Z]+/g, '')
+    .replace(/\(\s*\)/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return cleaned.length >= 10 ? cleaned : fallbackPureArab;
+}
+
+/**
  * Mengembalikan daftar amalan & doa khusus (`doaKhusus`) langsung dari data eksplisit makam.
- * Memastikan lafaz Arab, Latin, dan Terjemahan senantiasa menyertakan nama tokoh `site.name` secara spesifik.
+ * Memastikan lafaz Arab murni 100% tanpa karakter Latin (agar RTL utuh), sedangkan Judul, Latin, dan Terjemahan menyertakan nama tokoh `site.name` secara spesifik.
  */
 export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[] {
   const siteName = sanitizeHistoricalLogisticsText(site.name || site.title || 'Waliyullah');
   const siteTitle = sanitizeHistoricalLogisticsText(site.title || siteName);
 
+  const pureWiridArab =
+    'أَسْتَغْفِرُ اللهَ الْعَظِيْمَ (٣×) • اَللّٰهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ (١١×) • لَا إِلٰهَ إِلَّا اللهُ الْمَلِكُ الْحَقُّ الْمُبِيْنُ، يَا فَتَّاحُ يَا رَزَّاقُ يَا كَافِي يَا مُغْنِي (٣٣×) • اللّٰهُمَّ بِحَقِّ أَوْلِيَائِكَ الصَّالِحِيْنَ وَبِكَرَامَةِ هٰذَا الْوَلِيِّ الصَّالِحِ قَدَّسَ اللهُ سِرَّهُ الْعَزِيْزَ اقْضِ حَوَائِجَنَا وَيَسِّرْ أُمُوْرَنَا';
+
   const wiridPeganganEntry: SiteDoaKhususEntry = {
     title: `Wirid Pegangan & Dzikir Munajat Hajat di Maqbarah ${siteName}`,
-    text: `أَسْتَغْفِرُ اللهَ الْعَظِيْمَ (٣×) • اَللّٰهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ (١١×) • لَا إِلٰهَ إِلَّا اللهُ الْمَلِكُ الْحَقُّ الْمُبِيْنُ، يَا فَتَّاحُ يَا رَزَّاقُ يَا كَافِي يَا مُغْنِي (٣٣×) • اللّٰهُمَّ بِحَقِّ أَوْلِيَائِكَ الصَّالِحِيْنَ خُصُوْصًا ${siteName} اقْضِ حَوَائِجَنَا وَيَسِّرْ أُمُوْرَنَا`,
-    arab: `أَسْتَغْفِرُ اللهَ الْعَظِيْمَ (٣×) • اَللّٰهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ (١١×) • لَا إِلٰهَ إِلَّا اللهُ الْمَلِكُ الْحَقُّ الْمُبِيْنُ، يَا فَتَّاحُ يَا رَزَّاقُ يَا كَافِي يَا مُغْنِي (٣٣×) • اللّٰهُمَّ بِحَقِّ أَوْلِيَائِكَ الصَّالِحِيْنَ خُصُوْصًا ${siteName} اقْضِ حَوَائِجَنَا وَيَسِّرْ أُمُوْرَنَا`,
+    text: pureWiridArab,
+    arab: pureWiridArab,
     latin: `Astaghfirullâhal 'azhîm (3x) • Allâhumma shalli 'alâ Sayyidinâ Muhammadin wa 'alâ âli Sayyidinâ Muhammad (11x) • Lâ ilâha illallâhul Malikul Haqqul Mubîn, Yâ Fattâhu Yâ Razzâqu Yâ Kâfî Yâ Mughnî (33x) • Allâhumma bi haqqi auliyâ-ikash shâlihîn khushûshan ${siteName} iqdhi hawâ-ijanâ wa yassir umûranâ.`,
     translation: `Aku memohon ampun kepada Allah Yang Maha Agung (3x). Ya Allah limpahkanlah rahmat kepada Junjungan kami Nabi Muhammad dan keluarganya (11x). Tiada Tuhan selain Allah Raja Yang Maha Benar lagi Maha Nyata; Wahai Maha Pembuka, Maha Pemberi Rezeki, Maha Mencukupi, Maha Memberi Kekayaan (33x). Ya Allah, dengan kemuliaan para kekasih-Mu yang shalih khususnya ${siteName} (${siteTitle}), kabulkanlah segala hajat kami dan mudahkanlah urusan kami.`,
     terjemahan: `Aku memohon ampun kepada Allah Yang Maha Agung (3x). Ya Allah limpahkanlah rahmat kepada Junjungan kami Nabi Muhammad dan keluarganya (11x). Tiada Tuhan selain Allah Raja Yang Maha Benar lagi Maha Nyata; Wahai Maha Pembuka, Maha Pemberi Rezeki, Maha Mencukupi, Maha Memberi Kekayaan (33x). Ya Allah, dengan kemuliaan para kekasih-Mu yang shalih khususnya ${siteName} (${siteTitle}), kabulkanlah segala hajat kami dan mudahkanlah urusan kami.`,
@@ -242,14 +263,17 @@ export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[
   if (Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0) {
     const validEntries = site.doaKhusus
       .map((d) => {
-        const rawArab = sanitizeHistoricalLogisticsText(d.text || d.arab || '');
+        const rawArab = sanitizePureArabicText(d.text || d.arab || '');
         const rawLatin = sanitizeHistoricalLogisticsText(d.latin || '');
         const rawTranslation = sanitizeHistoricalLogisticsText(d.translation || d.terjemahan || '');
         const rawKaifiyah = sanitizeHistoricalLogisticsText(d.kaifiyah || '');
+        const rawTitle = sanitizeHistoricalLogisticsText(d.title || '');
 
-        const arabWithPerson = rawArab.includes(siteName)
-          ? rawArab
-          : `${rawArab} (إِلَى حَضْرَةِ ${siteName})`;
+        const titleWithPerson = rawTitle
+          ? rawTitle.includes(siteName)
+            ? rawTitle
+            : `${rawTitle} — ${siteName}`
+          : `Tawassul & Munajat Khusus di Maqbarah ${siteName}`;
         const latinWithPerson = rawLatin
           ? rawLatin.includes(siteName)
             ? rawLatin
@@ -262,9 +286,9 @@ export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[
           : `Khusus ke hadirat ${siteName} (${siteTitle}), kami bertawassul memohon keberkahan ilmu, keteguhan iman, dan ridha Allah SWT.`;
 
         return {
-          title: sanitizeHistoricalLogisticsText(d.title) || `Tawassul & Munajat Khusus di Maqbarah ${siteName}`,
-          text: arabWithPerson,
-          arab: arabWithPerson,
+          title: titleWithPerson,
+          text: rawArab,
+          arab: rawArab,
           latin: latinWithPerson,
           translation: translationWithPerson,
           terjemahan: translationWithPerson,
@@ -281,7 +305,8 @@ export function getEffectiveSiteDoaKhusus(site: ZiarahSite): SiteDoaKhususEntry[
     }
   }
 
-  const fallbackArab = `اِلَى حَضْرَةِ الْوَلِيِّ الصَّالِحِ ${siteName} شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اَللّٰهُمَّ إِنِّيْ أَسْأَلُكَ وَأَتَوَجَّهُ إِلَيْكَ بِنَبِيِّكَ مُحَمَّدٍ نَبِيِّ الرَّحْمَةِ، وَبِكَرَامَةِ أَوْلِيَائِكَ الصَّالِحِيْنَ خُصُوْصًا ${siteName}، أَنْ تَقْضِيَ حَاجَاتِنَا وَتُفَرِّجَ كُرُبَاتِنَا وَتَرْزُقَنَا عِلْمًا نَافِعًا وَرِزْقًا حَلَالًا طَيِّبًا مُبَارَكًا يَا أَرْحَمَ الرَّاحِمِيْنَ`;
+  const fallbackArab =
+    'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى حَضْرَةِ هٰذَا الْوَلِيِّ الصَّالِحِ قَدَّسَ اللهُ سِرَّهُ الْعَزِيْزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اَللّٰهُمَّ إِنِّيْ أَسْأَلُكَ وَأَتَوَجَّهُ إِلَيْكَ بِنَبِيِّكَ مُحَمَّدٍ نَبِيِّ الرَّحْمَةِ، وَبِكَرَامَةِ أَوْلِيَائِكَ الصَّالِحِيْنَ خُصُوْصًا صَاحِبِ هٰذَا الْمَقَامِ الْمُبَارَكِ، أَنْ تَقْضِيَ حَاجَاتِنَا وَتُفَرِّجَ كُرُبَاتِنَا وَتَرْزُقَنَا عِلْمًا نَافِعًا وَرِزْقًا حَلَالًا طَيِّبًا مُبَارَكًا يَا أَرْحَمَ الرَّاحِمِيْنَ';
   const fallbackLatin = `Ilâ hadhratil waliyyish shâlih ${siteName}, syai-ul lillâhi lahumul Fâtihah. Allâhumma innî as-aluka wa atawajjahu ilaika bi nabiyyika Muhammadin nabiyyir rahmah, wa bi karâmati auliyâ-ikash shâlihîn khushûshan ${siteName}, an taqdhiya hâjâtinâ wa tufarrija kurubâtinâ wa tarzuqanâ 'ilman nâfi'an wa rizqan halâlan thayyiban mubârakan yâ Arhamar Râhimîn.`;
   const fallbackTranslation = `Khusus ke hadirat waliyullah yang shalih ${siteName}, segala sesuatu milik Allah, untuk beliau Al-Fatihah. Ya Allah, sesungguhnya aku memohon dan menghadap kepada-Mu dengan wasilah Nabi-Mu Muhammad Nabi pembawa rahmat, serta dengan berkah karomah para wali-Mu yang shalih khususnya ${siteName} (${siteTitle}), kabulkanlah hajat-hajat kami, lapangkanlah kesulitan kami, dan karuniakanlah ilmu yang bermanfaat serta rezeki yang halal, baik, dan penuh berkah, wahai Dzat Yang Maha Pengasih.`;
 

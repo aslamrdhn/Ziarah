@@ -8,10 +8,11 @@ import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRec
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useVerifiedDonationUnlock, useVerifiedBarokahUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
-import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide, estimateHaulGregorian2026, sanitizeHistoricalLogisticsText } from '../lib/siteLogistics';
+import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide, estimateHaulGregorian2026, sanitizeHistoricalLogisticsText, sanitizePureArabicText } from '../lib/siteLogistics';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
 import { getSiteSlug, formatMakamHeading } from '../lib/siteSlugs';
 import { useSiteCopy } from '../lib/siteCopy';
+import { renderFormattedText, stripMarkdownAsterisks } from '../lib/formatText';
 
 function splitIntoReadableParagraphs(rawText: string): string[] {
   const cleaned = (rawText || '').replace(/<!--more-->/g, '\n\n').trim();
@@ -48,13 +49,13 @@ function splitIntoReadableParagraphs(rawText: string): string[] {
 }
 
 function extractPullQuote(description: string, localAdab: string): string {
-  const cleanDesc = (description || '').replace(/<!--more-->/g, ' ').trim();
+  const cleanDesc = stripMarkdownAsterisks((description || '').replace(/<!--more-->/g, ' ').trim());
   const sentences = cleanDesc.match(/[^.!?]+[.!?]+/g);
   if (sentences && sentences.length > 0) {
     const candidate = sentences.find((s) => s.trim().length >= 45 && s.trim().length <= 185) || sentences[0];
     return candidate.trim();
   }
-  return (localAdab || cleanDesc).trim();
+  return stripMarkdownAsterisks((localAdab || cleanDesc).trim());
 }
 
 export function getEmotionalCliffhanger(text: string): { preview: string; remainder: string } {
@@ -463,7 +464,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           Mengapa Banyak Peziarah Membawa Hajat Ini ke Pusara {safeSiteName}?
         </h4>
         <p className="text-sm sm:text-[15.5px] text-slate-700 leading-relaxed">
-          {barokahHajatText}
+          {renderFormattedText(barokahHajatText)}
         </p>
       </div>
 
@@ -612,7 +613,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       className="text-2xl sm:text-3xl font-arabic text-slate-900 leading-[2.6] text-right"
                       dir="rtl"
                     >
-                      {doa.text}
+                      {sanitizePureArabicText(doa.text)}
                     </p>
                     {doa.latin && (
                       <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200/70">
@@ -620,7 +621,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                           Transliterasi Latin
                         </div>
                         <p className="text-slate-800 italic text-xs sm:text-sm leading-relaxed">
-                          {doa.latin}
+                          {renderFormattedText(doa.latin)}
                         </p>
                       </div>
                     )}
@@ -630,7 +631,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                           Terjemahan &amp; Makna Doa
                         </div>
                         <p className="text-slate-700 italic text-xs sm:text-sm leading-relaxed">
-                          &ldquo;{doa.translation}&rdquo;
+                          &ldquo;{renderFormattedText(doa.translation)}&rdquo;
                         </p>
                       </div>
                     )}
@@ -737,7 +738,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                   className="text-xl sm:text-2xl font-arabic text-slate-900 leading-[2.2] text-right"
                   dir="rtl"
                 >
-                  {doa.text}
+                  {sanitizePureArabicText(doa.text)}
                 </p>
                 {doa.latin && (
                   <p className="text-xs text-slate-700 italic">{doa.latin}</p>
@@ -1030,7 +1031,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                           key={idx}
                           className={idx === 0 ? leadParagraphClass : bodyParagraphClass}
                         >
-                          {para}
+                          {renderFormattedText(para)}
                         </p>
                       ))}
                     </div>
@@ -1042,7 +1043,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                         </h3>
                         {splitIntoReadableParagraphs(site.sanad).map((para, idx) => (
                           <p key={idx} className={bodyParagraphClass}>
-                            {para}
+                            {renderFormattedText(para)}
                           </p>
                         ))}
                       </div>
@@ -1057,7 +1058,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                           {site.karya.map((item, idx) => (
                             <li key={idx} className="text-[15.5px] text-stone-800 flex items-start leading-[1.85]">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-800 mt-2.5 mr-3 shrink-0" />
-                              <span>{item}</span>
+                              <span>{renderFormattedText(item)}</span>
                             </li>
                           ))}
                         </ul>
@@ -1123,7 +1124,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                   <div>
                                     {splitIntoReadableParagraphs(item).map((para, pIdx) => (
                                       <p key={pIdx} className={bodyParagraphClass}>
-                                        {para}
+                                        {renderFormattedText(para)}
                                       </p>
                                     ))}
                                     <div className="pt-1">
@@ -1141,10 +1142,10 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                   <div className="space-y-4">
                                     <div>
                                       <p className={bodyParagraphClass}>
-                                        {cliffhanger.preview}
+                                        {renderFormattedText(cliffhanger.preview)}
                                       </p>
                                       <p className="blur-[5px] select-none pointer-events-none opacity-60 text-slate-600 leading-relaxed">
-                                        {cliffhanger.remainder}
+                                        {stripMarkdownAsterisks(cliffhanger.remainder)}
                                       </p>
                                     </div>
 
@@ -1213,7 +1214,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                             <div>
                               {splitIntoReadableParagraphs(site.untoldStory || '').map((para, pIdx) => (
                                 <p key={pIdx} className={bodyParagraphClass}>
-                                  {para}
+                                  {renderFormattedText(para)}
                                 </p>
                               ))}
                               <div className="pt-2">
@@ -1231,12 +1232,12 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                             <div className="space-y-5">
                               <div>
                                 <p className={bodyParagraphClass}>
-                                  {untoldCliffhanger.preview}
+                                  {renderFormattedText(untoldCliffhanger.preview)}
                                 </p>
                                 <div className="blur-[6px] select-none pointer-events-none opacity-50 space-y-3 text-slate-600 leading-relaxed" aria-hidden="true">
                                   {splitIntoReadableParagraphs(untoldCliffhanger.remainder).map((para, pIdx) => (
                                     <p key={pIdx}>
-                                      {para}
+                                      {stripMarkdownAsterisks(para)}
                                     </p>
                                   ))}
                                 </div>
@@ -1376,7 +1377,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                               Jadwal Haul Tahunan
                             </div>
                             <p className="text-sm sm:text-[15px] text-stone-700 mt-1 leading-[1.8]">
-                              {logistics.haulSchedule}
+                              {renderFormattedText(logistics.haulSchedule)}
                             </p>
                             {estimateHaulGregorian2026(logistics.haulSchedule, site.id) && (
                               <span className="inline-block mt-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-medium">
@@ -1392,7 +1393,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                               Ketentuan Adab Lokal &amp; Juru Kunci
                             </div>
                             <p className="text-sm sm:text-[15px] text-stone-700 mt-1 leading-[1.8]">
-                              {logistics.localAdab}
+                              {renderFormattedText(logistics.localAdab)}
                             </p>
                           </div>
                         </div>
@@ -1578,6 +1579,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                   href={getSiteGoogleMapsNavigationUrl(site)}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                   className="w-full sm:flex-1 flex items-center justify-center py-2.5 px-4 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors"
                 >
                   <Navigation className="w-3.5 h-3.5 mr-2" strokeWidth={1.75} />
@@ -1590,7 +1592,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     className="w-full sm:w-auto flex items-center justify-center py-2.5 px-4 bg-stone-100 hover:bg-stone-200/80 text-stone-800 rounded-xl font-medium text-xs sm:text-sm transition-colors cursor-pointer"
                   >
                     <MapIcon className="w-3.5 h-3.5 mr-2 text-emerald-800" strokeWidth={1.75} />
-                    Lihat di Peta Rute
+                    Lihat Titik di Peta Nusantara
                   </button>
                 )}
               </div>

@@ -57,12 +57,64 @@ export const DEFAULT_INFAQ_PROGRAMS: InfaqProgramItem[] = [
   {
     id: 'riset-web',
     title: 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
-    desc: 'Infaq Operasional & Pemeliharaan Digital untuk perawatan server ensiklopedia sejarah, verifikasi sanad keilmuan, dokumentasi karomah, serta penyebaran riwayat para Wali dan Ulama Nusantara ke seluruh penjuru.',
+    desc: 'Infaq Operasional & Pemeliharaan Digital untuk perawatan server ensiklopedia sejarah, domain, penyimpanan foto cagar budaya, verifikasi sanad keilmuan, serta penyebaran riwayat para Wali dan Ulama Nusantara.',
     iconName: 'Database',
     color: 'from-emerald-600 to-brand-900',
-    tag: 'Infaq Operasional Utama'
-  }
+    tag: 'Infaq Operasional Utama',
+  },
+  {
+    id: 'dokumentasi-sanad',
+    title: 'Dokumentasi Sejarah, Sanad & Literatur Pesantren',
+    desc: 'Mendukung digitalisasi referensi kitab manaqib, babad pesantren, verifikasi jadwal haul tahunan, serta dokumentasi fotografi maqbarah di 34 provinsi.',
+    iconName: 'BookOpen',
+    color: 'from-emerald-700 to-teal-900',
+    tag: 'Literasi & Sanad',
+  },
+  {
+    id: 'peta-panduan-doa',
+    title: 'Pengembangan Peta Interaktif & Panduan Doa Ziarah',
+    desc: 'Pemeliharaan fitur peta navigasi ziarah seluruh Nusantara, kurasi lafaz tawassul Arab-Latin yang sahih, serta akses panduan Yasin, Tahlil, dan Tasbih Digital gratis bagi jamaah.',
+    iconName: 'HeartHandshake',
+    color: 'from-teal-700 to-emerald-950',
+    tag: 'Layanan Jamaah',
+  },
 ];
+
+export function sanitizeInfaqPrograms(rawPrograms?: InfaqProgramItem[] | null): InfaqProgramItem[] {
+  if (!Array.isArray(rawPrograms) || rawPrograms.length === 0) {
+    return DEFAULT_INFAQ_PROGRAMS;
+  }
+  const removedIds = new Set(['pemeliharaan', 'kebersihan', 'dhuafa', 'kitab']);
+  const cleaned = rawPrograms
+    .filter((p) => {
+      if (!p || !p.id || removedIds.has(p.id)) return false;
+      const titleLower = String(p.title || '').toLowerCase();
+      const descLower = String(p.desc || '').toLowerCase();
+      if (titleLower.includes('program kebaikan baru')) return false;
+      if (descLower.includes('tuliskan deskripsi program')) return false;
+      return true;
+    })
+    .map((p) => {
+      if (p.id === 'riset-web') {
+        return DEFAULT_INFAQ_PROGRAMS[0];
+      }
+      return {
+        ...p,
+        title: String(p.title || '').replace(/wakaf/gi, 'Infaq'),
+        desc: String(p.desc || '').replace(/wakaf/gi, 'infaq'),
+        tag: String(p.tag || 'Program Infaq').replace(/wakaf/gi, 'Infaq'),
+      };
+    });
+
+  if (cleaned.length === 0) {
+    return DEFAULT_INFAQ_PROGRAMS;
+  }
+  // Ensure the 3 core curated programs are present if only riset-web was stored in legacy Firestore doc
+  if (cleaned.length === 1 && cleaned[0].id === 'riset-web') {
+    return DEFAULT_INFAQ_PROGRAMS;
+  }
+  return cleaned;
+}
 
 interface InfaqSettings {
   bankName: string;
@@ -91,6 +143,8 @@ const ICON_MAP = {
   HeartHandshake,
 };
 
+const LOCAL_MUNAJAT_STORAGE_KEY = 'zn_local_munajat_items';
+
 export const InfaqDigital: React.FC = () => {
   const { copy } = useSiteCopy();
   const [selectedProgram, setSelectedProgram] = useState<string>('riset-web');
@@ -116,8 +170,50 @@ export const InfaqDigital: React.FC = () => {
   const [recentDonations, setRecentDonations] = useState<DonationRecord[]>([]);
   const [aamiinMap, setAamiinMap] = useState<Record<string, number>>(() => getStoredAamiinMap());
 
+  // Direct Dinding Munajat form state (allows visitors to post a prayer/hajat directly)
+  const [munajatWallName, setMunajatWallName] = useState<string>('');
+  const [munajatWallSite, setMunajatWallSite] = useState<string>('Wasilah Auliya Nusantara');
+  const [munajatWallText, setMunajatWallText] = useState<string>('');
+  const [munajatWallSubmitted, setMunajatWallSubmitted] = useState<boolean>(false);
+  const [localMunajatList, setLocalMunajatList] = useState<CuratedMunajatItem[]>(() => {
+    try {
+      const raw = localStorage.getItem(LOCAL_MUNAJAT_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const handleAamiinClick = (itemId: string) => {
     setAamiinMap(incrementStoredAamiin(itemId));
+  };
+
+  const handleDirectMunajatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanText = sanitizePlainText(munajatWallText, 240);
+    if (cleanText.length < 5) return;
+    const cleanName = sanitizePlainText(munajatWallName, 80) || 'Hamba Allah';
+    const newEntry: CuratedMunajatItem = {
+      id: `local-munajat-${Date.now()}`,
+      donorName: cleanName,
+      amount: 0,
+      programTitle: 'Munajat & Doa Bersama Peziarah',
+      siteName: sanitizePlainText(munajatWallSite, 120) || 'Wasilah Auliya Nusantara',
+      doaHajat: cleanText,
+      dateLabel: 'Baru saja',
+      createdAtMs: Date.now(),
+      baseAamiinCount: 1,
+    };
+    const updated = [newEntry, ...localMunajatList].slice(0, 20);
+    setLocalMunajatList(updated);
+    try {
+      localStorage.setItem(LOCAL_MUNAJAT_STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      // Ignore storage error
+    }
+    setMunajatWallText('');
+    setMunajatWallSubmitted(true);
+    setTimeout(() => setMunajatWallSubmitted(false), 4000);
   };
 
   // Pre-fill donor name if logged in
@@ -130,28 +226,12 @@ export const InfaqDigital: React.FC = () => {
 
   // Load configurable Bank, QRIS & Programs settings from Firestore (/settings/infaq)
   useEffect(() => {
-    const removedIds = new Set(['pemeliharaan', 'kebersihan', 'dhuafa', 'kitab']);
     const unsubSettings = onSnapshot(
       doc(db, 'settings', 'infaq'),
       (snap) => {
         if (snap.exists()) {
           const data = snap.data();
-          const rawPrograms = Array.isArray(data.programs)
-            ? data.programs
-                .filter((p: InfaqProgramItem) => !removedIds.has(p.id))
-                .map((p: InfaqProgramItem) =>
-                  p.id === 'riset-web'
-                    ? {
-                        ...p,
-                        title: 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
-                        desc: 'Infaq Operasional & Pemeliharaan Digital untuk perawatan server ensiklopedia sejarah, verifikasi sanad keilmuan, dokumentasi karomah, serta penyebaran riwayat para Wali dan Ulama Nusantara ke seluruh penjuru.',
-                      }
-                    : p
-                )
-            : [];
-          const loadedPrograms = rawPrograms.length > 0
-            ? rawPrograms
-            : DEFAULT_INFAQ_PROGRAMS;
+          const loadedPrograms = sanitizeInfaqPrograms(data.programs);
           setInfaqSettings({
             bankName: data.bankName || DEFAULT_INFAQ_SETTINGS.bankName,
             accountNumber: data.accountNumber || DEFAULT_INFAQ_SETTINGS.accountNumber,
@@ -318,13 +398,14 @@ export const InfaqDigital: React.FC = () => {
     }
   };
 
-  const displayedMunajatList: CuratedMunajatItem[] =
-    recentDonations.length > 0
-      ? recentDonations.map((d) => ({
-          ...d,
-          baseAamiinCount: d.baseAamiinCount ?? 0,
-        }))
-      : FALLBACK_MUNAJAT_ITEMS;
+  const displayedMunajatList: CuratedMunajatItem[] = [
+    ...localMunajatList,
+    ...recentDonations.map((d) => ({
+      ...d,
+      baseAamiinCount: d.baseAamiinCount ?? 12,
+    })),
+    ...FALLBACK_MUNAJAT_ITEMS,
+  ];
 
   const totalTerkumpul = recentDonations.reduce((acc, item) => acc + item.amount, 0);
 
@@ -705,11 +786,11 @@ export const InfaqDigital: React.FC = () => {
       </div>
 
       {/* Dinding Munajat & Infaq Peziarah Terkini (Real-time Firestore + Fallback Santun) */}
-      <div className="mt-12 pt-8 border-t border-stone-200/80">
+      <div id="dinding-munajat" className="mt-12 pt-8 border-t border-stone-200/80 scroll-mt-24">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-6">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
-              Dinding Munajat Peziarah
+              Dinding Munajat &amp; Doa Bersama Peziarah
             </div>
             <h2 className="text-xl sm:text-2xl font-serif text-stone-900 mt-0.5">
               {copy.munajatTitle}
@@ -718,69 +799,121 @@ export const InfaqDigital: React.FC = () => {
               {copy.munajatSubtitle}
             </p>
           </div>
-          <span className="text-xs text-stone-500 font-medium">
+          <span className="text-xs text-emerald-800 font-semibold bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full self-start sm:self-auto">
             {displayedMunajatList.length} Munajat Tercatat
           </span>
         </div>
 
-        {displayedMunajatList.length === 0 ? (
-          <div className="bg-white rounded-2xl p-6 sm:p-8 border border-stone-200/70 shadow-2xs text-center">
-            <p className="font-serif italic text-sm sm:text-base text-stone-700">
-              &ldquo;Jadilah peziarah pertama yang menitipkan doa hajat di Dinding Munajat hari ini.&rdquo;
-            </p>
-            <p className="text-xs text-stone-500 mt-1.5">
-              Setiap doa hajat yang terverifikasi oleh Admin Kurator akan ditampilkan secara terbuka untuk diaminkan bersama para peziarah lainnya.
-            </p>
+        {/* Form Titip Doa Munajat Langsung */}
+        <form
+          onSubmit={handleDirectMunajatSubmit}
+          className="mb-6 bg-white rounded-2xl p-5 sm:p-6 border border-stone-200/80 shadow-2xs space-y-3.5"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm sm:text-base font-serif font-semibold text-stone-900">
+                Titip Doa &amp; Hajat di Dinding Munajat Peziarah
+              </h3>
+              <p className="text-xs text-stone-500">
+                Tuliskan doa atau hajat keluarga Anda agar diaminkan bersama oleh ribuan peziarah Nusantara.
+              </p>
+            </div>
+            {munajatWallSubmitted && (
+              <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg">
+                Alhamdulillah, munajat Anda telah ditampilkan di bawah
+              </span>
+            )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayedMunajatList.slice(0, 9).map((item) => {
-              const totalAamiin = (item.baseAamiinCount || 0) + (aamiinMap[item.id] || 0);
-              const hasClickedAamiin = Boolean(aamiinMap[item.id]);
-              return (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-2xl p-5 border border-stone-200/70 shadow-2xs flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="text-sm font-medium text-stone-900">{item.donorName}</p>
-                        <p className="text-[11px] text-stone-400">{item.dateLabel}</p>
-                      </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              type="text"
+              maxLength={80}
+              placeholder="Nama Anda / Keluarga (Kosongkan untuk Hamba Allah)"
+              value={munajatWallName}
+              onChange={(e) => setMunajatWallName(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-emerald-700"
+            />
+            <input
+              type="text"
+              maxLength={120}
+              placeholder="Wasilah / Lokasi Makam (misal: Makam Sunan Ampel)"
+              value={munajatWallSite}
+              onChange={(e) => setMunajatWallSite(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-emerald-700"
+            />
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              maxLength={240}
+              required
+              placeholder="Tuliskan doa hajat Anda (misal: Mohon doa kesembuhan orang tua & kelapangan rezeki keluarga)..."
+              value={munajatWallText}
+              onChange={(e) => setMunajatWallText(e.target.value)}
+              className="flex-1 px-3.5 py-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-emerald-700"
+            />
+            <button
+              type="submit"
+              className="px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer shrink-0"
+            >
+              Titipkan Doa Munajat
+            </button>
+          </div>
+        </form>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {displayedMunajatList.slice(0, 9).map((item) => {
+            const totalAamiin = (item.baseAamiinCount || 0) + (aamiinMap[item.id] || 0);
+            const hasClickedAamiin = Boolean(aamiinMap[item.id]);
+            return (
+              <div
+                key={item.id}
+                className="bg-white rounded-2xl p-5 border border-stone-200/70 shadow-2xs flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-sm font-medium text-stone-900">{item.donorName}</p>
+                      <p className="text-[11px] text-stone-400">{item.dateLabel}</p>
+                    </div>
+                    {item.amount > 0 ? (
                       <span className="text-xs font-semibold text-emerald-800 tabular-nums">
                         Rp {item.amount.toLocaleString('id-ID')}
                       </span>
-                    </div>
-                    <p className="text-[11px] text-stone-500 mb-2 truncate">
-                      {item.siteName}
-                    </p>
-                    {item.doaHajat && (
-                      <p className="text-sm text-stone-700 font-serif italic leading-relaxed">
-                        &ldquo;{item.doaHajat}&rdquo;
-                      </p>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                        Doa Jamaah
+                      </span>
                     )}
                   </div>
-                  <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
-                    <span className="truncate max-w-[155px]">{item.programTitle}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleAamiinClick(item.id)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
-                        hasClickedAamiin
-                          ? 'bg-emerald-900 text-white border-emerald-900'
-                          : 'bg-[#FAF8F5] hover:bg-stone-100 text-stone-700 border-stone-200/80'
-                      }`}
-                    >
-                      <Heart className={`w-3.5 h-3.5 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
-                      <span>Aamiin{totalAamiin > 0 ? ` · ${totalAamiin}` : ''}</span>
-                    </button>
-                  </div>
+                  <p className="text-[11px] text-stone-500 mb-2 truncate">
+                    {item.siteName}
+                  </p>
+                  {item.doaHajat && (
+                    <p className="text-sm text-stone-700 font-serif italic leading-relaxed">
+                      &ldquo;{item.doaHajat}&rdquo;
+                    </p>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2 text-[11px] text-stone-400">
+                  <span className="truncate max-w-[130px]">{item.programTitle}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleAamiinClick(item.id)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border shrink-0 ${
+                      hasClickedAamiin
+                        ? 'bg-emerald-900 text-white border-emerald-900'
+                        : 'bg-[#FAF8F5] hover:bg-emerald-50 text-emerald-900 border-emerald-200/80'
+                    }`}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
+                    <span>Aamiinkan Doa Ini ({totalAamiin})</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Modal Konfirmasi Sukses */}

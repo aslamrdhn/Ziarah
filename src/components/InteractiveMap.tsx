@@ -30,6 +30,9 @@ import {
   calculateDistanceKm,
   getSiteLogistics,
 } from '../lib/siteLogistics';
+import { getSiteGoogleMapsNavigationUrl } from './SiteDetails';
+import { stripMarkdownAsterisks } from '../lib/formatText';
+import { formatMakamHeading } from '../lib/siteSlugs';
 
 interface MapProps {
   sites: ZiarahSite[];
@@ -55,9 +58,12 @@ function MapViewportController({
   const map = useMap();
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    const t1 = window.setTimeout(() => {
       map.invalidateSize();
     }, 100);
+    const t2 = window.setTimeout(() => {
+      map.invalidateSize();
+    }, 400);
 
     if (
       selectedSite &&
@@ -74,7 +80,10 @@ function MapViewportController({
       );
       map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 10, duration: 1.1 });
     }
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
   }, [selectedSite, activeRouteSites, map]);
 
   return null;
@@ -610,8 +619,13 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
 
           <div className="flex items-start gap-3.5">
             <img
-              src={optimizeSiteImageUrl(previewSite.imageUrl, 240, 75)}
-              onError={(e) => handleOptimizedImageError(e, previewSite.imageUrl)}
+              src={optimizeSiteImageUrl(previewSite.imageUrl || '/thumbs/wali-1.webp', 240, 75)}
+              onError={(e) => {
+                handleOptimizedImageError(e, previewSite.imageUrl || '/thumbs/wali-1.webp');
+                if (!e.currentTarget.src.includes('/thumbs/wali-')) {
+                  e.currentTarget.src = '/thumbs/wali-1.webp';
+                }
+              }}
               alt={previewSite.title}
               className="w-20 h-20 rounded-2xl object-cover bg-stone-200 shrink-0 border border-stone-200/60"
             />
@@ -639,7 +653,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
               </div>
 
               <h3 className="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-snug truncate mt-1">
-                Makam {previewSite.title}
+                {formatMakamHeading(previewSite.title)}
               </h3>
               <p className="text-xs text-stone-500 truncate">{previewSite.name}</p>
               <p className="text-xs text-stone-600 inline-flex items-center gap-1 mt-1 truncate">
@@ -657,7 +671,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
               <Calendar className="w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" />
               <div className="min-w-0">
                 <strong className="text-stone-900 font-semibold">Jadwal Haul:</strong>{' '}
-                <span className="line-clamp-1">{previewLogistics.haulSchedule}</span>
+                <span className="line-clamp-1">{stripMarkdownAsterisks(previewLogistics.haulSchedule)}</span>
               </div>
             </div>
           )}
@@ -665,22 +679,23 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
           {/* Single-Line Italic Serif Quote (Tahap Desain 2) */}
           <p className="font-serif italic text-xs text-stone-600 line-clamp-1 mt-2">
             &ldquo;
-            {(
-              previewSite.untoldStory ||
-              (Array.isArray(previewSite.karomah) ? previewSite.karomah[0] : previewSite.karomah) ||
-              previewSite.description ||
-              ''
-            )
-              .replace(/<!--more-->/g, ' ')
-              .trim()
-              .slice(0, 100)}
+            {stripMarkdownAsterisks(
+              (
+                previewSite.untoldStory ||
+                (Array.isArray(previewSite.karomah) ? previewSite.karomah[0] : previewSite.karomah) ||
+                previewSite.description ||
+                ''
+              )
+                .replace(/<!--more-->/g, ' ')
+                .trim()
+            ).slice(0, 100)}
             ...&rdquo;
           </p>
 
           {/* Thumb-Friendly Quick Actions */}
           <div className="mt-3.5 grid grid-cols-2 gap-2.5">
             <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${previewSite.location.lat},${previewSite.location.lng}`}
+              href={getSiteGoogleMapsNavigationUrl(previewSite)}
               target="_blank"
               rel="noopener noreferrer"
               className="py-2.5 px-3 rounded-xl bg-white hover:bg-stone-50 text-stone-800 border border-stone-200/90 text-xs font-medium inline-flex items-center justify-center gap-1.5 transition"

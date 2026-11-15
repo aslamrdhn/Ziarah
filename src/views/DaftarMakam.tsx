@@ -20,6 +20,7 @@ import { getSitePath, getSiteSlug, formatMakamHeading } from '../lib/siteSlugs';
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { useSiteCopy } from '../lib/siteCopy';
 import { ZiarahStoryReel } from '../components/ZiarahStoryReel';
+import { stripMarkdownAsterisks } from '../lib/formatText';
 
 const SiteDetails = lazy(() =>
   import('../components/SiteDetails').then((m) => ({ default: m.SiteDetails }))
@@ -328,6 +329,16 @@ export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntent
 
 const INITIAL_VISIBLE_SITES = 12;
 
+const FULL_CATALOG_INTENT_COUNTS: Record<EmotionalIntentId, number> = {
+  all: TOTAL_SITE_COUNT,
+  keteduhan: 59,
+  ikhtiar: 77,
+  syifa: 65,
+  keteguhan: 63,
+  ilmu: 74,
+  keluarga: 77,
+};
+
 export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   onSelectSite,
   savedSiteIds = [],
@@ -338,6 +349,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 }) => {
   const { sites: ziarahSites, isLoading, ensureFullSitesLoaded } = useSites();
   const { copy } = useSiteCopy();
+
+  useEffect(() => {
+    ensureFullSitesLoaded();
+  }, [ensureFullSitesLoaded]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
@@ -486,6 +501,16 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   }, [deferredSearchQuery, selectedCategory, selectedProvince, ziarahSites, siteSearchIndexMap]);
 
   const intentCountMap = useMemo(() => {
+    const isUnfilteredInitial =
+      ziarahSites.length < TOTAL_SITE_COUNT &&
+      !deferredSearchQuery.trim() &&
+      selectedCategory === 'Semua' &&
+      selectedProvince === 'Semua Provinsi';
+
+    if (isUnfilteredInitial) {
+      return FULL_CATALOG_INTENT_COUNTS;
+    }
+
     const counts: Record<EmotionalIntentId, number> = {
       all: baseFilteredSites.length,
       keteduhan: 0,
@@ -505,7 +530,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       if (indexed ? indexed.intents.keluarga : matchesEmotionalIntent(site, 'keluarga')) counts.keluarga++;
     }
     return counts;
-  }, [baseFilteredSites, siteSearchIndexMap]);
+  }, [baseFilteredSites, siteSearchIndexMap, ziarahSites.length, deferredSearchQuery, selectedCategory, selectedProvince]);
 
   const filteredSites = useMemo(() => {
     if (emotionalFilter === 'all') {
@@ -670,7 +695,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 Buka kisah pengobat hati
               </Link>
               <Link
-                to="/infaq"
+                to="/infaq#dinding-munajat"
                 className="py-1.5 min-h-[32px] inline-flex items-center text-xs font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
               >
                 Titip doa
@@ -680,7 +705,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         ) : featuredHaulSite ? (
           <div className="py-2.5 border-y border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
             <p className="font-serif italic text-stone-700 leading-relaxed">
-              Jejak Haul &amp; Wasiat {featuredHaulSite.title} ({featuredHaulSite.haulSchedule || 'Waliyullah Nusantara'}) — Menyelami rahasia keteguhan batin beliau saat menghadapi ujian zaman.
+              Jejak Haul &amp; Wasiat {formatMakamHeading(featuredHaulSite.title)} ({featuredHaulSite.haulSchedule || 'Waliyullah Nusantara'}) — Menyelami rahasia keteguhan batin beliau saat menghadapi ujian zaman.
             </p>
             <div className="flex items-center gap-4 shrink-0">
               <button
@@ -691,7 +716,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 Baca wasiat beliau
               </button>
               <Link
-                to="/infaq"
+                to="/infaq#dinding-munajat"
                 className="py-1.5 min-h-[32px] inline-flex items-center text-xs font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
               >
                 Dinding munajat
@@ -921,16 +946,19 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             ===================================================================== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {displayedSites.map((site, index) => {
-            const optimizedThumb = optimizeSiteImageUrl(site.imageUrl, 480, 68);
-            const thumbSrcSet = getSiteImageSrcSet(site.imageUrl, 68);
+            const rawImageUrl = site.imageUrl || `/thumbs/wali-${(index % 9) + 1}.webp`;
+            const optimizedThumb = optimizeSiteImageUrl(rawImageUrl, 480, 68);
+            const thumbSrcSet = getSiteImageSrcSet(rawImageUrl, 68);
             const siteUrl = getSitePath(site);
             const shortEra = extractShortEra(site.era);
             const badgeLabel = site.category === 'Walisongo' ? 'Wali Songo' : site.category;
             const isLcpCandidate = index < 3;
-            const snippetText = String(site.untoldStory || site.description || '')
-              .split('<!--more-->')[0]
-              .trim();
-            const coreHajatText = extractCoreWasilahHajat(getSiteBarokahHajat(site));
+            const snippetText = stripMarkdownAsterisks(
+              String(site.untoldStory || site.description || '')
+                .split('<!--more-->')[0]
+                .trim()
+            );
+            const coreHajatText = stripMarkdownAsterisks(extractCoreWasilahHajat(getSiteBarokahHajat(site)));
             const karomahCount = Array.isArray(site.karomah) && site.karomah.length > 0 ? site.karomah.length : 1;
             const doaCount = getEffectiveSiteDoaKhusus(site).length;
             const practicalInfo = site.haulSchedule
@@ -954,7 +982,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       src={optimizedThumb}
                       srcSet={thumbSrcSet}
                       sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 360px"
-                      onError={(e) => handleOptimizedImageError(e, site.imageUrl)}
+                      onError={(e) => handleOptimizedImageError(e, rawImageUrl)}
                       alt={`${cardHeading} (${site.name}) — ${site.location.city}, ${site.location.province}`}
                       width={400}
                       height={300}

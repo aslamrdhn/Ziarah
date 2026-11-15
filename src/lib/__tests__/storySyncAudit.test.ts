@@ -138,9 +138,13 @@ describe('storySyncAudit — Historical Narrative Uniqueness & Anti-Template Fal
 
       const doaList = getEffectiveSiteDoaKhusus(site);
       expect(doaList.length).toBeGreaterThanOrEqual(1);
-      expect(doaList[0].text).toContain(site.name);
+      expect(doaList[0].title).toContain(site.name);
       expect(doaList[0].latin).toContain(site.name);
       expect(doaList[0].translation).toContain(site.name);
+      for (const d of doaList) {
+        expect(d.text, `Site ${site.id} doa.text contains Latin letters`).not.toMatch(/[a-zA-Z]/);
+        expect(d.arab || '', `Site ${site.id} doa.arab contains Latin letters`).not.toMatch(/[a-zA-Z]/);
+      }
     }
   });
 

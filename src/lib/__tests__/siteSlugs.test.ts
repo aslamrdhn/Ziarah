@@ -74,7 +74,7 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
     expect(merged[0].province).toBe(SITES[0].location.province);
   });
 
-  it('filters emotional intents into distinct, non-100% subsets and keeps FALLBACK_MUNAJAT_ITEMS empty', () => {
+  it('filters emotional intents into distinct, non-100% subsets and populates FALLBACK_MUNAJAT_ITEMS with seed munajat', () => {
     const keteduhanCount = ziarahSites.filter((s) => matchesEmotionalIntent(s, 'keteduhan')).length;
     const ikhtiarCount = ziarahSites.filter((s) => matchesEmotionalIntent(s, 'ikhtiar')).length;
     const keteguhanCount = ziarahSites.filter((s) => matchesEmotionalIntent(s, 'keteguhan')).length;
@@ -89,7 +89,7 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
     expect(ilmuCount).toBeGreaterThan(5);
     expect(ilmuCount).toBeLessThan(ziarahSites.length);
 
-    expect(FALLBACK_MUNAJAT_ITEMS).toEqual([]);
+    expect(FALLBACK_MUNAJAT_ITEMS.length).toBeGreaterThanOrEqual(6);
   });
 
   it('rejects arbitrary prefix slugs and ambiguous alternative slugs', () => {
