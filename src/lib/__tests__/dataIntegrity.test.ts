@@ -5,7 +5,7 @@ import { mergeLocalAndCloudSites } from '../../context/SiteContext';
 import { getSiteDisplayHeading, getSiteSlug, findSiteBySlug } from '../siteSlugs';
 import { CINEMA_SCENES } from '../../components/HeroCinemaShowcase';
 import { optimizeSiteImageUrl } from '../imageOptimizer';
-import { getRegionalArchitecturalPhoto } from '../authenticSiteImages';
+import { getRegionalArchitecturalPhoto, isFirst12OwnerSite } from '../authenticSiteImages';
 import { JAWA_BARAT_BANTEN_DKI_SITES } from '../../data/regions/jawaBaratBantenDki';
 import { JAWA_TENGAH_DIY_SITES } from '../../data/regions/jawaTengahDiy';
 import { JAWA_TIMUR_MADURA_SITES } from '../../data/regions/jawaTimurMadura';
@@ -629,18 +629,35 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
     expect(mergedWithCurator[0].openingHours).toBe('Buka 24 Jam (Update Kurator Resmi)');
   });
 
-  it('memastikan 0 situs di SITES memakai /pwa-512x512.png atau /logo-zn.svg, ke-4 bab Dokumenter Visual memiliki foto valid, dan slug terbentuk dari nama tokoh dengan fallback alias lama', () => {
+  it('memastikan 0 situs di SITES memakai /pwa-512x512.png atau /logo-zn.svg, foto /thumbs/wali-1..12.webp HANYA dipakai 12 situs pemilik aslinya, dan situs #13-#183 memiliki foto asli atau ilustrasi SVG maqbarah spesifik kota/provinsi', () => {
     expect(optimizeSiteImageUrl('')).not.toContain('pwa-512x512.png');
     expect(optimizeSiteImageUrl('/pwa-512x512.png')).toBe('/thumbs/wali-1.webp');
 
+    let ownerCount = 0;
     for (const site of SITES) {
       expect(site.imageUrl).toBeTruthy();
       expect(site.imageUrl, `Logo ZN on ${site.id}`).not.toBe('/pwa-512x512.png');
       expect(site.imageUrl, `Logo SVG on ${site.id}`).not.toBe('/logo-zn.svg');
       expect(site.imageUrl).not.toContain('pwa-512x512.png');
+
       const fallbackPhoto = getRegionalArchitecturalPhoto(site);
-      expect(fallbackPhoto).toMatch(/^\/thumbs\/wali-(?:[1-9]|1[0-2])\.webp$/);
+      if (isFirst12OwnerSite(site)) {
+        ownerCount++;
+        expect(fallbackPhoto).toMatch(/^\/thumbs\/wali-(?:[1-9]|1[0-2])\.webp$/);
+      } else {
+        // Situs di luar 12 pemilik asli DILARANG memakai foto makam wali lain (/thumbs/wali-4.webp dll.)
+        expect(site.imageUrl, `Foreign thumb on ${site.id}`).not.toMatch(
+          /^\/thumbs\/wali-(?:[1-9]|1[0-2])\.webp$/
+        );
+        expect(fallbackPhoto, `Foreign fallback on ${site.id}`).not.toMatch(
+          /^\/thumbs\/wali-(?:[1-9]|1[0-2])\.webp$/
+        );
+        expect(fallbackPhoto.startsWith('data:image/svg+xml;utf8,')).toBe(true);
+        const decodedSvg = decodeURIComponent(fallbackPhoto);
+        expect(decodedSvg).toContain(site.location.province);
+      }
     }
+    expect(ownerCount).toBe(12);
 
     expect(CINEMA_SCENES).toHaveLength(4);
     for (const scene of CINEMA_SCENES) {

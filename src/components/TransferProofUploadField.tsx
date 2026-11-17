@@ -13,6 +13,7 @@ interface TransferProofUploadFieldProps {
   onAgreedToAkadChange: (agreed: boolean) => void;
   isAnonymous?: boolean;
   onIsAnonymousChange?: (isAnonymous: boolean) => void;
+  onProcessingChange?: (isProcessing: boolean) => void;
   accentColor?: 'emerald' | 'purple';
   requiredForUnlock?: boolean;
 }
@@ -28,6 +29,7 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
   onAgreedToAkadChange,
   isAnonymous = false,
   onIsAnonymousChange,
+  onProcessingChange,
   requiredForUnlock = true,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -36,18 +38,21 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    // Reset input value immediately so selecting the same photo again triggers onChange
+    e.target.value = '';
     if (!file) return;
 
     setIsProcessing(true);
+    onProcessingChange?.(true);
     setErrorMsg(null);
     try {
       const result = await validateAndCompressReceipt(file);
       onReceiptChange(result);
     } catch (err: any) {
-      onReceiptChange(null);
-      setErrorMsg(err?.message || 'Gagal memvalidasi gambar bukti transfer.');
+      setErrorMsg(err?.message || 'Gagal memproses gambar bukti transfer. Silakan pilih screenshot JPG/PNG.');
     } finally {
       setIsProcessing(false);
+      onProcessingChange?.(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -97,21 +102,21 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
 
       <div>
         <label className="block text-[11px] font-semibold text-stone-700 mb-1">
-          2. Nama Pengirim di Struk / E-Wallet / Rekening <span className="text-rose-600">*</span>
+          2. Nama Pengirim di Struk / E-Wallet / Rekening{' '}
+          <span className="text-stone-500 font-normal">(Opsional jika Hamba Allah)</span>
         </label>
         <input
           type="text"
           maxLength={80}
-          placeholder="Contoh: Ahmad Fauzi (DANA / BCA / Mandiri)"
+          placeholder={
+            isAnonymous
+              ? 'Otomatis tercatat sebagai Hamba Allah (boleh dikosongkan)'
+              : 'Contoh: Ahmad Fauzi (DANA / BCA / Mandiri) — atau kosongkan untuk Hamba Allah'
+          }
           value={senderAccount}
           onChange={(e) => onSenderAccountChange(e.target.value)}
           className="w-full px-3.5 py-2 bg-white border border-stone-200/80 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-emerald-700"
         />
-        {senderAccount.trim().length > 0 && senderAccount.trim().length < 3 && (
-          <p className="text-[10px] text-rose-600 mt-1 font-medium">
-            Masukkan minimal 3 karakter nama pengirim sesuai bukti transfer.
-          </p>
-        )}
         {onIsAnonymousChange && (
           <label className="mt-2 flex items-start gap-2 cursor-pointer select-none">
             <input
@@ -134,7 +139,7 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/jpg,image/png,image/webp"
+          accept="image/*"
           onChange={handleFileSelect}
           className="hidden"
         />
@@ -149,7 +154,9 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
             {isProcessing ? (
               <>
                 <Loader2 className="w-6 h-6 text-emerald-800 animate-spin" />
-                <span className="text-xs font-semibold text-stone-700">Memvalidasi Bukti Transfer...</span>
+                <span className="text-xs font-semibold text-stone-700">
+                  Memproses &amp; mengompresi bukti transfer...
+                </span>
               </>
             ) : (
               <>
@@ -160,7 +167,7 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
                   Klik untuk Pilih Screenshot / Foto Struk Transfer
                 </span>
                 <span className="text-[10px] text-stone-500">
-                  Format JPG, PNG, WEBP · Otomatis terkompresi aman ke Database Kurator
+                  Format JPG, PNG, WEBP · Otomatis dikompresi ringan (&lt; 250 KB) untuk 1x kirim
                 </span>
               </>
             )}
@@ -178,18 +185,19 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
               <div className="min-w-0">
                 <div className="flex items-center gap-1 text-emerald-800 text-xs font-bold">
                   <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
-                  <span className="truncate">Bukti Transfer Terlampir</span>
+                  <span className="truncate">{receipt.sizeKb} KB • Siap dikirim</span>
                 </div>
                 <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                  Ref: <strong className="font-mono text-slate-800">{receipt.referenceCode}</strong> • {receipt.width}x{receipt.height}px ({receipt.sizeKb} KB)
+                  Ref: <strong className="font-mono text-slate-800">{receipt.referenceCode}</strong> • {receipt.width}x{receipt.height}px
                 </p>
                 <button
                   type="button"
+                  disabled={isProcessing}
                   onClick={() => fileInputRef.current?.click()}
                   className="text-[10px] font-bold text-emerald-700 hover:underline mt-0.5 inline-flex items-center gap-1 cursor-pointer"
                 >
                   <ImageIcon className="w-3 h-3" />
-                  Ganti Gambar Bukti
+                  {isProcessing ? 'Memproses & mengompresi bukti transfer...' : 'Ganti Foto'}
                 </button>
               </div>
             </div>

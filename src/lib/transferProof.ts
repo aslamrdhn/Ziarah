@@ -76,103 +76,193 @@ export function generateReceiptReferenceCode(): string {
   return `ZN-${suffix}`;
 }
 
-export async function validateAndCompressReceipt(file: File): Promise<CompressedReceiptResult> {
-  if (!file) {
-    throw new Error('Silakan pilih berkas gambar bukti transfer terlebih dahulu.');
-  }
-
-  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  if (!validTypes.includes(file.type.toLowerCase())) {
-    throw new Error('Format berkas tidak didukung. Gunakan foto/screenshot JPG, PNG, atau WEBP.');
-  }
-
-  if (file.size < 1500) {
-    throw new Error('Ukuran berkas terlalu kecil atau tidak valid sebagai bukti transfer.');
-  }
-
-  if (file.size > 15 * 1024 * 1024) {
-    throw new Error('Ukuran berkas maksimal 15 MB. Silakan gunakan screenshot bukti transfer.');
+async function decodeImageForCompression(
+  file: File
+): Promise<{ source: CanvasImageSource; width: number; height: number; cleanup?: () => void }> {
+  if (typeof window !== 'undefined' && typeof window.createImageBitmap === 'function') {
+    try {
+      const bitmap = await window.createImageBitmap(file);
+      if (bitmap && bitmap.width > 0 && bitmap.height > 0) {
+        return {
+          source: bitmap,
+          width: bitmap.width,
+          height: bitmap.height,
+          cleanup: () => {
+            try {
+              bitmap.close();
+            } catch {
+              // Ignore cleanup errors
+            }
+          },
+        };
+      }
+    } catch {
+      // Fallback to FileReader + Image element
+    }
   }
 
   const rawDataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('Gagal membaca berkas gambar.'));
+    reader.onerror = () => reject(new Error('Gagal membaca berkas gambar dari perangkat Anda.'));
     reader.readAsDataURL(file);
   });
 
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error('Berkas bukan gambar yang valid.'));
+    image.onerror = () =>
+      reject(
+        new Error(
+          'Format berkas gambar tidak dapat diproses. Silakan unggah screenshot atau foto JPG, PNG, atau WEBP.'
+        )
+      );
     image.src = rawDataUrl;
   });
 
-  if (img.width < 120 || img.height < 120) {
-    throw new Error('Resolusi gambar terlalu kecil (minimal 120x120 piksel). Unggah screenshot struk asli.');
-  }
-
-  const maxDim = 720;
-  let targetWidth = img.width;
-  let targetHeight = img.height;
-
-  if (targetWidth > maxDim || targetHeight > maxDim) {
-    if (targetWidth > targetHeight) {
-      targetHeight = Math.round((targetHeight * maxDim) / targetWidth);
-      targetWidth = maxDim;
-    } else {
-      targetWidth = Math.round((targetWidth * maxDim) / targetHeight);
-      targetHeight = maxDim;
-    }
-  }
-
-  const canvas = document.createElement('canvas');
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    throw new Error('Gagal memproses gambar bukti transfer.');
-  }
-
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(0, 0, targetWidth, targetHeight);
-  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-
-  const sampleData = ctx.getImageData(0, 0, targetWidth, targetHeight).data;
-  let minLum = 255;
-  let maxLum = 0;
-  const step = Math.max(4, Math.floor(sampleData.length / 4000) * 4);
-  for (let i = 0; i < sampleData.length; i += step) {
-    const r = sampleData[i];
-    const g = sampleData[i + 1];
-    const b = sampleData[i + 2];
-    const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-    if (lum < minLum) minLum = lum;
-    if (lum > maxLum) maxLum = lum;
-  }
-
-  if (maxLum - minLum < 15) {
-    throw new Error('Gambar terdeteksi kosong atau satu warna polos. Mohon unggah screenshot bukti transfer asli.');
-  }
-
-  let quality = 0.7;
-  let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-  while (compressedDataUrl.length > 110000 && quality > 0.35) {
-    quality -= 0.1;
-    compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-  }
-
-  const sizeKb = Math.round((compressedDataUrl.length * 3) / 4 / 1024);
-
   return {
-    dataUrl: compressedDataUrl,
-    width: targetWidth,
-    height: targetHeight,
-    fileName: file.name,
-    sizeKb,
-    referenceCode: generateReceiptReferenceCode(),
+    source: img,
+    width: img.naturalWidth || img.width || 600,
+    height: img.naturalHeight || img.height || 800,
   };
 }
+
+/**
+ * Compresses and validates a transfer proof image on the client side.
+ * Iteratively steps down resolution (960 -> 720 -> 540) and JPEG quality (0.72 -> 0.55 -> 0.40 -> 0.30)
+ * until the resulting base64 dataUrl is <= 350,000 characters (~260 KB binary), guaranteeing
+ * 1-try upload success within Firestore's 500,000-character security rule and 1 MB batch limit.
+ */
+export async function compressProofImage(file: File): Promise<CompressedReceiptResult> {
+  if (!file) {
+    throw new Error('Silakan pilih berkas gambar bukti transfer terlebih dahulu.');
+  }
+
+  const lowerType = String(file.type || '').toLowerCase().trim();
+  const lowerName = String(file.name || '').toLowerCase().trim();
+  const validMime = !lowerType || lowerType.startsWith('image/');
+  const validExt = !lowerName || /\.(jpe?g|png|webp|heic|heif|bmp|gif)$/i.test(lowerName);
+
+  if (!validMime && !validExt) {
+    throw new Error('Format berkas tidak didukung. Gunakan foto atau screenshot JPG, PNG, atau WEBP.');
+  }
+
+  if (file.size < 500) {
+    throw new Error('Ukuran berkas terlalu kecil atau tidak valid sebagai bukti transfer.');
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    throw new Error('Ukuran berkas maksimal 20 MB. Silakan gunakan screenshot bukti transfer.');
+  }
+
+  const decoded = await decodeImageForCompression(file);
+  const srcWidth = decoded.width;
+  const srcHeight = decoded.height;
+
+  try {
+    if (srcWidth < 100 || srcHeight < 100) {
+      throw new Error(
+        'Resolusi gambar terlalu kecil (minimal 100x100 piksel). Unggah screenshot struk asli.'
+      );
+    }
+
+    const maxDimensions = [960, 720, 540, 420];
+    const qualities = [0.72, 0.55, 0.40, 0.30];
+    const MAX_DATA_URL_CHARS = 350_000;
+
+    let compressedDataUrl = '';
+    let finalWidth = srcWidth;
+    let finalHeight = srcHeight;
+    let checkedBlank = false;
+
+    outerLoop: for (const maxDim of maxDimensions) {
+      let targetWidth = srcWidth;
+      let targetHeight = srcHeight;
+
+      if (targetWidth > maxDim || targetHeight > maxDim) {
+        if (targetWidth >= targetHeight) {
+          targetHeight = Math.max(100, Math.round((targetHeight * maxDim) / targetWidth));
+          targetWidth = maxDim;
+        } else {
+          targetWidth = Math.max(100, Math.round((targetWidth * maxDim) / targetHeight));
+          targetHeight = maxDim;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Gagal memproses gambar bukti transfer pada browser Anda.');
+      }
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, targetWidth, targetHeight);
+      ctx.drawImage(decoded.source, 0, 0, targetWidth, targetHeight);
+
+      if (!checkedBlank) {
+        checkedBlank = true;
+        try {
+          const sampleData = ctx.getImageData(0, 0, targetWidth, targetHeight).data;
+          let minLum = 255;
+          let maxLum = 0;
+          const step = Math.max(4, Math.floor(sampleData.length / 6000) * 4);
+          for (let i = 0; i < sampleData.length; i += step) {
+            const r = sampleData[i];
+            const g = sampleData[i + 1];
+            const b = sampleData[i + 2];
+            const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+            if (lum < minLum) minLum = lum;
+            if (lum > maxLum) maxLum = lum;
+          }
+
+          if (maxLum - minLum < 4) {
+            throw new Error(
+              'Gambar terdeteksi kosong atau satu warna polos. Mohon unggah screenshot bukti transfer asli.'
+            );
+          }
+        } catch (err: any) {
+          if (err?.message?.includes('satu warna polos')) {
+            throw err;
+          }
+          // Ignore canvas readback restrictions on mobile webviews
+        }
+      }
+
+      for (const quality of qualities) {
+        const candidate = canvas.toDataURL('image/jpeg', quality);
+        compressedDataUrl = candidate;
+        finalWidth = targetWidth;
+        finalHeight = targetHeight;
+        if (candidate.length <= MAX_DATA_URL_CHARS) {
+          break outerLoop;
+        }
+      }
+    }
+
+    if (!compressedDataUrl || compressedDataUrl.length < 500) {
+      throw new Error('Gagal mengompresi foto bukti transfer. Silakan pilih ulang foto dari galeri.');
+    }
+
+    const sizeKb = Math.max(1, Math.round((compressedDataUrl.length * 3) / 4 / 1024));
+
+    return {
+      dataUrl: compressedDataUrl,
+      width: finalWidth,
+      height: finalHeight,
+      fileName: file.name || 'bukti-transfer.jpg',
+      sizeKb,
+      referenceCode: generateReceiptReferenceCode(),
+    };
+  } finally {
+    if (decoded.cleanup) {
+      decoded.cleanup();
+    }
+  }
+}
+
+export const validateAndCompressReceipt = compressProofImage;
 
 /**
  * Stores lightweight public donation metadata in `/donations/{id}` (~1 KB) with initial `status: 'pending'`
@@ -185,31 +275,50 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
     throw new Error('Nominal minimum infaq adalah Rp 2.000');
   }
 
+  if (!payload.receipt || !payload.receipt.dataUrl || payload.receipt.dataUrl.length < 500) {
+    throw new Error('Bukti transfer belum terlampir dengan lengkap. Silakan pilih foto struk transfer.');
+  }
+
   const donationRef = doc(collection(db, 'donations'));
   const donationId = donationRef.id;
   const authorUid = auth.currentUser?.uid || 'guest';
   const hideIdentityPublicly = payload.isAnonymous === true || payload.showPublicly === false;
+  const rawDonor = (payload.donorName || payload.senderAccount || 'Hamba Allah').trim();
   const publicDonorName = hideIdentityPublicly
     ? 'Hamba Allah'
-    : (payload.donorName || 'Hamba Allah').trim().slice(0, 100) || 'Hamba Allah';
+    : (rawDonor.length >= 1 ? rawDonor : 'Hamba Allah').slice(0, 100);
+
+  const rawSender = (payload.senderAccount || payload.donorName || 'Hamba Allah').trim();
+  const safeSenderAccount = (rawSender.length >= 2 ? rawSender : 'Hamba Allah').slice(0, 100);
+  const safeProgramId = (String(payload.programId || 'riset-web').trim() || 'riset-web').slice(0, 100);
+  const safeProgramTitle = (
+    String(payload.programTitle || 'Infaq Operasional & Pemeliharaan Digital').trim() ||
+    'Infaq Operasional & Pemeliharaan Digital'
+  ).slice(0, 150);
+  const safeSiteId = (String(payload.siteId || 'web-riset').trim() || 'web-riset').slice(0, 128);
+  const safeSiteName = (
+    String(payload.siteName || 'Khazanah Auliya Nusantara').trim() || 'Khazanah Auliya Nusantara'
+  ).slice(0, 150);
+  const safeReferenceCode = (
+    String(payload.receipt.referenceCode || generateReceiptReferenceCode()).trim() || 'ZN-BUKTI'
+  ).slice(0, 64);
 
   const proofRef = doc(db, 'donations', donationId, 'private', 'proof');
   const batch = writeBatch(db);
 
   batch.set(donationRef, {
     id: donationId,
-    programId: payload.programId,
-    programTitle: payload.programTitle,
-    siteId: payload.siteId,
-    siteName: payload.siteName,
-    amount: Math.round(numericAmount),
-
+    programId: safeProgramId,
+    programTitle: safeProgramTitle,
+    siteId: safeSiteId,
+    siteName: safeSiteName,
+    amount: Math.min(1000000000, Math.max(MIN_DONATION_AMOUNT, Math.round(numericAmount))),
     donorName: publicDonorName,
     isAnonymous: hideIdentityPublicly,
-    paymentMethod: payload.paymentMethod,
+    paymentMethod: payload.paymentMethod || 'QRIS',
     hasProof: true,
-    referenceCode: payload.receipt.referenceCode,
-    doaHajat: (payload.doaHajat || '').slice(0, 200),
+    referenceCode: safeReferenceCode,
+    doaHajat: String(payload.doaHajat || '').slice(0, 200),
     authorUid,
     status: 'pending',
     createdAt: serverTimestamp(),
@@ -217,12 +326,12 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
 
   batch.set(proofRef, {
     donationId,
-    senderAccount: payload.senderAccount,
-    realDonorName: (payload.donorName || payload.senderAccount || 'Hamba Allah').slice(0, 100),
+    senderAccount: safeSenderAccount,
+    realDonorName: (rawDonor.length >= 1 ? rawDonor : 'Hamba Allah').slice(0, 100),
     proofImageUrl: payload.receipt.dataUrl,
-    referenceCode: payload.receipt.referenceCode,
-    fileName: (payload.receipt.fileName || 'receipt.jpg').slice(0, 150),
-    sizeKb: payload.receipt.sizeKb,
+    referenceCode: safeReferenceCode,
+    fileName: String(payload.receipt.fileName || 'receipt.jpg').slice(0, 150),
+    sizeKb: Math.max(1, Math.round(Number(payload.receipt.sizeKb) || 50)),
     authorUid,
     createdAt: serverTimestamp(),
   });

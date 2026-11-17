@@ -458,7 +458,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     setTimeout(() => setCopiedBank(false), 2000);
   };
 
-  const isProofComplete = Boolean(receipt && senderAccount.trim().length >= 3 && agreedToAkad);
+  const isProofComplete = Boolean(receipt && receipt.dataUrl && agreedToAkad);
 
   const activeEffectiveNominal = useMemo(() => {
     if (customNominalInput.trim()) {
@@ -478,10 +478,6 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       setSubmitError('Wajib mengunggah foto/screenshot bukti transfer terlebih dahulu.');
       return;
     }
-    if (senderAccount.trim().length < 3) {
-      setSubmitError('Wajib mengisi nama pengirim sesuai bukti transfer (minimal 3 karakter).');
-      return;
-    }
     if (!agreedToAkad) {
       setSubmitError('Mohon centang persetujuan akad Infaq Operasional & kebijakan privasi (UU PDP).');
       return;
@@ -495,6 +491,10 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
     setIsSubmittingDonation(true);
     const cleanSender = sanitizePlainText(senderAccount, 80);
+    const effectiveSender =
+      cleanSender.length >= 2
+        ? cleanSender
+        : sanitizePlainText(auth.currentUser?.displayName, 80) || 'Hamba Allah';
     const finalDonor = isAnonymous
       ? 'Hamba Allah'
       : cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
@@ -516,7 +516,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         amount: cleanAmount,
         donorName: finalDonor,
         paymentMethod,
-        senderAccount: cleanSender || finalDonor,
+        senderAccount: effectiveSender,
         receipt,
         doaHajat: finalDoaHajat,
         isAnonymous,

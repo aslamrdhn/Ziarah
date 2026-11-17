@@ -87,10 +87,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
     sanitizeDonationAmount(selectedNominal, minAmount, 1000000000) || minAmount
   );
   const cleanSender = sanitizePlainText(senderAccount, 80);
+  const effectiveSender =
+    cleanSender.length >= 2
+      ? cleanSender
+      : sanitizePlainText(auth.currentUser?.displayName, 80) || 'Hamba Allah';
   const donorName = isAnonymous
     ? 'Hamba Allah'
     : cleanSender || sanitizePlainText(auth.currentUser?.displayName, 100) || 'Hamba Allah';
-  const isProofComplete = Boolean(receipt && cleanSender.length >= 3 && agreedToAkad);
+  const isProofComplete = Boolean(receipt && receipt.dataUrl && agreedToAkad);
 
   const handleManualNominalChange = (rawVal: string) => {
     const digitsOnly = rawVal.replace(/[^0-9]/g, '');
@@ -163,10 +167,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       setSubmitError('Wajib mengunggah screenshot / foto bukti transfer terlebih dahulu.');
       return;
     }
-    if (cleanSender.length < 3) {
-      setSubmitError('Wajib mengisi nama pengirim sesuai akun E-Wallet atau rekening bank (minimal 3 karakter).');
-      return;
-    }
     if (!agreedToAkad) {
       setSubmitError('Mohon centang persetujuan akad Infaq Operasional & kebijakan privasi (UU PDP).');
       return;
@@ -189,8 +189,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
         amount,
         donorName,
         paymentMethod,
-        senderAccount: cleanSender,
+        senderAccount: effectiveSender,
         receipt,
+        isAnonymous,
+        showPublicly: !isAnonymous,
         doaHajat: sanitizePlainText(
           type === 'barokah_doa'
             ? `Ikhtiar Barokah & Doa Khusus di ${site.name}`

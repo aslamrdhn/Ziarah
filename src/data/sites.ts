@@ -4,7 +4,12 @@ import { JAWA_TIMUR_MADURA_SITES } from './regions/jawaTimurMadura';
 import { SUMATERA_SITES } from './regions/sumatera';
 import { KALIMANTAN_SULAWESI_SITES } from './regions/kalimantanSulawesi';
 import { BALI_NUSA_MALUKU_PAPUA_SITES } from './regions/baliNusaMalukuPapua';
-import { getRegionalArchitecturalPhoto, isValidNonLogoImageUrl } from '../lib/authenticSiteImages';
+import {
+  getRegionalArchitecturalPhoto,
+  isFirst12OwnerSite,
+  isValidNonLogoImageUrl,
+} from '../lib/authenticSiteImages';
+import { PRE_RESOLVED_AUTHENTIC_IMAGES } from './authenticImageUrls';
 
 export type SourceClassification =
   | 'catatan_sejarah'
@@ -3888,19 +3893,28 @@ function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
         : 'Kurasi Literatur Daerah & Tradisi Lisan (Terbuka untuk Tinjauan Pengurus Maqbarah)';
 
   const rawImg = String(site.imageUrl || '').trim();
+  const isOwnerOfFirst12Thumb = isFirst12OwnerSite({ id: site.id, legacyId: mappedLegacyId });
   const resolvedImageUrl =
-    isValidNonLogoImageUrl(rawImg) &&
-    (LOCAL_THUMB_WIKIMEDIA_URLS.has(rawImg) ||
-      rawImg.startsWith('/thumbs/') ||
-      rawImg.startsWith('/images/') ||
-      (site as any).editedByCurator === true)
+    (site as any).editedByCurator === true && isValidNonLogoImageUrl(rawImg)
       ? rawImg
-      : getRegionalArchitecturalPhoto({
-          id: site.id,
-          legacyId: mappedLegacyId,
-          name: site.name,
-          category: site.category,
-        });
+      : isOwnerOfFirst12Thumb
+        ? getRegionalArchitecturalPhoto({ id: site.id, legacyId: mappedLegacyId })
+        : PRE_RESOLVED_AUTHENTIC_IMAGES[site.id]
+          ? PRE_RESOLVED_AUTHENTIC_IMAGES[site.id]
+          : getRegionalArchitecturalPhoto({
+              id: site.id,
+              legacyId: mappedLegacyId,
+              name: site.name,
+              title: site.title,
+              category: site.category,
+              location: {
+                ...loc,
+                province: resolvedProvince,
+                city: resolvedCity,
+                district: resolvedDistrict,
+                address: resolvedAddress,
+              },
+            });
 
   return {
     ...site,
@@ -3982,7 +3996,9 @@ export function mergeAndDeduplicateSites(
           legacyId: legacyTargetId || prev.legacyId,
           doaKhusus: mergedDoaKhusus,
           imageUrl:
-            prev.imageUrl && LOCAL_THUMB_WIKIMEDIA_URLS.has(prev.imageUrl)
+            isFirst12OwnerSite({ id: item.id, legacyId: legacyTargetId || prev.legacyId }) &&
+            prev.imageUrl &&
+            LOCAL_THUMB_WIKIMEDIA_URLS.has(prev.imageUrl)
               ? prev.imageUrl
               : item.imageUrl || prev.imageUrl,
           location: {

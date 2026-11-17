@@ -331,7 +331,14 @@ export const InfaqDigital: React.FC = () => {
     'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara';
 
   const cleanSender = sanitizePlainText(senderAccount, 80);
-  const isProofComplete = Boolean(receipt && cleanSender.length >= 3 && agreedToAkad);
+  const cleanDonor = sanitizePlainText(donorName, 100);
+  const effectiveSender =
+    cleanSender.length >= 2
+      ? cleanSender
+      : cleanDonor.length >= 2
+        ? cleanDonor
+        : 'Hamba Allah';
+  const isProofComplete = Boolean(receipt && receipt.dataUrl && agreedToAkad);
 
   const handleBayar = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -340,10 +347,6 @@ export const InfaqDigital: React.FC = () => {
 
     if (!receipt || !receipt.dataUrl) {
       setSubmitError('Wajib mengunggah screenshot / foto bukti transfer terlebih dahulu.');
-      return;
-    }
-    if (cleanSender.length < 3) {
-      setSubmitError('Wajib mengisi nama pengirim sesuai bukti transfer (minimal 3 karakter).');
       return;
     }
     if (!agreedToAkad) {
@@ -361,7 +364,7 @@ export const InfaqDigital: React.FC = () => {
 
     const finalDonorName = isAnonim
       ? 'Hamba Allah'
-      : sanitizePlainText(donorName, 100) || cleanSender || 'Hamba Allah';
+      : cleanDonor || cleanSender || 'Hamba Allah';
     const cleanDoaHajat = sanitizePlainText(doaHajat, 200);
 
     try {
@@ -373,7 +376,7 @@ export const InfaqDigital: React.FC = () => {
         amount: currentAmount,
         donorName: finalDonorName,
         paymentMethod,
-        senderAccount: cleanSender,
+        senderAccount: effectiveSender,
         receipt,
         doaHajat: cleanDoaHajat,
         isAnonymous: isAnonim,

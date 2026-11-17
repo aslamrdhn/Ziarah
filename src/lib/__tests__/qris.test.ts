@@ -72,5 +72,65 @@ describe('QRIS EMVCo Dynamic Payload & CRC-16/CCITT-FALSE', () => {
     expect(resolveOfficialQrisPayload(tampered)).toBe(OFFICIAL_QRIS_STATIC_PAYLOAD);
     expect(resolveOfficialQrisPayload(OFFICIAL_QRIS_STATIC_PAYLOAD)).toBe(OFFICIAL_QRIS_STATIC_PAYLOAD);
   });
+
+  it('compresses transfer proof image to valid base64 dataUrl <= 350,000 characters via compressProofImage', async () => {
+    const { compressProofImage } = await import('../transferProof');
+    const origWindow = (globalThis as any).window;
+    const origDocument = (globalThis as any).document;
+
+    try {
+      (globalThis as any).window = {
+        createImageBitmap: async () => ({
+          width: 1440,
+          height: 2560,
+          close: () => {},
+        }),
+      };
+      (globalThis as any).document = {
+        createElement: (tag: string) => {
+          if (tag === 'canvas') {
+            return {
+              width: 0,
+              height: 0,
+              getContext: () => ({
+                fillStyle: '#FFFFFF',
+                fillRect: () => {},
+                drawImage: () => {},
+                getImageData: (_x: number, _y: number, w: number, h: number) => {
+                  const arr = new Uint8ClampedArray(w * h * 4);
+                  for (let i = 0; i < arr.length; i += 4) {
+                    const v = (i / 4) % 2 === 0 ? 20 : 240;
+                    arr[i] = v;
+                    arr[i + 1] = v;
+                    arr[i + 2] = v;
+                    arr[i + 3] = 255;
+                  }
+                  return { data: arr };
+                },
+              }),
+              toDataURL: (_type?: string, quality?: any) => {
+                const q = typeof quality === 'number' ? quality : 0.72;
+                const repeatCount = q > 0.6 ? 400_000 : 120_000;
+                return `data:image/jpeg;base64,${'A'.repeat(repeatCount)}`;
+              },
+            };
+          }
+          return {};
+        },
+      };
+
+      const dummyFile = new File([new Uint8Array(4096)], 'struk-bca.jpg', { type: 'image/jpeg' });
+      const result = await compressProofImage(dummyFile);
+      expect(result.dataUrl.startsWith('data:image/jpeg;base64,')).toBe(true);
+      expect(result.dataUrl.length).toBeLessThanOrEqual(350_000);
+      expect(result.width).toBeLessThanOrEqual(960);
+      expect(result.height).toBeLessThanOrEqual(960);
+      expect(result.referenceCode).toMatch(/^ZN-/);
+    } finally {
+      (globalThis as any).window = origWindow;
+      (globalThis as any).document = origDocument;
+    }
+  });
 });
+
 

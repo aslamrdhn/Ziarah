@@ -16,7 +16,12 @@ import { ALL_PROVINCES, TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/
 import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
-import { useAuthenticSiteImage, getRegionalArchitecturalPhoto } from '../lib/authenticSiteImages';
+import {
+  useAuthenticSiteImage,
+  getRegionalArchitecturalPhoto,
+  getSiteGoogleMapsPhotosUrl,
+  isFirst12OwnerSite,
+} from '../lib/authenticSiteImages';
 import { getSitePath, getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { useSiteCopy } from '../lib/siteCopy';
@@ -29,13 +34,43 @@ const SiteCardThumbnail: React.FC<{
   badgeLabel: string;
   isLcpCandidate: boolean;
 }> = React.memo(({ site, altText, badgeLabel, isLcpCandidate }) => {
-  const resolvedImageUrl = useAuthenticSiteImage(site);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [isNearViewport, setIsNearViewport] = useState<boolean>(
+    () => isLcpCandidate || isFirst12OwnerSite(site)
+  );
+
+  useEffect(() => {
+    if (isNearViewport) return;
+    const node = containerRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      setIsNearViewport(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setIsNearViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isNearViewport]);
+
+  const resolvedImageUrl = useAuthenticSiteImage(site, isNearViewport);
   const optimizedThumb = optimizeSiteImageUrl(resolvedImageUrl, 480, 68);
   const thumbSrcSet = getSiteImageSrcSet(resolvedImageUrl, 68);
   const fallbackThumb = getRegionalArchitecturalPhoto(site);
 
   return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-200">
+    <div
+      ref={containerRef}
+      className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-emerald-950"
+    >
       <img
         src={optimizedThumb}
         srcSet={thumbSrcSet}
@@ -1067,18 +1102,30 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 </a>
 
                 {/* 3. Footer Aksi Terpisah */}
-                <div className="pt-2.5 mt-3 border-t border-slate-200 flex items-center justify-between gap-3 px-0.5 text-xs text-slate-600">
-                  <button
-                    type="button"
-                    onClick={() => onSelectSite(site)}
-                    className="py-2 pr-3 min-h-[36px] inline-flex items-center hover:text-slate-900 underline underline-offset-4 cursor-pointer"
-                  >
-                    {copy.cardSecondaryMapCta}
-                  </button>
+                <div className="pt-2.5 mt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 px-0.5 text-xs text-slate-600">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => onSelectSite(site)}
+                      className="py-2 pr-2 min-h-[36px] inline-flex items-center hover:text-slate-900 underline underline-offset-4 cursor-pointer"
+                    >
+                      {copy.cardSecondaryMapCta}
+                    </button>
+                    {!isFirst12OwnerSite(site) && (
+                      <a
+                        href={getSiteGoogleMapsPhotosUrl(site)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-2 min-h-[36px] inline-flex items-center text-[11px] font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4"
+                      >
+                        Cek Foto di Google Maps
+                      </a>
+                    )}
+                  </div>
                   <a
                     href={siteUrl}
                     onClick={(e) => handleOpenReaderModal(site, e)}
-                    className="py-2 pl-3 min-h-[36px] inline-flex items-center font-bold text-emerald-700 group-hover:text-emerald-800 group-hover:translate-x-0.5 transition-transform"
+                    className="py-2 pl-2 min-h-[36px] inline-flex items-center font-bold text-emerald-700 group-hover:text-emerald-800 group-hover:translate-x-0.5 transition-transform"
                   >
                     {copy.cardCtaLabel}
                   </a>
