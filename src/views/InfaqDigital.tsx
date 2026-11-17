@@ -23,7 +23,7 @@ import { TransferProofUploadField } from '../components/TransferProofUploadField
 import {
   CompressedReceiptResult,
   CuratedMunajatItem,
-  FALLBACK_MUNAJAT_ITEMS,
+  GENERAL_MUNAJAT_PRAYERS,
   getStoredAamiinMap,
   incrementStoredAamiin,
   saveVerifiedDonationRecord,
@@ -402,9 +402,8 @@ export const InfaqDigital: React.FC = () => {
     ...localMunajatList,
     ...recentDonations.map((d) => ({
       ...d,
-      baseAamiinCount: d.baseAamiinCount ?? 12,
+      baseAamiinCount: d.baseAamiinCount ?? 0,
     })),
-    ...FALLBACK_MUNAJAT_ITEMS,
   ];
 
   const totalTerkumpul = recentDonations.reduce((acc, item) => acc + item.amount, 0);
@@ -861,8 +860,14 @@ export const InfaqDigital: React.FC = () => {
           </div>
         </form>
 
+        {displayedMunajatList.length === 0 && (
+          <div className="mb-4 rounded-2xl bg-[#FAF8F5] border border-stone-200/80 px-4 py-3 text-xs sm:text-sm text-stone-700 font-serif italic">
+            Belum ada munajat publik yang ditampilkan hari ini. Jadilah yang pertama menitipkan doa munajat di bawah ini.
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {displayedMunajatList.slice(0, 9).map((item) => {
+          {(displayedMunajatList.length > 0 ? displayedMunajatList.slice(0, 9) : GENERAL_MUNAJAT_PRAYERS).map((item) => {
             const totalAamiin = (item.baseAamiinCount || 0) + (aamiinMap[item.id] || 0);
             const hasClickedAamiin = Boolean(aamiinMap[item.id]);
             return (
@@ -882,7 +887,7 @@ export const InfaqDigital: React.FC = () => {
                       </span>
                     ) : (
                       <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
-                        Doa Jamaah
+                        Doa Munajat Bersama
                       </span>
                     )}
                   </div>

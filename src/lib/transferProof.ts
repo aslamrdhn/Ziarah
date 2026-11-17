@@ -14,6 +14,7 @@ export const BAROKAH_SITE_MAP_KEY = 'zn_verified_barokah_site_map_v3';
 const LEGACY_UNLOCK_KEYS = [
   'hasDonatedRubrik',
   'unlockedUntold',
+  'ziarah_barokah_unlocked',
   'zn_verified_rubrik_donation_id',
   'zn_verified_site_donation_map',
   'zn_verified_rubrik_donation_id_v2',
@@ -278,90 +279,44 @@ export interface CuratedMunajatItem {
   aamiinCount?: number;
 }
 
-export const FALLBACK_MUNAJAT_ITEMS: CuratedMunajatItem[] = [
+export const FALLBACK_MUNAJAT_ITEMS: CuratedMunajatItem[] = [];
+
+export const GENERAL_MUNAJAT_PRAYERS: CuratedMunajatItem[] = [
   {
-    id: 'seed-munajat-1',
-    donorName: 'Hamba Allah (Surabaya)',
-    amount: 25000,
-    programTitle: 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
-    siteName: 'Makam Sunan Ampel (Raden Rahmat)',
+    id: 'doa-umum-orang-tua',
+    donorName: 'Doa Munajat Bersama',
+    amount: 0,
+    programTitle: 'Doa Munajat Umum Ahlussunnah',
+    siteName: 'Munajat Birrul Walidain & Ampunan Orang Tua',
     doaHajat:
-      'Ya Allah, dengan wasilah kemuliaan Sunan Ampel, karuniakanlah ketenangan batin bagi keluarga kami, luruskan akhlak anak-anak kami, dan lapangkanlah jalan rezeki yang halal lagi berkah.',
-    dateLabel: 'Hari ini',
-    createdAtMs: 1731628800000,
-    baseAamiinCount: 64,
+      'Ya Allah, ampunilah dosa-dosa kami dan dosa kedua orang tua kami, sayangilah keduanya sebagaimana mereka menyayangi dan mendidik kami di waktu kecil, serta lapangkanlah alam kubur para leluhur kami.',
+    dateLabel: 'Doa Munajat Bersama',
+    createdAtMs: 0,
+    baseAamiinCount: 0,
   },
   {
-    id: 'seed-munajat-2',
-    donorName: 'Keluarga H. Ahmad Fauzi (Banjarmasin)',
-    amount: 50000,
-    programTitle: 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
-    siteName: 'Makam Abah Guru Sekumpul (KH. Muhammad Zaini Abdul Ghani)',
+    id: 'doa-umum-syifa',
+    donorName: 'Doa Munajat Bersama',
+    amount: 0,
+    programTitle: 'Doa Munajat Umum Ahlussunnah',
+    siteName: 'Munajat Kesembuhan (Syifa) & Kesehatan Keluarga',
     doaHajat:
-      'Memohon kesembuhan yang sempurna (syifa) bagi ibunda tercinta, keberkahan majelis ilmu, dan dikumpulkan bersama Rasulullah SAW serta para Auliya di akhirat kelak.',
-    dateLabel: 'Hari ini',
-    createdAtMs: 1731625200000,
-    baseAamiinCount: 89,
+      'Ya Allah Tuhan manusia, hilangkanlah segala penyakit dan rasa sakit, sembuhkanlah dengan kesembuhan dari-Mu yang tidak menyisakan penyakit sedikit pun bagi keluarga serta saudara-saudara kami yang sedang diuji sakit.',
+    dateLabel: 'Doa Munajat Bersama',
+    createdAtMs: 0,
+    baseAamiinCount: 0,
   },
   {
-    id: 'seed-munajat-3',
-    donorName: 'Hamba Allah (Cirebon)',
-    amount: 10000,
-    programTitle: 'Dokumentasi Sejarah, Sanad & Literatur Pesantren',
-    siteName: 'Makam Sunan Gunung Jati (Syarif Hidayatullah)',
+    id: 'doa-umum-ketenangan-hati',
+    donorName: 'Doa Munajat Bersama',
+    amount: 0,
+    programTitle: 'Doa Munajat Umum Ahlussunnah',
+    siteName: 'Munajat Ketenangan Hati & Keberkahan Rezeki Halal',
     doaHajat:
-      'Semoga Allah membukakan pintu jalan keluar dari himpitan usaha dan hutang, menguatkan kesabaran kami dalam ikhtiar, serta menjaga kerukunan rumah tangga.',
-    dateLabel: 'Kemarin',
-    createdAtMs: 1731542400000,
-    baseAamiinCount: 52,
-  },
-  {
-    id: 'seed-munajat-4',
-    donorName: 'Siti Nurhaliza & Keluarga (Demak)',
-    amount: 25000,
-    programTitle: 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
-    siteName: 'Makam Sunan Kalijaga (Raden Sahid)',
-    doaHajat:
-      'Ya Rabb, teduhkanlah hati kami yang sedang gelisah menghadapi ujian hidup, tuntun langkah kami dalam ketaatan, dan jadikan infaq literasi ini amal jariyah bagi kedua orang tua kami.',
-    dateLabel: 'Kemarin',
-    createdAtMs: 1731538800000,
-    baseAamiinCount: 47,
-  },
-  {
-    id: 'seed-munajat-5',
-    donorName: 'Santri & Alumni Pesantren (Bangkalan)',
-    amount: 100000,
-    programTitle: 'Dokumentasi Sejarah, Sanad & Literatur Pesantren',
-    siteName: 'Makam Syaichona Muhammad Kholil Bangkalan',
-    doaHajat:
-      'Memohon kefahaman ilmu agama yang bermanfaat (ilmu nafi), keberkahan sanad guru-guru pesantren Nusantara, dan keteguhan iman hingga husnul khatimah.',
-    dateLabel: '2 hari lalu',
-    createdAtMs: 1731456000000,
-    baseAamiinCount: 93,
-  },
-  {
-    id: 'seed-munajat-6',
-    donorName: 'Hamba Allah (Jakarta Pusat)',
-    amount: 20000,
-    programTitle: 'Pengembangan Peta Interaktif & Panduan Doa Ziarah',
-    siteName: 'Makam Habib Ali bin Abdurrahman Al-Habsyi (Kwitang)',
-    doaHajat:
-      'Semoga keluarga besar kami senantiasa diberi kesehatan afiat, kecintaan tulus kepada Nabi Muhammad SAW beserta Ahlul Bait, dan kemudahan berziarah ke makam para wali.',
-    dateLabel: '2 hari lalu',
-    createdAtMs: 1731452400000,
-    baseAamiinCount: 41,
-  },
-  {
-    id: 'seed-munajat-7',
-    donorName: 'Peziarah Nusantara (Makassar)',
-    amount: 25000,
-    programTitle: 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
-    siteName: 'Makam Syekh Yusuf Al-Makassari (Tuanta Salamaka)',
-    doaHajat:
-      'Ya Allah, kuatkanlah pundak kami dalam memperjuangkan nafkah keluarga yang halal dan berkahilah seluruh penyusun arsip sejarah Auliya Nusantara ini.',
-    dateLabel: '3 hari lalu',
-    createdAtMs: 1731366000000,
-    baseAamiinCount: 58,
+      'Ya Allah, teduhkanlah hati yang sedang gelisah, bukakanlah jalan keluar dari setiap kesulitan hidup, dan karuniakanlah rezeki yang halal, thayyib, lagi penuh keberkahan serta keteguhan iman hingga husnul khatimah.',
+    dateLabel: 'Doa Munajat Bersama',
+    createdAtMs: 0,
+    baseAamiinCount: 0,
   },
 ];
 
@@ -422,7 +377,6 @@ export function saveVerifiedDonationRecord(
 
     if (isBarokahProgram) {
       localStorage.setItem(BAROKAH_DONATION_ID_KEY, donationId);
-      localStorage.setItem('ziarah_barokah_unlocked', 'true');
       if (siteId) {
         const existingBarokahRaw = localStorage.getItem(BAROKAH_SITE_MAP_KEY);
         const barokahMap: Record<string, string> = existingBarokahRaw

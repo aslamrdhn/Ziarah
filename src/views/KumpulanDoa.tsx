@@ -51,32 +51,8 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   const [deletedDoaIds, setDeletedDoaIds] = useState<string[]>([]);
   const [requireManualVerification, setRequireManualVerification] = useState<boolean>(false);
   const [unlockModalSite, setUnlockModalSite] = useState<ZiarahSite | null>(null);
-  const [localStorageUnlocked, setLocalStorageUnlocked] = useState<boolean>(() => {
-    try {
-      return typeof window !== 'undefined' && window.localStorage.getItem('ziarah_barokah_unlocked') === 'true';
-    } catch {
-      return false;
-    }
-  });
 
-  const { isUnlocked: isVerifiedBarokahUnlocked } = useVerifiedBarokahUnlock('barokah', requireManualVerification);
-  const isBarokahUnlocked = isVerifiedBarokahUnlocked || localStorageUnlocked;
-
-  useEffect(() => {
-    const syncLocalBarokah = () => {
-      try {
-        setLocalStorageUnlocked(window.localStorage.getItem('ziarah_barokah_unlocked') === 'true');
-      } catch {
-        // Ignore storage error
-      }
-    };
-    window.addEventListener('zn-donation-proof-updated', syncLocalBarokah);
-    window.addEventListener('storage', syncLocalBarokah);
-    return () => {
-      window.removeEventListener('zn-donation-proof-updated', syncLocalBarokah);
-      window.removeEventListener('storage', syncLocalBarokah);
-    };
-  }, []);
+  const { isUnlocked: isBarokahUnlocked } = useVerifiedBarokahUnlock('barokah', requireManualVerification);
 
   useEffect(() => {
     const unsubSettings = onSnapshot(
@@ -592,14 +568,6 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
           onClose={() => setUnlockModalSite(null)}
           site={unlockModalSite}
           type="barokah_doa"
-          onSuccess={() => {
-            try {
-              window.localStorage.setItem('ziarah_barokah_unlocked', 'true');
-              setLocalStorageUnlocked(true);
-            } catch {
-              // Ignore storage error
-            }
-          }}
         />
       )}
     </div>

@@ -178,8 +178,8 @@ describe('Barokah & Doa Khusus (Rp 5.000) & Pemisahan Kunci Donasi', () => {
     ).toBe(false);
     expect(filteredPrograms.length).toBeGreaterThanOrEqual(3);
 
-    // 3. Pastikan FALLBACK_MUNAJAT_ITEMS memiliki minimal 6 doa awal agar Dinding Munajat tidak pernah "0 Munajat Tercatat"
-    expect(FALLBACK_MUNAJAT_ITEMS.length).toBeGreaterThanOrEqual(6);
+    // 3. Pastikan FALLBACK_MUNAJAT_ITEMS tidak memuat donatur/nominal uang fiktif
+    expect(FALLBACK_MUNAJAT_ITEMS).toEqual([]);
 
     // 4. Pastikan stripMarkdownAsterisks menghapus tanda bintang ** dan *
     const rawMd = 'Dalam kitab **Tuhfat Al-Nafis** karya *Raja Ali Haji*, disebutkan silsilah ulama.';

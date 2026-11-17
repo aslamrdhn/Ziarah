@@ -89,7 +89,7 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
     expect(ilmuCount).toBeGreaterThan(5);
     expect(ilmuCount).toBeLessThan(ziarahSites.length);
 
-    expect(FALLBACK_MUNAJAT_ITEMS.length).toBeGreaterThanOrEqual(6);
+    expect(FALLBACK_MUNAJAT_ITEMS).toEqual([]);
   });
 
   it('rejects arbitrary prefix slugs and ambiguous alternative slugs', () => {

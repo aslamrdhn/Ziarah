@@ -32,7 +32,7 @@ import { TransferProofUploadField } from '../components/TransferProofUploadField
 import {
   CompressedReceiptResult,
   CuratedMunajatItem,
-  FALLBACK_MUNAJAT_ITEMS,
+  GENERAL_MUNAJAT_PRAYERS,
   getStoredAamiinMap,
   incrementStoredAamiin,
   saveVerifiedDonationRecord,
@@ -185,7 +185,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   const [isSubmittingDonation, setIsSubmittingDonation] = useState<boolean>(false);
 
   // Recent Munajat & Aamiin ticker state
-  const [recentMunajat, setRecentMunajat] = useState<CuratedMunajatItem[]>(FALLBACK_MUNAJAT_ITEMS);
+  const [recentMunajat, setRecentMunajat] = useState<CuratedMunajatItem[]>([]);
   const [aamiinMap, setAamiinMap] = useState<Record<string, number>>(() => getStoredAamiinMap());
 
   const savedArticles = propSavedArticles ?? localSaved;
@@ -271,10 +271,10 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
           })
           .sort((a, b) => b.createdAtMs - a.createdAtMs);
 
-        setRecentMunajat(fetched.length > 0 ? fetched : FALLBACK_MUNAJAT_ITEMS);
+        setRecentMunajat(fetched);
       },
       () => {
-        setRecentMunajat(FALLBACK_MUNAJAT_ITEMS);
+        setRecentMunajat([]);
       }
     );
 
@@ -659,51 +659,56 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             Lihat Dinding Munajat →
           </Link>
         </div>
-        {recentMunajat.length === 0 ? (
-          <div className="py-2 text-xs text-stone-600 font-serif italic">
-            &ldquo;Jadilah peziarah pertama yang menitipkan doa hajat di Dinding Munajat hari ini.&rdquo;
+        {recentMunajat.length === 0 && (
+          <div className="py-1 text-xs text-stone-600 font-serif italic">
+            Belum ada munajat publik yang ditampilkan hari ini. Jadilah yang pertama menitipkan doa munajat di bawah ini.
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 divide-y md:divide-y-0 md:divide-x divide-stone-200/60">
-            {recentMunajat.slice(0, 3).map((item, idx) => {
-              const totalAamiin = (item.baseAamiinCount || 0) + (aamiinMap[item.id] || 0);
-              const hasClickedAamiin = Boolean(aamiinMap[item.id]);
-              return (
-                <div
-                  key={item.id}
-                  className={`flex flex-col justify-between gap-2.5 ${idx > 0 ? 'pt-3 md:pt-0 md:pl-4' : ''}`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-xs font-medium text-stone-900 truncate">{item.donorName}</span>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 divide-y md:divide-y-0 md:divide-x divide-stone-200/60">
+          {(recentMunajat.length > 0 ? recentMunajat.slice(0, 3) : GENERAL_MUNAJAT_PRAYERS).map((item, idx) => {
+            const totalAamiin = (item.baseAamiinCount || 0) + (aamiinMap[item.id] || 0);
+            const hasClickedAamiin = Boolean(aamiinMap[item.id]);
+            return (
+              <div
+                key={item.id}
+                className={`flex flex-col justify-between gap-2.5 ${idx > 0 ? 'pt-3 md:pt-0 md:pl-4' : ''}`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-xs font-medium text-stone-900 truncate">{item.donorName}</span>
+                    {item.amount > 0 ? (
                       <span className="text-xs text-emerald-800 font-medium shrink-0">
                         Rp {item.amount.toLocaleString('id-ID')}
                       </span>
-                    </div>
-                    <p className="text-xs text-stone-600 font-serif italic line-clamp-2 leading-relaxed">
-                      &ldquo;{item.doaHajat}&rdquo;
-                    </p>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md shrink-0">
+                        Doa Munajat Bersama
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-[11px] text-stone-400 truncate max-w-[120px]">{item.dateLabel}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleAamiinClick(item.id)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
-                        hasClickedAamiin
-                          ? 'bg-emerald-900 text-white border-emerald-900'
-                          : 'bg-white hover:bg-stone-50 text-stone-700 border-stone-200/80'
-                      }`}
-                    >
-                      <Heart className={`w-3 h-3 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
-                      <span>Aamiinkan Doa Ini ({totalAamiin})</span>
-                    </button>
-                  </div>
+                  <p className="text-xs text-stone-600 font-serif italic line-clamp-2 leading-relaxed">
+                    &ldquo;{item.doaHajat}&rdquo;
+                  </p>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-stone-400 truncate max-w-[120px]">{item.dateLabel}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleAamiinClick(item.id)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
+                      hasClickedAamiin
+                        ? 'bg-emerald-900 text-white border-emerald-900'
+                        : 'bg-white hover:bg-stone-50 text-stone-700 border-stone-200/80'
+                    }`}
+                  >
+                    <Heart className={`w-3 h-3 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
+                    <span>Aamiinkan Doa Ini ({totalAamiin})</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Filter & Search */}
