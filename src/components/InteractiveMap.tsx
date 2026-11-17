@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
+import { useAuthenticSiteImage, getRegionalArchitecturalPhoto } from '../lib/authenticSiteImages';
 import {
   CURATED_ZIARAH_ROUTES,
   CuratedZiarahRoute,
@@ -35,6 +36,22 @@ import {
 import { getSiteGoogleMapsNavigationUrl } from './SiteDetails';
 import { stripMarkdownAsterisks } from '../lib/formatText';
 import { getSiteDisplayHeading } from '../lib/siteSlugs';
+
+const MapRouteThumbImage: React.FC<{ site: ZiarahSite; className?: string; width?: number }> = React.memo(
+  ({ site, className = 'w-full h-full object-cover', width = 160 }) => {
+    const resolvedUrl = useAuthenticSiteImage(site);
+    const fallbackUrl = getRegionalArchitecturalPhoto(site);
+    return (
+      <img
+        src={optimizeSiteImageUrl(resolvedUrl, width, 72)}
+        onError={(e) => handleOptimizedImageError(e, resolvedUrl, fallbackUrl)}
+        alt={getSiteDisplayHeading(site).heading}
+        loading="lazy"
+        className={className}
+      />
+    );
+  }
+);
 
 interface MapProps {
   sites: ZiarahSite[];
@@ -691,15 +708,9 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
           <div className="w-10 h-1 bg-stone-200 rounded-full mx-auto mb-3 sm:hidden" />
 
           <div className="flex items-start gap-3.5">
-            <img
-              src={optimizeSiteImageUrl(previewSite.imageUrl || '/thumbs/wali-1.webp', 240, 75)}
-              onError={(e) => {
-                handleOptimizedImageError(e, previewSite.imageUrl || '/thumbs/wali-1.webp');
-                if (!e.currentTarget.src.includes('/thumbs/wali-')) {
-                  e.currentTarget.src = '/thumbs/wali-1.webp';
-                }
-              }}
-              alt={previewSite.title}
+            <MapRouteThumbImage
+              site={previewSite}
+              width={240}
               className="w-20 h-20 rounded-2xl object-cover bg-stone-200 shrink-0 border border-stone-200/60"
             />
 
@@ -832,10 +843,9 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[460px] overflow-y-auto pr-1">
-          {filteredMapSites.map((site, idx) => {
+          {filteredMapSites.map((site) => {
             const seq = routeSequenceMap.get(site.id);
             const isSelectedPin = previewSite?.id === site.id || selectedSite?.id === site.id;
-            const thumbUrl = site.imageUrl || `/thumbs/wali-${(idx % 9) + 1}.webp`;
             return (
               <button
                 key={site.id}
@@ -848,18 +858,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
                 }`}
               >
                 <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-stone-200 shrink-0">
-                  <img
-                    src={optimizeSiteImageUrl(thumbUrl, 160, 68)}
-                    onError={(e) => {
-                      handleOptimizedImageError(e, thumbUrl);
-                      if (!e.currentTarget.src.includes('/thumbs/wali-')) {
-                        e.currentTarget.src = '/thumbs/wali-1.webp';
-                      }
-                    }}
-                    alt={site.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                  />
+                  <MapRouteThumbImage site={site} width={160} className="w-full h-full object-cover" />
                   {seq !== undefined && (
                     <span className="absolute top-0.5 left-0.5 px-1.5 py-0.2 rounded bg-emerald-800 text-white text-[10px] font-bold">
                       #{seq}

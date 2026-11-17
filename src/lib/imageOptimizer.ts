@@ -26,21 +26,28 @@ const LOCAL_THUMB_BY_URL: Record<string, string> = {
   'https://upload.wikimedia.org/wikipedia/commons/e/e8/Entrance_to_Makam_Sunan_Gunung_Jati.jpg':
     '/thumbs/wali-9.webp',
   'https://upload.wikimedia.org/wikipedia/commons/d/d6/Habib_ali_kwitang.jpg':
-    '/thumbs/habib-1.webp',
+    '/thumbs/wali-10.webp',
   'https://upload.wikimedia.org/wikipedia/commons/9/98/COLLECTIE_TROPENMUSEUM_Moskee_Luar_Batang_%28Batavia%29_TMnr_60046455.jpg':
-    '/thumbs/habib-2.webp',
+    '/thumbs/wali-11.webp',
   'https://upload.wikimedia.org/wikipedia/commons/a/a9/COLLECTIE_TROPENMUSEUM_De_haven_van_Tandjoengpriok_op_de_achtergrond_het_station_Batavia_Java_TMnr_10008011.jpg':
-    '/thumbs/habib-3.webp',
+    '/thumbs/wali-12.webp',
 };
 
 /**
  * Converts Wikimedia Commons & Unsplash URLs to fast resized thumbnails.
- * Uses local first-party WebP thumbnails (/thumbs/*.webp) for the 12 initial homepage cards
- * when width <= 600, eliminating Wikimedia 429 rate-limits and passing PageSpeed cache/image audits.
+ * Uses local first-party WebP thumbnails (/thumbs/*.webp) for the 12 initial homepage cards,
+ * eliminating Wikimedia 429 rate-limits and never returning /pwa-512x512.png.
  */
 export function optimizeSiteImageUrl(url: string | undefined, width = 500, quality = 75): string {
-  if (!url) return '/pwa-512x512.png';
+  if (!url) return '/thumbs/wali-1.webp';
   const trimmed = url.trim();
+  if (
+    !trimmed ||
+    trimmed.includes('pwa-512x512.png') ||
+    trimmed.includes('logo-zn.svg')
+  ) {
+    return '/thumbs/wali-1.webp';
+  }
   if (
     trimmed.startsWith('/') ||
     trimmed.startsWith('data:') ||
@@ -49,7 +56,7 @@ export function optimizeSiteImageUrl(url: string | undefined, width = 500, quali
     return trimmed;
   }
 
-  if (width <= 600 && LOCAL_THUMB_BY_URL[trimmed]) {
+  if (LOCAL_THUMB_BY_URL[trimmed]) {
     return LOCAL_THUMB_BY_URL[trimmed];
   }
 
@@ -103,17 +110,31 @@ export function getSiteImageSrcSet(url: string | undefined, quality = 75): strin
 
 /**
  * Two-stage fallback:
- * 1) If local/resized thumbnail URL fails, immediately load the original Wikimedia/remote URL.
- * 2) Only if the original URL itself is unreachable, fall back to the app icon.
+ * 1) If resized thumbnail URL fails, try the original URL if different and valid.
+ * 2) If unreachable, fall back to a real architectural maqbarah photograph (/thumbs/wali-*.webp), never /pwa-512x512.png.
  */
 export function handleOptimizedImageError(
   e: React.SyntheticEvent<HTMLImageElement, Event>,
-  originalUrl?: string
+  originalUrl?: string,
+  fallbackThumbUrl: string = '/thumbs/wali-1.webp'
 ) {
   const img = e.currentTarget;
   img.removeAttribute('srcset');
 
-  if (originalUrl && !img.dataset.fallbackOriginal && img.src !== originalUrl) {
+  const safeFallback =
+    fallbackThumbUrl &&
+    !fallbackThumbUrl.includes('pwa-512x512.png') &&
+    !fallbackThumbUrl.includes('logo-zn.svg')
+      ? fallbackThumbUrl
+      : '/thumbs/wali-1.webp';
+
+  if (
+    originalUrl &&
+    !originalUrl.includes('pwa-512x512.png') &&
+    !originalUrl.includes('logo-zn.svg') &&
+    !img.dataset.fallbackOriginal &&
+    img.src !== originalUrl
+  ) {
     img.dataset.fallbackOriginal = 'true';
     img.src = originalUrl;
     return;
@@ -121,6 +142,6 @@ export function handleOptimizedImageError(
 
   if (!img.dataset.fallbackFinal) {
     img.dataset.fallbackFinal = 'true';
-    img.src = '/pwa-512x512.png';
+    img.src = safeFallback;
   }
 }

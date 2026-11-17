@@ -16,11 +16,46 @@ import { ALL_PROVINCES, TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/
 import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
+import { useAuthenticSiteImage, getRegionalArchitecturalPhoto } from '../lib/authenticSiteImages';
 import { getSitePath, getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { useSiteCopy } from '../lib/siteCopy';
 import { ZiarahStoryReel } from '../components/ZiarahStoryReel';
 import { stripMarkdownAsterisks } from '../lib/formatText';
+
+const SiteCardThumbnail: React.FC<{
+  site: ZiarahSite;
+  altText: string;
+  badgeLabel: string;
+  isLcpCandidate: boolean;
+}> = React.memo(({ site, altText, badgeLabel, isLcpCandidate }) => {
+  const resolvedImageUrl = useAuthenticSiteImage(site);
+  const optimizedThumb = optimizeSiteImageUrl(resolvedImageUrl, 480, 68);
+  const thumbSrcSet = getSiteImageSrcSet(resolvedImageUrl, 68);
+  const fallbackThumb = getRegionalArchitecturalPhoto(site);
+
+  return (
+    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-200">
+      <img
+        src={optimizedThumb}
+        srcSet={thumbSrcSet}
+        sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 360px"
+        onError={(e) => handleOptimizedImageError(e, resolvedImageUrl, fallbackThumb)}
+        alt={altText}
+        width={400}
+        height={300}
+        loading={isLcpCandidate ? 'eager' : 'lazy'}
+        fetchPriority={isLcpCandidate ? 'high' : 'auto'}
+        decoding={isLcpCandidate ? 'sync' : 'async'}
+        referrerPolicy="no-referrer"
+        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+      />
+      <span className="absolute top-3 left-3 text-[11px] font-medium px-2.5 py-1 rounded-md bg-slate-950/80 text-white backdrop-blur-xs">
+        {badgeLabel}
+      </span>
+    </div>
+  );
+});
 
 const SiteDetails = lazy(() =>
   import('../components/SiteDetails').then((m) => ({ default: m.SiteDetails }))
@@ -921,7 +956,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <strong className="font-semibold text-stone-900">
               {isFiltered ? filteredSites.length : totalCatalogCount}
             </strong>{' '}
-            makam di {provinces.length - 1} provinsi
+            makam di {TOTAL_PROVINCES_COUNT} provinsi
             {selectedCategory !== 'Semua' && <span> · {selectedCategory}</span>}
             {selectedProvince !== 'Semua Provinsi' && <span> · {selectedProvince}</span>}
             {emotionalFilter !== 'all' && (
@@ -950,9 +985,6 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             ===================================================================== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {displayedSites.map((site, index) => {
-            const rawImageUrl = site.imageUrl || `/thumbs/wali-${(index % 9) + 1}.webp`;
-            const optimizedThumb = optimizeSiteImageUrl(rawImageUrl, 480, 68);
-            const thumbSrcSet = getSiteImageSrcSet(rawImageUrl, 68);
             const siteUrl = getSitePath(site);
             const shortEra = extractShortEra(site.era);
             const badgeLabel = site.category === 'Walisongo' ? 'Wali Songo' : site.category;
@@ -981,25 +1013,12 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                   className="block cursor-pointer space-y-3 focus:outline-none"
                 >
                   {/* 1. Foto Rasio 4:3 dengan sudut membulat (rounded-2xl) & 1 Label Sudut */}
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-200">
-                    <img
-                      src={optimizedThumb}
-                      srcSet={thumbSrcSet}
-                      sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 360px"
-                      onError={(e) => handleOptimizedImageError(e, rawImageUrl)}
-                      alt={`${cardHeading} (${cardSubtitle}) — ${site.location.city}, ${site.location.province}`}
-                      width={400}
-                      height={300}
-                      loading={isLcpCandidate ? 'eager' : 'lazy'}
-                      fetchPriority={isLcpCandidate ? 'high' : 'auto'}
-                      decoding={isLcpCandidate ? 'sync' : 'async'}
-                      referrerPolicy="no-referrer"
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                    <span className="absolute top-3 left-3 text-[11px] font-medium px-2.5 py-1 rounded-md bg-slate-950/80 text-white backdrop-blur-xs">
-                      {badgeLabel}
-                    </span>
-                  </div>
+                  <SiteCardThumbnail
+                    site={site}
+                    altText={`${cardHeading} (${cardSubtitle}) — ${site.location.city}, ${site.location.province}`}
+                    badgeLabel={badgeLabel}
+                    isLcpCandidate={isLcpCandidate}
+                  />
 
                   {/* 2. Konten di Bawah Foto: Kota/Provinsi, Judul Serif, Kotak Ringkas Wasilah Hajat, Cuplikan */}
                   <div className="space-y-1 px-0.5">

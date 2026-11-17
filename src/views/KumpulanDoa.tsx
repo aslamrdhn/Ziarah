@@ -55,58 +55,78 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   const { isUnlocked: isBarokahUnlocked } = useVerifiedBarokahUnlock('barokah', requireManualVerification);
 
   useEffect(() => {
-    const unsubSettings = onSnapshot(
-      doc(db, 'settings', 'infaq'),
-      (snap) => {
-        if (snap.exists()) {
-          const d = snap.data();
-          if (d.rubrikGate && d.rubrikGate.requireManualVerification !== undefined) {
-            setRequireManualVerification(Boolean(d.rubrikGate.requireManualVerification));
+    try {
+      const unsubSettings = onSnapshot(
+        doc(db, 'settings', 'infaq'),
+        (snap) => {
+          if (snap.exists()) {
+            const d = snap.data();
+            if (d.rubrikGate && d.rubrikGate.requireManualVerification !== undefined) {
+              setRequireManualVerification(Boolean(d.rubrikGate.requireManualVerification));
+            }
+            if (Array.isArray(d.curatedDoas)) {
+              setCuratedDoas(d.curatedDoas);
+            }
+            if (Array.isArray(d.deletedDoaIds)) {
+              setDeletedDoaIds(d.deletedDoaIds);
+            }
           }
-          if (Array.isArray(d.curatedDoas)) {
-            setCuratedDoas(d.curatedDoas);
-          }
-          if (Array.isArray(d.deletedDoaIds)) {
-            setDeletedDoaIds(d.deletedDoaIds);
-          }
-        }
-      },
-      () => {}
-    );
-    return () => unsubSettings();
+        },
+        () => {}
+      );
+      return () => {
+        try {
+          unsubSettings();
+        } catch {}
+      };
+    } catch {
+      return undefined;
+    }
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'contributions'), where('status', '==', 'approved'));
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const items: DoaKaromahItem[] = [];
-        snapshot.docs.forEach((docSnap) => {
-          const d = docSnap.data();
-          if (d.type === 'doa') {
-            items.push({
-              id: `doa-contrib-${docSnap.id}`,
-              siteId: d.siteId || 'nusantara',
-              siteName: d.targetName || 'Waliyullah Nusantara',
-              type: 'doa',
-              title: `Amalan & Doa: ${d.targetName || 'Waliyullah'} (Kontribusi ${d.contributorName || 'Jamaah'})`,
-              barokahHook:
-                'Amalan tawassul yang diamalkan para peziarah untuk memohon ketenangan batin, kelapangan rezeki halal, dan keberkahan keluarga.',
-              text: sanitizePureArabicText(d.content || ''),
-              translation: d.translation || undefined,
-            });
-          }
-        });
-        setApprovedCommunityDoas(items);
-      },
-      () => {}
-    );
-    return () => unsubscribe();
+    try {
+      const q = query(collection(db, 'contributions'), where('status', '==', 'approved'));
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          const items: DoaKaromahItem[] = [];
+          snapshot.docs.forEach((docSnap) => {
+            const d = docSnap.data();
+            if (d.type === 'doa') {
+              items.push({
+                id: `doa-contrib-${docSnap.id}`,
+                siteId: d.siteId || 'nusantara',
+                siteName: d.targetName || 'Waliyullah Nusantara',
+                type: 'doa',
+                title: `Amalan & Doa: ${d.targetName || 'Waliyullah'} (Kontribusi ${d.contributorName || 'Jamaah'})`,
+                barokahHook:
+                  'Amalan tawassul yang diamalkan para peziarah untuk memohon ketenangan batin, kelapangan rezeki halal, dan keberkahan keluarga.',
+                text: sanitizePureArabicText(d.content || ''),
+                translation: d.translation || undefined,
+              });
+            }
+          });
+          setApprovedCommunityDoas(items);
+        },
+        () => {}
+      );
+      return () => {
+        try {
+          unsubscribe();
+        } catch {}
+      };
+    } catch {
+      return undefined;
+    }
   }, []);
 
   const handleCopy = (id: string, text: string) => {
-    navigator.clipboard.writeText(text);
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        void navigator.clipboard.writeText(text);
+      }
+    } catch {}
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -212,7 +232,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
     });
   };
 
-  if (isLoading) {
+  if (isLoading && (!ziarahSites || ziarahSites.length === 0)) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-12 text-slate-500">
         <div className="w-8 h-8 border-2 border-slate-200 border-t-emerald-700 rounded-full animate-spin mb-4" />
@@ -331,7 +351,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
           </div>
         )}
 
-        {/* Banner Gembok Paywall Rp 2.000 di Atas Daftar 583 Doa Khusus Wali */}
+        {/* Banner Gembok Paywall Rp 2.000 di Atas Daftar 549 Doa Khusus Wali */}
         {!isBarokahUnlocked && (
           <div className="bg-white rounded-3xl border-2 border-emerald-700/30 p-5 sm:p-7 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1.5 max-w-xl">

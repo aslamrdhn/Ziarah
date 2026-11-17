@@ -9,8 +9,24 @@ export function slugifySiteText(input: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-export function getSiteSlug(site: Pick<ZiarahSite, 'id' | 'title' | 'location'>): string {
-  const titleSlug = slugifySiteText(site.title);
+export function isRoleDescriptionTitle(rawTitle?: string | null): boolean {
+  const cleaned = String(rawTitle || '').trim();
+  return /^(pendiri|sesepuh|mursyid|ulama|waliyullah|wali\s+songo|waliyyul|mahaguru|maha\s+guru|pelopor|presiden|pahlawan|pengarang|penyusun|mufti|imam\s+besar|qadhi|tokoh|putra|putri|cucu|panglima|pejuang|penjaga|pencipta|arsitek|perintis|guru\s+besar|raja\s+pertama|raja\s+ke-|sultan\s+pertama|penyebar\s+islam|adipati\s+semarang|pecinta\s+agung|utusan\s+kesultanan|leluhur\s+raja|khodimul\s+maulid|pangeran\s+majapahit\s+murid|poros\s+sanad)\b/i.test(
+    cleaned
+  );
+}
+
+export function getSiteSlug(
+  site: Pick<ZiarahSite, 'id' | 'title' | 'location'> & { name?: string }
+): string {
+  const rawName = String(site.name || '').trim();
+  const rawTitle = String(site.title || '').trim();
+  const baseSource =
+    rawName && isRoleDescriptionTitle(rawTitle)
+      ? formatMakamHeading(rawName.split(/\s+serta\s+|\s+[—–]\s+/i)[0])
+      : rawTitle || rawName;
+
+  const titleSlug = slugifySiteText(baseSource);
   const citySlug = slugifySiteText(site.location?.city || '');
   if (!citySlug || titleSlug.includes(citySlug)) {
     return titleSlug || slugifySiteText(site.id);
@@ -18,7 +34,9 @@ export function getSiteSlug(site: Pick<ZiarahSite, 'id' | 'title' | 'location'>)
   return `${titleSlug}-${citySlug}`;
 }
 
-export function getSitePath(site: Pick<ZiarahSite, 'id' | 'title' | 'location'>): string {
+export function getSitePath(
+  site: Pick<ZiarahSite, 'id' | 'title' | 'location'> & { name?: string }
+): string {
   return `/situs/${getSiteSlug(site)}`;
 }
 
@@ -43,10 +61,11 @@ export function findSiteByParam(sites: ZiarahSite[], rawParam?: string | null): 
   const byCanonicalSlug = sites.find((s) => getSiteSlug(s) === param);
   if (byCanonicalSlug) return byCanonicalSlug;
 
-  // 3. Title-only slug or title+city slug match (only if non-ambiguous: altMatches.length === 1)
+  // 3. Title-only slug, legacy role-title slug, or name+city slug match (only if non-ambiguous: altMatches.length === 1)
   const normalizedParam = slugifySiteText(param);
   const altMatches = sites.filter((s) => {
     const tSlug = slugifySiteText(s.title);
+    const nSlug = slugifySiteText(s.name || '');
     const cSlug = slugifySiteText(s.location?.city || '');
     const preApostropheSlug = s.title.includes("'")
       ? slugifySiteText(s.title.split("'")[0])
@@ -60,6 +79,7 @@ export function findSiteByParam(sites: ZiarahSite[], rawParam?: string | null): 
       `${tSlug}-${cSlug}` === normalizedParam ||
       fullTitleSlug === normalizedParam ||
       `${fullTitleSlug}-${cSlug}` === normalizedParam ||
+      (Boolean(nSlug) && isRoleDescriptionTitle(s.title) && (nSlug === normalizedParam || `${nSlug}-${cSlug}` === normalizedParam)) ||
       Boolean(
         preApostropheSlug &&
           (preApostropheSlug === normalizedParam || `${preApostropheSlug}-${cSlug}` === normalizedParam)
@@ -73,6 +93,8 @@ export function findSiteByParam(sites: ZiarahSite[], rawParam?: string | null): 
   return null;
 }
 
+export const findSiteBySlug = findSiteByParam;
+
 /**
  * Formats a tomb/site heading so that "Makam" is never duplicated ("Makam Makam ...")
  * when site.title or site.name already begins with "Makam", "Kompleks Makam", "Astana", or "Masjid".
@@ -84,7 +106,7 @@ export function formatMakamHeading(rawTitle?: string | null): string {
     .trim();
   if (!cleaned) return 'Makam Waliyullah';
   if (
-    /^(makam|kompleks\s+makam|astana|kubah|pasarean|masjid)\b/i.test(cleaned) ||
+    /^(makam|kompleks\s+makam|astana|kubah|pasarean|masjid|pesantren|situs|petilasan)\b/i.test(cleaned) ||
     /\b(makam|maqbarah|astana|pasarean)\b/i.test(cleaned)
   ) {
     return cleaned;
@@ -100,11 +122,8 @@ export function getSiteDisplayHeading(site: Pick<ZiarahSite, 'name' | 'title'>):
   const rawTitle = String(site.title || '').trim();
 
   const nameStartsWithTombNoun =
-    /^(makam|kompleks\s+makam|astana|kubah|pasarean|masjid|petilasan|situs)\b/i.test(rawName);
-  const titleLooksLikeRole =
-    /^(pendiri|sesepuh|mursyid|ulama|waliyullah|mahaguru|pelopor|presiden|pahlawan|pengarang|penyusun|mufti|imam|qadhi|tokoh|putra|putri|cucu|panglima|pejuang|penjaga|pencipta|arsitek|perintis|guru\s+besar|raja\s+pertama|sultan\s+pertama|penyebar\s+islam)\b/i.test(
-      rawTitle
-    );
+    /^(makam|kompleks\s+makam|astana|kubah|pasarean|masjid|petilasan|situs|pesantren)\b/i.test(rawName);
+  const titleLooksLikeRole = isRoleDescriptionTitle(rawTitle);
 
   if (nameStartsWithTombNoun || titleLooksLikeRole) {
     return {

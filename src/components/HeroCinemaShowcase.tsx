@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Film, Compass, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
-import { initialSites as ziarahSites } from '../data/initialSites';
-import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
+import { SITES } from '../data/sites';
+import { optimizeSiteImageUrl } from '../lib/imageOptimizer';
+import { useAuthenticSiteImage } from '../lib/authenticSiteImages';
 
-interface CinemaScene {
+export interface CinemaScene {
   id: string;
   index: string;
   title: string;
@@ -13,9 +14,11 @@ interface CinemaScene {
   narration: string;
   videoUrl: string;
   fallbackImageUrl: string;
+  secondaryFallbackImageUrl: string;
+  siteId: string;
 }
 
-const CINEMA_SCENES: CinemaScene[] = [
+export const CINEMA_SCENES: CinemaScene[] = [
   {
     id: 'scene-walisongo',
     index: 'BABAK I · JALUR PESISIR JAWA',
@@ -27,9 +30,9 @@ const CINEMA_SCENES: CinemaScene[] = [
       'Menelusuri jejak sembilan wali pelopor dakwah Nusantara yang memadukan arsitektur klasik Jawa dengan nilai-nilai tauhid yang teduh dan penuh kebijaksanaan.',
     videoUrl:
       'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-city-buildings-on-a-sunny-day-41465-large.mp4',
-    fallbackImageUrl:
-      ziarahSites[0]?.imageUrl ||
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Masjid_Agung_Demak_2022.jpg/1280px-Masjid_Agung_Demak_2022.jpg',
+    fallbackImageUrl: '/thumbs/wali-1.webp',
+    secondaryFallbackImageUrl: '/thumbs/wali-5.webp',
+    siteId: 'syekh-maulana-malik-ibrahim',
   },
   {
     id: 'scene-ulama',
@@ -42,7 +45,9 @@ const CINEMA_SCENES: CinemaScene[] = [
       'Mata rantai keilmuan para ulama besar yang melahirkan jaringan pesantren, karya kitab turats, dan keteladanan akhlak bagi jutaan peziarah.',
     videoUrl:
       'https://assets.mixkit.co/videos/preview/mixkit-sunlight-passing-through-the-trees-in-a-forest-34443-large.mp4',
-    fallbackImageUrl: ziarahSites[9]?.imageUrl || ziarahSites[1]?.imageUrl || '',
+    fallbackImageUrl: '/thumbs/wali-2.webp',
+    secondaryFallbackImageUrl: '/thumbs/wali-6.webp',
+    siteId: 'sunan-ampel',
   },
   {
     id: 'scene-habaib',
@@ -54,7 +59,9 @@ const CINEMA_SCENES: CinemaScene[] = [
     narration:
       'Untaian wirid, Ratib Al-Haddad, dan tradisi maulid yang terus bergema di maqam para dzurriyah Rasulullah SAW di sepanjang pesisir kepulauan Indonesia.',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4',
-    fallbackImageUrl: ziarahSites[15]?.imageUrl || ziarahSites[2]?.imageUrl || '',
+    fallbackImageUrl: '/thumbs/wali-11.webp',
+    secondaryFallbackImageUrl: '/thumbs/wali-10.webp',
+    siteId: 'habib-husein-luar-batang',
   },
   {
     id: 'scene-auliya',
@@ -67,7 +74,9 @@ const CINEMA_SCENES: CinemaScene[] = [
       'Menghormati jejak para sultan sufi dan waliyullah pembuka tanah perdikan yang merawat harmoni spiritual masyarakat Nusantara lintas abad.',
     videoUrl:
       'https://assets.mixkit.co/videos/preview/mixkit-waves-coming-to-the-beach-5016-large.mp4',
-    fallbackImageUrl: ziarahSites[20]?.imageUrl || ziarahSites[3]?.imageUrl || '',
+    fallbackImageUrl: '/thumbs/wali-9.webp',
+    secondaryFallbackImageUrl: '/thumbs/wali-4.webp',
+    siteId: 'sunan-gunung-jati',
   },
 ];
 
@@ -89,7 +98,13 @@ export const HeroCinemaShowcase: React.FC<HeroCinemaShowcaseProps> = React.memo(
   const isVisibleRef = useRef<boolean>(true);
 
   const activeScene = CINEMA_SCENES[currentSceneIdx];
-  const optimizedHeroImage = optimizeSiteImageUrl(activeScene.fallbackImageUrl, 720, 76);
+  const matchedSite = SITES.find((s) => s.id === activeScene.siteId);
+  const authenticSceneImg = useAuthenticSiteImage(matchedSite);
+  const optimizedHeroImage = optimizeSiteImageUrl(
+    activeScene.fallbackImageUrl || authenticSceneImg || '/thumbs/wali-1.webp',
+    720,
+    76
+  );
 
   // Pause video when scrolled out of viewport
   useEffect(() => {
@@ -152,8 +167,17 @@ export const HeroCinemaShowcase: React.FC<HeroCinemaShowcaseProps> = React.memo(
       {/* LAYER 1: OPTIMIZED LCP POSTER + ON-DEMAND HTML5 VIDEO */}
       <div className="absolute inset-0 w-full h-full">
         <img
+          key={activeScene.id}
           src={optimizedHeroImage}
-          onError={(e) => handleOptimizedImageError(e, activeScene.fallbackImageUrl)}
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (!img.dataset.fallbackSecondary && activeScene.secondaryFallbackImageUrl) {
+              img.dataset.fallbackSecondary = 'true';
+              img.src = activeScene.secondaryFallbackImageUrl;
+              return;
+            }
+            img.src = '/thumbs/wali-1.webp';
+          }}
           alt={activeScene.title}
           width={720}
           height={450}

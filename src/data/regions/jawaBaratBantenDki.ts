@@ -518,7 +518,7 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid & Kompleks Pesantren Cibaduyut', 'Cungkup Maqbarah Mama Cibaduyut', 'Tempat Wudhu', 'Area Parkir'],
     openingHours: '07:00 - 21:00 WIB',
     references: [
-      'ruhimat, Mumu dkk. (2015). Biografi Ulama-Ulama Jawa Barat. Puslitbang Lektur dan Khazanah Keagamaan Kemenag RI.',
+      'Ruhimat, Mumu dkk. (2015). Biografi Ulama-Ulama Jawa Barat. Puslitbang Lektur dan Khazanah Keagamaan Kemenag RI.',
       'Ekadjati, Edi S. (1975). Penyebaran Agama Islam di Jawa Barat. Pustaka Jaya.',
       'Arsip Sejarah Pondok Pesantren Al-Basyariyah / Cibaduyut Bandung & Pesantren Kudang Tasikmalaya.',
     ],

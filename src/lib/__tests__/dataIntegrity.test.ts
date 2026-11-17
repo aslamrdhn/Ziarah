@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { SITES } from '../../data/sites';
 import { INITIAL_SITES, ALL_PROVINCES } from '../../data/initialSites';
 import { mergeLocalAndCloudSites } from '../../context/SiteContext';
-import { getSiteDisplayHeading } from '../siteSlugs';
+import { getSiteDisplayHeading, getSiteSlug, findSiteBySlug } from '../siteSlugs';
+import { CINEMA_SCENES } from '../../components/HeroCinemaShowcase';
+import { optimizeSiteImageUrl } from '../imageOptimizer';
+import { getRegionalArchitecturalPhoto } from '../authenticSiteImages';
 import { JAWA_BARAT_BANTEN_DKI_SITES } from '../../data/regions/jawaBaratBantenDki';
 import { JAWA_TENGAH_DIY_SITES } from '../../data/regions/jawaTengahDiy';
 import { JAWA_TIMUR_MADURA_SITES } from '../../data/regions/jawaTimurMadura';
@@ -624,6 +627,52 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
     const mergedWithCurator = mergeLocalAndCloudSites(INITIAL_SITES, [curatedDoc]);
     expect(mergedWithCurator.length).toBe(183);
     expect(mergedWithCurator[0].openingHours).toBe('Buka 24 Jam (Update Kurator Resmi)');
+  });
+
+  it('memastikan 0 situs di SITES memakai /pwa-512x512.png atau /logo-zn.svg, ke-4 bab Dokumenter Visual memiliki foto valid, dan slug terbentuk dari nama tokoh dengan fallback alias lama', () => {
+    expect(optimizeSiteImageUrl('')).not.toContain('pwa-512x512.png');
+    expect(optimizeSiteImageUrl('/pwa-512x512.png')).toBe('/thumbs/wali-1.webp');
+
+    for (const site of SITES) {
+      expect(site.imageUrl).toBeTruthy();
+      expect(site.imageUrl, `Logo ZN on ${site.id}`).not.toBe('/pwa-512x512.png');
+      expect(site.imageUrl, `Logo SVG on ${site.id}`).not.toBe('/logo-zn.svg');
+      expect(site.imageUrl).not.toContain('pwa-512x512.png');
+      const fallbackPhoto = getRegionalArchitecturalPhoto(site);
+      expect(fallbackPhoto).toMatch(/^\/thumbs\/wali-(?:[1-9]|1[0-2])\.webp$/);
+    }
+
+    expect(CINEMA_SCENES).toHaveLength(4);
+    for (const scene of CINEMA_SCENES) {
+      expect(scene.fallbackImageUrl).toBeTruthy();
+      expect(scene.fallbackImageUrl).not.toContain('pwa-512x512.png');
+      expect(scene.fallbackImageUrl).not.toContain('logo-zn.svg');
+      expect(scene.fallbackImageUrl).toMatch(/^\/thumbs\/wali-(?:[1-9]|1[0-2])\.webp$/);
+      expect(scene.secondaryFallbackImageUrl).toMatch(/^\/thumbs\/wali-(?:[1-9]|1[0-2])\.webp$/);
+    }
+
+    const kholil = SITES.find((s) => s.id === 'syaichona-kholil-bangkalan');
+    expect(kholil).toBeDefined();
+    if (kholil) {
+      expect(getSiteSlug(kholil)).toBe('makam-syaichona-muhammad-kholil-bangkalan');
+      expect(
+        findSiteBySlug(
+          SITES,
+          'maha-guru-ulama-pesantren-nusantara-waliyullah-quthbul-zaman-pemberi-restu-berdirinya-nu-bangkalan'
+        )?.id
+      ).toBe('syaichona-kholil-bangkalan');
+    }
+
+    const bengkulu = SITES.find((s) => s.id === 'syekh-burhanuddin-imam-senggolo-bengkulu');
+    expect(bengkulu).toBeDefined();
+    if (bengkulu) {
+      expect(getSiteSlug(bengkulu)).toContain('makam-syekh-burhanuddin');
+      expect(getSiteSlug(bengkulu)).not.toMatch(/^ulama-sufi/);
+    }
+
+    const cibaduyut = SITES.find((s) => s.id === 'mama-cibaduyut-kudang');
+    expect(cibaduyut?.references?.join(' ')).toContain('Ruhimat, Mumu dkk. (2015)');
+    expect(cibaduyut?.references?.join(' ')).not.toContain('ruhimat, Mumu dkk.');
   });
 });
 

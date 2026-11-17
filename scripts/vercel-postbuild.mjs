@@ -44,8 +44,21 @@ function slugifySiteText(input) {
     .replace(/^-+|-+$/g, '');
 }
 
-function getSiteSlug(title, city, id) {
-  const titleSlug = slugifySiteText(title);
+function isRoleDescriptionTitle(rawTitle) {
+  const cleaned = String(rawTitle || '').trim();
+  return /^(pendiri|sesepuh|mursyid|ulama|waliyullah|wali\s+songo|waliyyul|mahaguru|maha\s+guru|pelopor|presiden|pahlawan|pengarang|penyusun|mufti|imam\s+besar|qadhi|tokoh|putra|putri|cucu|panglima|pejuang|penjaga|pencipta|arsitek|perintis|guru\s+besar|raja\s+pertama|raja\s+ke-|sultan\s+pertama|penyebar\s+islam|adipati\s+semarang|pecinta\s+agung|utusan\s+kesultanan|leluhur\s+raja|khodimul\s+maulid|pangeran\s+majapahit\s+murid|poros\s+sanad)\b/i.test(
+    cleaned
+  );
+}
+
+function getSiteSlug(title, city, id, name = '') {
+  const rawName = String(name || '').trim();
+  const rawTitle = String(title || '').trim();
+  const baseSource =
+    rawName && isRoleDescriptionTitle(rawTitle)
+      ? formatMakamHeading(rawName.split(/\s+serta\s+|\s+[—–]\s+/i)[0])
+      : rawTitle || rawName;
+  const titleSlug = slugifySiteText(baseSource);
   const citySlug = slugifySiteText(city);
   if (!citySlug || titleSlug.includes(citySlug)) {
     return titleSlug || slugifySiteText(id);
@@ -137,7 +150,7 @@ function parseSiteBlocksFromRawTs(raw) {
     const sanad = extractQuotedField(block, 'sanad', '');
     const karomah = extractPublicTeaserField(block, 'karomah', '');
     const untoldStory = extractPublicTeaserField(block, 'untoldStory', '');
-    const slug = getSiteSlug(title, city, id);
+    const slug = getSiteSlug(title, city, id, name);
     extracted.push({
       id,
       slug,

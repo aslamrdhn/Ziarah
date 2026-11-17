@@ -8,6 +8,7 @@ import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRec
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useVerifiedDonationUnlock, useVerifiedBarokahUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
+import { useAuthenticSiteImage, getRegionalArchitecturalPhoto, getSiteGoogleMapsPhotosUrl } from '../lib/authenticSiteImages';
 import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide, estimateHaulGregorian2026, sanitizeHistoricalLogisticsText, sanitizePureArabicText } from '../lib/siteLogistics';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
 import { getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
@@ -247,6 +248,8 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
     setTasbihCount(0);
     setCopiedPrayerSheet(false);
   }, [site?.id]);
+
+  const resolvedSiteImageUrl = useAuthenticSiteImage(site);
 
   // Reset tab & subscribe to real-time stories from Firestore when site changes
   useEffect(() => {
@@ -831,15 +834,26 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
               {/* Compact Editorial Cover Header */}
               <div className="relative shrink-0 h-36 sm:h-44 bg-slate-900">
                 <img
-                  src={optimizeSiteImageUrl(site.imageUrl, 720, 78)}
-                  onError={(e) => handleOptimizedImageError(e, site.imageUrl)}
-                  alt={site.title}
+                  src={optimizeSiteImageUrl(resolvedSiteImageUrl, 720, 78)}
+                  onError={(e) => handleOptimizedImageError(e, resolvedSiteImageUrl, getRegionalArchitecturalPhoto(site))}
+                  alt={getSiteDisplayHeading(site).heading}
                   referrerPolicy="no-referrer"
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent pointer-events-none" />
+
+                <div className="absolute top-3 left-3 z-20 pointer-events-auto">
+                  <a
+                    href={getSiteGoogleMapsPhotosUrl(site)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900/75 hover:bg-slate-900/95 backdrop-blur-md text-white text-[11px] font-medium border border-white/20 shadow-sm transition-colors"
+                  >
+                    <span>📷 Lihat Foto Asli Lokasi di Google Maps</span>
+                  </a>
+                </div>
 
                 <div className="absolute top-3 right-3 z-20 flex items-center gap-2 pointer-events-auto">
                   {onToggleSave && (
@@ -1589,6 +1603,15 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 >
                   <Navigation className="w-3.5 h-3.5 mr-2" strokeWidth={1.75} />
                   Buka Navigasi Rute (Google Maps)
+                </a>
+                <a
+                  href={getSiteGoogleMapsPhotosUrl(site)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full sm:w-auto flex items-center justify-center py-2.5 px-4 bg-stone-100 hover:bg-stone-200/80 text-stone-800 rounded-xl font-medium text-xs sm:text-sm transition-colors"
+                >
+                  <span>📷 Lihat Foto Asli Lokasi di Google Maps</span>
                 </a>
                 {onViewOnMap && (
                   <button

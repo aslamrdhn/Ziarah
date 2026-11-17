@@ -4,6 +4,7 @@ import { JAWA_TIMUR_MADURA_SITES } from './regions/jawaTimurMadura';
 import { SUMATERA_SITES } from './regions/sumatera';
 import { KALIMANTAN_SULAWESI_SITES } from './regions/kalimantanSulawesi';
 import { BALI_NUSA_MALUKU_PAPUA_SITES } from './regions/baliNusaMalukuPapua';
+import { getRegionalArchitecturalPhoto, isValidNonLogoImageUrl } from '../lib/authenticSiteImages';
 
 export type SourceClassification =
   | 'catatan_sejarah'
@@ -3886,9 +3887,25 @@ function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
         ? 'Kurasi Literatur Sejarah & Tradisi Pesantren (Terbuka untuk Tinjauan Pengurus Maqbarah)'
         : 'Kurasi Literatur Daerah & Tradisi Lisan (Terbuka untuk Tinjauan Pengurus Maqbarah)';
 
+  const rawImg = String(site.imageUrl || '').trim();
+  const resolvedImageUrl =
+    isValidNonLogoImageUrl(rawImg) &&
+    (LOCAL_THUMB_WIKIMEDIA_URLS.has(rawImg) ||
+      rawImg.startsWith('/thumbs/') ||
+      rawImg.startsWith('/images/') ||
+      (site as any).editedByCurator === true)
+      ? rawImg
+      : getRegionalArchitecturalPhoto({
+          id: site.id,
+          legacyId: mappedLegacyId,
+          name: site.name,
+          category: site.category,
+        });
+
   return {
     ...site,
     ...(mappedLegacyId ? { legacyId: mappedLegacyId } : {}),
+    imageUrl: resolvedImageUrl,
     karomah: normalizedKaromah,
     untoldStory: normalizedUntoldStory,
     doaKhusus: normalizedDoa,

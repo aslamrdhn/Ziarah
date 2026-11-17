@@ -147,7 +147,7 @@ export const BacaanZiarah: React.FC = () => {
       const kList = Array.isArray(s.karomah) ? s.karomah.filter(Boolean) : [];
       count += kList.length;
     }
-    return count || 583;
+    return count || 549;
   }, [ziarahSites]);
   // Load initial preferences & tasbih state from localStorage
   const [fontSize, setFontSize] = useState<'A' | 'A+' | 'A++'>(() => {
@@ -665,7 +665,7 @@ export const BacaanZiarah: React.FC = () => {
                   to="/doa"
                   className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline underline-offset-4 shrink-0"
                 >
-                  Buka 583 Wirid &amp; Doa Khusus Para Wali →
+                  Buka {totalWiridCount} Wirid &amp; Doa Khusus Para Wali →
                 </Link>
               </div>
 
