@@ -222,7 +222,6 @@ export function getSiteBarokahHajat(
 }
 
 /**
-/**
  * Menjamin teks Arab (dir="rtl") murni berhuruf Arab tanpa sisipan huruf Latin [a-zA-Z]
  * yang dapat merusak algoritma bidirectional Unicode dan tanda kurung RTL.
  */
@@ -231,9 +230,12 @@ export function sanitizePureArabicText(rawArab?: string | null): string {
     'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى حَضْرَةِ هٰذَا الْوَلِيِّ الصَّالِحِ قَدَّسَ اللهُ سِرَّهُ الْعَزِيْزَ، شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ.';
   if (!rawArab) return fallbackPureArab;
   const cleaned = String(rawArab)
-    .replace(/\(\s*إِلَى حَضْرَةِ[^)]*[a-zA-Z][^)]*\)/g, '')
+    .replace(/\(\s*إِلَى حَضْرَةِ[^)]*[a-zA-Z][\s\S]*$/g, '')
+    .replace(/\([^()]*[a-zA-Z][^()]*\)/g, '')
+    .replace(/\([^()]*[a-zA-Z][^()]*\)/g, '')
     .replace(/[a-zA-Z]+/g, '')
-    .replace(/\(\s*\)/g, '')
+    .replace(/\(\s*[-–—·•,.\s]*\s*\)/g, '')
+    .replace(/[()]+$/g, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
   return cleaned.length >= 10 ? cleaned : fallbackPureArab;

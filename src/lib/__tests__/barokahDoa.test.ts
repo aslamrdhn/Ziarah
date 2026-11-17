@@ -149,10 +149,11 @@ describe('Barokah & Doa Khusus (Rp 5.000) & Pemisahan Kunci Donasi', () => {
     const { FALLBACK_MUNAJAT_ITEMS } = await import('../transferProof');
     const { stripMarkdownAsterisks } = await import('../formatText');
 
-    // 1. Pastikan sanitizePureArabicText membersihkan sisipan nama Latin dari teks Arab
-    const dirtyArab = 'إِلَى حَضْرَةِ رُوْحِ الْوَلِيِّ الصَّالِحِ (Syekh Maulana Malik Ibrahim (Sunan Gresik)) رَحِمَهُ اللهُ... الْفَاتِحَةُ';
+    // 1. Pastikan sanitizePureArabicText membersihkan sisipan nama Latin bersarang dari teks Arab
+    const dirtyArab = 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ... الْفَاتِحَةُ (إِلَى حَضْرَةِ Syekh (Maulana Malik Ibrahim))';
     const cleanArab = sanitizePureArabicText(dirtyArab);
     expect(cleanArab).not.toMatch(/[a-zA-Z]/);
+    expect(cleanArab).not.toContain(')');
     expect(cleanArab).toContain('الْفَاتِحَةُ');
 
     // 2. Pastikan sanitizeInfaqPrograms membuang kartu placeholder "Program Kebaikan Baru"

@@ -3819,9 +3819,20 @@ function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
     : site.untoldStory;
 
   let normalizedDoa = site.doaKhusus;
+  const stripLatinFromArab = (str?: string): string =>
+    String(str || '')
+      .replace(/\(\s*إِلَى حَضْرَةِ[^)]*[a-zA-Z][\s\S]*$/g, '')
+      .replace(/\([^()]*[a-zA-Z][^()]*\)/g, '')
+      .replace(/\([^()]*[a-zA-Z][^()]*\)/g, '')
+      .replace(/[a-zA-Z]+/g, '')
+      .replace(/\(\s*[-–—·•,.\s]*\s*\)/g, '')
+      .replace(/[()]+$/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
   if (rawAny.doaKhusus && !Array.isArray(rawAny.doaKhusus) && typeof rawAny.doaKhusus === 'object') {
     const dObj = rawAny.doaKhusus as Record<string, string>;
-    const arabText = dObj.arab || dObj.text || '';
+    const arabText = stripLatinFromArab(dObj.arab || dObj.text || '');
     const terjemahText = dObj.terjemahan || dObj.translation || '';
     normalizedDoa = [
       {
@@ -3834,19 +3845,22 @@ function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
       },
     ];
   } else if (Array.isArray(site.doaKhusus) && site.doaKhusus.length > 0) {
-    normalizedDoa = site.doaKhusus.map((d) => ({
-      ...d,
-      text: d.text || d.arab || '',
-      arab: d.arab || d.text || '',
-      translation: d.translation || d.terjemahan || '',
-      terjemahan: d.terjemahan || d.translation || '',
-    }));
+    normalizedDoa = site.doaKhusus.map((d) => {
+      const cleanArab = stripLatinFromArab(d.text || d.arab || '');
+      return {
+        ...d,
+        text: cleanArab,
+        arab: cleanArab,
+        translation: d.translation || d.terjemahan || '',
+        terjemahan: d.terjemahan || d.translation || '',
+      };
+    });
   }
 
   if (Array.isArray(normalizedDoa) && normalizedDoa.length > 0) {
     const first = normalizedDoa[0];
     Object.defineProperties(normalizedDoa, {
-      arab: { value: first.arab || first.text || '', enumerable: false, configurable: true },
+      arab: { value: stripLatinFromArab(first.arab || first.text || ''), enumerable: false, configurable: true },
       latin: { value: first.latin || '', enumerable: false, configurable: true },
       terjemahan: {
         value: first.terjemahan || first.translation || '',

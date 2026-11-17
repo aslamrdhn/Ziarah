@@ -1,17 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { X, Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { X, Send, CheckCircle2, Loader2, AlertCircle, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { collection, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl } from '../lib/sanitize';
+import { ALL_PROVINCES } from '../data/initialSites';
+import { extractCoordinatesFromMapsUrl } from '../views/AdminKurator';
+
+const OFFICIAL_34_PROVINCES = ALL_PROVINCES.filter((p) => p !== 'Semua Provinsi');
 
 interface KontribusiModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTab?: 'baru' | 'lokasi' | 'karomah' | 'rubrik' | 'doa';
 }
 
-export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'baru' | 'karomah' | 'doa'>('baru');
+function resolveTabKey(tab?: KontribusiModalProps['initialTab']): 'baru' | 'karomah' | 'doa' {
+  if (tab === 'rubrik' || tab === 'karomah') return 'karomah';
+  if (tab === 'doa') return 'doa';
+  return 'baru';
+}
+
+export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClose, initialTab = 'baru' }) => {
+  const [activeTab, setActiveTab] = useState<'baru' | 'karomah' | 'doa'>(() => resolveTabKey(initialTab));
   const [contributorName, setContributorName] = useState('');
   const [contributorContact, setContributorContact] = useState('');
   const [targetName, setTargetName] = useState('');
@@ -19,12 +30,20 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
   const [city, setCity] = useState('');
   const [province, setProvince] = useState('');
   const [mapsUrl, setMapsUrl] = useState('');
+  const [extractedCoords, setExtractedCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [coordsFeedbackMsg, setCoordsFeedbackMsg] = useState<string | null>(null);
   const [content, setContent] = useState('');
   const [translation, setTranslation] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(resolveTabKey(initialTab));
+    }
+  }, [isOpen, initialTab]);
 
   useEffect(() => {
     if (isOpen && auth.currentUser) {
@@ -37,12 +56,27 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
     }
   }, [isOpen]);
 
+  const handleExtractCoords = () => {
+    const coords = extractCoordinatesFromMapsUrl(mapsUrl);
+    if (coords) {
+      setExtractedCoords(coords);
+      setCoordsFeedbackMsg(`Koordinat GPS terdeteksi: ${coords.lat}, ${coords.lng}`);
+    } else {
+      setExtractedCoords(null);
+      setCoordsFeedbackMsg(
+        'Koordinat @lat,lng atau ?q=lat,lng belum ditemukan pada tautan. Pastikan menempelkan URL Google Maps lengkap yang memuat angka koordinat.'
+      );
+    }
+  };
+
   const resetForm = () => {
     setTargetName('');
     setCategory('Ulama Nusantara');
     setCity('');
     setProvince('');
     setMapsUrl('');
+    setExtractedCoords(null);
+    setCoordsFeedbackMsg(null);
     setContent('');
     setTranslation('');
     setErrorMsg(null);
@@ -303,29 +337,58 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1.5">Provinsi *</label>
+                          <label htmlFor="kontribusi-provinsi-select" className="block text-xs font-bold text-slate-700 mb-1.5">Provinsi *</label>
+                          <select
+                            id="kontribusi-provinsi-select"
+                            required
+                            value={province}
+                            onChange={(e) => setProvince(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-slate-900 text-xs sm:text-sm"
+                          >
+                            <option value="">-- Pilih Provinsi (34 Provinsi) --</option>
+                            {OFFICIAL_34_PROVINCES.map((prov) => (
+                              <option key={prov} value={prov}>
+                                {prov}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-slate-700">Link Google Maps / Alamat Lengkap *</label>
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             required
                             type="text"
-                            maxLength={100}
-                            value={province}
-                            onChange={(e) => setProvince(e.target.value)}
-                            placeholder="Contoh: Banten"
-                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-slate-900 text-xs sm:text-sm placeholder-slate-400"
+                            maxLength={500}
+                            value={mapsUrl}
+                            onChange={(e) => {
+                              setMapsUrl(e.target.value);
+                              setCoordsFeedbackMsg(null);
+                            }}
+                            placeholder="https://www.google.com/maps/@-6.8945,110.6376,17z atau alamat lengkap"
+                            className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-slate-900 text-xs sm:text-sm placeholder-slate-400"
                           />
+                          <button
+                            type="button"
+                            onClick={handleExtractCoords}
+                            className="px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 shrink-0 transition cursor-pointer"
+                          >
+                            <MapPin className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                            <span>Ekstrak Koordinat dari Link Maps</span>
+                          </button>
                         </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Link Google Maps / Alamat Lengkap *</label>
-                        <input
-                          required
-                          type="text"
-                          maxLength={500}
-                          value={mapsUrl}
-                          onChange={(e) => setMapsUrl(e.target.value)}
-                          placeholder="https://maps.app.goo.gl/... atau alamat lengkap"
-                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-slate-900 text-xs sm:text-sm placeholder-slate-400"
-                        />
+                        {coordsFeedbackMsg && (
+                          <p
+                            className={`text-xs font-medium px-3 py-2 rounded-xl border ${
+                              extractedCoords
+                                ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
+                                : 'bg-stone-100 text-stone-700 border-stone-200'
+                            }`}
+                          >
+                            {coordsFeedbackMsg}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1.5">Sejarah Singkat & Biografi Makam *</label>

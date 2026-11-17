@@ -1,16 +1,16 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { DaftarMakam } from './views/DaftarMakam';
+import { BacaanZiarah } from './views/BacaanZiarah';
+import { KebijakanKurasi } from './views/KebijakanKurasi';
+import { KumpulanDoa } from './views/KumpulanDoa';
+import { RubrikKisah } from './views/RubrikKisah';
 
 const KontribusiModal = lazy(() =>
   import('./components/KontribusiModal').then((m) => ({ default: m.KontribusiModal }))
 );
 const PetaLokasi = lazy(() => import('./views/PetaLokasi').then((m) => ({ default: m.PetaLokasi })));
-const BacaanZiarah = lazy(() => import('./views/BacaanZiarah').then((m) => ({ default: m.BacaanZiarah })));
-const KebijakanKurasi = lazy(() => import('./views/KebijakanKurasi').then((m) => ({ default: m.KebijakanKurasi })));
 const AdminKurator = lazy(() => import('./views/AdminKurator').then((m) => ({ default: m.AdminKurator })));
-const KumpulanDoa = lazy(() => import('./views/KumpulanDoa').then((m) => ({ default: m.KumpulanDoa })));
-const RubrikKisah = lazy(() => import('./views/RubrikKisah').then((m) => ({ default: m.RubrikKisah })));
 const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })));
 
 import type { ZiarahSite } from './data/sites';
@@ -27,7 +27,13 @@ export default function App() {
   const { copy } = useSiteCopy();
   const [selectedSite, setSelectedSite] = useState<ZiarahSite | null>(null);
   const [isKontribusiOpen, setIsKontribusiOpen] = useState(false);
+  const [kontribusiInitialTab, setKontribusiInitialTab] = useState<'baru' | 'karomah' | 'rubrik' | 'doa'>('baru');
   const [user, setUser] = useState<User | null>(null);
+
+  const handleOpenKontribusiModal = React.useCallback((tab: 'baru' | 'karomah' | 'rubrik' | 'doa' = 'baru') => {
+    setKontribusiInitialTab(tab);
+    setIsKontribusiOpen(true);
+  }, []);
 
   // State for saved items (all synced to localStorage + Cloud Firestore)
   const [savedSiteIds, setSavedSiteIds] = useState<string[]>([]);
@@ -505,7 +511,7 @@ export default function App() {
         {/* Editorial Glass Header (backdrop-blur applied on ::before so fixed descendants are never trapped) */}
         <header className="fixed top-0 left-0 right-0 z-[2000] pt-[env(safe-area-inset-top)] border-b border-stone-200/70 flex justify-center before:content-[''] before:absolute before:inset-0 before:bg-[#FAF8F5]/90 before:backdrop-blur-md before:-z-10 before:pointer-events-none">
           <div className="w-full max-w-6xl relative z-10">
-            <Navbar onOpenKontribusi={() => setIsKontribusiOpen(true)} />
+            <Navbar onOpenKontribusi={() => handleOpenKontribusiModal('baru')} />
           </div>
         </header>
 
@@ -528,7 +534,7 @@ export default function App() {
                     handleToggleSave={handleToggleSave}
                     savedDoas={savedDoas}
                     onToggleSaveDoa={handleToggleSaveDoa}
-                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                    onOpenKontribusi={() => handleOpenKontribusiModal('baru')}
                   />
                 }
               />
@@ -541,7 +547,7 @@ export default function App() {
                     handleToggleSave={handleToggleSave}
                     savedDoas={savedDoas}
                     onToggleSaveDoa={handleToggleSaveDoa}
-                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                    onOpenKontribusi={() => handleOpenKontribusiModal('baru')}
                   />
                 }
               />
@@ -555,7 +561,7 @@ export default function App() {
                     handleToggleSave={handleToggleSave}
                     savedDoas={savedDoas}
                     onToggleSaveDoa={handleToggleSaveDoa}
-                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                    onOpenKontribusi={() => handleOpenKontribusiModal('baru')}
                   />
                 }
               />
@@ -569,7 +575,7 @@ export default function App() {
                     handleToggleSave={handleToggleSave}
                     savedDoas={savedDoas}
                     onToggleSaveDoa={handleToggleSaveDoa}
-                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                    onOpenKontribusi={() => handleOpenKontribusiModal('baru')}
                   />
                 }
               />
@@ -583,7 +589,7 @@ export default function App() {
                     handleToggleSave={handleToggleSave}
                     savedDoas={savedDoas}
                     onToggleSaveDoa={handleToggleSaveDoa}
-                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                    onOpenKontribusi={() => handleOpenKontribusiModal('baru')}
                   />
                 }
               />
@@ -594,7 +600,7 @@ export default function App() {
                   <RubrikKisah
                     savedArticles={savedRubrik}
                     onToggleSaveArticle={handleToggleSaveRubrik}
-                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                    onOpenKontribusi={(tab) => handleOpenKontribusiModal(tab || 'rubrik')}
                   />
                 }
               />
@@ -614,7 +620,7 @@ export default function App() {
                     handleToggleSave={handleToggleSave}
                     savedDoas={savedDoas}
                     onToggleSaveDoa={handleToggleSaveDoa}
-                    onOpenKontribusi={() => setIsKontribusiOpen(true)}
+                    onOpenKontribusi={() => handleOpenKontribusiModal('baru')}
                   />
                 }
               />
@@ -677,7 +683,11 @@ export default function App() {
         {/* Lazy-loaded Contribution Modal */}
         {isKontribusiOpen && (
           <Suspense fallback={null}>
-            <KontribusiModal isOpen={isKontribusiOpen} onClose={() => setIsKontribusiOpen(false)} />
+            <KontribusiModal
+              isOpen={isKontribusiOpen}
+              onClose={() => setIsKontribusiOpen(false)}
+              initialTab={kontribusiInitialTab}
+            />
           </Suspense>
         )}
       </div>

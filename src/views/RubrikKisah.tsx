@@ -108,7 +108,7 @@ const RUBRIK_DECOY_PACKAGES = [
 interface RubrikKisahProps {
   savedArticles?: string[];
   onToggleSaveArticle?: (id: string) => void;
-  onOpenKontribusi?: () => void;
+  onOpenKontribusi?: (initialTab?: 'baru' | 'karomah' | 'rubrik' | 'doa') => void;
 }
 
 export const RubrikKisah: React.FC<RubrikKisahProps> = ({
@@ -569,7 +569,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         {onOpenKontribusi && (
           <button
             type="button"
-            onClick={onOpenKontribusi}
+            onClick={() => onOpenKontribusi('rubrik')}
             className="self-start md:self-auto shrink-0 inline-flex items-center px-4 py-2.5 bg-white hover:bg-stone-50 border border-stone-200/90 text-stone-800 text-xs font-medium rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
             <PlusCircle className="w-4 h-4 mr-2 text-emerald-800" strokeWidth={1.75} />

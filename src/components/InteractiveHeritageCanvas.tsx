@@ -42,6 +42,11 @@ export const InteractiveHeritageCanvas: React.FC<InteractiveHeritageCanvasProps>
   const mouseRef = useRef<{ x: number; y: number }>({ x: 0.5, y: 0.5 });
   const isVisibleRef = useRef<boolean>(true);
   const [hoveredNode, setHoveredNode] = useState<string>('Sunan Kalijaga · Demak (Walisongo)');
+  const [zoomScale, setZoomScale] = useState<number>(1);
+
+  const handleZoomIn = () => setZoomScale((prev) => Math.min(1.75, Number((prev + 0.2).toFixed(2))));
+  const handleZoomOut = () => setZoomScale((prev) => Math.max(0.75, Number((prev - 0.2).toFixed(2))));
+  const handleZoomReset = () => setZoomScale(1);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -96,10 +101,10 @@ export const InteractiveHeritageCanvas: React.FC<InteractiveHeritageCanvasProps>
 
         const cx = w * 0.5;
         const cy = h * 0.5;
-        const maxR = Math.min(w, h) * 0.42;
+        const maxR = Math.min(w, h) * 0.32;
 
-        const mx = (mouseRef.current.x - 0.5) * 16;
-        const my = (mouseRef.current.y - 0.5) * 16;
+        const mx = (mouseRef.current.x - 0.5) * 12;
+        const my = (mouseRef.current.y - 0.5) * 12;
 
         // 1. Archival Astrolabe Concentric Rings
         ctx.save();
@@ -229,13 +234,47 @@ export const InteractiveHeritageCanvas: React.FC<InteractiveHeritageCanvasProps>
     >
       <div className="relative z-10 flex items-center justify-between text-[11px] tracking-widest uppercase text-stone-500 font-medium border-b border-stone-300/60 pb-3">
         <span className="truncate pr-2">FIG. 02 · PETA KONSTELASI SANAD</span>
-        <span ref={azimuthRef} className="font-mono tabular-nums shrink-0">AZIMUTH 0° E</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <span ref={azimuthRef} className="font-mono tabular-nums hidden sm:inline">AZIMUTH 0° E</span>
+          <div className="inline-flex items-center gap-1 bg-[#F9F8F4]/90 border border-stone-300/80 rounded-lg p-0.5">
+            <button
+              type="button"
+              onClick={handleZoomOut}
+              aria-label="Perkecil Konstelasi (Zoom Out)"
+              title="Perkecil (-)"
+              className="px-2 py-0.5 text-xs font-bold text-stone-700 hover:bg-stone-200/80 rounded transition cursor-pointer"
+            >
+              -
+            </button>
+            <button
+              type="button"
+              onClick={handleZoomReset}
+              aria-label="Reset Zoom Konstelasi"
+              title="Reset Skala"
+              className="px-2 py-0.5 text-[10px] font-semibold text-stone-700 hover:bg-stone-200/80 rounded transition cursor-pointer"
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              onClick={handleZoomIn}
+              aria-label="Perbesar Konstelasi (Zoom In)"
+              title="Perbesar (+)"
+              className="px-2 py-0.5 text-xs font-bold text-stone-700 hover:bg-stone-200/80 rounded transition cursor-pointer"
+            >
+              +
+            </button>
+          </div>
+        </div>
       </div>
 
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none"
-      />
+      <div className="relative flex-1 w-full overflow-hidden my-1 rounded-xl">
+        <canvas
+          ref={canvasRef}
+          style={{ transform: `scale(${zoomScale})`, transformOrigin: 'center center' }}
+          className="absolute inset-0 w-full h-full pointer-events-none transition-transform duration-200"
+        />
+      </div>
 
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-2.5 pt-3 border-t border-stone-300/60">
         <div>

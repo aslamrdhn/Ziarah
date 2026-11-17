@@ -21,6 +21,8 @@ import {
   ExternalLink,
   LocateFixed,
   Share2,
+  Search,
+  AlertCircle,
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
@@ -51,9 +53,11 @@ interface SiteCluster {
 function MapViewportController({
   selectedSite,
   activeRouteSites,
+  flyTarget,
 }: {
   selectedSite: ZiarahSite | null;
   activeRouteSites: ZiarahSite[];
+  flyTarget: { lat: number; lng: number; zoom: number; ts: number } | null;
 }) {
   const map = useMap();
 
@@ -85,6 +89,15 @@ function MapViewportController({
       window.clearTimeout(t2);
     };
   }, [selectedSite, activeRouteSites, map]);
+
+  useEffect(() => {
+    if (flyTarget && Number.isFinite(flyTarget.lat) && Number.isFinite(flyTarget.lng)) {
+      map.flyTo([flyTarget.lat, flyTarget.lng], flyTarget.zoom, {
+        animate: true,
+        duration: 1.1,
+      });
+    }
+  }, [flyTarget, map]);
 
   return null;
 }
@@ -222,7 +235,11 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
   const [radiusKm, setRadiusKm] = useState<'all' | 15 | 50 | 100>('all');
   const [userGps, setUserGps] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [gpsErrorMsg, setGpsErrorMsg] = useState<string | null>(null);
   const [previewSite, setPreviewSite] = useState<ZiarahSite | null>(null);
+  const [mapSearchQuery, setMapSearchQuery] = useState<string>('');
+  const [flyTarget, setFlyTarget] = useState<{ lat: number; lng: number; zoom: number; ts: number } | null>(null);
+  const mapBoxRef = React.useRef<HTMLDivElement | null>(null);
 
   // Sync previewSite when selectedSite changes externally
   useEffect(() => {
@@ -280,7 +297,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   }, [activeRouteObj, activeRouteSites]);
 
-  // Filter sites by active route OR GPS radius
+  // Filter sites by active route OR GPS radius + quick search query
   const filteredMapSites = useMemo(() => {
     let base = validSites;
     if (activeRouteObj.id !== 'off' && activeRouteSites.length > 0) {
@@ -293,8 +310,18 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
           radiusKm
       );
     }
+    const q = mapSearchQuery.trim().toLowerCase();
+    if (q) {
+      base = base.filter(
+        (s) =>
+          s.title.toLowerCase().includes(q) ||
+          s.name.toLowerCase().includes(q) ||
+          s.location.city.toLowerCase().includes(q) ||
+          s.location.province.toLowerCase().includes(q)
+      );
+    }
     return base;
-  }, [validSites, activeRouteObj, activeRouteSites, radiusKm, userGps]);
+  }, [validSites, activeRouteObj, activeRouteSites, radiusKm, userGps, mapSearchQuery]);
 
   // Dynamic grid-based clustering when zoomed out (zoom <= 7) and no specific route is selected
   const { clusters, singleSites } = useMemo(() => {
@@ -336,19 +363,36 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
   }, [filteredMapSites, zoomLevel, activeRouteObj.id]);
 
   const handleRequestGps = useCallback((targetRadius?: 'all' | 15 | 50 | 100) => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setGpsErrorMsg('Izin lokasi (GPS) ditolak atau belum aktif di browser Anda.');
+      return;
+    }
     setIsLocating(true);
+    setGpsErrorMsg(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setUserGps({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserGps(coords);
         if (targetRadius) setRadiusKm(targetRadius);
+        setFlyTarget({ lat: coords.lat, lng: coords.lng, zoom: 11, ts: Date.now() });
         setIsLocating(false);
       },
       () => {
         setIsLocating(false);
+        setGpsErrorMsg('Izin lokasi (GPS) ditolak atau belum aktif di browser Anda.');
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
+  }, []);
+
+  const handleFocusSiteOnMap = useCallback((site: ZiarahSite) => {
+    const lat = Number(site.location.lat);
+    const lng = Number(site.location.lng);
+    setPreviewSite(site);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      setFlyTarget({ lat, lng, zoom: 14, ts: Date.now() });
+    }
+    mapBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
   const handleSelectRadius = (r: 'all' | 15 | 50 | 100) => {
@@ -421,123 +465,152 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
   };
 
   return (
-    <div className="flex-1 w-full relative z-0 rounded-3xl overflow-hidden border border-stone-200/80 shadow-xs h-full flex flex-col bg-[#FAF8F5] [&_.leaflet-bottom]:!bottom-24 md:[&_.leaflet-bottom]:!bottom-6">
-      {/* =====================================================================
-          FLOATING TOP GIS PILL CONTROLS (Jalur Wali Songo & Radius GPS)
-          ===================================================================== */}
-      <div className="absolute top-3 inset-x-3 z-[900] pointer-events-none flex flex-col items-center gap-2">
-        <div className="w-full max-w-full flex flex-wrap items-center justify-center gap-2 pointer-events-none">
-          {/* Curated Wali Songo Route Selector Pills */}
-          <div
-            ref={routePillsRef}
-            onMouseDown={handlePillMouseDown}
-            onMouseMove={handlePillMouseMove}
-            onMouseUp={handlePillMouseUpOrLeave}
-            onMouseLeave={handlePillMouseUpOrLeave}
-            onWheel={handlePillWheel}
-            className="max-w-full flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-stone-200/80 shadow-sm overflow-x-auto no-scrollbar touch-pan-x pointer-events-auto mx-auto cursor-grab active:cursor-grabbing select-none"
-          >
-            <span className="inline-flex items-center gap-1 pl-2.5 pr-1 text-[11px] font-semibold text-stone-700 whitespace-nowrap shrink-0">
-              <RouteIcon className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
-              <span className="hidden sm:inline">Jalur Ziarah:</span>
-            </span>
-            {CURATED_ZIARAH_ROUTES.map((route) => {
-              const active = activeRouteId === route.id;
-              return (
-                <button
-                  key={route.id}
-                  type="button"
-                  onClick={() => {
-                    if (dragStateRef.current.moved) return;
-                    setActiveRouteId(route.id);
-                    if (route.id !== 'off') setRadiusKm('all');
-                  }}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium tracking-tight whitespace-nowrap shrink-0 transition cursor-pointer ${
-                    active
-                      ? 'bg-stone-900 text-white shadow-2xs'
-                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-                  }`}
-                >
-                  {route.shortLabel}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* GPS Radius Filter Pills */}
-          <div className="max-w-full flex items-center gap-1 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-stone-200/80 shadow-sm overflow-x-auto no-scrollbar touch-pan-x pointer-events-auto mx-auto shrink-0">
-            <button
-              type="button"
-              onClick={() => handleRequestGps()}
-              className="px-2.5 py-1.5 rounded-full text-xs font-medium text-emerald-800 hover:bg-emerald-50 inline-flex items-center gap-1 transition cursor-pointer whitespace-nowrap shrink-0"
-              title="Deteksi Posisi GPS Saya"
+    <div className="w-full flex flex-col gap-5">
+      <div
+        ref={mapBoxRef}
+        className="w-full h-[68dvh] md:h-[72dvh] min-h-[520px] relative z-0 rounded-3xl overflow-hidden border border-stone-200/80 shadow-xs flex flex-col bg-[#FAF8F5] [&_.leaflet-bottom]:!bottom-24 md:[&_.leaflet-bottom]:!bottom-6"
+      >
+        {/* =====================================================================
+            FLOATING TOP GIS PILL CONTROLS (Jalur Wali Songo & Radius GPS)
+            ===================================================================== */}
+        <div className="absolute top-3 inset-x-3 z-[900] pointer-events-none flex flex-col items-center gap-2">
+          <div className="w-full max-w-full flex flex-wrap items-center justify-center gap-2 pointer-events-none">
+            {/* Curated Wali Songo Route Selector Pills */}
+            <div
+              ref={routePillsRef}
+              onMouseDown={handlePillMouseDown}
+              onMouseMove={handlePillMouseMove}
+              onMouseUp={handlePillMouseUpOrLeave}
+              onMouseLeave={handlePillMouseUpOrLeave}
+              onWheel={handlePillWheel}
+              className="max-w-full flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-stone-200/80 shadow-sm overflow-x-auto no-scrollbar touch-pan-x pointer-events-auto mx-auto cursor-grab active:cursor-grabbing select-none"
             >
-              <LocateFixed className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} aria-hidden="true" />
-              <span className="hidden md:inline">{userGps ? 'GPS Aktif' : 'Lokasi Saya'}</span>
-            </button>
+              <span className="inline-flex items-center gap-1 pl-2.5 pr-1 text-[11px] font-semibold text-stone-700 whitespace-nowrap shrink-0">
+                <RouteIcon className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+                <span className="hidden sm:inline">Jalur Ziarah:</span>
+              </span>
+              {CURATED_ZIARAH_ROUTES.map((route) => {
+                const active = activeRouteId === route.id;
+                return (
+                  <button
+                    key={route.id}
+                    type="button"
+                    onClick={() => {
+                      if (dragStateRef.current.moved) return;
+                      setActiveRouteId(route.id);
+                      if (route.id !== 'off') setRadiusKm('all');
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium tracking-tight whitespace-nowrap shrink-0 transition cursor-pointer ${
+                      active
+                        ? 'bg-stone-900 text-white shadow-2xs'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                    }`}
+                  >
+                    {route.shortLabel}
+                  </button>
+                );
+              })}
+            </div>
 
-            {(['all', 15, 50, 100] as const).map((r) => {
-              const active = radiusKm === r;
-              return (
-                <button
-                  key={String(r)}
-                  type="button"
-                  onClick={() => handleSelectRadius(r)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap shrink-0 transition cursor-pointer ${
-                    active
-                      ? 'bg-emerald-700 text-white'
-                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-                  }`}
-                >
-                  {r === 'all' ? 'Semua Jarak' : `≤ ${r} km`}
-                </button>
-              );
-            })}
+            {/* GPS Radius Filter Pills */}
+            <div className="max-w-full flex items-center gap-1 bg-white/95 backdrop-blur-md p-1.5 rounded-full border border-stone-200/80 shadow-sm overflow-x-auto no-scrollbar touch-pan-x pointer-events-auto mx-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => handleRequestGps()}
+                className="px-2.5 py-1.5 rounded-full text-xs font-medium text-emerald-800 hover:bg-emerald-50 inline-flex items-center gap-1 transition cursor-pointer whitespace-nowrap shrink-0"
+                title="Deteksi Posisi GPS Saya"
+              >
+                <LocateFixed className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} aria-hidden="true" />
+                <span>{isLocating ? 'Mencari GPS...' : userGps ? 'GPS Aktif' : 'Lokasi Saya'}</span>
+              </button>
+
+              {(['all', 15, 50, 100] as const).map((r) => {
+                const active = radiusKm === r;
+                return (
+                  <button
+                    key={String(r)}
+                    type="button"
+                    onClick={() => handleSelectRadius(r)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap shrink-0 transition cursor-pointer ${
+                      active
+                        ? 'bg-emerald-700 text-white'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                    }`}
+                  >
+                    {r === 'all' ? 'Semua Jarak' : `≤ ${r} km`}
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {/* GPS Error Toast / Alert Banner */}
+          {gpsErrorMsg && (
+            <div
+              role="alert"
+              className="mx-auto bg-rose-950/95 text-white backdrop-blur-md px-3.5 py-2 rounded-2xl border border-rose-500/40 shadow-md text-xs flex items-center justify-between gap-2.5 pointer-events-auto max-w-xl"
+            >
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-300 shrink-0" aria-hidden="true" />
+                <span>{gpsErrorMsg}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setGpsErrorMsg(null)}
+                aria-label="Tutup peringatan GPS"
+                className="p-1 text-rose-200 hover:text-white rounded-lg cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Active Route Summary Banner + WA Group Share Button */}
+          {activeRouteObj.id !== 'off' && (
+            <div className="mx-auto bg-slate-900/95 text-white backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/15 shadow-md text-xs flex flex-wrap items-center justify-between gap-2.5 pointer-events-auto max-w-2xl">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-[10px] font-bold uppercase tracking-wider shrink-0">
+                  {activeRouteSites.length} Titik
+                </span>
+                <p className="text-slate-200 truncate">{activeRouteObj.description}</p>
+              </div>
+              {waRouteShareUrl && (
+                <a
+                  href={waRouteShareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-[11px] font-semibold inline-flex items-center gap-1.5 transition shrink-0"
+                >
+                  <Share2 className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
+                  <span>Bagikan Rute ke WA Rombongan</span>
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Active Route Summary Banner + WA Group Share Button */}
-        {activeRouteObj.id !== 'off' && (
-          <div className="mx-auto bg-slate-900/95 text-white backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/15 shadow-md text-xs flex flex-wrap items-center justify-between gap-2.5 pointer-events-auto max-w-2xl">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-[10px] font-bold uppercase tracking-wider shrink-0">
-                {activeRouteSites.length} Titik
-              </span>
-              <p className="text-slate-200 truncate">{activeRouteObj.description}</p>
-            </div>
-            {waRouteShareUrl && (
-              <a
-                href={waRouteShareUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-[11px] font-semibold inline-flex items-center gap-1.5 transition shrink-0"
-              >
-                <Share2 className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
-                <span>Bagikan Rute ke WA Rombongan</span>
-              </a>
-            )}
-          </div>
-        )}
-      </div>
+        {/* =====================================================================
+            LEAFLET FULL-SCREEN MAP CANVAS
+            ===================================================================== */}
+        <MapContainer
+          center={[-7.15, 111.2]}
+          zoom={6}
+          style={{ width: '100%', height: '100%', flex: 1, background: '#E6E2D8' }}
+          zoomControl={false}
+          preferCanvas={true}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
 
-      {/* =====================================================================
-          LEAFLET FULL-SCREEN MAP CANVAS
-          ===================================================================== */}
-      <MapContainer
-        center={[-7.15, 111.2]}
-        zoom={6}
-        style={{ width: '100%', height: '100%', flex: 1, background: '#E6E2D8' }}
-        zoomControl={false}
-        preferCanvas={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        <ZoomControl position="bottomleft" />
-        <ZoomListener onZoomChange={setZoomLevel} />
-        <MapViewportController selectedSite={selectedSite} activeRouteSites={activeRouteSites} />
+          <ZoomControl position="bottomleft" />
+          <ZoomListener onZoomChange={setZoomLevel} />
+          <MapViewportController
+            selectedSite={selectedSite}
+            activeRouteSites={activeRouteSites}
+            flyTarget={flyTarget}
+          />
 
         {/* User GPS Marker & Radius Circle */}
         {userGps && (
@@ -716,6 +789,100 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
           </div>
         </div>
       )}
+      </div>
+
+      {/* =====================================================================
+          QUICK SEARCH & DIRECT-TO-PIN CARD GRID BELOW MAP
+          ===================================================================== */}
+      <div className="bg-white rounded-3xl p-4 sm:p-6 border border-stone-200/80 shadow-2xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="font-serif text-lg sm:text-xl font-semibold text-stone-900">
+              Pencarian Cepat &amp; Titik Makam di Peta ({filteredMapSites.length} Lokasi)
+            </h2>
+            <p className="text-xs text-stone-500">
+              Ketuk kartu makam di bawah untuk mengarahkan kamera peta langsung ke titik pusara.
+            </p>
+          </div>
+
+          <div className="relative w-full sm:w-80">
+            <Search
+              className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+              aria-hidden="true"
+            />
+            <input
+              type="search"
+              value={mapSearchQuery}
+              onChange={(e) => setMapSearchQuery(e.target.value)}
+              placeholder="Cari nama makam atau kota di peta..."
+              aria-label="Cari nama makam atau kota di peta"
+              className="w-full pl-9 pr-8 py-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:border-emerald-700"
+            />
+            {mapSearchQuery && (
+              <button
+                type="button"
+                onClick={() => setMapSearchQuery('')}
+                aria-label="Bersihkan pencarian peta"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[460px] overflow-y-auto pr-1">
+          {filteredMapSites.map((site, idx) => {
+            const seq = routeSequenceMap.get(site.id);
+            const isSelectedPin = previewSite?.id === site.id || selectedSite?.id === site.id;
+            const thumbUrl = site.imageUrl || `/thumbs/wali-${(idx % 9) + 1}.webp`;
+            return (
+              <button
+                key={site.id}
+                type="button"
+                onClick={() => handleFocusSiteOnMap(site)}
+                className={`text-left p-3 rounded-2xl border transition flex items-center gap-3 cursor-pointer ${
+                  isSelectedPin
+                    ? 'bg-emerald-50/90 border-emerald-700 shadow-2xs'
+                    : 'bg-[#FAF8F5] hover:bg-stone-100/80 border-stone-200/80'
+                }`}
+              >
+                <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-stone-200 shrink-0">
+                  <img
+                    src={optimizeSiteImageUrl(thumbUrl, 160, 68)}
+                    onError={(e) => {
+                      handleOptimizedImageError(e, thumbUrl);
+                      if (!e.currentTarget.src.includes('/thumbs/wali-')) {
+                        e.currentTarget.src = '/thumbs/wali-1.webp';
+                      }
+                    }}
+                    alt={site.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
+                  {seq !== undefined && (
+                    <span className="absolute top-0.5 left-0.5 px-1.5 py-0.2 rounded bg-emerald-800 text-white text-[10px] font-bold">
+                      #{seq}
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-serif font-semibold text-stone-900 truncate">
+                    {formatMakamHeading(site.title)}
+                  </div>
+                  <div className="text-[11px] text-stone-500 truncate">{site.name}</div>
+                  <div className="text-[11px] text-emerald-800 font-medium inline-flex items-center gap-1 mt-0.5 truncate">
+                    <MapPin className="w-3 h-3 shrink-0" aria-hidden="true" />
+                    <span className="truncate">
+                      {site.location.city}, {site.location.province}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 });
