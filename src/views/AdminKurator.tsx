@@ -491,16 +491,21 @@ export const AdminKurator: React.FC = () => {
   const handleSeedDatabase = async () => {
     if (!isAdmin) return;
     setIsSeeding(true);
-    setSeedMessage('Memulai sinkronisasi data ke Cloud Firestore...');
+    setSeedMessage('Memulai sinkronisasi 183 situs katalog ke Cloud Firestore...');
     try {
       for (const site of localSites) {
-        await setDoc(doc(db, 'sites', site.id), { ...site, isDeleted: false }, { merge: true });
+        await setDoc(
+          doc(db, 'sites', site.id),
+          { ...site, isDeleted: false, editedByCurator: false },
+          { merge: true }
+        );
       }
       try {
+        localStorage.removeItem('zn_cloud_sites_cache_v4');
         localStorage.setItem('zn_admin_dirty_ts', String(Date.now()));
       } catch {}
       await refreshCloudSites(true);
-      setSeedMessage('Berhasil mensinkronisasi ' + localSites.length + ' data makam ke Firestore.');
+      setSeedMessage('Berhasil mensinkronisasi seluruh ' + localSites.length + ' situs katalog ke Firestore.');
     } catch (e: any) {
       setSeedMessage('Gagal: ' + e.message);
       try {
@@ -764,8 +769,9 @@ export const AdminKurator: React.FC = () => {
       lastVerified:
         sanitizePlainText(editingSite.lastVerified, 40) || '2026-11-11',
       isDeleted: false,
+      editedByCurator: true,
       updatedAt: new Date().toISOString(),
-    };
+    } as ZiarahSite & { editedByCurator: boolean };
 
     try {
       await setDoc(doc(db, 'sites', canonicalSiteId), payload, { merge: true });
@@ -777,6 +783,7 @@ export const AdminKurator: React.FC = () => {
       setPendingContributionIdToApprove(null);
       try {
         localStorage.removeItem('zn_cloud_sites_cache_v1');
+        localStorage.removeItem('zn_cloud_sites_cache_v4');
         localStorage.setItem('zn_admin_dirty_ts', String(Date.now()));
       } catch {
         // Ignore storage error

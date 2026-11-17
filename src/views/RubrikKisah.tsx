@@ -566,16 +566,21 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             {copy.rubrikSubtitle}
           </p>
         </div>
-        {onOpenKontribusi && (
-          <button
-            type="button"
-            onClick={() => onOpenKontribusi('rubrik')}
-            className="self-start md:self-auto shrink-0 inline-flex items-center px-4 py-2.5 bg-white hover:bg-stone-50 border border-stone-200/90 text-stone-800 text-xs font-medium rounded-xl transition-colors cursor-pointer shadow-2xs"
-          >
-            <PlusCircle className="w-4 h-4 mr-2 text-emerald-800" strokeWidth={1.75} />
-            Kirim Naskah / Karomah
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => {
+            onOpenKontribusi?.('karomah');
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(
+                new CustomEvent('open-contribution-modal', { detail: { tab: 'karomah' } })
+              );
+            }
+          }}
+          className="self-start md:self-auto shrink-0 inline-flex items-center px-4 py-2.5 bg-white hover:bg-stone-50 border border-stone-200/90 text-stone-800 text-xs font-medium rounded-xl transition-colors cursor-pointer shadow-2xs"
+        >
+          <PlusCircle className="w-4 h-4 mr-2 text-emerald-800" strokeWidth={1.75} />
+          Kirim Naskah / Karomah
+        </button>
       </div>
 
       {/* Banner Informasi Akses Donasi & 2 Tulisan Contoh Gratis */}

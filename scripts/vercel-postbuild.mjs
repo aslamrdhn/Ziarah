@@ -478,10 +478,14 @@ async function fetchCloudSitesForSeo(localSites) {
       const docId = parseFirestoreStringField(f, 'id', docNameParts[docNameParts.length - 1]);
       if (!docId) continue;
 
+      const isCuratorEdited = f.editedByCurator?.booleanValue === true;
+
       if (f.isDeleted?.booleanValue === true) {
-        const existingSlug = mergedById.get(docId)?.slug;
-        mergedById.delete(docId);
-        if (existingSlug) slugToId.delete(existingSlug);
+        if (isCuratorEdited) {
+          const existingSlug = mergedById.get(docId)?.slug;
+          mergedById.delete(docId);
+          if (existingSlug) slugToId.delete(existingSlug);
+        }
         continue;
       }
 
@@ -496,6 +500,11 @@ async function fetchCloudSitesForSeo(localSites) {
       const existingIdBySlug = slugToId.get(slug);
       const targetId = baseById ? docId : existingIdBySlug || docId;
       const base = mergedById.get(targetId);
+
+      // Canonical local 183-site catalog is always authoritative unless explicitly edited by a curator
+      if (base && !isCuratorEdited) {
+        continue;
+      }
 
       const category = parseFirestoreStringField(f, 'category', base?.category || 'Waliyullah Nusantara');
       const description = parseFirestoreStringField(f, 'description', base?.description || '');

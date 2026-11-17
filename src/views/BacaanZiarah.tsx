@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   RotateCcw,
   Copy,
@@ -12,6 +12,8 @@ import {
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { useSiteCopy } from '../lib/siteCopy';
+import { useSites } from '../context/SiteContext';
+import { getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 
 const STORAGE_KEY = 'ziarah_panduan_prefs_v1';
 
@@ -135,6 +137,18 @@ const PRAYER_SECTIONS: PrayerSectionData[] = [
 
 export const BacaanZiarah: React.FC = () => {
   const { copy } = useSiteCopy();
+  const { sites: ziarahSites } = useSites();
+  const totalSitesCount = ziarahSites.length || 183;
+  const totalWiridCount = useMemo(() => {
+    let count = 0;
+    for (const s of ziarahSites) {
+      if (!s || !s.id) continue;
+      count += getEffectiveSiteDoaKhusus(s).length;
+      const kList = Array.isArray(s.karomah) ? s.karomah.filter(Boolean) : [];
+      count += kList.length;
+    }
+    return count || 583;
+  }, [ziarahSites]);
   // Load initial preferences & tasbih state from localStorage
   const [fontSize, setFontSize] = useState<'A' | 'A+' | 'A++'>(() => {
     try {
@@ -367,7 +381,7 @@ export const BacaanZiarah: React.FC = () => {
                 : 'text-stone-500 hover:text-stone-900'
             }`}
           >
-            2. 583 Wirid &amp; Doa Khusus Para Wali
+            2. {totalWiridCount} Wirid &amp; Doa Khusus Para Wali
           </Link>
         </div>
 
@@ -385,7 +399,7 @@ export const BacaanZiarah: React.FC = () => {
                 outdoorMode ? 'text-black' : 'text-emerald-200'
               }`}
             >
-              Khazanah Wasilah &amp; Sanad 183 Maqbarah
+              Khazanah Wasilah &amp; Sanad {totalSitesCount} Maqbarah
             </span>
             <p className="text-xs sm:text-sm font-serif">
               Ingin membaca susunan tawassul, hizib, dan doa khusus masing-masing makam Wali Songo &amp; Ulama Nusantara?
@@ -400,7 +414,7 @@ export const BacaanZiarah: React.FC = () => {
             }`}
           >
             <BookOpen className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-            <span>Buka 583 Wirid &amp; Doa Khusus Para Wali →</span>
+            <span>Buka {totalWiridCount} Wirid &amp; Doa Khusus Para Wali →</span>
           </Link>
         </div>
 

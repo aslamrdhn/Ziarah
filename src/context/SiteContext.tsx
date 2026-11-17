@@ -18,19 +18,24 @@ interface SiteContextType {
 const SiteContext = createContext<SiteContextType>({
   sites: INITIAL_FIRST_PAGE_SITES,
   isLoading: false,
-  isFullCatalogLoaded: false,
+  isFullCatalogLoaded: true,
   isSeededInCloud: false,
   cloudSiteCount: 0,
   ensureFullSitesLoaded: async () => INITIAL_FIRST_PAGE_SITES,
   refreshCloudSites: async () => {},
 });
 
-export const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v2';
+export const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v4';
+const LEGACY_CLOUD_CACHE_KEYS = [
+  'zn_cloud_sites_cache_v1',
+  'zn_cloud_sites_cache_v2',
+  'zn_cloud_sites_cache_v3',
+];
 const ADMIN_DIRTY_TS_KEY = 'zn_admin_dirty_ts';
 
 interface CachedCloudSitesPayload {
   ts: number;
-  sites: Array<ZiarahSite & { isDeleted?: boolean }>;
+  sites: Array<ZiarahSite & { isDeleted?: boolean; editedByCurator?: boolean }>;
 }
 
 function sanitizeCloudText(val?: string): string | undefined {
@@ -54,8 +59,9 @@ function sanitizeCloudText(val?: string): string | undefined {
  */
 export function mergeLocalAndCloudSites(
   localSites: ZiarahSite[],
-  cloudSites: Array<ZiarahSite & { isDeleted?: boolean; summary?: string }>
+  cloudSites: Array<ZiarahSite & { isDeleted?: boolean; summary?: string; editedByCurator?: boolean }>
 ): ZiarahSite[] {
+  const isCanonicalCatalog = localSites.length >= 100;
   const mergedMap = new Map<string, ZiarahSite>();
   for (const s of localSites) {
     mergedMap.set(s.id, s);
@@ -85,15 +91,25 @@ export function mergeLocalAndCloudSites(
     );
 
     const canonicalId = baseLocal ? baseLocal.id : cloudSite.id;
+    const isCuratorEdited = isCanonicalCatalog
+      ? cloudSite.editedByCurator === true
+      : cloudSite.editedByCurator !== false;
 
     if (cloudSite.isDeleted === true) {
-      mergedMap.delete(canonicalId);
-      mergedMap.delete(cloudSite.id);
-      if (baseLocal?.legacyId) mergedMap.delete(baseLocal.legacyId);
+      if (!baseLocal || isCuratorEdited) {
+        mergedMap.delete(canonicalId);
+        mergedMap.delete(cloudSite.id);
+        if (baseLocal?.legacyId) mergedMap.delete(baseLocal.legacyId);
+      }
       continue;
     }
 
     if (baseLocal) {
+      if (!isCuratorEdited) {
+        // Canonical local 183-site catalog always wins over uncurated/stale Firestore seed documents
+        mergedMap.set(baseLocal.id, baseLocal);
+        continue;
+      }
       const resolvedAddress =
         cloudSite.address ??
         cloudSite.location?.address ??
@@ -242,6 +258,9 @@ export const mergeSites = mergeLocalAndCloudSites;
 function getInitialHydratedSites(): ZiarahSite[] {
   if (typeof window === 'undefined') return INITIAL_FIRST_PAGE_SITES;
   try {
+    for (const oldKey of LEGACY_CLOUD_CACHE_KEYS) {
+      localStorage.removeItem(oldKey);
+    }
     const rawCached = localStorage.getItem(CLOUD_SITES_CACHE_KEY);
     if (!rawCached) return INITIAL_FIRST_PAGE_SITES;
     const parsed = JSON.parse(rawCached) as CachedCloudSitesPayload;
@@ -256,9 +275,9 @@ function getInitialHydratedSites(): ZiarahSite[] {
 
 export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sites, setSites] = useState<ZiarahSite[]>(() => getInitialHydratedSites());
-  const [isFullCatalogLoaded, setIsFullCatalogLoaded] = useState(false);
+  const [isFullCatalogLoaded, setIsFullCatalogLoaded] = useState(true);
   const [cloudSiteCount, setCloudSiteCount] = useState(0);
-  const fullLocalSitesRef = useRef<ZiarahSite[] | null>(null);
+  const fullLocalSitesRef = useRef<ZiarahSite[] | null>(INITIAL_FIRST_PAGE_SITES);
   const fullLoadPromiseRef = useRef<Promise<ZiarahSite[]> | null>(null);
   const cloudLoadedRef = useRef(false);
 

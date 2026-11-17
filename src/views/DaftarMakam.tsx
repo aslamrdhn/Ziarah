@@ -16,7 +16,7 @@ import { ALL_PROVINCES, TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/
 import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
-import { getSitePath, getSiteSlug, formatMakamHeading } from '../lib/siteSlugs';
+import { getSitePath, getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { useSiteCopy } from '../lib/siteCopy';
 import { ZiarahStoryReel } from '../components/ZiarahStoryReel';
@@ -494,7 +494,11 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       const indexed = siteSearchIndexMap.get(site.id);
       const matchesSearch = !q || (indexed ? indexed.searchCorpus.includes(q) : true);
       const matchesCategory = selectedCategory === 'Semua' || site.category === selectedCategory;
-      const matchesProvince = selectedProvince === 'Semua Provinsi' || site.location.province === selectedProvince;
+      const matchesProvince =
+        selectedProvince === 'Semua Provinsi' ||
+        site.location.province === selectedProvince ||
+        (selectedProvince === 'Papua' &&
+          (site.location.province === 'Papua Barat' || site.location.province === 'Papua Barat Daya'));
 
       return matchesSearch && matchesCategory && matchesProvince;
     });
@@ -966,14 +970,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               : site.openingHours
                 ? `Buka: ${site.openingHours}`
                 : 'Buka Setiap Hari';
-            const cardHeading = formatMakamHeading(site.title);
+            const { heading: cardHeading, subtitle: cardSubtitle } = getSiteDisplayHeading(site);
 
             return (
               <article key={site.id} className={index >= 3 ? 'group content-auto' : 'group'}>
                 <a
                   href={siteUrl}
                   onClick={(e) => handleOpenReaderModal(site, e)}
-                  aria-label={`Baca kisah, karomah, dan panduan ${cardHeading} (${site.name}) di ${site.location.city}, ${site.location.province}`}
+                  aria-label={`Baca kisah, karomah, dan panduan ${cardHeading} (${cardSubtitle}) di ${site.location.city}, ${site.location.province}`}
                   className="block cursor-pointer space-y-3 focus:outline-none"
                 >
                   {/* 1. Foto Rasio 4:3 dengan sudut membulat (rounded-2xl) & 1 Label Sudut */}
@@ -983,7 +987,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       srcSet={thumbSrcSet}
                       sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 360px"
                       onError={(e) => handleOptimizedImageError(e, rawImageUrl)}
-                      alt={`${cardHeading} (${site.name}) — ${site.location.city}, ${site.location.province}`}
+                      alt={`${cardHeading} (${cardSubtitle}) — ${site.location.city}, ${site.location.province}`}
                       width={400}
                       height={300}
                       loading={isLcpCandidate ? 'eager' : 'lazy'}
@@ -1008,11 +1012,17 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       </span>
                     </div>
 
-                    <h2 className="font-serif text-xl text-slate-900 group-hover:text-emerald-800 transition-colors line-clamp-1">
+                    <h2 className="font-serif text-xl text-slate-900 group-hover:text-emerald-800 transition-colors line-clamp-2 leading-snug">
                       {cardHeading}
                     </h2>
 
-                    <div className="text-[11px] text-slate-700 font-medium truncate">
+                    {cardSubtitle && cardSubtitle !== cardHeading && (
+                      <p className="text-xs text-slate-600 font-medium line-clamp-1">
+                        {cardSubtitle}
+                      </p>
+                    )}
+
+                    <div className="text-[11px] text-slate-700 font-medium whitespace-normal break-words leading-snug">
                       {practicalInfo}
                     </div>
 
@@ -1085,28 +1095,28 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         </div>
 
         {/* Progressive Load More Controls */}
-        {!isFiltered && visibleCount < totalCatalogCount && (
+        {!isFiltered && visibleCount < filteredSites.length && (
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               type="button"
               onClick={async () => {
                 const all = await ensureFullSitesLoaded();
-                setVisibleCount((prev) => Math.min(all.length, prev + 12));
+                setVisibleCount((prev) => Math.min(Math.max(all.length, filteredSites.length), prev + 12));
               }}
               className="px-6 py-3 bg-stone-900 hover:bg-emerald-900 text-white rounded-xl text-xs font-medium tracking-tight inline-flex items-center gap-2 transition cursor-pointer shadow-2xs"
             >
-              <span>Tampilkan Lebih Banyak (+{Math.min(12, totalCatalogCount - visibleCount)} Situs)</span>
+              <span>Tampilkan Lebih Banyak (+{Math.min(12, filteredSites.length - visibleCount)} Situs)</span>
               <ArrowDown className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={async () => {
                 const all = await ensureFullSitesLoaded();
-                setVisibleCount(all.length);
+                setVisibleCount(Math.max(all.length, filteredSites.length));
               }}
               className="px-5 py-3 bg-white hover:border-stone-400 text-stone-700 border border-stone-200/80 rounded-xl text-xs font-medium tracking-tight transition cursor-pointer"
             >
-              Buka Seluruh {totalCatalogCount} Situs
+              Buka Seluruh {filteredSites.length} Situs
             </button>
           </div>
         )}

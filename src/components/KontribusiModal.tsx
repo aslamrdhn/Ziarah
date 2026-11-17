@@ -1,11 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Send, CheckCircle2, Loader2, AlertCircle, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { collection, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl } from '../lib/sanitize';
 import { ALL_PROVINCES } from '../data/initialSites';
-import { extractCoordinatesFromMapsUrl } from '../views/AdminKurator';
+
+export function extractCoordinatesFromMapsUrl(url?: string): { lat: number; lng: number } | null {
+  if (!url) return null;
+  let decoded = url.trim();
+  try {
+    decoded = decodeURIComponent(decoded);
+  } catch {}
+  const patterns = [
+    /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /[?&](?:q|ll|query|destination)=(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+    /(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/,
+  ];
+  for (const regex of patterns) {
+    const match = decoded.match(regex);
+    if (match) {
+      const lat = parseFloat(match[1]);
+      const lng = parseFloat(match[2]);
+      if (lat >= -11.5 && lat <= 6.5 && lng >= 94.5 && lng <= 141.5) {
+        return { lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)) };
+      }
+    }
+  }
+  return null;
+}
 
 const OFFICIAL_34_PROVINCES = ALL_PROVINCES.filter((p) => p !== 'Semua Provinsi');
 
@@ -162,11 +187,16 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 sm:p-6">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="kontribusi-modal-title"
+        className="fixed inset-0 z-[3500] flex items-center justify-center p-4 sm:p-6"
+      >
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -189,7 +219,7 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>KONTRIBUSI KOMUNITAS PEZIARAH</span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-serif font-black text-slate-900 mb-1 tracking-tight">Usulkan Makam / Pembaruan Data</h2>
+              <h2 id="kontribusi-modal-title" className="text-xl sm:text-2xl font-serif font-black text-slate-900 mb-1 tracking-tight">Usulkan Makam / Pembaruan Data</h2>
               <p className="text-xs sm:text-sm text-slate-500">Bantu lengkapi basis data ziarah makam wali dan ulama di Indonesia. Setiap usulan akan tersimpan dan diverifikasi oleh dewan kurator.</p>
             </div>
             <button onClick={handleClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors mt-0.5 text-slate-400 hover:text-slate-900 cursor-pointer">
@@ -519,6 +549,8 @@ export const KontribusiModal: React.FC<KontribusiModalProps> = ({ isOpen, onClos
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
+

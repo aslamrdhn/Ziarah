@@ -5,10 +5,8 @@ import { BacaanZiarah } from './views/BacaanZiarah';
 import { KebijakanKurasi } from './views/KebijakanKurasi';
 import { KumpulanDoa } from './views/KumpulanDoa';
 import { RubrikKisah } from './views/RubrikKisah';
+import { KontribusiModal } from './components/KontribusiModal';
 
-const KontribusiModal = lazy(() =>
-  import('./components/KontribusiModal').then((m) => ({ default: m.KontribusiModal }))
-);
 const PetaLokasi = lazy(() => import('./views/PetaLokasi').then((m) => ({ default: m.PetaLokasi })));
 const AdminKurator = lazy(() => import('./views/AdminKurator').then((m) => ({ default: m.AdminKurator })));
 const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })));
@@ -33,6 +31,17 @@ export default function App() {
   const handleOpenKontribusiModal = React.useCallback((tab: 'baru' | 'karomah' | 'rubrik' | 'doa' = 'baru') => {
     setKontribusiInitialTab(tab);
     setIsKontribusiOpen(true);
+  }, []);
+
+  useEffect(() => {
+    const handleOpenEvent = (e: Event) => {
+      const customEvt = e as CustomEvent<{ tab?: 'baru' | 'karomah' | 'rubrik' | 'doa' }>;
+      const tab = customEvt.detail?.tab || 'baru';
+      setKontribusiInitialTab(tab);
+      setIsKontribusiOpen(true);
+    };
+    window.addEventListener('open-contribution-modal', handleOpenEvent);
+    return () => window.removeEventListener('open-contribution-modal', handleOpenEvent);
   }, []);
 
   // State for saved items (all synced to localStorage + Cloud Firestore)
@@ -680,16 +689,12 @@ export default function App() {
           </div>
         </footer>
 
-        {/* Lazy-loaded Contribution Modal */}
-        {isKontribusiOpen && (
-          <Suspense fallback={null}>
-            <KontribusiModal
-              isOpen={isKontribusiOpen}
-              onClose={() => setIsKontribusiOpen(false)}
-              initialTab={kontribusiInitialTab}
-            />
-          </Suspense>
-        )}
+        {/* Contribution Modal */}
+        <KontribusiModal
+          isOpen={isKontribusiOpen}
+          onClose={() => setIsKontribusiOpen(false)}
+          initialTab={kontribusiInitialTab}
+        />
       </div>
     </SiteProvider>
   );

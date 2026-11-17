@@ -1,4 +1,4 @@
-import type { ZiarahSite } from './sites';
+import { SITES, type ZiarahSite } from './sites';
 
 export const TOTAL_SITE_COUNT = 183;
 export const TOTAL_SITES_COUNT = 183;
@@ -29,6 +29,7 @@ export const ALL_PROVINCES: string[] = [
   'Maluku Utara',
   'Nusa Tenggara Barat',
   'Nusa Tenggara Timur',
+  'Papua',
   'Papua Barat',
   'Papua Barat Daya',
   'Riau',
@@ -647,8 +648,8 @@ export const initialSites: ZiarahSite[] = [
   },
 ];
 
-export const INITIAL_SITES: ZiarahSite[] = initialSites;
-export const INITIAL_FIRST_PAGE_SITES: ZiarahSite[] = initialSites;
+export const INITIAL_SITES: ZiarahSite[] = SITES;
+export const INITIAL_FIRST_PAGE_SITES: ZiarahSite[] = SITES;
 
 export const REGIONAL_ID_TO_LEGACY_ID: Record<string, string> = {
   'sunan-gunung-jati': 'wali-9',

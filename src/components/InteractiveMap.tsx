@@ -34,7 +34,7 @@ import {
 } from '../lib/siteLogistics';
 import { getSiteGoogleMapsNavigationUrl } from './SiteDetails';
 import { stripMarkdownAsterisks } from '../lib/formatText';
-import { formatMakamHeading } from '../lib/siteSlugs';
+import { getSiteDisplayHeading } from '../lib/siteSlugs';
 
 interface MapProps {
   sites: ZiarahSite[];
@@ -726,9 +726,9 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
               </div>
 
               <h3 className="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-snug truncate mt-1">
-                {formatMakamHeading(previewSite.title)}
+                {getSiteDisplayHeading(previewSite).heading}
               </h3>
-              <p className="text-xs text-stone-500 truncate">{previewSite.name}</p>
+              <p className="text-xs text-stone-500 truncate">{getSiteDisplayHeading(previewSite).subtitle}</p>
               <p className="text-xs text-stone-600 inline-flex items-center gap-1 mt-1 truncate">
                 <MapPin className="w-3.5 h-3.5 text-emerald-700 shrink-0" aria-hidden="true" />
                 <span className="truncate">
@@ -744,7 +744,7 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
               <Calendar className="w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" />
               <div className="min-w-0">
                 <strong className="text-stone-900 font-semibold">Jadwal Haul:</strong>{' '}
-                <span className="line-clamp-1">{stripMarkdownAsterisks(previewLogistics.haulSchedule)}</span>
+                <span className="whitespace-normal break-words leading-snug">{stripMarkdownAsterisks(previewLogistics.haulSchedule)}</span>
               </div>
             </div>
           )}
@@ -868,9 +868,9 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-serif font-semibold text-stone-900 truncate">
-                    {formatMakamHeading(site.title)}
+                    {getSiteDisplayHeading(site).heading}
                   </div>
-                  <div className="text-[11px] text-stone-500 truncate">{site.name}</div>
+                  <div className="text-[11px] text-stone-500 truncate">{getSiteDisplayHeading(site).subtitle}</div>
                   <div className="text-[11px] text-emerald-800 font-medium inline-flex items-center gap-1 mt-0.5 truncate">
                     <MapPin className="w-3 h-3 shrink-0" aria-hidden="true" />
                     <span className="truncate">

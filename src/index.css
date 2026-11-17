@@ -3,7 +3,7 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-serif: "Playfair Display", "Lora", Georgia, serif;
-  --font-arabic: "Amiri", "Scheherazade New", serif;
+  --font-arabic: "Amiri", "Scheherazade New", "Traditional Arabic", "Geeza Pro", "Arial", serif;
   
   /* Forest Emerald & Archival Ink */
   --color-brand-50: #ecfdf5;

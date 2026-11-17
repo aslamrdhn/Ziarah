@@ -789,7 +789,7 @@ export const BASE_SITES: ZiarahSite[] = [
       "Jenazah beliau keluar sendiri dari kurung batang (keranda) saat hendak dibawa ke pemakaman Tanah Abang karena menghendaki dimakamkan di surau Luar Batang."
     ],
     haulSchedule: "Puncak Haul Akbar Habib Husein Luar Batang: Ahad terakhir di bulan Syawal (serta peringatan wafat 17 Ramadhan) di Kompleks Masjid Jami' Keramat Luar Batang, Penjaringan, Jakarta Utara.",
-    localAdab: "Mengikuti jalur antrean terpisah bagi peziarah pria dan wanita saat memasuki ruang makam Habib Husein & Haji Abdul Kadir, menjaga ketertiban barang bawaan, dan mendahulukan shalat تحية المسجد (Tahiyyatul Masjid) di Masjid Keramat Luar Batang.",
+    localAdab: "Mengikuti jalur antrean terpisah bagi peziarah pria dan wanita saat memasuki ruang makam Habib Husein & Haji Abdul Kadir, menjaga ketertiban barang bawaan, dan mendahulukan shalat Tahiyyatul Masjid di Masjid Keramat Luar Batang.",
     barokahHajat: "Meneladani keteguhan Al-Qutb Al-Habib Husein bin Abubakar Alaydrus yang membela kaum tertindas di pelabuhan Sunda Kelapa dan berkhalwat di tepi laut, peziarah yang datang ke Luar Batang umumnya bertawassul memohon kepada Allah SWT agar diselamatkan dari kezaliman dan fitnah manusia, diteguhkan iman di tengah kerasnya kehidupan kota besar, serta dibukakan pintu rezeki dan keberkahan perniagaan.",
     doaKhusus: [
       {
@@ -1523,7 +1523,7 @@ export const BASE_SITES: ZiarahSite[] = [
     era: "Abad ke-19 – ke-20 M (1839 – 24 Rajab 1347 H / 6 Januari 1929 M)",
     sanad: "Murid Sayyid Ahmad Zaini Dahlan (Makkah); Sahabat dekat Habib Abdullah bin Muhsin Al-Attas (Bogor)",
     karya: [
-      "Kitab السلسلة الذهبية (As-Silsilah Adz-Dzahabiyyah)",
+      "Kitab As-Silsilah Adz-Dzahabiyyah",
       "Pendirian Madrasah Salafiyah Pekalongan"
     ],
     references: [
@@ -1540,7 +1540,7 @@ export const BASE_SITES: ZiarahSite[] = [
     id: "ulama-14",
     name: "KH. Muhammad Arwani Amin Said",
     title: "KH. Arwani Amin (Yanbu'ul Qur'an Kudus)",
-    description: "Ulama ahli القراءات السبع (Qira'at Sab'ah) terkemuka di Asia Tenggara dan pendiri Pondok Tahfidh Yanbu'ul Qur'an Kudus.",
+    description: "Ulama ahli Qira'at Sab'ah terkemuka di Asia Tenggara dan pendiri Pondok Tahfidh Yanbu'ul Qur'an Kudus.",
     location: {
       lat: -6.8058,
       lng: 110.8368,
@@ -3110,7 +3110,7 @@ export const BASE_SITES: ZiarahSite[] = [
     era: "Abad ke-20 M (1901 – 16 September 1952 M)",
     sanad: "Putra KH. Muhammad Dahlan (Pendiri Pesantren Jampes, 1886); Otodidak dan mengaji kilatan di berbagai pesantren Jawa",
     karya: [
-      "Kitab Sirajuth Thalibin (Syarah atas Minhajul 'Abidin karya Imam Al-Ghazali, 2 Jilid tebal بیش dari 1.000 halaman, dicetak Musthafa Al-Babi Al-Halabi Kairo tahun 1937 M)",
+      "Kitab Sirajuth Thalibin (Syarah atas Minhajul 'Abidin karya Imam Al-Ghazali, 2 Jilid tebal lebih dari 1.000 halaman, dicetak Musthafa Al-Babi Al-Halabi Kairo tahun 1937 M)",
       "Kitab Tashrihul Ibarat (Ilmu Falak / Astronomi), Manahijul Imdad, & Irsyadul Ikhwan (Hukum Kopi dan Rokok)"
     ],
     references: [
@@ -3242,7 +3242,7 @@ export const BASE_SITES: ZiarahSite[] = [
   {
     id: "auliya-23",
     name: "Ratu Ayu Anak Agung Rai (Siti Khotijah)",
-    title: "Wali Pitu Bali: Keramat Ratu मक्का (Denpasar)",
+    title: "Wali Pitu Bali: Keramat Ratu Mas (Denpasar)",
     description: "Putri bangsawan Kerajaan Mengwi/Pemecutan Bali yang memeluk Islam dan wafat saat berzikir dalam cahaya di Monang-Maning Denpasar.",
     location: {
       lat: -8.6652,
@@ -3269,9 +3269,9 @@ export const BASE_SITES: ZiarahSite[] = [
   },
   {
     id: "auliya-24",
-    name: "Syekh Maulana Yusuf Al-Baghdadi & Syekh Abdul Qodir Jaelani (Wali Kembar)",
-    title: "Wali Pitu Bali: Makam Wali Kembar Karanggasem",
-    description: "Dua waliyullah penyebar Islam di ujung timur Pulau Bali yang bersemayam di Bukit Kembar Desa Bungaya Kangin, Karangasem.",
+    name: "Habib Ali bin Zaenal Abidin Al-Idrus & Syekh Maulana Yusuf Al-Baghdadi",
+    title: "Wali Pitu Bali: Makam Wali Kembar Karangasem",
+    description: "Dua waliyullah dari Hadramaut dan Baghdad dalam rangkaian Wali Pitu Bali yang menyebarkan Islam dengan santun di Desa Bungaya Kangin, Karangasem, lereng Gunung Agung.",
     location: {
       lat: -8.4425,
       lng: 115.5912,
@@ -3281,17 +3281,17 @@ export const BASE_SITES: ZiarahSite[] = [
     },
     category: "Auliya Nusantara",
     era: "Abad ke-17 M",
-    sanad: "Jaringan dakwah sufi di Kerajaan Karangasem Bali Timur",
+    sanad: "Jaringan dakwah sufi Hadramaut dan Baghdad di Kerajaan Karangasem Bali Timur",
     karya: [
-      "Komunitas Muslim Kecicang & Bungaya Karangasem"
+      "Komunitas Muslim Kecicang Islam & Bungaya Kangin Karangasem"
     ],
     references: [
-      "Sejarah Wali Pitu Bali — Yayasan Al-Khidmah",
-      "Wikipedia Bahasa Indonesia: Wali Pitu"
+      "Zuhri, Saifuddin (1999). Sejarah Wali Pitu di Bali. Surabaya: Yayasan Al-Khidmah.",
+      "Mashad, Dhurorudin (2014). Muslim Bali: Mencari Kembali Harmoni yang Hilang. Jakarta: Pustaka Al-Kautsar."
     ],
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/e1/Bali%2C_Pura_Besakih_6.jpg",
     imageSource: "Wikipedia Bahasa Indonesia / Wikimedia Commons — Lanskap Perbukitan Kabupaten Karangasem Bali Timur (Wilayah Makam Wali Kembar Bungaya)",
-    history: "Melengkapi rangkaian tujuh makam keramat (Wali Pitu) di Pulau Bali, makam Wali Kembar di Desa Bungaya Kangin, Kabupaten Karangasem menjadi titik ziarah di Bali bagian timur dengan suasana pedesaan dan perbukitan yang asri.",
+    history: "Makam Wali Kembar di Desa Bungaya Kangin, Kecamatan Bebandem, Kabupaten Karangasem merupakan peristirahatan dua waliyullah penyebar Islam di ujung timur Pulau Bali: Habib Ali bin Zaenal Abidin Al-Idrus (keturunan Rasulullah SAW asal Hadramaut) dan Syekh Maulana Yusuf Al-Baghdadi (ulama sufi asal Baghdad). Keduanya berdakwah berdampingan dengan masyarakat adat Karangasem di lereng Gunung Agung dan mewariskan tradisi nyama selam yang harmonis di Kampung Muslim Kecicang Islam serta Bungaya Kangin.",
     facilities: ["Cungkup Makam Wali Kembar", "Musholla Peziarah", "Area Parkir"],
     openingHours: "Buka 24 Jam"
   },
@@ -3430,7 +3430,7 @@ export const BASE_SITES: ZiarahSite[] = [
     sanad: "Masyayikh Pondok Pesantren Darussalam Martapura (berdiri 1914 M); Guru dari para ulama Kalimantan Selatan, Tengah, dan Timur",
     karya: [
       "Penerapan sistem klasikal Madrasah Darussalam Martapura (1922 M)",
-      "Kitab Risalah at-Tauhid, Risalah Fiqih, & Tarikh السيرة النبوية (Durusul Madaris)"
+      "Kitab Risalah at-Tauhid, Risalah Fiqih, & Tarikh as-Sirah an-Nabawiyyah (Durusul Madaris)"
     ],
     references: [
       "Ideham, M. Suriansyah dkk. (2003). Sejarah Banjar. Badan Penelitian dan Pengembangan Daerah Provinsi Kalimantan Selatan.",
@@ -3752,37 +3752,17 @@ const TIER_1_NATIONAL_VERIFIED_IDS = new Set<string>([
 
 function ensureEmotionalCliffhangerBeforeMore(
   rawText: string,
-  siteName: string,
-  cityName: string
+  _siteName: string,
+  _cityName: string
 ): string {
-  if (!rawText || !rawText.includes('<!--more-->')) return rawText;
-  const parts = rawText.split('<!--more-->');
-  const head = parts[0].trim();
-  const tail = parts.slice(1).join('\n\n').trim();
-  if (!head || !tail) return rawText;
-
-  // If the pre-<!--more--> teaser starts with a dry academic reference ("Dalam kitab...", "Dalam kajian...", etc.),
-  // preface it with an emotional narrative cliffhanger and move the academic citation after <!--more-->.
-  if (/^Dalam\s+(kitab|kajian|catatan|tradisi|historiografi|naskah|arsip|babad|penelitian|literatur)\b/i.test(head)) {
-    const cleanFigure = siteName.split('(')[0].replace(/^Makam\s+/i, '').trim() || 'Sang Waliyullah';
-    const cleanCity = cityName || 'Nusantara';
-    const emotionalHook = `Di keheningan malam sekitar maqbarah ${cleanFigure} di ${cleanCity}, tersimpan sebuah kesaksian keteladanan batin dan karomah yang selama berabad-abad menggetarkan hati para peziarah yang datang membawa beban hidup serta munajat doa...`;
-    return `${emotionalHook}<!--more-->\n\n${head}\n\n${tail}`;
-  }
   return rawText;
 }
 
-function sanitizeReferencesList(refs?: string[], province?: string): string[] | undefined {
+function sanitizeReferencesList(refs?: string[], _province?: string): string[] | undefined {
   if (!Array.isArray(refs) || refs.length === 0) return refs;
-  return refs.map((ref) => {
-    if (
-      /\((2015|2018)\)/.test(ref) &&
-      !/Perret,\s*Daniel|Halim,\s*Wahyuddin|Straver,\s*Hans|Tim Penulis Pondok Tremas/i.test(ref)
-    ) {
-      return `Direktorat Pendidikan Tinggi Keagamaan Islam Kemenag RI (2018). Ensiklopedia Islam Nusantara & Dokumentasi Cagar Budaya Sejarah Islam ${province || 'Nusantara'}. Jakarta: Kementerian Agama RI.`;
-    }
-    return ref;
-  });
+  return refs.filter(
+    (ref) => !/Ensiklopedia Islam Nusantara & Dokumentasi Cagar Budaya Sejarah Islam/i.test(ref)
+  );
 }
 
 function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
@@ -3899,10 +3879,11 @@ function normalizeSiteRecord(site: ZiarahSite): ZiarahSite {
     Boolean(mappedLegacyId && TIER_1_NATIONAL_VERIFIED_IDS.has(mappedLegacyId));
   const resolvedVerifiedBy =
     site.verifiedBy &&
-    site.verifiedBy !== 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara'
+    site.verifiedBy !== 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara' &&
+    site.verifiedBy !== 'Terverifikasi Silang Literatur Primer & Arsip Nasional'
       ? site.verifiedBy
       : isTier1National
-        ? 'Terverifikasi Silang Literatur Primer & Arsip Nasional'
+        ? 'Kurasi Literatur Sejarah & Tradisi Pesantren (Terbuka untuk Tinjauan Pengurus Maqbarah)'
         : 'Kurasi Literatur Daerah & Tradisi Lisan (Terbuka untuk Tinjauan Pengurus Maqbarah)';
 
   return {
@@ -4025,6 +4006,8 @@ export const REGIONAL_SITES: ZiarahSite[] = [
 ];
 
 export const SITES: Site[] = mergeAndDeduplicateSites(BASE_SITES, REGIONAL_SITES);
+export const INITIAL_SITES: Site[] = SITES;
 export const ziarahSites: ZiarahSite[] = SITES;
 export const TOTAL_SITES_COUNT: number = SITES.length;
 export const TOTAL_PROVINCES_COUNT: number = new Set(SITES.map((s) => s.province).filter(Boolean)).size;
+

@@ -10,7 +10,7 @@ import { useVerifiedDonationUnlock, useVerifiedBarokahUnlock } from '../lib/tran
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
 import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide, estimateHaulGregorian2026, sanitizeHistoricalLogisticsText, sanitizePureArabicText } from '../lib/siteLogistics';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
-import { getSiteSlug, formatMakamHeading } from '../lib/siteSlugs';
+import { getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
 import { useSiteCopy } from '../lib/siteCopy';
 import { renderFormattedText, stripMarkdownAsterisks } from '../lib/formatText';
 
@@ -451,7 +451,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           </span>
         </div>
         <h3 className="font-serif text-2xl text-slate-900 mt-1">
-          Wasilah Hajat &amp; Amalan Tawassul di {formatMakamHeading(site.title)}
+          Wasilah Hajat &amp; Amalan Tawassul di {getSiteDisplayHeading(site).heading}
         </h3>
       </div>
 
@@ -771,7 +771,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
             </h4>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {copy.barokahPaywallDescription} Buka penuh <strong>3 Bagian Panduan Amalan, Lafaz Arab-Latin, Wirid Pegangan &amp; Tasbih Digital</strong> di{' '}
-              <strong className="font-semibold text-slate-900">{formatMakamHeading(site.title)}</strong> dengan infaq{' '}
+              <strong className="font-semibold text-slate-900">{getSiteDisplayHeading(site).heading}</strong> dengan infaq{' '}
               <strong className="font-semibold text-emerald-800">Rp {barokahAmount.toLocaleString('id-ID')}</strong>.
             </p>
             <div className="pt-1">
@@ -787,12 +787,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           </div>
         </div>
       )}
-
-      {/* Catatan Transparansi Ilmiah / Epistemologis di bawah Karomah & Doa */}
-      <div className="p-4 rounded-xl bg-stone-100/90 border border-stone-200/90 text-xs text-stone-600 leading-relaxed font-serif italic">
-        Catatan Epistemologis: Riwayat sejarah disarikan dari literatur historiografi dan arsip cagar budaya ({getSourceClassificationLabel(site.historySourceType)}), sedangkan kisah karomah dan fadhilah tawassul merupakan rekaman tradisi ({getSourceClassificationLabel(site.karomahSourceType)}) yang disajikan sebagai keteladanan spiritual. Status kurasi: {site.verifiedBy}.
-      </div>
     </section>
+  );
+
+  const renderEpistemologicalNote = () => (
+    <div className="mt-8 p-4 rounded-xl bg-stone-100/90 border border-stone-200/90 text-xs text-stone-600 leading-relaxed font-serif italic">
+      Catatan Epistemologis: Riwayat sejarah disarikan dari literatur historiografi dan arsip cagar budaya ({getSourceClassificationLabel(site.historySourceType)}), sedangkan kisah karomah dan fadhilah tawassul merupakan rekaman tradisi ({getSourceClassificationLabel(site.karomahSourceType)}) yang disajikan sebagai keteladanan spiritual. Status kurasi: {site.verifiedBy}.
+    </div>
   );
 
   const historyParagraphs = splitIntoReadableParagraphs(site.history || site.description);
@@ -873,7 +874,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       {site.openingHours ? ` · ${site.openingHours}` : ''}
                     </div>
                     <h2 className="text-xl sm:text-2xl font-serif font-normal text-white leading-tight tracking-tight line-clamp-1">
-                      {site.title}
+                      {getSiteDisplayHeading(site).heading}
                     </h2>
                   </div>
                   <a
@@ -1283,6 +1284,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       </section>
                     )}
 
+                    {/* Catatan Transparansi Ilmiah / Epistemologis di Paling Bawah Setelah Babak III */}
+                    {renderEpistemologicalNote()}
+
                     {/* Bottom Story Footer & Next Tab Link */}
                     <footer className="mt-10 pt-6 border-t border-stone-200/70 space-y-4">
                       <button
@@ -1336,6 +1340,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     className="max-w-[65ch] mx-auto space-y-6"
                   >
                     {renderBarokahDoaSection()}
+                    {renderEpistemologicalNote()}
                   </motion.div>
                 )}
 

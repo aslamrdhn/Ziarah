@@ -191,7 +191,7 @@ export async function renderStorySlideCanvasBlob(
 
   // Optional Arabic Quote Box
   if (slide.arabicQuote) {
-    ctx.font = '600 42px "Amiri", "Traditional Arabic", Georgia, serif';
+    ctx.font = '600 42px "Amiri", "Scheherazade New", "Traditional Arabic", "Geeza Pro", "Arial", serif';
     const arabicLines = wrapCanvasLines(ctx, slide.arabicQuote, 800);
     const boxHeight = arabicLines.length * 64 + (slide.arabicSource ? 95 : 50);
 

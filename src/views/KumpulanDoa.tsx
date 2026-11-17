@@ -240,7 +240,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
               aria-current="page"
               className="pb-3 -mb-px text-xs sm:text-sm font-semibold whitespace-nowrap border-b-2 border-emerald-700 text-slate-900 transition-colors"
             >
-              2. Wirid &amp; Doa Khusus Para Wali
+              2. {allDoaKaromah.length} Wirid &amp; Doa Khusus Para Wali
             </Link>
           </div>
 

@@ -247,6 +247,11 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                       onClick={() => {
                         setDropdownOpen(false);
                         onOpenKontribusi();
+                        if (typeof window !== 'undefined') {
+                          window.dispatchEvent(
+                            new CustomEvent('open-contribution-modal', { detail: { tab: 'baru' } })
+                          );
+                        }
                       }}
                       className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900 rounded-xl flex items-center transition-colors cursor-pointer"
                     >

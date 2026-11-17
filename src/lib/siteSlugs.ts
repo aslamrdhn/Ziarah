@@ -83,9 +83,39 @@ export function formatMakamHeading(rawTitle?: string | null): string {
     .replace(/^(Makam\s+)+/i, 'Makam ')
     .trim();
   if (!cleaned) return 'Makam Waliyullah';
-  if (/^(makam|kompleks\s+makam|astana|kubah|pasarean|masjid)\b/i.test(cleaned)) {
+  if (
+    /^(makam|kompleks\s+makam|astana|kubah|pasarean|masjid)\b/i.test(cleaned) ||
+    /\b(makam|maqbarah|astana|pasarean)\b/i.test(cleaned)
+  ) {
     return cleaned;
   }
   return `Makam ${cleaned}`;
+}
+
+export function getSiteDisplayHeading(site: Pick<ZiarahSite, 'name' | 'title'>): {
+  heading: string;
+  subtitle: string;
+} {
+  const rawName = String(site.name || '').trim();
+  const rawTitle = String(site.title || '').trim();
+
+  const nameStartsWithTombNoun =
+    /^(makam|kompleks\s+makam|astana|kubah|pasarean|masjid|petilasan|situs)\b/i.test(rawName);
+  const titleLooksLikeRole =
+    /^(pendiri|sesepuh|mursyid|ulama|waliyullah|mahaguru|pelopor|presiden|pahlawan|pengarang|penyusun|mufti|imam|qadhi|tokoh|putra|putri|cucu|panglima|pejuang|penjaga|pencipta|arsitek|perintis|guru\s+besar|raja\s+pertama|sultan\s+pertama|penyebar\s+islam)\b/i.test(
+      rawTitle
+    );
+
+  if (nameStartsWithTombNoun || titleLooksLikeRole) {
+    return {
+      heading: formatMakamHeading(rawName || rawTitle),
+      subtitle: rawTitle || rawName,
+    };
+  }
+
+  return {
+    heading: formatMakamHeading(rawTitle || rawName),
+    subtitle: rawName || rawTitle,
+  };
 }
 

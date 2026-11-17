@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { SITES } from '../../data/sites';
+import { INITIAL_SITES, ALL_PROVINCES } from '../../data/initialSites';
+import { mergeLocalAndCloudSites } from '../../context/SiteContext';
+import { getSiteDisplayHeading } from '../siteSlugs';
 import { JAWA_BARAT_BANTEN_DKI_SITES } from '../../data/regions/jawaBaratBantenDki';
 import { JAWA_TENGAH_DIY_SITES } from '../../data/regions/jawaTengahDiy';
 import { JAWA_TIMUR_MADURA_SITES } from '../../data/regions/jawaTimurMadura';
@@ -506,7 +509,7 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
 
     // Pastikan 100% seluruh makam di SITES telah memiliki field eksplisit barokahHajat, doaKhusus, haulSchedule, localAdab, historySourceType, karomahSourceType, dan verifiedBy 2 tingkat
     const validVerifiedByTiers = new Set([
-      'Terverifikasi Silang Literatur Primer & Arsip Nasional',
+      'Kurasi Literatur Sejarah & Tradisi Pesantren (Terbuka untuk Tinjauan Pengurus Maqbarah)',
       'Kurasi Literatur Daerah & Tradisi Lisan (Terbuka untuk Tinjauan Pengurus Maqbarah)',
     ]);
     for (const site of SITES) {
@@ -526,7 +529,7 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
 
     const sunanAmpel = SITES.find((s) => s.id === 'sunan-ampel' || s.legacyId === 'wali-2');
     expect(sunanAmpel?.haulSchedule).toContain("Pertengahan bulan Sya'ban (sekitar 15–17 Sya'ban / pekan Nisfu Sya'ban");
-    expect(sunanAmpel?.verifiedBy).toBe('Terverifikasi Silang Literatur Primer & Arsip Nasional');
+    expect(sunanAmpel?.verifiedBy).toBe('Kurasi Literatur Sejarah & Tradisi Pesantren (Terbuka untuk Tinjauan Pengurus Maqbarah)');
 
     // Pastikan fallback siteLogistics menyusun narasi spesifik berbasis peran sejarah (nama, kota, provinsi)
     // dan jadwal haul jujur jika ada makam usulan baru yang belum memiliki barokahHajat / haulSchedule eksplisit
@@ -544,6 +547,83 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
     expect(getSiteLogistics(unverifiedNewSite).haulSchedule).toBe(
       HONEST_UNVERIFIED_LOGISTICS_FALLBACK
     );
+  });
+
+  it('memastikan katalog produksi berisi tepat 183 situs di 34 provinsi, bebas template cliffhanger/sitasi sintetis, dan mergeLocalAndCloudSites mempertahankan seluruh 183 situs saat Firestore lama hanya memiliki 109 dokumen', () => {
+    expect(SITES.length).toBe(183);
+    expect(INITIAL_SITES.length).toBe(183);
+
+    const provinces = new Set(SITES.map((s) => s.location.province));
+    expect(provinces.size).toBe(34);
+    expect(ALL_PROVINCES.includes('Papua')).toBe(true);
+    expect(provinces.has('Papua Barat')).toBe(true);
+    expect(provinces.has('Papua Barat Daya')).toBe(true);
+    expect(provinces.has('Bengkulu')).toBe(true);
+    expect(provinces.has('Kalimantan Utara')).toBe(true);
+    expect(provinces.has('Kepulauan Riau')).toBe(true);
+    expect(provinces.has('Maluku')).toBe(true);
+    expect(provinces.has('Sulawesi Tenggara')).toBe(true);
+
+    const rajaAmpatMatches: string[] = [];
+    for (const site of SITES) {
+      const fullBlob = JSON.stringify(site);
+      expect(fullBlob, `Template cliffhanger on ${site.id}`).not.toContain('Di keheningan malam sekitar maqbarah');
+      expect(fullBlob, `Synthetic citation on ${site.id}`).not.toContain(
+        'Ensiklopedia Islam Nusantara & Dokumentasi Cagar Budaya Sejarah Islam'
+      );
+      expect(fullBlob, `Unverified archive claim on ${site.id}`).not.toContain(
+        'Terverifikasi Silang Literatur Primer & Arsip Nasional'
+      );
+      if (fullBlob.includes('Raja Ampat')) {
+        rajaAmpatMatches.push(site.id);
+      }
+    }
+
+    expect(rajaAmpatMatches).toEqual(['makam-kesultanan-misool-raja-ampat']);
+    const misool = SITES.find((s) => s.id === 'makam-kesultanan-misool-raja-ampat');
+    expect(misool?.location.province).toBe('Papua Barat Daya');
+
+    const waliKembar = SITES.find((s) => s.id === 'wali-kembar-karangasem' || s.legacyId === 'auliya-24');
+    expect(waliKembar).toBeDefined();
+    expect(waliKembar?.location.province).toBe('Bali');
+    expect(waliKembar?.history).toContain('Karangasem');
+    expect(waliKembar?.history).toContain('Bungaya');
+    expect(JSON.stringify(waliKembar)).not.toContain('Raja Ampat');
+
+    const lirboyo = SITES.find((s) => s.id === 'kh-abdul-karim-lirboyo');
+    expect(lirboyo).toBeDefined();
+    if (lirboyo) {
+      const heading = getSiteDisplayHeading(lirboyo);
+      expect(heading.heading).toContain('KH. Abdul Karim');
+      expect(heading.heading).not.toMatch(/^Makam Pendiri/i);
+    }
+
+    const cakrabuana = SITES.find((s) => s.id === 'pangeran-cakrabuana');
+    expect(cakrabuana).toBeDefined();
+    if (cakrabuana) {
+      const heading = getSiteDisplayHeading(cakrabuana);
+      expect(heading.heading).toContain('Pangeran Cakrabuana');
+    }
+
+    // Simulasikan skenario produksi: Firestore hanya memiliki 109 dokumen lama tanpa editedByCurator: true
+    const simulatedOld109Firestore = INITIAL_SITES.slice(0, 109).map((s) => ({
+      ...s,
+      history: `Data lama Firestore belum diedit kurator untuk ${s.id}`,
+    }));
+    const merged = mergeLocalAndCloudSites(INITIAL_SITES, simulatedOld109Firestore);
+    expect(merged.length).toBe(183);
+    expect(new Set(merged.map((s) => s.location.province)).size).toBe(34);
+    expect(merged[0].history).toBe(INITIAL_SITES[0].history);
+
+    // Jika dokumen memiliki editedByCurator: true, perubahan kurator wajib dipertahankan
+    const curatedDoc = {
+      ...INITIAL_SITES[0],
+      editedByCurator: true,
+      openingHours: 'Buka 24 Jam (Update Kurator Resmi)',
+    };
+    const mergedWithCurator = mergeLocalAndCloudSites(INITIAL_SITES, [curatedDoc]);
+    expect(mergedWithCurator.length).toBe(183);
+    expect(mergedWithCurator[0].openingHours).toBe('Buka 24 Jam (Update Kurator Resmi)');
   });
 });
 
