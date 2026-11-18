@@ -1473,33 +1473,60 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                     </div>
 
                                     {idx === site.karomah!.length - 1 && !hasUntold && (
-                                      <div className="p-6 rounded-2xl bg-white border border-slate-200">
-                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
-                                          <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
-                                          <span>{copy.paywallBadge}</span>
+                                      <div className="space-y-4">
+                                        {/* Pengantar Terbuka: Konteks Jaringan Dakwah & Sanad Sejarah sebelum gembok Rp 10.000 */}
+                                        <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80 space-y-1.5">
+                                          <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-900">
+                                            Konteks Jaringan Dakwah &amp; Sanad Sejarah ({safeSiteName})
+                                          </div>
+                                          <p className="text-xs sm:text-sm text-slate-800 leading-relaxed">
+                                            {deepTadabburContext.dakwahNetworkSummary}
+                                          </p>
                                         </div>
-                                        <h4 className="font-serif text-xl text-slate-900 mt-2">
-                                          {copy.paywallTitle}
-                                        </h4>
-                                        <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                                          {copy.paywallDescription}
-                                        </p>
-                                        <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                                          <button
-                                            type="button"
-                                            onClick={() => setTransactionType('untold')}
-                                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium transition-colors cursor-pointer"
-                                          >
-                                            {copy.paywallButtonText} (Rp {rubrikAmount.toLocaleString('id-ID')})
-                                          </button>
-                                          <a
-                                            href={waShareUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-xs text-slate-600 hover:text-slate-900 underline underline-offset-4 text-center sm:text-left"
-                                          >
-                                            Bagikan cuplikan via WhatsApp
-                                          </a>
+
+                                        <div className="p-6 rounded-2xl bg-white border border-slate-200 space-y-3">
+                                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
+                                            <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
+                                            <span>{copy.paywallBadge} · RP {rubrikAmount.toLocaleString('id-ID')}</span>
+                                          </div>
+                                          <h4 className="font-serif text-xl text-slate-900">
+                                            {copy.paywallTitle}
+                                          </h4>
+                                          <p className="text-sm text-slate-600 leading-relaxed">
+                                            {copy.paywallDescription}
+                                          </p>
+
+                                          {/* Rincian 4 Bagian Khazanah & Tadabbur yang Terbuka Penuh */}
+                                          <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
+                                            <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-900 mb-2">
+                                              4 BAGIAN KHAZANAH &amp; TADABBUR YANG TERBUKA PENUH (INFAQ RP {rubrikAmount.toLocaleString('id-ID')}):
+                                            </div>
+                                            <ol className="space-y-1.5 text-xs text-slate-700 list-decimal list-inside leading-relaxed">
+                                              <li>Naskah Lengkap Kesaksian Karomah &amp; Keajaiban Batin {safeSiteName}</li>
+                                              <li>Naskah Utuh Wasiat Rahasia &amp; Falsafah Perjuangan ({deepTadabburContext.factualDetails.era})</li>
+                                              <li>Bedah Konteks Jaringan Dakwah, Sanad Keilmuan &amp; Tradisi Haul di {site.location?.city || site.city || 'Nusantara'}</li>
+                                              <li>3 Butir Muhasabah, Laku Batin &amp; Amalan Istiqamah 7 Hari Pasca-Ziarah + Seluruh 5 Bagian Kitab Amalan &amp; Doa Khusus</li>
+                                            </ol>
+                                          </div>
+
+                                          <div className="pt-1 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                                            <button
+                                              type="button"
+                                              onClick={() => setTransactionType('untold')}
+                                              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+                                            >
+                                              <Lock className="w-4 h-4" strokeWidth={1.75} />
+                                              <span>{copy.paywallButtonText} (Rp {rubrikAmount.toLocaleString('id-ID')})</span>
+                                            </button>
+                                            <a
+                                              href={waShareUrl}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-xs text-slate-600 hover:text-slate-900 underline underline-offset-4 text-center sm:text-left"
+                                            >
+                                              Bagikan cuplikan via WhatsApp
+                                            </a>
+                                          </div>
                                         </div>
                                       </div>
                                     )}
@@ -1553,6 +1580,16 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                             </div>
                           ) : (
                             <div className="space-y-5">
+                              {/* Pengantar Terbuka: Konteks Jaringan Dakwah & Sanad Sejarah sebelum gembok Rp 10.000 */}
+                              <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80 space-y-1.5">
+                                <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-900">
+                                  Konteks Jaringan Dakwah &amp; Sanad Sejarah ({safeSiteName})
+                                </div>
+                                <p className="text-xs sm:text-sm text-slate-800 leading-relaxed">
+                                  {deepTadabburContext.dakwahNetworkSummary}
+                                </p>
+                              </div>
+
                               <div>
                                 <p className={bodyParagraphClass}>
                                   {renderFormattedText(untoldCliffhanger.preview)}
@@ -1563,25 +1600,49 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                       {stripMarkdownAsterisks(para)}
                                     </p>
                                   ))}
+                                  <div className="pt-2 border-t border-slate-200 space-y-1">
+                                    <div className="font-semibold text-slate-800">
+                                      3 Butir Muhasabah &amp; Teladan Hidup Sepulang Ziarah (QS. Yunus: 62–64)
+                                    </div>
+                                    {deepTadabburContext.muhasabahPoints.map((pt) => (
+                                      <p key={pt.number} className="text-xs">
+                                        {pt.number}. {pt.title} — {pt.body}
+                                      </p>
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
 
-                              {/* Kartu Pembuka Khazanah (In-Place Unlock) */}
-                              <div className="p-6 rounded-2xl bg-white border border-slate-200">
-                                <p className="font-serif italic text-sm sm:text-base text-slate-700 mb-3 leading-relaxed border-l-2 border-emerald-700 pl-3">
+                              {/* Kartu Pembuka Khazanah (In-Place Unlock Rp 10.000) */}
+                              <div className="p-6 rounded-2xl bg-white border border-slate-200 space-y-3">
+                                <p className="font-serif italic text-sm sm:text-base text-slate-700 leading-relaxed border-l-2 border-emerald-700 pl-3">
                                   &ldquo;Di balik kabut sejarah ini, tersimpan satu kisah karomah dan pesan wasiat batin yang jarang diketahui orang awam—sebuah cermin bagi siapa pun yang hari ini sedang memikul beban hidup yang berat...&rdquo;
                                 </p>
                                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
                                   <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
-                                  <span>{copy.paywallBadge}</span>
+                                  <span>{copy.paywallBadge} · RP {rubrikAmount.toLocaleString('id-ID')}</span>
                                 </div>
-                                <h4 className="font-serif text-xl text-slate-900 mt-2">
+                                <h4 className="font-serif text-xl text-slate-900">
                                   {copy.paywallTitle}
                                 </h4>
-                                <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                                <p className="text-sm text-slate-600 leading-relaxed">
                                   {copy.paywallDescription}
                                 </p>
-                                <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+
+                                {/* Rincian 4 Bagian Khazanah & Tadabbur yang Terbuka Penuh */}
+                                <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
+                                  <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-900 mb-2">
+                                    4 BAGIAN KHAZANAH &amp; TADABBUR YANG TERBUKA PENUH (INFAQ RP {rubrikAmount.toLocaleString('id-ID')}):
+                                  </div>
+                                  <ol className="space-y-1.5 text-xs text-slate-700 list-decimal list-inside leading-relaxed">
+                                    <li>Naskah Lengkap Kesaksian Karomah &amp; Keajaiban Batin {safeSiteName}</li>
+                                    <li>Naskah Utuh Wasiat Rahasia &amp; Falsafah Perjuangan ({deepTadabburContext.factualDetails.era})</li>
+                                    <li>Bedah Konteks Jaringan Dakwah, Sanad Keilmuan &amp; Tradisi Haul di {site.location?.city || site.city || 'Nusantara'}</li>
+                                    <li>3 Butir Muhasabah, Laku Batin &amp; Amalan Istiqamah 7 Hari Pasca-Ziarah + Seluruh 5 Bagian Kitab Amalan &amp; Doa Khusus</li>
+                                  </ol>
+                                </div>
+
+                                <div className="pt-1 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                                   <button
                                     type="button"
                                     onClick={() => setTransactionType('untold')}

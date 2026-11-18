@@ -681,7 +681,8 @@ export default function App() {
             <div className="flex items-center gap-3">
               <img
                 src="/favicon.svg"
-                alt="Ziarah Nusantara"
+                alt=""
+                aria-hidden="true"
                 width={32}
                 height={32}
                 loading="lazy"

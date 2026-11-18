@@ -123,13 +123,15 @@ describe('Technical SEO, Prerendering & Canonical Slug Integrity', () => {
     expect(org?.url).toBe('https://ziarahnusantara.my.id/');
     expect(org?.logo).toBe('https://ziarahnusantara.my.id/pwa-512x512.png');
 
-    // Header/Footer/Editorial logos must not include "Logo Resmi ..." in alt text
+    // Header/Footer/Editorial logos must use alt="" and aria-hidden="true" and never leak "Logo Resmi"
     const navbarSrc = fs.readFileSync(path.resolve(process.cwd(), 'src/components/Navbar.tsx'), 'utf8');
     const appSrc = fs.readFileSync(path.resolve(process.cwd(), 'src/App.tsx'), 'utf8');
     const homeSrc = fs.readFileSync(path.resolve(process.cwd(), 'src/views/DaftarMakam.tsx'), 'utf8');
-    expect(navbarSrc).not.toContain('Logo Resmi');
-    expect(appSrc).not.toContain('Logo Resmi');
-    expect(homeSrc).not.toContain('Logo Resmi');
+    for (const srcContent of [navbarSrc, appSrc, homeSrc]) {
+      expect(srcContent).not.toContain('Logo Resmi');
+      expect(srcContent).toContain('alt=""');
+      expect(srcContent).toContain('aria-hidden="true"');
+    }
 
     // Verify buildRouteJsonLd produces BreadcrumbList even for menu routes
     const menuLd = JSON.parse(

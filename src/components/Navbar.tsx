@@ -141,7 +141,8 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
         <Link to="/" className="group flex items-center gap-2.5 sm:gap-3 min-w-0 shrink-0">
           <img
             src="/favicon.svg"
-            alt={copy.brandName || APP_BRAND.name}
+            alt=""
+            aria-hidden="true"
             width={36}
             height={36}
             className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-xs border border-stone-200/80 shrink-0"

@@ -1209,7 +1209,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <div className="flex items-center gap-3.5 min-w-0">
               <img
                 src="/favicon.svg"
-                alt="Ziarah Nusantara"
+                alt=""
+                aria-hidden="true"
                 width={44}
                 height={44}
                 loading="lazy"
