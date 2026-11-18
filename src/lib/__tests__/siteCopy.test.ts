@@ -11,6 +11,12 @@ describe('siteCopy & cliffhanger utilities', () => {
     expect(mergeWithDefaultSiteCopy(undefined)).toEqual(DEFAULT_SITE_COPY);
     expect(MIN_DONATION_AMOUNT).toBe(2000);
     expect(DEFAULT_SITE_COPY.barokahLockAmount).toBeGreaterThanOrEqual(2000);
+    expect(DEFAULT_SITE_COPY.heroTitle).toBe(
+      'Merawat Sanad Ulama, Menemukan Ketenangan Batin.'
+    );
+    expect(DEFAULT_SITE_COPY.heroSubtitle).toBe(
+      'Menghimpun riwayat 183 maqbarah di 34 provinsi agar setiap langkah ziarah menjadi pengingat akhirat, penguat iman, dan bakti doa bagi ahli kubur.'
+    );
     const pkg100k = DEFAULT_SITE_COPY.quickNominalPackages.find((p) => p.amount === 100000);
     expect(pkg100k?.tag).toBe('Infaq Literasi Utama');
   });

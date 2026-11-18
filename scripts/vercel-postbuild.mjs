@@ -634,8 +634,8 @@ function buildHomepageRootHtml() {
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <header>
           <span class="zn-badge">Arsip Sejarah &amp; Panduan Ziarah Nusantara</span>
-          <h1 class="zn-h1">Jejak Langkah Para Kekasih Allah di Bumi Nusantara</h1>
-          <p class="zn-lead">Panduan lengkap ziarah kubur dan direktori <strong>${sites.length} makam Wali Songo, Ulama Pesantren, dan Habaib di ${uniqueProvinces.length} provinsi Indonesia</strong>. Dilengkapi urutan bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, jadwal haul, dan peta rute GPS.</p>
+          <h1 class="zn-h1">Merawat Sanad Ulama, Menemukan Ketenangan Batin.</h1>
+          <p class="zn-lead">Menghimpun riwayat <strong>${sites.length} maqbarah di ${uniqueProvinces.length} provinsi</strong> agar setiap langkah ziarah menjadi pengingat akhirat, penguat iman, dan bakti doa bagi ahli kubur—dilengkapi urutan bacaan doa ziarah kubur (Arab, Latin, Artinya), Surah Yasin, Tahlil, Tasbih digital, kisah karomah, jadwal haul, dan peta rute GPS.</p>
           <nav class="zn-nav" aria-label="Pintasan Utama Ziarah Nusantara">
             <a class="zn-btn-primary" href="/panduan">Baca Doa Ziarah Kubur, Yasin &amp; Tahlil</a>
             <a class="zn-btn-secondary" href="/peta">Buka Peta Rute ${sites.length} Makam Wali</a>

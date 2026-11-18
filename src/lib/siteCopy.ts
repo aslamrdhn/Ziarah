@@ -147,9 +147,9 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
 
   // 1. Beranda & Filter
   heroBadge: 'Arsip Resmi Waliyullah & Ulama Nusantara',
-  heroTitle: 'Jejak Langkah Para Kekasih Allah di Bumi Nusantara.',
+  heroTitle: 'Merawat Sanad Ulama, Menemukan Ketenangan Batin.',
   heroSubtitle:
-    'Sebuah ruang hening untuk membaca kembali keteguhan iman, kelembutan dakwah, dan wasiat batin para Waliyullah serta Ulama penjaga negeri.',
+    'Menghimpun riwayat 183 maqbarah di 34 provinsi agar setiap langkah ziarah menjadi pengingat akhirat, penguat iman, dan bakti doa bagi ahli kubur.',
   jumatBannerTitle: 'Malam & Hari Jumat Penuh Keberkahan',
   jumatBannerSubtitle:
     'Mari hadiahkan Al-Fatihah dan selami kembali kisah para kekasih Allah yang meneduhkan batin.',
@@ -337,7 +337,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   footerCopyrightText: 'Dikelola secara resmi oleh Tim Kurator Arsip Ziarah Nusantara',
 };
 
-const SITE_COPY_CACHE_KEY = 'zn_site_copy_cache_v3';
+const SITE_COPY_CACHE_KEY = 'zn_site_copy_cache_v4';
 const SITE_COPY_EVENT = 'zn-site-copy-updated';
 const SITE_COPY_LEGACY_EVENT = 'zn_site_copy_updated';
 const ADMIN_DIRTY_TS_KEY = 'zn_admin_dirty_ts';
@@ -555,8 +555,18 @@ export function mergeWithDefaultSiteCopy(raw?: Partial<SiteCopyConfig> | null): 
     navDonateCtaLabel: pickStr(raw.navDonateCtaLabel, DEFAULT_SITE_COPY.navDonateCtaLabel, 60),
 
     heroBadge: pickStr(raw.heroBadge, DEFAULT_SITE_COPY.heroBadge, 140),
-    heroTitle: pickStr(raw.heroTitle, DEFAULT_SITE_COPY.heroTitle, 200),
-    heroSubtitle: pickStr(raw.heroSubtitle, DEFAULT_SITE_COPY.heroSubtitle, 500, true),
+    heroTitle: (() => {
+      const candidate = pickStr(raw.heroTitle, DEFAULT_SITE_COPY.heroTitle, 200);
+      return /^jejak langkah.*bumi nusantara/i.test(candidate)
+        ? DEFAULT_SITE_COPY.heroTitle
+        : candidate;
+    })(),
+    heroSubtitle: (() => {
+      const candidate = pickStr(raw.heroSubtitle, DEFAULT_SITE_COPY.heroSubtitle, 500, true);
+      return /^sebuah ruang hening.*penjaga negeri/i.test(candidate)
+        ? DEFAULT_SITE_COPY.heroSubtitle
+        : candidate;
+    })(),
     jumatBannerTitle: pickStr(raw.jumatBannerTitle, DEFAULT_SITE_COPY.jumatBannerTitle, 160),
     jumatBannerSubtitle: pickStr(
       raw.jumatBannerSubtitle,
