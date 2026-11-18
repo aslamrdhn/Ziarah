@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ZiarahSite, getSourceClassificationLabel } from '../data/sites';
-import { X, MapPin, Navigation, Clock, Heart, BookOpen, Bookmark, BookmarkCheck, QrCode, Send, ScrollText, Trash2, Loader2, Calendar, ShieldCheck, Type, Map as MapIcon, Lock } from 'lucide-react';
+import { X, MapPin, Navigation, Clock, Heart, BookOpen, Bookmark, BookmarkCheck, QrCode, Send, ScrollText, Trash2, Loader2, Calendar, ShieldCheck, Type, Map as MapIcon, Lock, Printer, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransactionModal } from './TransactionModal';
 import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
@@ -10,6 +10,7 @@ import { useVerifiedDonationUnlock, useVerifiedBarokahUnlock } from '../lib/tran
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
 import { useAuthenticSiteImage, getRegionalArchitecturalPhoto, getSiteGoogleMapsPhotosUrl } from '../lib/authenticSiteImages';
 import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide, estimateHaulGregorian2026, sanitizeHistoricalLogisticsText, sanitizePureArabicText } from '../lib/siteLogistics';
+import { buildStructuredTawassul, getCanonicalWasilahPrayers, buildDeepTadabburAndContext } from '../lib/premiumKitabEnrichment';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
 import { getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
 import { useSiteCopy } from '../lib/siteCopy';
@@ -224,6 +225,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   const [hajatSavedNotice, setHajatSavedNotice] = useState<boolean>(false);
   const [tasbihCount, setTasbihCount] = useState<number>(0);
   const [tasbihTarget, setTasbihTarget] = useState<33 | 99 | 100>(33);
+  const [cardTasbihCounts, setCardTasbihCounts] = useState<Record<string, number>>({});
   const [copiedPrayerSheet, setCopiedPrayerSheet] = useState<boolean>(false);
   const { isUnlocked: isDonationVerified } = useVerifiedDonationUnlock(site?.id);
   const { isUnlocked: isBarokahDonationVerified } = useVerifiedBarokahUnlock(site?.id);
@@ -246,6 +248,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       }
     }
     setTasbihCount(0);
+    setCardTasbihCounts({});
     setCopiedPrayerSheet(false);
   }, [site?.id]);
 
@@ -359,6 +362,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   const hasKaromah = site.karomah && site.karomah.length > 0;
   const completeBarokahGuide = getSiteCompleteBarokahGuide(site);
   const effectiveDoaKhusus = completeBarokahGuide.doaItems;
+  const structuredTawassul = buildStructuredTawassul(site);
+  const canonicalPrayers = getCanonicalWasilahPrayers(site);
+  const deepTadabburContext = buildDeepTadabburAndContext(site);
   const barokahHajatText = getSiteBarokahHajat(site);
   const hasUntold = !!site.untoldStory;
   const currentUser = auth.currentUser;
@@ -415,17 +421,48 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
     });
   };
 
+  const handleIncrementCardTasbih = (cardKey: string, targetCount: number) => {
+    setCardTasbihCounts((prev) => {
+      const current = prev[cardKey] || 0;
+      const next = current >= targetCount ? 1 : current + 1;
+      try {
+        if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+          navigator.vibrate(next === targetCount ? [35, 50, 35] : 20);
+        }
+      } catch {
+        // Ignore vibration API errors
+      }
+      return { ...prev, [cardKey]: next };
+    });
+  };
+
+  const handleResetCardTasbih = (cardKey: string) => {
+    setCardTasbihCounts((prev) => ({ ...prev, [cardKey]: 0 }));
+  };
+
   const handleCopyPrayerSheet = () => {
+    const tawassulLines = structuredTawassul
+      .map(
+        (node) =>
+          `${node.order}. ${node.label}\n${node.arabic}\nLatin: ${node.latin}\nArtinya: "${node.translation}"`
+      )
+      .join('\n\n');
     const doaLines = effectiveDoaKhusus
       .map(
         (d, idx) =>
           `${idx + 1}. ${d.title}\n${d.text}\nLatin: ${d.latin || '-'}\nArtinya: "${d.translation || '-'}"`
       )
       .join('\n\n');
+    const canonicalLines = canonicalPrayers
+      .map(
+        (p, idx) =>
+          `${idx + 1}. ${p.title} (${p.sourceCitation} · ${p.targetCount}x)\n${p.arabic}\nLatin: ${p.latin}\nArtinya: "${p.translation}"`
+      )
+      .join('\n\n');
     const hajatLine = personalHajat.trim()
       ? `\nNiat & Hajat Pribadi Saya di ${safeSiteName}:\n"${personalHajat.trim()}"\n`
       : '';
-    const fullSheet = `LEMBAR AMALAN TAWASSUL & MUNAJAT HAJAT\n${formatMakamHeading(site.title)} (${safeSiteName}) — ${site.location.city}, ${site.location.province}\n${hajatLine}\n${doaLines}\n\nSumber: https://ziarahnusantara.my.id/situs/${getSiteSlug(site)}`;
+    const fullSheet = `KITAB AMALAN, TAWASSUL & MUNAJAT HAJAT\n${formatMakamHeading(site.title)} (${safeSiteName}) — ${site.location.city}, ${site.location.province}\n${hajatLine}\n=== SILSILAH HADIAH AL-FATIHAH (4 SIMPUL) ===\n${tawassulLines}\n\n=== WIRID WARISAN MAQBARAH ===\n${doaLines}\n\n=== RANGKAIAN AYAT AL-QUR'AN & DOA NABAWI SAHIH ===\n${canonicalLines}\n\nSumber: https://ziarahnusantara.my.id/situs/${getSiteSlug(site)}`;
     try {
       navigator.clipboard?.writeText(fullSheet);
       setCopiedPrayerSheet(true);
@@ -433,6 +470,24 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
     } catch {
       // Ignore clipboard errors
     }
+  };
+
+  const handlePrintPrayerSheet = () => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    document.body.classList.add('zn-printing-sheet');
+    const cleanup = () => {
+      document.body.classList.remove('zn-printing-sheet');
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+    window.setTimeout(() => {
+      try {
+        window.print();
+      } catch {
+        cleanup();
+      }
+    }, 60);
+    window.setTimeout(cleanup, 4000);
   };
 
   const renderBarokahDoaSection = (sectionId?: string) => (
@@ -521,9 +576,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       </div>
 
 
-      {/* 3 Bagian Panduan Amalan Lengkap (Terbuka Penuh saat isBarokahUnlocked, atau BLUR saat Terkunci Rp 2.000) */}
+      {/* Kitab Amalan 5 Bagian Terstruktur (Terbuka Penuh saat isBarokahUnlocked, atau Peta 5 Bagian + BLUR saat Terkunci) */}
       {isBarokahUnlocked ? (
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Bila Peziarah Menuliskan Hajat Pribadi, Tampilkan di Kartu Munajat Khusus */}
           {personalHajat.trim() && (
             <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
@@ -536,22 +591,32 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
             </div>
           )}
 
-          {/* 1) Tata Cara & Waktu Terbaik Bertawassul Hajat */}
+          {/* Bagian 1: Salam, Adab & Kaifiyah Munajat + Aksi Salin / Cetak */}
           <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-3">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
-                Bagian 1 · Kaifiyah &amp; Adab Munajat
+                Bagian 1 · Salam &amp; Kaifiyah Adab Khusus Maqbarah
               </span>
-              <button
-                type="button"
-                onClick={handleCopyPrayerSheet}
-                className="px-3 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-semibold transition-colors cursor-pointer"
-              >
-                {copiedPrayerSheet ? 'Lembar Doa Tersalin' : 'Salin Lembar Doa & Hajat'}
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopyPrayerSheet}
+                  className="px-3 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  {copiedPrayerSheet ? 'Lembar Doa Tersalin' : 'Salin Lembar Doa & Hajat'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrintPrayerSheet}
+                  className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5 text-emerald-800" strokeWidth={1.75} />
+                  <span>Cetak / Simpan PDF</span>
+                </button>
+              </div>
             </div>
             <h4 className="font-serif text-lg sm:text-xl text-slate-900">
-              1. Tata Cara &amp; Waktu Terbaik Bertawassul Hajat di {safeSiteName}
+              1. Tata Cara &amp; Adab Bertawassul di {safeSiteName}
             </h4>
             <ul className="space-y-2.5 text-sm text-slate-700 leading-relaxed">
               {completeBarokahGuide.tataCaraWaktu.map((step, sIdx) => (
@@ -565,19 +630,109 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
             </ul>
           </div>
 
-          {/* 2) Lafaz Bacaan Tawassul & Doa Khusus Hajat (Arab, Latin, Terjemahan) */}
+          {/* Bagian 2: Silsilah Hadiah Al-Fatihah (4 Simpul Sanad Tradisi Majmu' Syarif) */}
+          <div className="space-y-3.5">
+            <div className="px-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
+                Bagian 2 · Tradisi Majmu&apos; Syarif
+              </span>
+              <h4 className="font-serif text-lg sm:text-xl text-slate-900">
+                2. Silsilah Hadiah Al-Fatihah 4 Simpul Sanad Khusus {safeSiteName}
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+                Bacalah Surah Al-Fatihah 1 kali pada setiap simpul silsilah berikut sebelum masuk ke wirid dan doa inti.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {structuredTawassul.map((node) => {
+                const nodeTasbihKey = `tawassul-${node.order}`;
+                const nodeCount = cardTasbihCounts[nodeTasbihKey] || 0;
+                return (
+                  <div
+                    key={node.order}
+                    className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-3.5"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
+                          {node.label}
+                        </span>
+                        <p className="text-xs sm:text-sm font-medium text-slate-800 mt-0.5">
+                          {node.recipientSummary}
+                        </p>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold">
+                        Al-Fatihah 1x
+                      </span>
+                    </div>
+                    <p
+                      className="text-xl sm:text-2xl font-arabic text-slate-900 leading-[2.4] text-right pt-2 border-t border-slate-100"
+                      dir="rtl"
+                    >
+                      {node.arabic}
+                    </p>
+                    <div className="p-3 rounded-xl bg-emerald-50/50 border border-emerald-200/70">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 mb-0.5">
+                        Transliterasi Latin
+                      </div>
+                      <p className="text-slate-800 italic text-xs sm:text-sm leading-relaxed">
+                        {node.latin}
+                      </p>
+                    </div>
+                    <p className="text-slate-600 italic text-xs sm:text-sm leading-relaxed">
+                      &ldquo;{node.translation}&rdquo;
+                    </p>
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-medium text-slate-500">
+                        Penanda Al-Fatihah Simpul {node.order}:{' '}
+                        <strong className="text-emerald-800">{nodeCount} / 1</strong>
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleIncrementCardTasbih(nodeTasbihKey, 1)}
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                            nodeCount >= 1
+                              ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                              : 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                          }`}
+                        >
+                          {nodeCount >= 1 ? 'Selesai (1/1)' : '+ Baca Al-Fatihah'}
+                        </button>
+                        {nodeCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => handleResetCardTasbih(nodeTasbihKey)}
+                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 cursor-pointer"
+                            title="Reset hitungan"
+                            aria-label="Reset hitungan"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.75} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Bagian 3: Wirid Warisan Makam + Tasbih Mini Interaktif per Kartu */}
           <div className="space-y-4">
             <div className="px-1">
               <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
-                Bagian 2 · Bacaan Inti Maqbarah
+                Bagian 3 · Bacaan Warisan Maqbarah
               </span>
               <h4 className="font-serif text-lg sm:text-xl text-slate-900">
-                2. Lafaz Bacaan Tawassul, Wirid Pegangan &amp; Doa Khusus Hajat
+                3. {effectiveDoaKhusus.length} Wirid Warisan &amp; Doa Khusus di {safeSiteName}
               </h4>
             </div>
             {effectiveDoaKhusus.map((doa, idx) => {
               const dId = `${site.id}-doa-${idx}`;
               const isSavedDoa = savedDoas.includes(dId);
+              const wiridTarget = 33;
+              const wiridCount = cardTasbihCounts[dId] || 0;
 
               return (
                 <div
@@ -587,7 +742,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-800 block mb-0.5">
-                        Amalan &amp; Tawassul Makam #{idx + 1}
+                        Amalan &amp; Wirid Makam #{idx + 1}
                       </span>
                       <h5 className="font-serif text-lg sm:text-xl text-slate-900">{doa.title}</h5>
                     </div>
@@ -639,20 +794,141 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       </div>
                     )}
                   </div>
+
+                  {/* Tasbih Mini Interaktif per Kartu Wirid */}
+                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-medium text-slate-600">
+                      Tasbih Mini Wirid:{' '}
+                      <strong className="text-emerald-800 font-bold">
+                        {wiridCount} / {wiridTarget}
+                      </strong>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleIncrementCardTasbih(dId, wiridTarget)}
+                        className="px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        + Dzikir ({wiridCount}/{wiridTarget})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleResetCardTasbih(dId)}
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Tasbih Digital Interaktif untuk Mengamalkan Wirid Pegangan di Makam */}
+          {/* Bagian 4: 3 Rangkaian Ayat Al-Qur'an & Doa Nabawi Sahih Sesuai Wasilah Hajat */}
+          <div className="space-y-4">
+            <div className="px-1 space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
+                Bagian 4 · Sumber Kanonik Al-Qur&apos;an &amp; Hadis Sahih
+              </span>
+              <h4 className="font-serif text-lg sm:text-xl text-slate-900">
+                4. 3 Rangkaian Ayat Al-Qur&apos;an &amp; Doa Nabawi Sesuai Wasilah Hajat
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-600">
+                Tema ikhtiar batin terdeteksi untuk maqbarah ini:{' '}
+                <strong className="text-emerald-900">{canonicalPrayers[0]?.themeLabel}</strong>.
+              </p>
+            </div>
+            {canonicalPrayers.map((prayer, pIdx) => {
+              const pCount = cardTasbihCounts[prayer.id] || 0;
+              return (
+                <div
+                  key={prayer.id}
+                  className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold uppercase tracking-wider mb-1">
+                        Rujukan {pIdx + 1}: {prayer.sourceCitation}
+                      </span>
+                      <h5 className="font-serif text-lg sm:text-xl text-slate-900">
+                        {prayer.title}
+                      </h5>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold shrink-0">
+                      Anjuran {prayer.targetCount}x
+                    </span>
+                  </div>
+
+                  <p
+                    className="text-2xl sm:text-3xl font-arabic text-slate-900 leading-[2.6] text-right pt-2 border-t border-slate-100"
+                    dir="rtl"
+                  >
+                    {prayer.arabic}
+                  </p>
+
+                  <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200/70">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 mb-1">
+                      Transliterasi Latin
+                    </div>
+                    <p className="text-slate-800 italic text-xs sm:text-sm leading-relaxed">
+                      {prayer.latin}
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                        Terjemahan Ayat / Hadis
+                      </div>
+                      <p className="text-slate-700 italic text-xs sm:text-sm leading-relaxed">
+                        &ldquo;{prayer.translation}&rdquo;
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-slate-200/80 text-xs text-slate-600 leading-relaxed">
+                      <strong className="text-slate-800">Kaifiyah Pengamalan:</strong> {prayer.kaifiyah}
+                    </div>
+                  </div>
+
+                  {/* Tasbih Mini Interaktif per Kartu Doa Nabawi */}
+                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-medium text-slate-600">
+                      Tasbih Mini Amalan:{' '}
+                      <strong className="text-emerald-800 font-bold">
+                        {pCount} / {prayer.targetCount}
+                      </strong>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleIncrementCardTasbih(prayer.id, prayer.targetCount)}
+                        className="px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        + Dzikir ({pCount}/{prayer.targetCount})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleResetCardTasbih(prayer.id)}
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Bagian 5: Tasbih Digital Utama + Wirid Penutup & Cetak Lembar Amalan Saku PDF */}
           <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
-                  Pendamping Dzikir Maqbarah
+                  Bagian 5 · Pendamping Dzikir Maqbarah
                 </span>
                 <h4 className="font-serif text-lg sm:text-xl text-slate-900">
-                  Tasbih Digital Wirid Pegangan ({tasbihCount} / {tasbihTarget})
+                  5. Tasbih Digital Wirid Pegangan ({tasbihCount} / {tasbihTarget})
                 </h4>
               </div>
               <div className="flex items-center gap-1.5">
@@ -696,14 +972,15 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
             </div>
           </div>
 
-          {/* 3) Wirid Penutup & Adab Pulang Ziarah */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-3">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
-              Bagian 3 · Penyempurna Wasilah
-            </span>
-            <h4 className="font-serif text-lg sm:text-xl text-slate-900">
-              3. Wirid Penutup &amp; Adab Pulang Ziarah
-            </h4>
+          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 space-y-4">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 block">
+                Penyempurna Wasilah &amp; Dokumen Saku
+              </span>
+              <h4 className="font-serif text-lg sm:text-xl text-slate-900">
+                Wirid Penutup, Adab Pulang &amp; Cetak Lembar Amalan (PDF)
+              </h4>
+            </div>
             <ul className="space-y-2.5 text-sm text-slate-700 leading-relaxed">
               {completeBarokahGuide.wiridPenutupAdab.map((item, wIdx) => (
                 <li key={wIdx} className="flex items-start gap-2.5">
@@ -712,21 +989,52 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 </li>
               ))}
             </ul>
+            <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <button
+                type="button"
+                onClick={handlePrintPrayerSheet}
+                className="px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Printer className="w-4 h-4" strokeWidth={1.75} />
+                <span>Cetak / Simpan Lembar Amalan Maqbarah Ini (PDF)</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyPrayerSheet}
+                className="px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+              >
+                {copiedPrayerSheet ? 'Teks Amalan Tersalin' : 'Salin Seluruh Kitab Amalan'}
+              </button>
+            </div>
           </div>
         </div>
       ) : (
         <div className="relative rounded-2xl bg-white border border-slate-200 p-5 sm:p-6 overflow-hidden">
-          {/* 1 Baris Kalimat Pembuka Panduan Kaifiyah Secara Terbuka Sebelum Lafaz Arab yang Di-Blur */}
-          <div className="mb-4 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-xs sm:text-sm text-slate-800 leading-relaxed">
-            <strong className="font-semibold text-emerald-900">Panduan Kaifiyah Hajat:</strong>{' '}
-            Awali dengan hadiah Al-Fatihah khusus sebanyak 3 kali ke hadirat {safeSiteName}, hadirkan niat hajat pribadi Anda, lalu bacalah wirid pegangan (Istighfar 3x, Shalawat 11x, Kalimat Tauhid 33x) dan munajat khusus berikut...
+          {/* Ringkasan Peta 5 Bagian Kitab Amalan yang Akan Terbuka */}
+          <div className="mb-4 p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80 space-y-2.5">
+            <div className="text-xs sm:text-sm text-slate-800 leading-relaxed">
+              <strong className="font-semibold text-emerald-900">Panduan Kaifiyah Hajat:</strong>{' '}
+              Awali dengan salam ahli kubur serta hadiah Al-Fatihah 4 simpul ke hadirat {safeSiteName}, hadirkan niat hajat pribadi Anda, lalu amalkan wirid warisan makam beserta 3 rangkaian doa Qur&apos;ani/Nabawi berikut...
+            </div>
+            <div className="pt-2 border-t border-emerald-200/70">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-900 mb-1.5">
+                5 Bagian Kitab Amalan yang Terbuka Penuh (Infaq Rp {barokahAmount.toLocaleString('id-ID')}):
+              </div>
+              <ol className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-slate-700 list-decimal list-inside">
+                <li>Salam &amp; Adab Khusus Maqbarah {safeSiteName}</li>
+                <li>Silsilah Hadiah Al-Fatihah 4 Simpul Sanad</li>
+                <li>{effectiveDoaKhusus.length} Wirid Warisan Makam + Tasbih Mini</li>
+                <li>3 Rangkaian Ayat Al-Qur&apos;an &amp; Doa Nabawi Sahih</li>
+                <li className="sm:col-span-2">Tasbih Digital, Wirid Penutup &amp; Cetak Lembar Amalan Saku (PDF)</li>
+              </ol>
+            </div>
           </div>
 
-          {/* Seluruh 3 Bagian Panduan Amalan Lengkap dalam keadaan BLUR */}
+          {/* Seluruh Panduan Amalan Lengkap dalam keadaan BLUR */}
           <div className="blur-[6px] select-none pointer-events-none opacity-50 space-y-5" aria-hidden="true">
             <div className="space-y-1.5">
               <div className="text-xs font-bold text-slate-900">
-                1. Tata Cara &amp; Waktu Terbaik Bertawassul Hajat di {safeSiteName}
+                1. Tata Cara &amp; Silsilah Hadiah Al-Fatihah di {safeSiteName}
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 {completeBarokahGuide.tataCaraWaktu.join(' ')}
@@ -755,7 +1063,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
             ))}
             <div className="pt-3 border-t border-slate-200 space-y-1">
               <div className="text-xs font-bold text-slate-900">
-                3. Wirid Penutup &amp; Adab Pulang Ziarah
+                3. Rangkaian Ayat Al-Qur&apos;an, Doa Nabawi Sahih &amp; Wirid Penutup
               </div>
               <p className="text-xs text-slate-600">
                 {completeBarokahGuide.wiridPenutupAdab.join(' ')}
@@ -767,13 +1075,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           <div className="mt-4 pt-4 border-t border-slate-200 bg-white space-y-3">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
               <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
-              <span>KHAZANAH DOA KHUSUS &amp; TASBIH DIGITAL · RP {barokahAmount.toLocaleString('id-ID')}</span>
+              <span>KITAB AMALAN &amp; TASBIH DIGITAL · RP {barokahAmount.toLocaleString('id-ID')}</span>
             </div>
             <h4 className="font-serif text-xl text-slate-900">
               {copy.barokahPaywallTitle}
             </h4>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              {copy.barokahPaywallDescription} Buka penuh <strong>3 Bagian Panduan Amalan, Lafaz Arab-Latin, Wirid Pegangan &amp; Tasbih Digital</strong> di{' '}
+              {copy.barokahPaywallDescription} Buka penuh <strong>5 Bagian Kitab Amalan, Silsilah Al-Fatihah 4 Simpul, 3 Ayat &amp; Doa Nabawi Sahih, Tasbih Mini Interaktif &amp; Cetak Lembar Saku (PDF)</strong> di{' '}
               <strong className="font-semibold text-slate-900">{getSiteDisplayHeading(site).heading}</strong> dengan infaq{' '}
               <strong className="font-semibold text-emerald-800">Rp {barokahAmount.toLocaleString('id-ID')}</strong>.
             </p>
@@ -1298,6 +1606,60 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                       </section>
                     )}
 
+                    {/* Panel Tadabbur & Konteks Sanad Sejarah Pasca-Ziarah (Terbuka Setelah Unlock Rp 10.000) */}
+                    {isSiteUnlocked && (
+                      <section className="mt-8 pt-6 border-t border-slate-200 space-y-5">
+                        <div className="p-5 sm:p-6 rounded-2xl bg-white border border-emerald-200/80 space-y-4">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
+                              <BookOpen className="w-5 h-5" strokeWidth={1.75} />
+                            </div>
+                            <div>
+                              <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-800">
+                                Refleksi &amp; Konteks Faktual Peziarah
+                              </div>
+                              <h3 className="font-serif text-xl sm:text-2xl text-slate-900 mt-0.5">
+                                {deepTadabburContext.sectionHeading}
+                              </h3>
+                            </div>
+                          </div>
+
+                          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                            <p>{deepTadabburContext.dakwahNetworkSummary}</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-200/80 text-xs">
+                              <div>
+                                <span className="font-semibold text-slate-900">Masa &amp; Wilayah:</span>{' '}
+                                {deepTadabburContext.factualDetails.era} ({deepTadabburContext.factualDetails.region})
+                              </div>
+                              <div>
+                                <span className="font-semibold text-slate-900">Jadwal Haul:</span>{' '}
+                                {deepTadabburContext.factualDetails.haulSchedule}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div className="text-xs font-bold uppercase tracking-wider text-emerald-900">
+                              3 Butir Muhasabah &amp; Teladan Hidup Pasca-Ziarah
+                            </div>
+                            {deepTadabburContext.muhasabahPoints.map((pt) => (
+                              <div
+                                key={pt.number}
+                                className="p-4 rounded-xl bg-emerald-50/40 border border-emerald-200/70 space-y-1"
+                              >
+                                <div className="font-serif text-base font-semibold text-slate-900">
+                                  {pt.number}. {pt.title}
+                                </div>
+                                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                                  {pt.body}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
                     {/* Catatan Transparansi Ilmiah / Epistemologis di Paling Bawah Setelah Babak III */}
                     {renderEpistemologicalNote()}
 
@@ -1641,5 +2003,99 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
     </>
   );
 
-  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
+  const printSheetNode = isBarokahUnlocked ? (
+    <div id="zn-print-prayer-sheet" className="hidden print:block p-8 bg-white text-slate-900 space-y-6">
+      <header className="border-b-2 border-emerald-800 pb-4">
+        <div className="text-xs uppercase tracking-widest text-emerald-800 font-bold">
+          Ziarah Nusantara · Lembar Panduan Saku Maqbarah
+        </div>
+        <h1 className="font-serif text-2xl font-bold text-slate-900 mt-1">
+          {formatMakamHeading(site.title)} ({safeSiteName})
+        </h1>
+        <p className="text-sm text-slate-600 mt-0.5">
+          {site.location.address} — {site.location.city}, {site.location.province}
+        </p>
+        {personalHajat.trim() && (
+          <div className="mt-3 p-3 rounded-lg border border-emerald-300 bg-emerald-50/50 text-xs">
+            <strong>Niat &amp; Hajat Pribadi:</strong> &ldquo;{personalHajat.trim()}&rdquo;
+          </div>
+        )}
+      </header>
+
+      <section className="space-y-2">
+        <h2 className="font-serif text-lg font-bold text-emerald-900">
+          1. Kaifiyah &amp; Adab Munajat
+        </h2>
+        <ol className="list-decimal list-inside space-y-1 text-xs text-slate-700 leading-relaxed">
+          {completeBarokahGuide.tataCaraWaktu.map((step, i) => (
+            <li key={i}>{step}</li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-serif text-lg font-bold text-emerald-900">
+          2. Silsilah Hadiah Al-Fatihah (4 Simpul Sanad)
+        </h2>
+        {structuredTawassul.map((node) => (
+          <div key={node.order} className="border border-slate-200 rounded-lg p-3 space-y-1.5 break-inside-avoid">
+            <div className="text-xs font-bold text-slate-900">{node.label}</div>
+            <p className="text-lg font-arabic text-right leading-loose" dir="rtl">
+              {node.arabic}
+            </p>
+            <p className="text-[11px] italic text-slate-700">{node.latin}</p>
+            <p className="text-[11px] text-slate-600">&ldquo;{node.translation}&rdquo;</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-serif text-lg font-bold text-emerald-900">
+          3. Wirid Warisan &amp; Doa Khusus Maqbarah
+        </h2>
+        {effectiveDoaKhusus.map((d, idx) => (
+          <div key={idx} className="border border-slate-200 rounded-lg p-3 space-y-1.5 break-inside-avoid">
+            <div className="text-xs font-bold text-slate-900">{d.title}</div>
+            <p className="text-lg font-arabic text-right leading-loose" dir="rtl">
+              {sanitizePureArabicText(d.text)}
+            </p>
+            {d.latin && <p className="text-[11px] italic text-slate-700">{d.latin}</p>}
+            {d.translation && <p className="text-[11px] text-slate-600">&ldquo;{d.translation}&rdquo;</p>}
+          </div>
+        ))}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-serif text-lg font-bold text-emerald-900">
+          4. 3 Rangkaian Ayat Al-Qur&apos;an &amp; Doa Nabawi Sahih ({canonicalPrayers[0]?.themeLabel})
+        </h2>
+        {canonicalPrayers.map((p) => (
+          <div key={p.id} className="border border-slate-200 rounded-lg p-3 space-y-1.5 break-inside-avoid">
+            <div className="text-xs font-bold text-slate-900">
+              {p.title} ({p.sourceCitation} · {p.targetCount}x)
+            </div>
+            <p className="text-lg font-arabic text-right leading-loose" dir="rtl">
+              {p.arabic}
+            </p>
+            <p className="text-[11px] italic text-slate-700">{p.latin}</p>
+            <p className="text-[11px] text-slate-600">&ldquo;{p.translation}&rdquo;</p>
+          </div>
+        ))}
+      </section>
+
+      <footer className="border-t border-slate-300 pt-3 text-[11px] text-slate-600">
+        Sumber terkurasi: https://ziarahnusantara.my.id/situs/{getSiteSlug(site)}
+      </footer>
+    </div>
+  ) : null;
+
+  return typeof document !== 'undefined'
+    ? createPortal(
+        <>
+          {modalContent}
+          {printSheetNode}
+        </>,
+        document.body
+      )
+    : modalContent;
 });

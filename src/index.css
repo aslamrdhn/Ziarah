@@ -104,3 +104,18 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #a8a29e;
 }
+
+@media print {
+  body.zn-printing-sheet > *:not(#zn-print-prayer-sheet) {
+    display: none !important;
+  }
+  #zn-print-prayer-sheet {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

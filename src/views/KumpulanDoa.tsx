@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSites } from '../context/SiteContext';
-import { BookOpen, Bookmark, BookmarkCheck, Search, Copy, Check, Lock } from 'lucide-react';
+import { BookOpen, Bookmark, BookmarkCheck, Search, Copy, Check, Lock, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { useVerifiedBarokahUnlock, MIN_DONATION_AMOUNT } from '../lib/transferProof';
 import { useSiteCopy } from '../lib/siteCopy';
 import { getSiteBarokahHajat, getEffectiveSiteDoaKhusus, sanitizePureArabicText } from '../lib/siteLogistics';
+import { buildStructuredTawassul, getCanonicalWasilahPrayers } from '../lib/premiumKitabEnrichment';
 import { renderFormattedText } from '../lib/formatText';
 import { TransactionModal } from '../components/TransactionModal';
 import { ZiarahSite } from '../data/sites';
@@ -46,6 +47,8 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   const [activeTab, setActiveTab] = useState<'semua' | 'tersimpan'>('semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [tasbihCounts, setTasbihCounts] = useState<Record<string, number>>({});
+  const [expandedKitabIds, setExpandedKitabIds] = useState<Record<string, boolean>>({});
   const [approvedCommunityDoas, setApprovedCommunityDoas] = useState<DoaKaromahItem[]>([]);
   const [curatedDoas, setCuratedDoas] = useState<CuratedDoaItem[]>([]);
   const [deletedDoaIds, setDeletedDoaIds] = useState<string[]>([]);
@@ -53,6 +56,22 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
   const [unlockModalSite, setUnlockModalSite] = useState<ZiarahSite | null>(null);
 
   const { isUnlocked: isBarokahUnlocked } = useVerifiedBarokahUnlock('barokah', requireManualVerification);
+
+  const incrementTasbih = (key: string, target: number) => {
+    setTasbihCounts((prev) => {
+      const curr = prev[key] || 0;
+      const next = curr >= target ? 1 : curr + 1;
+      return { ...prev, [key]: next };
+    });
+  };
+
+  const resetTasbih = (key: string) => {
+    setTasbihCounts((prev) => ({ ...prev, [key]: 0 }));
+  };
+
+  const toggleExpandKitab = (itemId: string) => {
+    setExpandedKitabIds((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
+  };
 
   useEffect(() => {
     try {
@@ -458,7 +477,7 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
 
                   {isItemUnlocked ? (
                     item.type === 'doa' ? (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <p
                           className="text-xl sm:text-2xl font-arabic text-slate-900 leading-[2.5] text-right font-normal"
                           dir="rtl"
@@ -474,6 +493,128 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
                           <p className="text-sm text-slate-600 font-serif italic leading-relaxed pt-3 border-t border-slate-200">
                             &ldquo;{renderFormattedText(item.translation)}&rdquo;
                           </p>
+                        )}
+
+                        {/* Tasbih Mini Interaktif + Tombol Kitab Amalan Lengkap per Kartu Terbuka */}
+                        <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-slate-600">
+                              Tasbih Wirid:{' '}
+                              <strong className="text-emerald-800">{tasbihCounts[item.id] || 0} / 33</strong>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => incrementTasbih(item.id, 33)}
+                              className="px-3 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition-colors cursor-pointer"
+                            >
+                              + Dzikir
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => resetTasbih(item.id)}
+                              className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                              title="Reset hitungan"
+                              aria-label="Reset hitungan"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.75} />
+                            </button>
+                          </div>
+
+                          {item.siteRef && (
+                            <button
+                              type="button"
+                              onClick={() => toggleExpandKitab(item.id)}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <span>
+                                {expandedKitabIds[item.id]
+                                  ? 'Tutup Silsilah & Doa Nabawi'
+                                  : 'Buka Silsilah 4 Simpul & 3 Doa Nabawi'}
+                              </span>
+                              {expandedKitabIds[item.id] ? (
+                                <ChevronUp className="w-3.5 h-3.5" strokeWidth={1.75} />
+                              ) : (
+                                <ChevronDown className="w-3.5 h-3.5" strokeWidth={1.75} />
+                              )}
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Panel Terstruktur 4 Simpul Tawassul + 3 Doa Kanonik Qur'ani/Nabawi saat Diperluas */}
+                        {item.siteRef && expandedKitabIds[item.id] && (
+                          <div className="pt-4 border-t border-slate-200 space-y-4">
+                            <div className="space-y-2.5">
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+                                Silsilah Hadiah Al-Fatihah 4 Simpul ({item.siteName})
+                              </div>
+                              <div className="grid grid-cols-1 gap-2.5">
+                                {buildStructuredTawassul(item.siteRef).map((node) => (
+                                  <div
+                                    key={node.order}
+                                    className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5"
+                                  >
+                                    <div className="text-xs font-bold text-slate-900">{node.label}</div>
+                                    <p className="text-lg font-arabic text-slate-900 text-right leading-[2.2]" dir="rtl">
+                                      {node.arabic}
+                                    </p>
+                                    <p className="text-xs italic text-emerald-800">{node.latin}</p>
+                                    <p className="text-xs text-slate-600">&ldquo;{node.translation}&rdquo;</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="space-y-2.5">
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+                                3 Rangkaian Ayat Al-Qur&apos;an &amp; Doa Nabawi Sahih
+                              </div>
+                              <div className="grid grid-cols-1 gap-2.5">
+                                {getCanonicalWasilahPrayers(item.siteRef).map((prayer) => {
+                                  const pTasbihKey = `${item.id}-${prayer.id}`;
+                                  const pCount = tasbihCounts[pTasbihKey] || 0;
+                                  return (
+                                    <div
+                                      key={prayer.id}
+                                      className="p-3.5 rounded-xl bg-emerald-50/40 border border-emerald-200/80 space-y-2"
+                                    >
+                                      <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <span className="text-xs font-bold text-slate-900">{prayer.title}</span>
+                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">
+                                          {prayer.sourceCitation} · {prayer.targetCount}x
+                                        </span>
+                                      </div>
+                                      <p className="text-lg font-arabic text-slate-900 text-right leading-[2.2]" dir="rtl">
+                                        {prayer.arabic}
+                                      </p>
+                                      <p className="text-xs italic text-emerald-800">{prayer.latin}</p>
+                                      <p className="text-xs text-slate-600">&ldquo;{prayer.translation}&rdquo;</p>
+                                      <div className="flex items-center justify-between gap-2 pt-1 border-t border-emerald-200/60">
+                                        <span className="text-[11px] font-medium text-slate-600">
+                                          Tasbih: <strong className="text-emerald-800">{pCount} / {prayer.targetCount}</strong>
+                                        </span>
+                                        <div className="flex items-center gap-1.5">
+                                          <button
+                                            type="button"
+                                            onClick={() => incrementTasbih(pTasbihKey, prayer.targetCount)}
+                                            className="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold cursor-pointer"
+                                          >
+                                            + Dzikir
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => resetTasbih(pTasbihKey)}
+                                            className="px-2 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 text-[11px] cursor-pointer"
+                                          >
+                                            Reset
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
                         )}
                       </div>
                     ) : (
@@ -565,13 +706,15 @@ export const KumpulanDoa: React.FC<KumpulanDoaProps> = React.memo(({ savedDoas, 
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4 shrink-0">
-            <button
-              type="button"
-              onClick={() => openBarokahUnlockModal()}
-              className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
-            >
-              Buka Barokah &amp; Doa Khusus (Rp {barokahAmount.toLocaleString('id-ID')})
-            </button>
+            {!isBarokahUnlocked && (
+              <button
+                type="button"
+                onClick={() => openBarokahUnlockModal()}
+                className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+              >
+                Buka Barokah &amp; Doa Khusus (Rp {barokahAmount.toLocaleString('id-ID')})
+              </button>
+            )}
             <Link
               to="/rubrik"
               className="text-xs sm:text-sm font-medium text-emerald-800 hover:text-emerald-900 underline underline-offset-4"
