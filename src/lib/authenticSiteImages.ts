@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import type { ZiarahSite } from '../data/sites';
 import { PRE_RESOLVED_AUTHENTIC_IMAGES } from '../data/authenticImageUrls';
 
-export const AUTHENTIC_IMAGES_STORAGE_KEY = 'ziarah_authentic_site_images_v4';
+export const AUTHENTIC_IMAGES_STORAGE_KEY = 'ziarah_verified_images_v4_strict';
 const LEGACY_IMAGES_STORAGE_KEYS = [
   'ziarah_authentic_site_images_v1',
   'ziarah_authentic_site_images_v2',
   'ziarah_authentic_site_images_v3',
+  'ziarah_authentic_site_images_v4',
 ];
 
 export const FIRST_12_THUMB_BY_ID: Record<string, string> = {
@@ -48,13 +49,44 @@ export function isFirst12OwnerSite(
   );
 }
 
-const BANNED_PHOTO_SUBSTRINGS = [
+export const BANNED_PHOTO_SUBSTRINGS = [
   'pwa-512x512.png',
   'pwa-192x192.png',
   'pwa-maskable',
   'logo-zn.svg',
   'favicon',
   'apple-touch-icon',
+  'bupati',
+  'walikota',
+  'wali_kota',
+  'gubernur',
+  'wakil',
+  'regent',
+  'mayor',
+  'governor',
+  'politician',
+  'caleg',
+  'kampanye',
+  'pdub',
+  'seragam',
+  'dprd',
+  'dpr',
+  'menteri',
+  'kpu',
+  'pilkada',
+  'bird',
+  'burung',
+  'parrot',
+  'lovebird',
+  'animal',
+  'fauna',
+  'bridge',
+  'jembatan',
+  'tourist',
+  'turis',
+  'selfie',
+  'wedding',
+  'lembaga_pemangku_adat',
   'copyright',
   'fair_use',
   'fairuse',
@@ -62,15 +94,7 @@ const BANNED_PHOTO_SUBSTRINGS = [
   'no_free',
   'replace_this',
   'no_image',
-  'placeholder',
   'ambox',
-  'exclamation',
-  'warning',
-  'padlock',
-  'question_book',
-  'commons-logo',
-  'wikimedia-logo',
-  'wiki_letter',
   'icon',
   'logo',
   'emblem',
@@ -89,6 +113,14 @@ const BANNED_PHOTO_SUBSTRINGS = [
   'planet',
   'satellite',
   'space',
+  'placeholder',
+  'exclamation',
+  'warning',
+  'padlock',
+  'question_book',
+  'commons-logo',
+  'wikimedia-logo',
+  'wiki_letter',
   'signature',
   'tanda_tangan',
   'ttd',
@@ -99,6 +131,36 @@ const BANNED_PHOTO_SUBSTRINGS = [
   'blank',
   'silhouette',
   'collectie_tropenmuseum_portret',
+  'kantor_',
+  'jalan_',
+  'jl_',
+  'symbol_',
+  'batas_',
+  'stasiun_',
+  'candidate',
+  'calon_',
+  'montage_of',
+  'living_people',
+  'woman',
+  'girl',
+  'lady',
+  'perempuan',
+  'wanita',
+  'actor',
+  'actress',
+  'singer',
+  'artis',
+  'arief_moelia',
+  'djoko_susanto',
+  'mohan_roliskana',
+  'affan_alfian',
+  'ali_mukhni',
+  'aminatun',
+  'putrajaya',
+  'malaysia',
+  'selangor',
+  'kuala_lumpur',
+  'brunei',
   '.svg',
   '.gif',
   '.tif',
@@ -110,9 +172,113 @@ const BANNED_PHOTO_SUBSTRINGS = [
   '.webm',
 ];
 
+export const REQUIRED_HERITAGE_KEYWORDS = [
+  'makam',
+  'maqam',
+  'maqbarah',
+  'permakaman',
+  'pemakaman',
+  'kubah',
+  'kuburan',
+  'pesarean',
+  'astana',
+  'gubah',
+  'nisan',
+  'masjid',
+  'mesjid',
+  'mosque',
+  'moskee',
+  'musholla',
+  'musala',
+  'langgar',
+  'meunasah',
+  'menara',
+  'pesantren',
+  'ponpes',
+  'surau',
+  'keraton',
+  'kedaton',
+  'cungkup',
+  'tomb',
+  'grave',
+  'cemetery',
+  'mausoleum',
+  'heritage',
+  'wapauwe',
+  'patimburak',
+  'tengkurep',
+  'troloyo',
+  'imogiri',
+  'tidar',
+  'samudera_pasai',
+  'kasepuhan',
+  'kalampayan',
+  'sekumpul',
+  'basirih',
+  'sendang_duwur',
+  'mantingan',
+  'tegalsari',
+  'setono_gedong',
+  'shirathal',
+  'alkhairaat',
+  'al-mashun',
+  'al-anwar',
+  'al-karomah',
+  'bayan_beleq',
+  'loang_baloq',
+  'katangka',
+  'salabose',
+  'lapeo',
+  'baiturrahman',
+  'suriansyah',
+];
+
+export const WHITELISTED_HISTORICAL_PORTRAIT_TOKENS = [
+  'utsman_bin_yahya',
+  'uthman_bin_yahya',
+  'sayyid_uthman',
+  'nawawi',
+  'hasanuddin',
+  'abdurrahman_wahid',
+  'hasyim_asy',
+  'ahmad_dahlan',
+  'wahab_hasbullah',
+  'wahab_chasbullah',
+  'bisri_syansuri',
+  'diponegoro',
+  'imam_bonjol',
+  'iskandar_muda',
+  'syekh_yusuf',
+  'raden_saleh',
+  'asad_syamsul_arifin',
+  'as%27ad_syamsul_arifin',
+  'achmad_djajadiningrat',
+  'maimun_zubair',
+  'zainuddin_abdul_madjid',
+  'arsyad_al-banjari',
+  'fatimah_binti_maimun',
+  'pangeran_jayakarta',
+  'raden_patah',
+  'ratu_kalinyamat',
+  'syarif_kasim',
+  'thaha_syaifuddin',
+  'radin_inten',
+  'sentot',
+  'kyai_maja',
+  'kyai_mojo',
+  'idrus_bin_salim',
+  'guru_tua',
+  'sholeh_darat',
+  'noer_ali',
+  'abdul_halim',
+  'ageng_tirtayasa',
+  'abdul_karim_kdr',
+];
+
 /**
- * Strict anti-junk & anti-copyright-icon validator for site photographs.
- * Blocks Red_copyright.svg.png (`©!`), fair-use placeholders, maps, flags, coats of arms, and planet earth images.
+ * Strict heritage validator for site photographs.
+ * Blocks copyright icons (©!), politicians/bupati, birds, tourists, maps, flags, logos, and planet earth.
+ * Requires remote Wikimedia images to match a heritage keyword or whitelisted historical figure token.
  */
 export function isValidPhotoUrl(url?: string | null, titleOrFilename?: string): boolean {
   if (!url || typeof url !== 'string') return false;
@@ -149,19 +315,20 @@ export function isValidPhotoUrl(url?: string | null, titleOrFilename?: string): 
     return true;
   }
 
-  return /\.(jpe?g|png|webp)(\?|$)/i.test(decoded);
+  if (!/\.(jpe?g|png|webp)(\?|$)/i.test(decoded)) {
+    return false;
+  }
+
+  const filenameOnly = decoded.split('/').pop()?.split('?')[0] || decoded;
+  const matchesHeritage = REQUIRED_HERITAGE_KEYWORDS.some((kw) => filenameOnly.includes(kw));
+  const matchesPortrait = WHITELISTED_HISTORICAL_PORTRAIT_TOKENS.some((tok) =>
+    filenameOnly.includes(tok)
+  );
+
+  return matchesHeritage || matchesPortrait;
 }
 
 export const isValidNonLogoImageUrl = isValidPhotoUrl;
-
-export const SITE_WIKI_QUERY_OVERRIDES: Record<string, string[]> = {
-  'sultan-maulana-hasanuddin': ['Masjid_Agung_Banten', 'Maulana_Hasanuddin_dari_Banten', 'Kesultanan_Banten'],
-  'habib-utsman-bin-yahya': ['Utsman_bin_Yahya', 'Jatinegara,_Jakarta_Timur'],
-  'pangeran-jayakarta': ['Pangeran_Jayakarta', 'Masjid_Jami_Assalafiyah'],
-  'guru-marzuki-cipinang': ['Cipinang_Muara,_Jatinegara,_Jakarta_Timur', 'Jatinegara,_Jakarta_Timur'],
-  'habib-ahmad-bin-alwi-al-haddad': ['Kalibata,_Pancoran,_Jakarta_Selatan', 'Pancoran,_Jakarta_Selatan'],
-  'syaichona-kholil-bangkalan': ['Kabupaten_Bangkalan', 'Bangkalan'],
-};
 
 const memoryImageCache = new Map<string, string>();
 let storageHydrated = false;
@@ -206,7 +373,7 @@ function escapeSvgText(raw: string): string {
 /**
  * Generates an Islamic Architectural Maqbarah & Calligraphy SVG illustration (`data:image/svg+xml;utf8,...`)
  * tailored with the site's own title, city, and province.
- * Used only when a site does not yet have a verified photograph in `verifiedSiteImages.json` or when an image fails to load.
+ * Used when a site does not yet have a verified Wikimedia photo or when an image fails to load.
  */
 export function createArchitecturalPlaceholderDataUri(
   site?: Partial<ZiarahSite> | null
@@ -337,9 +504,9 @@ export async function resolveAuthenticSiteImage(site?: Partial<ZiarahSite> | nul
 }
 
 /**
- * React hook returning an authentic, verified photograph URL for a ziarah site directly from
+ * React hook returning an authentic, strictly verified photograph URL directly from
  * `verifiedSiteImages.json` (or `/thumbs/wali-1..12.webp` for #1-#12) with ZERO runtime API lag.
- * Falls back to the bespoke architectural dome SVG only if no verified photo exists.
+ * Falls back to the bespoke Golden Dome architectural SVG when no strict photo exists.
  */
 export function useAuthenticSiteImage(
   site?: Partial<ZiarahSite> | null,

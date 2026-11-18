@@ -1119,7 +1119,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                         rel="noopener noreferrer"
                         className="py-2 min-h-[36px] inline-flex items-center text-[11px] font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4"
                       >
-                        Cek Foto di Google Maps
+                        📷 Cek Foto Asli di Google Maps
                       </a>
                     )}
                   </div>
