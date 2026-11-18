@@ -109,15 +109,15 @@ const CURATED_WHITELIST = {
   },
   'syekh-abdul-muhyi-pamijahan': {
     wiki: ['Abdul_Muhyi'],
-    commons: ['Makam Syekh Abdul Muhyi Pamijahan', 'Masjid Pamijahan Tasikmalaya', 'Masjid Agung Manonjaya'],
+    commons: ['Makam Syekh Abdul Muhyi Pamijahan', 'Masjid Pamijahan Tasikmalaya'],
   },
   'mama-cibaduyut-kudang': {
     wiki: [],
-    commons: ['Masjid Agung Tasikmalaya', 'Makam Mama Kudang'],
+    commons: ['Makam Mama Cibaduyut', 'Makam Mama Kudang'],
   },
   'syekh-jafar-shadiq-cibiuk': {
     wiki: [],
-    commons: ['Makam Syekh Jafar Shadiq Garut', 'Masjid Agung Garut'],
+    commons: ['Makam Syekh Jafar Shadiq Cibiuk'],
   },
   'sunan-rohmat-godog': {
     wiki: ['Sunan_Rohmat'],
@@ -125,7 +125,7 @@ const CURATED_WHITELIST = {
   },
   'dalem-cikundul-cianjur': {
     wiki: ['Raden_Aria_Wira_Tanu_I'],
-    commons: ['Makam Dalem Cikundul Cianjur', 'Masjid Agung Cianjur'],
+    commons: ['Makam Dalem Cikundul Cianjur'],
   },
   'mama-gentur-cianjur': {
     wiki: [],
@@ -251,7 +251,7 @@ const CURATED_WHITELIST = {
   },
   'kh-arwani-amin-kudus': {
     wiki: [],
-    commons: ['Makam KH Arwani Amin Kudus', 'Pesantren Yanbuul Quran Kudus'],
+    commons: ['Makam KH Arwani Amin', 'Pesantren Yanbuul Quran'],
   },
   'mbah-maimoen-zubair-sarang': {
     wiki: ['Maimun_Zubair'],
@@ -313,7 +313,7 @@ const CURATED_WHITELIST = {
   },
   'mbah-ud-sidoarjo': {
     wiki: [],
-    commons: ['Makam Mbah Ud Pagerwojo Sidoarjo', 'Masjid Agung Sidoarjo'],
+    commons: ['Makam Mbah Ud Pagerwojo Sidoarjo'],
   },
   'kh-abdul-hamid-pasuruan': {
     wiki: ['Masjid_Agung_Al-Anwar_Pasuruan'],
@@ -321,7 +321,7 @@ const CURATED_WHITELIST = {
   },
   'guru-bangil-pasuruan': {
     wiki: [],
-    commons: ['Masjid Agung Bangil', 'Makam Guru Bangil'],
+    commons: ['Makam Guru Bangil', 'Masjid Manarul Islam Bangil'],
   },
   'kh-asad-syamsul-arifin': {
     wiki: ['As%27ad_Syamsul_Arifin'],
@@ -329,15 +329,15 @@ const CURATED_WHITELIST = {
   },
   'kh-muhammad-shiddiq-jember': {
     wiki: [],
-    commons: ['Masjid Jami Al-Baitul Amien Jember', 'Makam KH Muhammad Shiddiq Jember'],
+    commons: ['Makam KH Muhammad Shiddiq Jember'],
   },
   'habib-sholeh-tanggul-jember': {
     wiki: [],
-    commons: ['Masjid Riyadus Sholihin Tanggul', 'Makam Habib Sholeh Tanggul'],
+    commons: ['Makam Habib Sholeh Tanggul', 'Masjid Riyadus Sholihin Tanggul'],
   },
   'datuk-malik-ibrahim-banyuwangi': {
     wiki: [],
-    commons: ['Masjid Agung Baiturrahman Banyuwangi', 'Makam Datuk Malik Ibrahim Banyuwangi'],
+    commons: ['Makam Datuk Malik Ibrahim Banyuwangi'],
   },
   'sunan-bejagung-tuban': {
     wiki: [],
@@ -471,7 +471,7 @@ const CURATED_WHITELIST = {
   },
   'guru-abdul-madjid-baragbah-jambi': {
     wiki: [],
-    commons: ['Masjid Batu Seberang Kota Jambi', 'Masjid Agung Al-Falah Jambi'],
+    commons: ['Masjid Batu Seberang Kota Jambi'],
   },
   'kiai-marogan-palembang': {
     wiki: ['Masjid_Kiai_Muara_Ogan', 'Masjid_Lawang_Kidul'],
@@ -483,7 +483,7 @@ const CURATED_WHITELIST = {
   },
   'gubah-duku-habib-ahmad-shahab-palembang': {
     wiki: [],
-    commons: ['Gubah Duku Palembang', 'Masjid Agung Sultan Mahmud Badaruddin Palembang'],
+    commons: ['Gubah Duku Palembang'],
   },
   'tuan-guru-siddiq-muntok-bangka': {
     wiki: ['Masjid_Jami_Muntok'],
@@ -491,7 +491,7 @@ const CURATED_WHITELIST = {
   },
   'syekh-abu-bakar-al-attas-bangka': {
     wiki: [],
-    commons: ['Masjid Kubah Timah Pangkalpinang', 'Masjid Jami Pangkalpinang'],
+    commons: ['Makam Habib Abu Bakar Al-Attas Bangka'],
   },
   'sentot-alibasyah-bengkulu': {
     wiki: ['Sentot_Prawirodirdjo'],
@@ -503,7 +503,7 @@ const CURATED_WHITELIST = {
   },
   'raden-intan-ii-lampung': {
     wiki: ['Radin_Inten_II'],
-    commons: ['Makam Radin Inten II Lampung', 'Masjid Al-Furqon Lampung'],
+    commons: ['Makam Radin Inten II Lampung'],
   },
   'kh-ghalib-pringsewu-lampung': {
     wiki: [],
@@ -529,7 +529,7 @@ const CURATED_WHITELIST = {
   },
   'datu-sanggul-rantau': {
     wiki: [],
-    commons: ['Kubah Datu Sanggul Tapin', 'Masjid Al-Mukarromah Rantau'],
+    commons: ['Makam Datu Sanggul', 'Kubah Datu Sanggul'],
   },
   'syekh-kasyful-anwar-martapura': {
     wiki: ['Pondok_Pesantren_Darussalam_Martapura'],
@@ -537,7 +537,7 @@ const CURATED_WHITELIST = {
   },
   'datu-abulung-sungai-batang': {
     wiki: [],
-    commons: ['Kubah Datu Abulung Martapura', 'Masjid Sungai Batang Banjar'],
+    commons: ['Kubah Datu Abulung', 'Datu Abulung'],
   },
   'sultan-syarif-abdurrahman-alkadrie-pontianak': {
     wiki: ['Masjid_Jami_Pontianak'],
@@ -625,7 +625,7 @@ const CURATED_WHITELIST = {
   },
   'ju-panggola-gorontalo': {
     wiki: [],
-    commons: ['Makam Keramat Ju Panggola Gorontalo', 'Masjid Baiturrahim Gorontalo'],
+    commons: ['Makam Keramat Ju Panggola'],
   },
   'sultan-murhum-buton': {
     wiki: ['Benteng_Keraton_Buton'],
@@ -893,7 +893,7 @@ async function fetchJson(url, timeoutMs = 9500) {
       });
       if (res.status === 429) {
         clearTimeout(timer);
-        await delay(900 * (attempt + 1));
+        await delay(1500 * (attempt + 1));
         continue;
       }
       if (!res.ok) return null;
@@ -1005,6 +1005,25 @@ const GENERIC_QUERY_STOPWORDS = new Set([
   'pulau', 'kompleks', 'astana', 'syekh', 'syaikh', 'syaichona', 'habib', 'sayyid',
   'sultan', 'sunan', 'pangeran', 'raden', 'kiai', 'kyai', 'guru', 'tuan', 'abah',
   'datu', 'datuk', 'mbah', 'eyang', 'mama', 'bin', 'binti', 'dari', 'pada',
+  'muhammad', 'ahmad', 'abdul', 'abdurrahman', 'ibrahim', 'ismail', 'hasan', 'husein',
+  'amin', 'said', 'sungai', 'batang', 'seberang', 'nusantara', 'indonesia', 'islam',
+  'sejarah', 'cagar', 'budaya', 'pusaka', 'bawah', 'atas', 'barat', 'timur', 'utara',
+  'selatan', 'tengah', 'kerajaan', 'kesultanan', 'lama', 'baru', 'tua', 'muda',
+  'martapura', 'kudus', 'garut', 'pekalongan', 'banjar', 'tasikmalaya', 'palembang',
+  'lampung', 'jambi', 'sidoarjo', 'pasuruan', 'banyuwangi', 'pontianak', 'samarinda',
+  'gorontalo', 'makassar', 'surabaya', 'semarang', 'yogyakarta', 'bogor', 'bekasi',
+  'cirebon', 'cianjur', 'bangil', 'sengkang', 'mempawah', 'lombok', 'mataram',
+  'bali', 'buleleng', 'bengkulu', 'aceh', 'medan', 'padang', 'siak', 'riau',
+  'jombang', 'kediri', 'tuban', 'gresik', 'lamongan', 'demak', 'banten', 'serang',
+  'pandeglang', 'karawang', 'majalengka', 'banyumas', 'solo', 'surakarta', 'ponorogo',
+  'pacitan', 'jember', 'situbondo', 'banjarmasin', 'jambi', 'mempawah', 'tapin',
+  'rantau', 'bandung', 'tasikmalaya', 'tangerang', 'depok', 'bekasi', 'serang',
+  'lebak', 'ciamis', 'subang', 'indramayu', 'brebes', 'tegal', 'kendal', 'klaten',
+  'bantul', 'sleman', 'magelang', 'wonosobo', 'parakan', 'sampang', 'pamekasan',
+  'sumenep', 'bangkalan', 'pasai', 'singkil', 'barus', 'ternate', 'tidore', 'ambon',
+  'fakfak', 'raja', 'ampat', 'buton', 'minahasa', 'tondano', 'palu', 'majene',
+  'barru', 'gowa', 'luwu', 'palopo', 'bulukumba', 'bima', 'ende', 'kupang', 'solor',
+  'kalimantan', 'sulawesi', 'sumatera', 'jawa', 'maluku', 'papua',
 ]);
 
 function getQueryDistinctiveTokens(queryStr, site) {
@@ -1039,10 +1058,14 @@ async function tryCommonsStrictSearch(queryStr, site = null, requireQueryToken =
     const candidate = cleanUrl(info.thumburl || info.url);
     const w = info.thumbwidth || info.width || 640;
     const h = info.thumbheight || info.height || 400;
-    const titleAndDesc = `${page?.title || ''} ${info?.extmetadata?.ImageDescription?.value || ''} ${
-      info?.extmetadata?.ObjectName?.value || ''
-    }`.toLowerCase();
-    if (requireQueryToken && queryTokens.length > 0 && !queryTokens.some((tok) => titleAndDesc.includes(tok))) {
+    const filenameNormalized = `${page?.title || ''} ${info?.extmetadata?.ObjectName?.value || ''}`
+      .toLowerCase()
+      .replace(/[_-]+/g, ' ');
+    if (
+      requireQueryToken &&
+      queryTokens.length > 0 &&
+      !queryTokens.some((tok) => filenameNormalized.includes(tok))
+    ) {
       continue;
     }
     const metaDesc = `${page?.title || ''} ${info?.extmetadata?.ImageDescription?.value || ''} ${
@@ -1065,18 +1088,20 @@ function getDistinctiveTokens(site) {
   const raw = simplifyFigureName(site.title || site.name)
     .toLowerCase()
     .split(/\s+/)
-    .filter((w) => w.length >= 4 && !['bin', 'binti', 'dari', 'pada', 'kota', 'kabupaten'].includes(w));
+    .filter((w) => w.length >= 4 && !GENERIC_QUERY_STOPWORDS.has(w));
   return raw;
 }
 
 async function tryCommonsStrictGeosearch(lat, lng, site) {
   if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) return null;
+  const nameTokens = getDistinctiveTokens(site);
+  if (nameTokens.length === 0) return null;
+
   const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=geosearch&ggscoord=${lat}|${lng}&ggsradius=1800&ggsnamespace=6&ggslimit=12&prop=imageinfo&iiprop=url|dimensions|extmetadata&iiurlwidth=640&format=json&origin=*`;
   const data = await fetchJson(url);
   const pages = data?.query?.pages;
   if (!pages || typeof pages !== 'object') return null;
 
-  const nameTokens = getDistinctiveTokens(site);
   const pageList = Object.values(pages).sort(
     (a, b) => scoreCandidatePage(b?.title) - scoreCandidatePage(a?.title)
   );
@@ -1087,19 +1112,21 @@ async function tryCommonsStrictGeosearch(lat, lng, site) {
     const candidate = cleanUrl(info.thumburl || info.url);
     const w = info.thumbwidth || info.width || 640;
     const h = info.thumbheight || info.height || 400;
-    const titleAndDesc = `${page?.title || ''} ${info?.extmetadata?.ImageDescription?.value || ''}`.toLowerCase();
-    // Tight geosearch guard: require at least one distinctive site name token to avoid grabbing unrelated nearby mosques
-    if (nameTokens.length > 0 && !nameTokens.some((tok) => titleAndDesc.includes(tok))) {
+    const filenameNormalized = `${page?.title || ''} ${info?.extmetadata?.ObjectName?.value || ''}`
+      .toLowerCase()
+      .replace(/[_-]+/g, ' ');
+    // Tight geosearch guard: require distinctive non-city token in the file title itself
+    if (!nameTokens.some((tok) => filenameNormalized.includes(tok))) {
       continue;
     }
     const metaDesc = `${page?.title || ''} ${info?.extmetadata?.ImageDescription?.value || ''} ${
-      info?.extmetadata?.LicenseShortName?.value || ''
-    }`;
+      info?.extmetadata?.ObjectName?.value || ''
+    } ${info?.extmetadata?.LicenseShortName?.value || ''}`;
     const catText = info?.extmetadata?.Categories?.value || '';
 
     if (
       candidate &&
-      isStrictHeritageImage(candidate, metaDesc, catText, w, h) &&
+      isStrictHeritageImage(candidate, metaDesc, catText, w, h, site) &&
       (await verifyHttp200(candidate))
     ) {
       return candidate;
@@ -1185,7 +1212,7 @@ async function main() {
 
   console.log(`=== STRICT HERITAGE IMAGE AUDIT (${SITES.length} SITES) ===\n`);
 
-  const BATCH_SIZE = 4;
+  const BATCH_SIZE = 2;
   for (let i = 0; i < SITES.length; i += BATCH_SIZE) {
     const batch = SITES.slice(i, i + BATCH_SIZE);
     await Promise.all(
@@ -1210,7 +1237,7 @@ async function main() {
         }
       })
     );
-    await delay(60);
+    await delay(160);
   }
 
   fs.writeFileSync(outJsonPath, JSON.stringify(resultMap, null, 2) + '\n', 'utf8');
