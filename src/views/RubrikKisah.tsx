@@ -585,13 +585,13 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
       {/* Banner Informasi Akses Donasi & 2 Tulisan Contoh Gratis */}
       {isPendingAdmin && !isAllUnlocked && (
-        <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-200 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" strokeWidth={1.75} />
-            <div className="text-xs text-slate-900">
-              <p className="font-bold">Bukti Transfer Terkirim (Ref: #{verifiedRefCode}) — Menunggu Verifikasi Admin Kurator</p>
+        <div className="bg-emerald-50/90 rounded-xl px-4 py-3 border border-emerald-200/80 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-2.5 min-w-0">
+            <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" strokeWidth={1.75} />
+            <div className="text-xs text-slate-900 leading-relaxed">
+              <p className="font-semibold">Bukti Transfer Terkirim (Ref: #{verifiedRefCode}) — Menunggu Verifikasi Admin Kurator</p>
               <p className="text-slate-600 mt-0.5">
-                Bukti transfer Anda sedang diperiksa oleh Admin Kurator. Halaman ini akan otomatis terbuka begitu Admin memverifikasi bukti Anda.
+                Halaman ini akan otomatis terbuka penuh begitu Admin Kurator memverifikasi bukti transfer Anda.
               </p>
             </div>
           </div>
@@ -599,46 +599,48 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             href={waUnlockUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shrink-0 inline-flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-xl shrink-0 inline-flex items-center gap-1.5 transition-colors"
           >
             <MessageSquareHeart className="w-3.5 h-3.5" strokeWidth={1.75} />
-            Percepat via WhatsApp
+            <span>Percepat via WhatsApp</span>
           </a>
         </div>
       )}
 
       {gateSettings.lockEnabled && !isAllUnlocked ? (
-        <div className="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-200 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="space-y-1 max-w-2xl">
-            <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
-              {gateSettings.freeSampleCount} Naskah Pilihan Terbuka Sebagai Contoh
+        <div className="bg-white rounded-xl px-4 py-3.5 sm:px-5 sm:py-4 border border-stone-200/80 shadow-2xs mb-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5">
+          <div className="space-y-1 min-w-0 max-w-2xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-[10px] font-semibold uppercase tracking-wider">
+                {gateSettings.freeSampleCount} Naskah Pilihan Gratis
+              </span>
+              <h2 className="text-sm sm:text-base font-serif font-medium text-stone-900 leading-snug">
+                {gateSettings.bannerTitle}
+              </h2>
             </div>
-            <h2 className="text-base sm:text-lg font-serif text-stone-900">
-              {gateSettings.bannerTitle}
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+            <p className="text-xs text-stone-600 leading-relaxed">
               {gateSettings.bannerDescription}
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end gap-2.5 shrink-0 w-full md:w-auto">
+          <div className="flex flex-wrap sm:flex-nowrap md:flex-col items-center md:items-end gap-2.5 shrink-0 w-full md:w-auto pt-1 md:pt-0 border-t md:border-t-0 border-stone-100">
             <button
               type="button"
               onClick={() => openUnlockModalFor(filteredArticles[gateSettings.freeSampleCount] || filteredArticles[0] || null)}
-              className="px-5 py-2.5 bg-emerald-900 hover:bg-emerald-800 text-white text-xs sm:text-sm font-medium rounded-xl transition-colors cursor-pointer"
+              className="flex-1 sm:flex-none px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap"
             >
               Buka Seluruh Arsip Kisah
             </button>
             <Link
               to="/infaq"
-              className="text-xs text-stone-600 hover:text-stone-900 underline underline-offset-4 text-center"
+              className="text-[11px] font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 whitespace-nowrap"
             >
               Ke Halaman Infaq &amp; Dinding Munajat →
             </Link>
           </div>
         </div>
       ) : (
-        <div className="bg-emerald-50/80 rounded-2xl px-4 py-3 border border-emerald-200/80 mb-6 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 text-xs text-emerald-900 font-medium">
+        <div className="bg-emerald-50/80 rounded-xl px-4 py-2.5 border border-emerald-200/80 mb-5 flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 text-xs text-emerald-900 font-medium">
             <BookOpenCheck className="w-4 h-4 text-emerald-700 shrink-0" strokeWidth={1.75} />
             <span>
               {isAdmin
@@ -647,74 +649,12 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
             </span>
           </div>
           {hasDonated && !isAdmin && (
-            <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-md bg-white text-emerald-800 border border-emerald-200 shrink-0">
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-white text-emerald-800 border border-emerald-200 shrink-0">
               Terverifikasi {verifiedRefCode ? `(#${verifiedRefCode})` : ''}
             </span>
           )}
         </div>
       )}
-
-      {/* Ticker Ringkas: Munajat & Infaq Peziarah Terkini */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/70 shadow-2xs mb-6 space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-xs sm:text-sm font-serif text-stone-900">
-            Munajat &amp; Infaq Peziarah Terkini
-          </h3>
-          <Link to="/infaq" className="text-xs font-medium text-emerald-800 hover:underline underline-offset-4">
-            Lihat Dinding Munajat →
-          </Link>
-        </div>
-        {recentMunajat.length === 0 && (
-          <div className="py-1 text-xs text-stone-600 font-serif italic">
-            Belum ada munajat publik yang ditampilkan hari ini. Jadilah yang pertama menitipkan doa munajat di bawah ini.
-          </div>
-        )}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 divide-y md:divide-y-0 md:divide-x divide-stone-200/60">
-          {(recentMunajat.length > 0 ? recentMunajat.slice(0, 3) : GENERAL_MUNAJAT_PRAYERS).map((item, idx) => {
-            const totalAamiin = (item.baseAamiinCount || 0) + (aamiinMap[item.id] || 0);
-            const hasClickedAamiin = Boolean(aamiinMap[item.id]);
-            return (
-              <div
-                key={item.id}
-                className={`flex flex-col justify-between gap-2.5 ${idx > 0 ? 'pt-3 md:pt-0 md:pl-4' : ''}`}
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-xs font-medium text-stone-900 truncate">{item.donorName}</span>
-                    {item.amount > 0 ? (
-                      <span className="text-xs text-emerald-800 font-medium shrink-0">
-                        Rp {item.amount.toLocaleString('id-ID')}
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md shrink-0">
-                        Doa Munajat Bersama
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-stone-600 font-serif italic line-clamp-2 leading-relaxed">
-                    &ldquo;{item.doaHajat}&rdquo;
-                  </p>
-                </div>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-stone-400 truncate max-w-[120px]">{item.dateLabel}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleAamiinClick(item.id)}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
-                      hasClickedAamiin
-                        ? 'bg-emerald-900 text-white border-emerald-900'
-                        : 'bg-white hover:bg-stone-50 text-stone-700 border-stone-200/80'
-                    }`}
-                  >
-                    <Heart className={`w-3 h-3 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
-                    <span>Aamiinkan Doa Ini ({totalAamiin})</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Filter & Search */}
       <div className="mb-8 space-y-4">
@@ -891,6 +831,68 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
           )}
         </>
       )}
+
+      {/* Ticker Eksklusif di Bagian Bawah: Bingkai Hitam Eksklusif, Latar Putih Bersih */}
+      <div className="mt-10 bg-white rounded-2xl p-5 sm:p-6 border-2 border-stone-950 ring-1 ring-stone-950/15 ring-offset-2 ring-offset-[#FAF8F5] shadow-sm space-y-4">
+        <div className="flex items-center justify-between gap-2 pb-3 border-b border-stone-200/80">
+          <h3 className="text-sm sm:text-base font-serif text-stone-950 tracking-wide">
+            Munajat &amp; Infaq Peziarah Terkini
+          </h3>
+          <Link to="/infaq" className="text-xs font-medium text-emerald-800 hover:text-emerald-950 hover:underline underline-offset-4 transition-colors">
+            Lihat Dinding Munajat →
+          </Link>
+        </div>
+        {recentMunajat.length === 0 && (
+          <div className="py-1 text-xs text-stone-600 font-serif italic">
+            Belum ada munajat publik yang ditampilkan hari ini. Jadilah yang pertama menitipkan doa munajat melalui dinding infaq.
+          </div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 divide-y md:divide-y-0 md:divide-x divide-stone-200/80">
+          {(recentMunajat.length > 0 ? recentMunajat.slice(0, 3) : GENERAL_MUNAJAT_PRAYERS).map((item, idx) => {
+            const totalAamiin = (item.baseAamiinCount || 0) + (aamiinMap[item.id] || 0);
+            const hasClickedAamiin = Boolean(aamiinMap[item.id]);
+            return (
+              <div
+                key={item.id}
+                className={`flex flex-col justify-between gap-2.5 ${idx > 0 ? 'pt-3 md:pt-0 md:pl-4' : ''}`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-xs font-semibold text-stone-900 truncate">{item.donorName}</span>
+                    {item.amount > 0 ? (
+                      <span className="text-xs text-emerald-800 font-medium shrink-0">
+                        Rp {item.amount.toLocaleString('id-ID')}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md shrink-0">
+                        Doa Munajat Bersama
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-stone-600 font-serif italic line-clamp-2 leading-relaxed">
+                    &ldquo;{item.doaHajat}&rdquo;
+                  </p>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-stone-500 truncate max-w-[120px]">{item.dateLabel}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleAamiinClick(item.id)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
+                      hasClickedAamiin
+                        ? 'bg-emerald-900 text-white border-emerald-900'
+                        : 'bg-white hover:bg-stone-50 text-stone-800 border-stone-300'
+                    }`}
+                  >
+                    <Heart className={`w-3 h-3 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
+                    <span>Aamiinkan Doa Ini ({totalAamiin})</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Modal Buka Akses Rubrik (3 Paket Infaq Psikologis + Titip Doa + Bukti Transfer) */}
       <AnimatePresence>
