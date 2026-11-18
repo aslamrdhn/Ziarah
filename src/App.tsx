@@ -245,22 +245,23 @@ export default function App() {
             name: 'Ziarah Nusantara',
             legalName: 'Tim Kurator Arsip Ziarah Nusantara',
             url: `${baseOrigin}/`,
-            logo: {
+            logo: fullImageUrl,
+            image: {
               '@type': 'ImageObject',
               '@id': `${baseOrigin}/#logo`,
               url: fullImageUrl,
               contentUrl: fullImageUrl,
               width: 512,
               height: 512,
+              caption: 'Ziarah Nusantara',
             },
-            image: { '@id': `${baseOrigin}/#logo` },
           },
           {
             '@type': 'WebSite',
             '@id': `${baseOrigin}/#website`,
             url: `${baseOrigin}/`,
             name: 'Ziarah Nusantara',
-            alternateName: ['Ziarah Kubur Nusantara', 'Direktori Makam Wali Nusantara'],
+            alternateName: ['Portal Ziarah Nusantara', 'Direktori Makam Wali Nusantara'],
             description: activeDesc,
             inLanguage: 'id-ID',
             publisher: { '@id': `${baseOrigin}/#organization` },
@@ -278,12 +279,36 @@ export default function App() {
           },
         ];
 
+        const breadcrumbItems: Record<string, any>[] = [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Ziarah Nusantara',
+            item: `${baseOrigin}/`,
+          },
+        ];
+
         if (matchedSite) {
           const cleanSiteDesc = (matchedSite.description || '').replace(/<!--more-->/g, ' ').replace(/\s+/g, ' ').trim();
+          const siteHeading = formatMakamHeading(matchedSite.title);
+          breadcrumbItems.push(
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'Peta & Direktori Makam Wali',
+              item: `${baseOrigin}/peta`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: siteHeading,
+              item: canonicalUrl,
+            }
+          );
           graphNodes.push({
-            '@type': 'TouristAttraction',
+            '@type': ['Place', 'LandmarksOrHistoricalBuildings'],
             '@id': `${canonicalUrl}#place`,
-            name: `${formatMakamHeading(matchedSite.title)} (${matchedSite.name})`,
+            name: `${siteHeading} (${matchedSite.name})`,
             description: cleanSiteDesc,
             url: canonicalUrl,
             address: {
@@ -299,7 +324,20 @@ export default function App() {
               longitude: matchedSite.location.lng,
             },
           });
+        } else if (canonicalUrl !== `${baseOrigin}/`) {
+          breadcrumbItems.push({
+            '@type': 'ListItem',
+            position: 2,
+            name: activeTitle.split('—')[0].split('|')[0].trim(),
+            item: canonicalUrl,
+          });
         }
+
+        graphNodes.push({
+          '@type': 'BreadcrumbList',
+          '@id': `${canonicalUrl}#breadcrumb`,
+          itemListElement: breadcrumbItems,
+        });
 
         if (cleanPath === '/' || cleanPath === '/panduan') {
           graphNodes.push({
@@ -643,7 +681,7 @@ export default function App() {
             <div className="flex items-center gap-3">
               <img
                 src="/favicon.svg"
-                alt="Logo Resmi Ziarah Nusantara"
+                alt="Ziarah Nusantara"
                 width={32}
                 height={32}
                 loading="lazy"

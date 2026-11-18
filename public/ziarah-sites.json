@@ -37,7 +37,7 @@
     "Sumatera Selatan",
     "Sumatera Utara"
   ],
-  "updatedAt": "2026-11-16",
+  "updatedAt": "2026-11-18",
   "sites": [
     {
       "id": "syekh-maulana-malik-ibrahim",
@@ -85,14 +85,14 @@
     },
     {
       "id": "sunan-kudus",
-      "slug": "waliyyul-ilmi-qadhi-agung-kesultanan-demak-pendiri-masjid-al-aqsha-menara-kudus",
+      "slug": "makam-sunan-kudus",
       "name": "Makam Sunan Kudus (Sayyid Ja’far Shadiq Azmatkhan)",
       "title": "Waliyyul ’Ilmi, Qadhi Agung Kesultanan Demak & Pendiri Masjid Al-Aqsha Menara Kudus",
       "category": "Walisongo",
       "city": "Kudus",
       "province": "Jawa Tengah",
       "address": "Jl. Menara, Desa Kauman, Kec. Kota, Kabupaten Kudus",
-      "url": "https://ziarahnusantara.my.id/situs/waliyyul-ilmi-qadhi-agung-kesultanan-demak-pendiri-masjid-al-aqsha-menara-kudus"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sunan-kudus"
     },
     {
       "id": "sunan-giri",
@@ -107,14 +107,14 @@
     },
     {
       "id": "sunan-kalijaga",
-      "slug": "wali-songo-pelopor-dakwah-kultural-nusantara-di-kadilangu-demak",
+      "slug": "makam-sunan-kalijaga-demak",
       "name": "Makam Sunan Kalijaga (Raden Mas Said / Syekh Malaya)",
       "title": "Wali Songo Pelopor Dakwah Kultural Nusantara di Kadilangu Demak",
       "category": "Walisongo",
       "city": "Demak",
       "province": "Jawa Tengah",
       "address": "Kelurahan Kadilangu, Kec. Demak, Kabupaten Demak",
-      "url": "https://ziarahnusantara.my.id/situs/wali-songo-pelopor-dakwah-kultural-nusantara-di-kadilangu-demak"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sunan-kalijaga-demak"
     },
     {
       "id": "sunan-muria",
@@ -305,135 +305,135 @@
     },
     {
       "id": "syekh-subakir-tidar",
-      "slug": "ulama-sufi-persia-generasi-awal-wali-songo-paku-bumi-tanah-jawa-di-puncak-gunung-tidar-magelang",
+      "slug": "makam-petilasan-syekh-subakir-kyai-sepanjang-magelang",
       "name": "Makam / Petilasan Syekh Subakir & Kyai Sepanjang (Gunung Tidar, Kota Magelang)",
       "title": "Ulama Sufi Persia Generasi Awal Wali Songo & Paku Bumi Tanah Jawa di Puncak Gunung Tidar",
       "category": "Auliya Nusantara",
       "city": "Magelang",
       "province": "Jawa Tengah",
       "address": "Puncak Gunung Tidar, Kel. Magersari, Kec. Magelang Selatan, Kota Magelang",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-sufi-persia-generasi-awal-wali-songo-paku-bumi-tanah-jawa-di-puncak-gunung-tidar-magelang"
+      "url": "https://ziarahnusantara.my.id/situs/makam-petilasan-syekh-subakir-kyai-sepanjang-magelang"
     },
     {
       "id": "sunan-pandanaran-bayat",
-      "slug": "adipati-semarang-yang-menanggalkan-tahta-demi-jalan-tasawuf-di-bawah-bimbingan-sunan-kalijaga-klaten",
+      "slug": "makam-sunan-pandanaran-ii-sunan-tembayat-klaten",
       "name": "Makam Sunan Pandanaran II / Sunan Tembayat (Paseban, Bayat, Klaten)",
       "title": "Adipati Semarang yang Menanggalkan Tahta Demi Jalan Tasawuf di Bawah Bimbingan Sunan Kalijaga",
       "category": "Auliya Nusantara",
       "city": "Klaten",
       "province": "Jawa Tengah",
       "address": "Bukit Cakaran, Desa Paseban, Kec. Bayat, Kabupaten Klaten",
-      "url": "https://ziarahnusantara.my.id/situs/adipati-semarang-yang-menanggalkan-tahta-demi-jalan-tasawuf-di-bawah-bimbingan-sunan-kalijaga-klaten"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sunan-pandanaran-ii-sunan-tembayat-klaten"
     },
     {
       "id": "raden-patah-demak",
-      "slug": "pendiri-raja-raja-kesultanan-islam-pertama-di-tanah-jawa-demak",
+      "slug": "makam-sultan-raden-patah-adipati-unus-sultan-trenggono-demak",
       "name": "Makam Sultan Raden Patah, Adipati Unus & Sultan Trenggono (Kompleks Masjid Agung Demak)",
       "title": "Pendiri & Raja-Raja Kesultanan Islam Pertama di Tanah Jawa (Demak Bintoro, 1478–1546 M)",
       "category": "Auliya Nusantara",
       "city": "Demak",
       "province": "Jawa Tengah",
       "address": "Kompleks Masjid Agung Demak, Kel. Kauman, Kec. Demak, Kabupaten Demak",
-      "url": "https://ziarahnusantara.my.id/situs/pendiri-raja-raja-kesultanan-islam-pertama-di-tanah-jawa-demak"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sultan-raden-patah-adipati-unus-sultan-trenggono-demak"
     },
     {
       "id": "syekh-mutamakkin-kajen",
-      "slug": "waliyullah-sufi-abad-ke-18-guru-spiritual-paku-buwono-ii-leluhur-ulama-kajen-tebuireng-pati",
+      "slug": "makam-syekh-ahmad-mutamakkin-pati",
       "name": "Makam Syekh Ahmad Mutamakkin (Kajen, Margoyoso, Pati)",
       "title": "Waliyullah Sufi Abad ke-18, Guru Spiritual Paku Buwono II & Leluhur Ulama Kajen–Tebuireng",
       "category": "Ulama Nusantara",
       "city": "Pati",
       "province": "Jawa Tengah",
       "address": "Desa Kajen, Kec. Margoyoso, Kabupaten Pati",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-sufi-abad-ke-18-guru-spiritual-paku-buwono-ii-leluhur-ulama-kajen-tebuireng-pati"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-ahmad-mutamakkin-pati"
     },
     {
       "id": "syekh-jangkung-pati",
-      "slug": "waliyullah-sufi-pengembara-samudra-penasihat-ruhani-sultan-agung-mataram-pati",
+      "slug": "makam-syekh-jangkung-saridin-pati",
       "name": "Makam Syekh Jangkung / Saridin (Landoh, Kayen, Pati)",
       "title": "Waliyullah Sufi Pengembara Samudra & Penasihat Ruhani Sultan Agung Mataram",
       "category": "Auliya Nusantara",
       "city": "Pati",
       "province": "Jawa Tengah",
       "address": "Dusun Landoh, Desa Kayen, Kec. Kayen, Kabupaten Pati",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-sufi-pengembara-samudra-penasihat-ruhani-sultan-agung-mataram-pati"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-jangkung-saridin-pati"
     },
     {
       "id": "kh-dalhar-watucongol",
-      "slug": "mursyid-agung-thariqah-syadziliyah-penyusun-tanwirul-ma-ani-pembimbing-para-pejuang-kemerdekaan-magelang",
+      "slug": "makam-kh-dalhar-watucongol-kyai-raden-santri-magelang",
       "name": "Makam KH. Dalhar Watucongol & Kyai Raden Santri (Gunungpring, Muntilan, Magelang)",
       "title": "Mursyid Agung Thariqah Syadziliyah, Penyusun Tanwirul Ma’ani & Pembimbing Para Pejuang Kemerdekaan",
       "category": "Ulama Nusantara",
       "city": "Magelang",
       "province": "Jawa Tengah",
       "address": "Bukit Gunungpring & Dusun Watucongol, Desa Gunungpring, Kec. Muntilan, Kabupaten Magelang",
-      "url": "https://ziarahnusantara.my.id/situs/mursyid-agung-thariqah-syadziliyah-penyusun-tanwirul-ma-ani-pembimbing-para-pejuang-kemerdekaan-magelang"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-dalhar-watucongol-kyai-raden-santri-magelang"
     },
     {
       "id": "kh-sholeh-darat-semarang",
-      "slug": "maha-guru-pendiri-nu-muhammadiyah-pelopor-tafsir-al-qur-an-aksara-pegon-jawa-semarang",
+      "slug": "makam-kh-muhammad-sholeh-darat-as-samarani-semarang",
       "name": "Makam KH. Muhammad Sholeh Darat As-Samarani (Bergota, Kota Semarang)",
       "title": "Maha Guru Pendiri NU & Muhammadiyah, Pelopor Tafsir Al-Qur’an Aksara Pegon Jawa (Faidhur Rahman)",
       "category": "Ulama Nusantara",
       "city": "Semarang",
       "province": "Jawa Tengah",
       "address": "Kompleks Pemakaman Umum Bergota, Jl. Kyai Saleh, Kel. Randusari, Kec. Semarang Selatan, Kota Semarang",
-      "url": "https://ziarahnusantara.my.id/situs/maha-guru-pendiri-nu-muhammadiyah-pelopor-tafsir-al-qur-an-aksara-pegon-jawa-semarang"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-muhammad-sholeh-darat-as-samarani-semarang"
     },
     {
       "id": "habib-ahmad-sapuro",
-      "slug": "waliyullah-quthub-penjaga-kota-santri-pekalongan-ulama-agung-marga-al-attas",
+      "slug": "makam-al-habib-ahmad-bin-abdullah-bin-thalib-al-attas-pekalongan",
       "name": "Makam Al-Habib Ahmad bin Abdullah bin Thalib Al-Attas (Sapuro, Kota Pekalongan)",
       "title": "Waliyullah Quthub Penjaga Kota Santri Pekalongan & Ulama Agung Marga Al-Attas",
       "category": "Habaib",
       "city": "Pekalongan",
       "province": "Jawa Tengah",
       "address": "Kompleks Pemakaman Islam Sapuro, Jl. Jenderal Sudirman, Kel. Sapuro Kebulen, Kec. Pekalongan Barat, Kota Pekalongan",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-quthub-penjaga-kota-santri-pekalongan-ulama-agung-marga-al-attas"
+      "url": "https://ziarahnusantara.my.id/situs/makam-al-habib-ahmad-bin-abdullah-bin-thalib-al-attas-pekalongan"
     },
     {
       "id": "kh-arwani-amin-kudus",
-      "slug": "maha-guru-qira-at-sab-ah-mursyid-thariqah-naqsyabandiyah-khalidiyah-pendiri-yanbu-ul-qur-an-kudus",
+      "slug": "makam-kh-muhammad-arwani-amin-said-kudus",
       "name": "Makam KH. Muhammad Arwani Amin Said (Pondok Tahfidh Yanbu’ul Qur’an, Kota Kudus)",
       "title": "Maha Guru Qira’at Sab’ah, Mursyid Thariqah Naqsyabandiyah Khalidiyah & Pendiri Yanbu’ul Qur’an Kudus",
       "category": "Ulama Nusantara",
       "city": "Kudus",
       "province": "Jawa Tengah",
       "address": "Kompleks Pondok Tahfidh Yanbu’ul Qur’an, Jl. KH. M. Arwani, Kel. Kajeksan, Kec. Kota, Kabupaten Kudus",
-      "url": "https://ziarahnusantara.my.id/situs/maha-guru-qira-at-sab-ah-mursyid-thariqah-naqsyabandiyah-khalidiyah-pendiri-yanbu-ul-qur-an-kudus"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-muhammad-arwani-amin-said-kudus"
     },
     {
       "id": "kyai-nur-iman-mlangi",
-      "slug": "putra-mahkota-mataram-yang-memilih-jalan-santri-kakak-sultan-hamengkubuwono-i-pendiri-desa-pesantren-mlangi-sleman",
+      "slug": "makam-kyai-nur-iman-mlangi-bph-sandiyo-sleman",
       "name": "Makam Kyai Nur Iman Mlangi (BPH Sandiyo — Masjid Pathok Negara Mlangi, Sleman, Yogyakarta)",
       "title": "Putra Mahkota Mataram yang Memilih Jalan Santri, Kakak Sultan Hamengkubuwono I & Pendiri Desa Pesantren Mlangi",
       "category": "Ulama Nusantara",
       "city": "Sleman",
       "province": "DI Yogyakarta",
       "address": "Kompleks Masjid Pathok Negara Mlangi, Dusun Mlangi, Desa Nogotirto, Kec. Gamping, Kabupaten Sleman",
-      "url": "https://ziarahnusantara.my.id/situs/putra-mahkota-mataram-yang-memilih-jalan-santri-kakak-sultan-hamengkubuwono-i-pendiri-desa-pesantren-mlangi-sleman"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kyai-nur-iman-mlangi-bph-sandiyo-sleman"
     },
     {
       "id": "syekh-maulana-maghribi-parangtritis",
-      "slug": "waliyullah-sufi-pelopor-syiar-islam-pesisir-selatan-jawa-di-bukit-sentono-parangtritis-bantul",
+      "slug": "makam-syekh-maulana-maghribi-bantul",
       "name": "Makam Syekh Maulana Maghribi (Puncak Bukit Sentono, Parangtritis, Bantul)",
       "title": "Waliyullah Sufi Pelopor Syiar Islam Pesisir Selatan Jawa di Bukit Sentono Parangtritis",
       "category": "Auliya Nusantara",
       "city": "Bantul",
       "province": "DI Yogyakarta",
       "address": "Puncak Bukit Sentono, Girijati / Desa Parangtritis, Kec. Kretek, Kabupaten Bantul",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-sufi-pelopor-syiar-islam-pesisir-selatan-jawa-di-bukit-sentono-parangtritis-bantul"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-maulana-maghribi-bantul"
     },
     {
       "id": "syaichona-kholil-bangkalan",
-      "slug": "maha-guru-ulama-pesantren-nusantara-waliyullah-quthbul-zaman-pemberi-restu-berdirinya-nu-bangkalan",
+      "slug": "makam-syaichona-muhammad-kholil-bangkalan",
       "name": "Makam Syaichona Muhammad Kholil (Martajasah, Bangkalan, Pulau Madura)",
       "title": "Maha Guru Ulama Pesantren Nusantara, Waliyullah Quthbul Zaman & Pemberi Restu Berdirinya NU",
       "category": "Ulama Nusantara",
       "city": "Bangkalan",
       "province": "Jawa Timur",
       "address": "Kompleks Masjid & Maqbarah Syaichona Muhammad Kholil, Jl. Raya Ketengan, Desa Martajasah, Kec. Bangkalan, Kabupaten Bangkalan, Madura",
-      "url": "https://ziarahnusantara.my.id/situs/maha-guru-ulama-pesantren-nusantara-waliyullah-quthbul-zaman-pemberi-restu-berdirinya-nu-bangkalan"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syaichona-muhammad-kholil-bangkalan"
     },
     {
       "id": "kh-hasyim-asyari-tebuireng",
@@ -448,36 +448,36 @@
     },
     {
       "id": "kh-wahab-chasbullah",
-      "slug": "pahlawan-nasional-penggerak-utama-pendirian-nu-pencipta-syubbanul-wathan-jombang",
+      "slug": "makam-kh-abdul-wahab-chasbullah-jombang",
       "name": "Makam KH. Abdul Wahab Chasbullah (Bahrul Ulum Tambakberas, Jombang)",
       "title": "Pahlawan Nasional, Penggerak Utama Pendirian NU & Pencipta Syubbanul Wathan (Ya Lal Wathan)",
       "category": "Ulama Nusantara",
       "city": "Jombang",
       "province": "Jawa Timur",
       "address": "Kompleks Pemakaman Pondok Pesantren Bahrul Ulum, Dusun Tambakberas, Desa Tambakrejo, Kec. Jombang, Kabupaten Jombang",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-penggerak-utama-pendirian-nu-pencipta-syubbanul-wathan-jombang"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-abdul-wahab-chasbullah-jombang"
     },
     {
       "id": "kh-bisri-syansuri",
-      "slug": "pendiri-pesantren-mamba-ul-ma-arif-denanyar-pelopor-pesantren-putri-rais-aam-pbnu-jombang",
+      "slug": "makam-kh-bisri-syansuri-jombang",
       "name": "Makam KH. Bisri Syansuri (Mamba’ul Ma’arif Denanyar, Jombang)",
       "title": "Pendiri Pesantren Mamba’ul Ma’arif Denanyar, Pelopor Pesantren Putri & Rais Aam PBNU",
       "category": "Ulama Nusantara",
       "city": "Jombang",
       "province": "Jawa Timur",
       "address": "Kompleks Pondok Pesantren Mamba’ul Ma’arif, Jl. KH. Bisri Syansuri, Desa Denanyar, Kec. Jombang, Kabupaten Jombang",
-      "url": "https://ziarahnusantara.my.id/situs/pendiri-pesantren-mamba-ul-ma-arif-denanyar-pelopor-pesantren-putri-rais-aam-pbnu-jombang"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-bisri-syansuri-jombang"
     },
     {
       "id": "kh-romly-tamim-rejoso",
-      "slug": "mursyid-agung-thariqah-qadiriyah-wa-naqsyabandiyah-penyusun-wirid-istighotsah-jombang",
+      "slug": "makam-kh-romly-tamim-masyayikh-darul-ulum-jombang",
       "name": "Makam KH. Romly Tamim & Masyayikh Darul ’Ulum (Rejoso, Peterongan, Jombang)",
       "title": "Mursyid Agung Thariqah Qadiriyah wa Naqsyabandiyah & Penyusun Wirid Istighotsah",
       "category": "Ulama Nusantara",
       "city": "Jombang",
       "province": "Jawa Timur",
       "address": "Kompleks Pondok Pesantren Darul ’Ulum, Desa Rejoso, Kec. Peterongan, Kabupaten Jombang",
-      "url": "https://ziarahnusantara.my.id/situs/mursyid-agung-thariqah-qadiriyah-wa-naqsyabandiyah-penyusun-wirid-istighotsah-jombang"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-romly-tamim-masyayikh-darul-ulum-jombang"
     },
     {
       "id": "kh-abdul-hamid-pasuruan",
@@ -514,47 +514,47 @@
     },
     {
       "id": "kh-asad-syamsul-arifin",
-      "slug": "pahlawan-nasional-mediator-berdirinya-nu-poros-pesantren-tapal-kuda-situbondo",
+      "slug": "makam-khr-as-ad-syamsul-arifin-kh-zaini-mun-im-situbondo",
       "name": "Makam KHR. As’ad Syamsul Arifin (Situbondo) & KH. Zaini Mun’im (Paiton Probolinggo)",
       "title": "Pahlawan Nasional Mediator Berdirinya NU & Poros Pesantren Tapal Kuda",
       "category": "Ulama Nusantara",
       "city": "Situbondo",
       "province": "Jawa Timur",
       "address": "Kompleks Pondok Pesantren Salafiyah Syafi’iyah Sukorejo, Desa Sumberejo, Kec. Banyuputih, Kabupaten Situbondo",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-mediator-berdirinya-nu-poros-pesantren-tapal-kuda-situbondo"
+      "url": "https://ziarahnusantara.my.id/situs/makam-khr-as-ad-syamsul-arifin-kh-zaini-mun-im-situbondo"
     },
     {
       "id": "kh-abdul-karim-lirboyo",
-      "slug": "pendiri-pondok-pesantren-lirboyo-al-falah-ploso-benteng-utama-turats-salafiyah-nusantara-kediri",
+      "slug": "makam-kh-abdul-karim-kh-marzuqi-dahlan-kh-mahrus-aly-kediri",
       "name": "Makam KH. Abdul Karim, KH. Marzuqi Dahlan & KH. Mahrus Aly (Lirboyo) serta KH. Djazuli Utsman (Ploso, Kediri)",
       "title": "Pendiri Pondok Pesantren Lirboyo & Al-Falah Ploso — Benteng Utama Turats Salafiyah Nusantara",
       "category": "Ulama Nusantara",
       "city": "Kediri",
       "province": "Jawa Timur",
       "address": "Kompleks Pondok Pesantren Lirboyo, Kel. Lirboyo, Kec. Mojoroto, Kota Kediri",
-      "url": "https://ziarahnusantara.my.id/situs/pendiri-pondok-pesantren-lirboyo-al-falah-ploso-benteng-utama-turats-salafiyah-nusantara-kediri"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-abdul-karim-kh-marzuqi-dahlan-kh-mahrus-aly-kediri"
     },
     {
       "id": "gus-miek-ploso-kediri",
-      "slug": "waliyullah-nyentrik-pendiri-majelis-semaan-al-qur-an-mantab-dzikrul-ghofilin-kediri",
+      "slug": "makam-kh-hamim-tohari-djazuli-kediri",
       "name": "Makam KH. Hamim Tohari Djazuli (Gus Miek) — Makam Tambak, Mojo, Kediri",
       "title": "Waliyullah Nyentrik Pendiri Majelis Semaan Al-Qur’an Mantab & Dzikrul Ghofilin",
       "category": "Ulama Nusantara",
       "city": "Kediri",
       "province": "Jawa Timur",
       "address": "Kompleks Makam Tambak, Dusun Tambak, Desa Ngadi, Kec. Mojo, Kabupaten Kediri",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-nyentrik-pendiri-majelis-semaan-al-qur-an-mantab-dzikrul-ghofilin-kediri"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-hamim-tohari-djazuli-kediri"
     },
     {
       "id": "syekh-jumadil-kubro-troloyo",
-      "slug": "maha-guru-leluhur-wali-songo-bukti-komunitas-muslim-di-jantung-ibu-kota-majapahit-abad-ke-14-mojokerto",
+      "slug": "makam-syekh-jumadil-kubro-kompleks-makam-islam-kuno-troloyo-mojokerto",
       "name": "Makam Syekh Jumadil Kubro & Kompleks Makam Islam Kuno Troloyo (Trowulan, Mojokerto)",
       "title": "Maha Guru Leluhur Wali Songo & Bukti Komunitas Muslim di Jantung Ibu Kota Majapahit Abad ke-14",
       "category": "Auliya Nusantara",
       "city": "Mojokerto",
       "province": "Jawa Timur",
       "address": "Dusun Sidodadi, Desa Sentonorejo, Kec. Trowulan, Kabupaten Mojokerto",
-      "url": "https://ziarahnusantara.my.id/situs/maha-guru-leluhur-wali-songo-bukti-komunitas-muslim-di-jantung-ibu-kota-majapahit-abad-ke-14-mojokerto"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-jumadil-kubro-kompleks-makam-islam-kuno-troloyo-mojokerto"
     },
     {
       "id": "syekh-ibrahim-asmorokondi",
@@ -569,14 +569,14 @@
     },
     {
       "id": "sayyid-yusuf-talango",
-      "slug": "ulama-hadramaut-penunjuk-isyarat-rihlah-dari-kubah-masjid-agung-sumenep-maqbarah-sultan-abdurrahman-pakunataningrat",
+      "slug": "makam-sayyid-yusuf-bin-ali-al-anggawi-kompleks-asta-tinggi-sumenep",
       "name": "Makam Sayyid Yusuf bin Ali Al-Anggawi (Pulau Poteran, Talango) & Kompleks Asta Tinggi (Sumenep)",
       "title": "Ulama Hadramaut Penunjuk Isyarat Rihlah dari Kubah Masjid Agung Sumenep & Maqbarah Sultan Abdurrahman Pakunataningrat",
       "category": "Auliya Nusantara",
       "city": "Sumenep",
       "province": "Jawa Timur",
       "address": "Desa Talango, Pulau Poteran, Kec. Talango (Seberang Pelabuhan Kalianget) & Bukit Kebon Agung (Asta Tinggi), Kabupaten Sumenep, Madura",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-hadramaut-penunjuk-isyarat-rihlah-dari-kubah-masjid-agung-sumenep-maqbarah-sultan-abdurrahman-pakunataningrat"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sayyid-yusuf-bin-ali-al-anggawi-kompleks-asta-tinggi-sumenep"
     },
     {
       "id": "pangeran-mas-sepuh-seseh",
@@ -646,14 +646,14 @@
     },
     {
       "id": "syekh-abdurrauf-as-singkili",
-      "slug": "mufti-agung-kesultanan-aceh-darussalam-pengarang-tafsir-tarjuman-al-mustafid-mursyid-utama-thariqah-syattariyah-nusantara-banda-aceh",
+      "slug": "makam-syekh-abdurrauf-bin-ali-al-fansuri-as-singkili-banda-aceh",
       "name": "Makam Syekh Abdurrauf bin Ali Al-Fansuri As-Singkili (Teungku Syiah Kuala, Banda Aceh)",
       "title": "Mufti Agung Kesultanan Aceh Darussalam, Pengarang Tafsir Tarjuman Al-Mustafid & Mursyid Utama Thariqah Syattariyah Nusantara",
       "category": "Ulama Nusantara",
       "city": "Banda Aceh",
       "province": "Aceh",
       "address": "Gampong Deah Raya, Kec. Syiah Kuala, Kota Banda Aceh",
-      "url": "https://ziarahnusantara.my.id/situs/mufti-agung-kesultanan-aceh-darussalam-pengarang-tafsir-tarjuman-al-mustafid-mursyid-utama-thariqah-syattariyah-nusantara-banda-aceh"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-abdurrauf-bin-ali-al-fansuri-as-singkili-banda-aceh"
     },
     {
       "id": "syekh-hamzah-fansuri",
@@ -668,14 +668,14 @@
     },
     {
       "id": "syekh-burhanuddin-ulakan",
-      "slug": "pelopor-utama-penyebaran-islam-mursyid-thariqah-syattariyah-di-ranah-minangkabau-padang-pariaman",
+      "slug": "makam-syekh-burhanuddin-ulakan-tuanku-ulakan-padang-pariaman",
       "name": "Makam Syekh Burhanuddin Ulakan (Tuanku Ulakan — Ulakan Tapakis, Padang Pariaman)",
       "title": "Pelopor Utama Penyebaran Islam & Mursyid Thariqah Syattariyah di Ranah Minangkabau (1646–1704 M)",
       "category": "Ulama Nusantara",
       "city": "Padang Pariaman",
       "province": "Sumatera Barat",
       "address": "Nagari Ulakan, Kec. Ulakan Tapakis, Kabupaten Padang Pariaman",
-      "url": "https://ziarahnusantara.my.id/situs/pelopor-utama-penyebaran-islam-mursyid-thariqah-syattariyah-di-ranah-minangkabau-padang-pariaman"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-burhanuddin-ulakan-tuanku-ulakan-padang-pariaman"
     },
     {
       "id": "syekh-abdul-wahab-rokan-besilam",
@@ -690,25 +690,25 @@
     },
     {
       "id": "kiai-marogan-palembang",
-      "slug": "waliyullah-agung-palembang-abad-ke-19-mursyid-thariqah-sammaniyah-pembangun-masjid-lawang-kidul-serta-masjid-muara-ogan",
+      "slug": "makam-kh-masagus-abdul-hamid-bin-mahmud-kiai-marogan-palembang",
       "name": "Makam KH. Masagus Abdul Hamid bin Mahmud (Kiai Marogan — Muara Ogan, Kertapati, Palembang)",
       "title": "Waliyullah Agung Palembang Abad ke-19, Mursyid Thariqah Sammaniyah & Pembangun Masjid Lawang Kidul serta Masjid Muara Ogan",
       "category": "Ulama Nusantara",
       "city": "Palembang",
       "province": "Sumatera Selatan",
       "address": "Kompleks Masjid Kiai Muara Ogan (Marogan), Jl. Ki Marogan, Kel. Kemang Agung, Kec. Kertapati, Kota Palembang",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-agung-palembang-abad-ke-19-mursyid-thariqah-sammaniyah-pembangun-masjid-lawang-kidul-serta-masjid-muara-ogan"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-masagus-abdul-hamid-bin-mahmud-kiai-marogan-palembang"
     },
     {
       "id": "guru-sekumpul-martapura",
-      "slug": "waliyullah-kharismatik-tanah-banjar-mursyid-thariqah-sammaniyah-magnet-haul-terbesar-di-asia-tenggara",
+      "slug": "makam-kh-muhammad-zaini-bin-abdul-ghani-al-banjari-abah-guru-sekumpul",
       "name": "Makam KH. Muhammad Zaini bin Abdul Ghani Al-Banjari (Abah Guru Sekumpul — Martapura, Banjar)",
       "title": "Waliyullah Kharismatik Tanah Banjar, Mursyid Thariqah Sammaniyah & Magnet Haul Terbesar di Asia Tenggara (1942–2005 M)",
       "category": "Ulama Nusantara",
       "city": "Banjar",
       "province": "Kalimantan Selatan",
       "address": "Kompleks Musholla Ar-Raudhah, Jl. Sekumpul, Kel. Sekumpul, Kec. Martapura, Kabupaten Banjar",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-kharismatik-tanah-banjar-mursyid-thariqah-sammaniyah-magnet-haul-terbesar-di-asia-tenggara"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-muhammad-zaini-bin-abdul-ghani-al-banjari-abah-guru-sekumpul"
     },
     {
       "id": "syekh-muhammad-arsyad-al-banjari",
@@ -723,14 +723,14 @@
     },
     {
       "id": "habib-basirih-banjarmasin",
-      "slug": "waliyullah-majdzub-tepian-sungai-martapura-cagar-budaya-religi-utama-kota-banjarmasin",
+      "slug": "makam-al-habib-hamid-bin-abbas-bahasyim-habib-basirih-banjarmasin",
       "name": "Makam Al-Habib Hamid bin Abbas Bahasyim (Habib Basirih — Banjarmasin Selatan)",
       "title": "Waliyullah Majdzub Tepian Sungai Martapura (\"Kubah Basirih\") & Cagar Budaya Religi Utama Kota Banjarmasin (Wafat 1949 M)",
       "category": "Habaib",
       "city": "Banjarmasin",
       "province": "Kalimantan Selatan",
       "address": "Jl. Keramat Basirih, RT 13, Kel. Basirih Selatan, Kec. Banjarmasin Selatan, Kota Banjarmasin",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-majdzub-tepian-sungai-martapura-cagar-budaya-religi-utama-kota-banjarmasin"
+      "url": "https://ziarahnusantara.my.id/situs/makam-al-habib-hamid-bin-abbas-bahasyim-habib-basirih-banjarmasin"
     },
     {
       "id": "sultan-suriansyah-banjarmasin",
@@ -767,25 +767,25 @@
     },
     {
       "id": "habib-idrus-bin-salim-al-jufri-palu",
-      "slug": "pendiri-perguruan-islam-alkhairaat-maha-guru-indonesia-timur-pahlawan-nasional-palu",
+      "slug": "makam-al-habib-sayyid-idrus-bin-salim-al-jufri-guru-tua-palu",
       "name": "Makam Al-Habib Sayyid Idrus bin Salim Al-Jufri / Guru Tua (Kamonji, Palu Barat, Kota Palu)",
       "title": "Pendiri Perguruan Islam Alkhairaat (1930 M), Maha Guru Indonesia Timur & Pahlawan Nasional (1890–1969 M)",
       "category": "Habaib",
       "city": "Palu",
       "province": "Sulawesi Tengah",
       "address": "Kompleks Masjid Alkhairaat, Jl. Sis Aljufri, Kel. Kamonji, Kec. Palu Barat, Kota Palu",
-      "url": "https://ziarahnusantara.my.id/situs/pendiri-perguruan-islam-alkhairaat-maha-guru-indonesia-timur-pahlawan-nasional-palu"
+      "url": "https://ziarahnusantara.my.id/situs/makam-al-habib-sayyid-idrus-bin-salim-al-jufri-guru-tua-palu"
     },
     {
       "id": "kyai-mojo-tondano",
-      "slug": "ulama-besar-penasihat-spiritual-pangeran-diponegoro-dalam-perang-jawa-pendiri-kampung-jawa-tondano-minahasa",
+      "slug": "makam-kyai-mojo-kh-muslim-muhammad-khalifah-minahasa",
       "name": "Makam Kyai Mojo / KH. Muslim Muhammad Khalifah (Bukit Tondano, Wulauan, Tondano Utara, Minahasa)",
       "title": "Ulama Besar Penasihat Spiritual Pangeran Diponegoro dalam Perang Jawa & Pendiri Kampung Jawa Tondano (1792–1849 M)",
       "category": "Ulama Nusantara",
       "city": "Minahasa",
       "province": "Sulawesi Utara",
       "address": "Bukit Tondano, Kel. Wulauan / Kampung Jawa, Kec. Tondano Utara, Kabupaten Minahasa",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-besar-penasihat-spiritual-pangeran-diponegoro-dalam-perang-jawa-pendiri-kampung-jawa-tondano-minahasa"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kyai-mojo-kh-muslim-muhammad-khalifah-minahasa"
     },
     {
       "id": "kh-noer-ali-bekasi",
@@ -800,25 +800,25 @@
     },
     {
       "id": "mbah-maimoen-zubair-sarang",
-      "slug": "poros-sanad-keilmuan-haramain-pesantren-nusantara-di-pesisir-timur-jawa-tengah-rembang",
+      "slug": "pesantren-al-anwar-maqbarah-masyayikh-sarang-rembang",
       "name": "Pesantren Al-Anwar & Maqbarah Masyayikh Sarang (KH. Zubair Dahlan & Peninggalan Syaikhina KH. Maimoen Zubair, Rembang)",
       "title": "Poros Sanad Keilmuan Haramain–Pesantren Nusantara di Pesisir Timur Jawa Tengah (Sarang, Rembang)",
       "category": "Ulama Nusantara",
       "city": "Rembang",
       "province": "Jawa Tengah",
       "address": "Pondok Pesantren Al-Anwar & Maqbarah Masyayikh Karangmangu, Kec. Sarang, Kabupaten Rembang",
-      "url": "https://ziarahnusantara.my.id/situs/poros-sanad-keilmuan-haramain-pesantren-nusantara-di-pesisir-timur-jawa-tengah-rembang"
+      "url": "https://ziarahnusantara.my.id/situs/pesantren-al-anwar-maqbarah-masyayikh-sarang-rembang"
     },
     {
       "id": "masyayikh-lasem-rembang",
-      "slug": "waliyullah-leluhur-ulama-jawa-madura-tiga-pendiri-nahdlatul-ulama-dari-tiongkok-kecil-lasem-rembang",
+      "slug": "makam-mbah-sambu-kh-ma-shum-ahmad-kh-baidlowi-rembang",
       "name": "Makam Mbah Sambu (Sayyid Abdurrahman), KH. Ma’shum Ahmad & KH. Baidlowi (Kompleks Masjid Jami’ Lasem, Rembang)",
       "title": "Waliyullah Leluhur Ulama Jawa–Madura & Tiga Pendiri Nahdlatul Ulama dari \"Tiongkok Kecil\" Lasem",
       "category": "Ulama Nusantara",
       "city": "Rembang",
       "province": "Jawa Tengah",
       "address": "Kompleks Masjid Jami’ Lasem, Jl. Sunan Bonang KM 1, Desa Kauman / Karangturi, Kec. Lasem, Kabupaten Rembang",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-leluhur-ulama-jawa-madura-tiga-pendiri-nahdlatul-ulama-dari-tiongkok-kecil-lasem-rembang"
+      "url": "https://ziarahnusantara.my.id/situs/makam-mbah-sambu-kh-ma-shum-ahmad-kh-baidlowi-rembang"
     },
     {
       "id": "sultan-maulana-yusuf",
@@ -844,36 +844,36 @@
     },
     {
       "id": "habib-hasyim-bin-yahya-pekalongan",
-      "slug": "waliyullah-quthub-pesisir-utara-jawa-leluhur-maulana-habib-luthfi-bin-yahya-di-sapuro-pekalongan",
+      "slug": "makam-habib-hasyim-bin-umar-bin-thoha-bin-yahya-kakek-habib-luthfi-pekalongan",
       "name": "Makam Habib Hasyim bin Umar bin Thoha bin Yahya (Kakek Habib Luthfi — Sapuro, Pekalongan)",
       "title": "Waliyullah Quthub Pesisir Utara Jawa & Leluhur Maulana Habib Luthfi bin Yahya di Sapuro Pekalongan",
       "category": "Habaib",
       "city": "Pekalongan",
       "province": "Jawa Tengah",
       "address": "Kompleks Pemakaman Sapuro, Jl. KHM. Mansyur, Kel. Sapuro Kebulen, Kec. Pekalongan Barat, Kota Pekalongan",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-quthub-pesisir-utara-jawa-leluhur-maulana-habib-luthfi-bin-yahya-di-sapuro-pekalongan"
+      "url": "https://ziarahnusantara.my.id/situs/makam-habib-hasyim-bin-umar-bin-thoha-bin-yahya-kakek-habib-luthfi-pekalongan"
     },
     {
       "id": "kh-munawwir-krapyak",
-      "slug": "maha-guru-tahfidzul-qur-an-qira-at-sab-ah-nusantara-rais-aam-pbnu-pengasuh-pesantren-krapyak-bantul",
+      "slug": "makam-kh-muhammad-moenauwir-kh-ali-maksum-bantul",
       "name": "Makam KH. Muhammad Moenauwir & KH. Ali Maksum (Dongkelan & Krapyak, Bantul, Yogyakarta)",
       "title": "Maha Guru Tahfidzul Qur’an Qira’at Sab’ah Nusantara & Rais Aam PBNU Pengasuh Pesantren Krapyak",
       "category": "Ulama Nusantara",
       "city": "Bantul",
       "province": "DI Yogyakarta",
       "address": "Kompleks Makam Dongkelan, Kauman Dongkelan, Panggungharjo, Kec. Sewon, Kabupaten Bantul (Pesantren Krapyak Yogyakarta)",
-      "url": "https://ziarahnusantara.my.id/situs/maha-guru-tahfidzul-qur-an-qira-at-sab-ah-nusantara-rais-aam-pbnu-pengasuh-pesantren-krapyak-bantul"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-muhammad-moenauwir-kh-ali-maksum-bantul"
     },
     {
       "id": "syekh-ihsan-jampes-kediri",
-      "slug": "pengarang-kitab-fenomenal-sirajuth-thalibin-yang-diakui-al-azhar-kairo-kediri",
+      "slug": "makam-syekh-ihsan-muhammad-dahlan-al-jampesi-kediri",
       "name": "Makam Syekh Ihsan Muhammad Dahlan Al-Jampesi (Jampes, Gampengrejo, Kediri)",
       "title": "Pengarang Kitab Fenomenal Sirajuth Thalibin (Syarah Minhajul ’Abidin Imam Al-Ghazali) yang Diakui Al-Azhar Kairo",
       "category": "Ulama Nusantara",
       "city": "Kediri",
       "province": "Jawa Timur",
       "address": "Kompleks Pondok Pesantren Al-Ihsan Jampes, Dusun Jampes, Desa Putih, Kec. Gampengrejo, Kabupaten Kediri",
-      "url": "https://ziarahnusantara.my.id/situs/pengarang-kitab-fenomenal-sirajuth-thalibin-yang-diakui-al-azhar-kairo-kediri"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-ihsan-muhammad-dahlan-al-jampesi-kediri"
     },
     {
       "id": "syekh-maulana-ishaq",
@@ -932,36 +932,36 @@
     },
     {
       "id": "wali-kembar-karangasem",
-      "slug": "makam-wali-kembar-karangasem",
-      "name": "Makam Wali Kembar Karangasem — Syekh Maulana Yusuf Al-Baghdadi & Syekh Abdul Qodir Jaelani (Bungaya Kangin, Bebandem, Kabupaten Karangasem)",
-      "title": "Makam Wali Kembar Karangasem (Syekh Maulana Yusuf Al-Baghdadi & Syekh Abdul Qodir Jaelani Bali Timur)",
+      "slug": "makam-wali-pitu-bali-habib-ali-bin-zaenal-abidin-al-idrus-syekh-maulana-yusuf-al-baghdadi-karangasem",
+      "name": "Makam Wali Kembar Karangasem — Habib Ali bin Zaenal Abidin Al-Idrus & Syekh Maulana Yusuf Al-Baghdadi (Bungaya Kangin, Bebandem, Kabupaten Karangasem)",
+      "title": "Makam Wali Pitu Bali: Habib Ali bin Zaenal Abidin Al-Idrus & Syekh Maulana Yusuf Al-Baghdadi (Wali Pitu Puncak Bukit Kembar Karangasem)",
       "category": "Auliya Nusantara",
       "city": "Karangasem",
       "province": "Bali",
       "address": "Dusun Kecicang / Bukit Kembar, Desa Bungaya Kangin, Kec. Bebandem, Kabupaten Karangasem",
-      "url": "https://ziarahnusantara.my.id/situs/makam-wali-kembar-karangasem"
+      "url": "https://ziarahnusantara.my.id/situs/makam-wali-pitu-bali-habib-ali-bin-zaenal-abidin-al-idrus-syekh-maulana-yusuf-al-baghdadi-karangasem"
     },
     {
       "id": "teungku-di-anjong-banda-aceh",
-      "slug": "waliyullah-quthub-hadramaut-aceh-abad-ke-18-pendiri-masjid-bersejarah-teungku-di-anjong-banda-aceh",
+      "slug": "makam-al-habib-abu-bakar-bin-husein-balfaqih-teungku-di-anjong-banda-aceh",
       "name": "Makam Al-Habib Abu Bakar bin Husein Balfaqih (Teungku Di Anjong — Peulanggahan, Banda Aceh)",
       "title": "Waliyullah Quthub Hadramaut–Aceh Abad ke-18 & Pendiri Masjid Bersejarah Teungku Di Anjong (1769 M)",
       "category": "Habaib",
       "city": "Banda Aceh",
       "province": "Aceh",
       "address": "Gampong Peulanggahan, Kec. Kuta Raja, Kota Banda Aceh",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-quthub-hadramaut-aceh-abad-ke-18-pendiri-masjid-bersejarah-teungku-di-anjong-banda-aceh"
+      "url": "https://ziarahnusantara.my.id/situs/makam-al-habib-abu-bakar-bin-husein-balfaqih-teungku-di-anjong-banda-aceh"
     },
     {
       "id": "sultan-malikussaleh",
-      "slug": "pendiri-kesultanan-samudera-pasai-bukti-epigrafi-kerajaan-islam-pertama-di-nusantara-aceh-utara",
+      "slug": "makam-sultan-malikussaleh-meurah-silu-aceh-utara",
       "name": "Makam Sultan Malikussaleh / Meurah Silu (Samudera Pasai, Aceh Utara)",
       "title": "Pendiri Kesultanan Samudera Pasai (1267 M) & Bukti Epigrafi Kerajaan Islam Pertama di Nusantara (Wafat 696 H / 1297 M)",
       "category": "Auliya Nusantara",
       "city": "Aceh Utara",
       "province": "Aceh",
       "address": "Gampong Beuringen, Kec. Samudera, Kabupaten Aceh Utara",
-      "url": "https://ziarahnusantara.my.id/situs/pendiri-kesultanan-samudera-pasai-bukti-epigrafi-kerajaan-islam-pertama-di-nusantara-aceh-utara"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sultan-malikussaleh-meurah-silu-aceh-utara"
     },
     {
       "id": "makam-papan-tinggi-mahligai-barus",
@@ -998,25 +998,25 @@
     },
     {
       "id": "datu-abulung-sungai-batang",
-      "slug": "ulama-sufi-falsafi-abad-ke-18-di-tanah-banjar-situs-masjid-jami-syekh-abdul-hamid-abulung",
+      "slug": "makam-syekh-abdul-hamid-abulung-datu-abulung-banjar",
       "name": "Makam Syekh Abdul Hamid Abulung / Datu Abulung (Sungai Batang, Martapura Barat, Banjar)",
       "title": "Ulama Sufi Falsafi Abad ke-18 di Tanah Banjar & Situs Masjid Jami’ Syekh Abdul Hamid Abulung",
       "category": "Auliya Nusantara",
       "city": "Banjar",
       "province": "Kalimantan Selatan",
       "address": "Desa Sungai Batang, Kec. Martapura Barat, Kabupaten Banjar",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-sufi-falsafi-abad-ke-18-di-tanah-banjar-situs-masjid-jami-syekh-abdul-hamid-abulung"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-abdul-hamid-abulung-datu-abulung-banjar"
     },
     {
       "id": "habib-husein-alkadrie-mempawah",
-      "slug": "ulama-besar-asal-tarim-hadramaut-mufti-agung-kerajaan-matan-mempawah-serta-ayahanda-pendiri-kota-pontianak",
+      "slug": "makam-al-habib-husein-bin-ahmad-alkadrie-kramat-sebukit-rama-mempawah",
       "name": "Makam Al-Habib Husein bin Ahmad Alkadrie (Kramat Sebukit Rama — Mempawah Hilir, Mempawah)",
       "title": "Ulama Besar Asal Tarim Hadramaut, Mufti Agung Kerajaan Matan & Mempawah serta Ayahanda Pendiri Kota Pontianak (1708–1771 M)",
       "category": "Habaib",
       "city": "Mempawah",
       "province": "Kalimantan Barat",
       "address": "Bukit Sebukit Rama, Desa Pasir, Kec. Mempawah Hilir, Kabupaten Mempawah",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-besar-asal-tarim-hadramaut-mufti-agung-kerajaan-matan-mempawah-serta-ayahanda-pendiri-kota-pontianak"
+      "url": "https://ziarahnusantara.my.id/situs/makam-al-habib-husein-bin-ahmad-alkadrie-kramat-sebukit-rama-mempawah"
     },
     {
       "id": "datuk-patimang-luwu",
@@ -1064,14 +1064,14 @@
     },
     {
       "id": "kh-ahmad-rifai-kalisalak",
-      "slug": "pahlawan-nasional-mujaddid-kitab-tarajumah-pegon-pejuang-antikolonial-abad-ke-19-batang",
+      "slug": "situs-pesantren-maqbarah-dzurriyah-kh-ahmad-rifa-i-kalisalak-batang",
       "name": "Situs Pesantren & Maqbarah Dzurriyah KH. Ahmad Rifa’i Kalisalak (Limpung, Batang)",
       "title": "Pahlawan Nasional, Mujaddid Kitab Tarajumah Pegon (60+ Kitab) & Pejuang Antikolonial Abad ke-19",
       "category": "Ulama Nusantara",
       "city": "Batang",
       "province": "Jawa Tengah",
       "address": "Kompleks Masjid Baitul Muttaqin & Situs KH. Ahmad Rifa’i, Desa Kalisalak, Kec. Limpung, Kabupaten Batang",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-mujaddid-kitab-tarajumah-pegon-pejuang-antikolonial-abad-ke-19-batang"
+      "url": "https://ziarahnusantara.my.id/situs/situs-pesantren-maqbarah-dzurriyah-kh-ahmad-rifa-i-kalisalak-batang"
     },
     {
       "id": "masyayikh-tremas-pacitan",
@@ -1086,14 +1086,14 @@
     },
     {
       "id": "kh-hasan-besari-tegalsari",
-      "slug": "maha-guru-raja-pujangga-ulama-jawa-di-pesantren-gebang-tinatar-tegalsari-abad-ke-18-ponorogo",
+      "slug": "makam-kiai-ageng-muhammad-besari-kiai-ageng-hasan-besari-ponorogo",
       "name": "Makam Kiai Ageng Muhammad Besari & Kiai Ageng Hasan Besari (Tegalsari, Jetis, Ponorogo)",
       "title": "Maha Guru Raja, Pujangga & Ulama Jawa di Pesantren Gebang Tinatar Tegalsari Abad ke-18",
       "category": "Ulama Nusantara",
       "city": "Ponorogo",
       "province": "Jawa Timur",
       "address": "Kompleks Masjid Jami’ Tegalsari, Dukuh Gendol, Desa Tegalsari, Kec. Jetis, Kabupaten Ponorogo",
-      "url": "https://ziarahnusantara.my.id/situs/maha-guru-raja-pujangga-ulama-jawa-di-pesantren-gebang-tinatar-tegalsari-abad-ke-18-ponorogo"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kiai-ageng-muhammad-besari-kiai-ageng-hasan-besari-ponorogo"
     },
     {
       "id": "the-kwan-lie-buleleng",
@@ -1405,146 +1405,146 @@
     },
     {
       "id": "ratu-kalinyamat-jepara",
-      "slug": "pahlawan-nasional-penguasa-maritim-jepara-pelopor-seni-ukir-pembangun-masjid-astana-mantingan",
+      "slug": "makam-ratu-kalinyamat-sultan-hadlirin-jepara",
       "name": "Makam Ratu Kalinyamat & Sultan Hadlirin (Mantingan, Tahunan, Jepara)",
       "title": "Pahlawan Nasional Penguasa Maritim Jepara, Pelopor Seni Ukir & Pembangun Masjid Astana Mantingan (1559 M)",
       "category": "Auliya Nusantara",
       "city": "Jepara",
       "province": "Jawa Tengah",
       "address": "Kompleks Masjid Astana Sultan Hadlirin, Desa Mantingan, Kec. Tahunan, Kabupaten Jepara",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-penguasa-maritim-jepara-pelopor-seni-ukir-pembangun-masjid-astana-mantingan"
+      "url": "https://ziarahnusantara.my.id/situs/makam-ratu-kalinyamat-sultan-hadlirin-jepara"
     },
     {
       "id": "ki-ageng-pandanaran-semarang",
-      "slug": "pendiri-bupati-pertama-kota-semarang-serta-penyebar-islam-perbukitan-pragota",
+      "slug": "makam-ki-ageng-pandanaran-i-pangeran-made-pandan-semarang",
       "name": "Makam Ki Ageng Pandanaran I / Pangeran Made Pandan (Mugassari, Kota Semarang)",
       "title": "Pendiri & Bupati Pertama Kota Semarang (1476 M) serta Penyebar Islam Perbukitan Pragota",
       "category": "Auliya Nusantara",
       "city": "Semarang",
       "province": "Jawa Tengah",
       "address": "Jl. Mugas Dalam II No. 4, Kel. Mugassari, Kec. Semarang Selatan, Kota Semarang",
-      "url": "https://ziarahnusantara.my.id/situs/pendiri-bupati-pertama-kota-semarang-serta-penyebar-islam-perbukitan-pragota"
+      "url": "https://ziarahnusantara.my.id/situs/makam-ki-ageng-pandanaran-i-pangeran-made-pandan-semarang"
     },
     {
       "id": "sunan-katong-kaliwungu",
-      "slug": "penyebar-islam-pesisir-kendal-abad-ke-15-maha-guru-kota-santri-kaliwungu",
+      "slug": "makam-sunan-katong-kyai-guru-kh-asy-ari-kendal",
       "name": "Makam Sunan Katong & Kyai Guru KH. Asy’ari (Kaliwungu, Kendal)",
       "title": "Penyebar Islam Pesisir Kendal Abad ke-15 & Maha Guru Kota Santri Kaliwungu",
       "category": "Auliya Nusantara",
       "city": "Kendal",
       "province": "Jawa Tengah",
       "address": "Bukit Jabal, Desa Protomulyo, Kec. Kaliwungu Selatan, Kabupaten Kendal",
-      "url": "https://ziarahnusantara.my.id/situs/penyebar-islam-pesisir-kendal-abad-ke-15-maha-guru-kota-santri-kaliwungu"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sunan-katong-kyai-guru-kh-asy-ari-kendal"
     },
     {
       "id": "kh-subchi-parakan",
-      "slug": "ulama-sufi-pengijazah-doa-bambu-runcing-bagi-laskar-pejuang-kemerdekaan-1945-temanggung",
+      "slug": "makam-kh-subchi-temanggung",
       "name": "Makam KH. Subchi — \"Kyai Bambu Runcing\" (Parakan, Temanggung)",
       "title": "Ulama Sufi Pengijazah Doa Bambu Runcing bagi Laskar Pejuang Kemerdekaan 1945",
       "category": "Ulama Nusantara",
       "city": "Temanggung",
       "province": "Jawa Tengah",
       "address": "Belakang Masjid Al-Barokah Bambu Runcing, Kel. Parakan Kauman, Kec. Parakan, Kabupaten Temanggung",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-sufi-pengijazah-doa-bambu-runcing-bagi-laskar-pejuang-kemerdekaan-1945-temanggung"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-subchi-temanggung"
     },
     {
       "id": "kh-muntaha-wonosobo",
-      "slug": "pecinta-agung-al-qur-an-penggagas-mushaf-al-qur-an-akbar-pendiri-unsiq-wonosobo",
+      "slug": "makam-kh-muntaha-al-hafizh-kh-asy-ari-wonosobo",
       "name": "Makam KH. Muntaha Al-Hafizh & KH. Asy’ari (Kalibeber, Mojotengah, Wonosobo)",
       "title": "Pecinta Agung Al-Qur’an, Penggagas Mushaf Al-Qur’an Akbar & Pendiri UNSIQ Wonosobo",
       "category": "Ulama Nusantara",
       "city": "Wonosobo",
       "province": "Jawa Tengah",
       "address": "Kompleks Maqbarah Masyayikh Desa Deroduwur / Pondok Pesantren Al-Asy’ariyyah Kalibeber, Kec. Mojotengah, Kabupaten Wonosobo",
-      "url": "https://ziarahnusantara.my.id/situs/pecinta-agung-al-qur-an-penggagas-mushaf-al-qur-an-akbar-pendiri-unsiq-wonosobo"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-muntaha-al-hafizh-kh-asy-ari-wonosobo"
     },
     {
       "id": "syekh-makhdum-wali",
-      "slug": "utusan-kesultanan-demak-pengislam-kadipaten-pasirluhur-pelopor-islam-bumi-banyumas",
+      "slug": "makam-syekh-makhdum-wali-pangeran-senopati-mangkubumi-banyumas",
       "name": "Makam Syekh Makhdum Wali & Pangeran Senopati Mangkubumi (Pasir Luhur, Karanglewas, Banyumas)",
       "title": "Utusan Kesultanan Demak Pengislam Kadipaten Pasirluhur & Pelopor Islam Bumi Banyumas",
       "category": "Auliya Nusantara",
       "city": "Banyumas",
       "province": "Jawa Tengah",
       "address": "Desa Pasir Wetan, Kec. Karanglewas, Kabupaten Banyumas",
-      "url": "https://ziarahnusantara.my.id/situs/utusan-kesultanan-demak-pengislam-kadipaten-pasirluhur-pelopor-islam-bumi-banyumas"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-makhdum-wali-pangeran-senopati-mangkubumi-banyumas"
     },
     {
       "id": "ki-ageng-henis-laweyan",
-      "slug": "leluhur-raja-raja-mataram-islam-murid-sunan-kalijaga-perintis-sentra-batik-laweyan-solo-surakarta",
+      "slug": "makam-ki-ageng-henis-ki-ageng-anis-surakarta",
       "name": "Makam Ki Ageng Henis / Ki Ageng Anis (Astana Pajang Laweyan, Surakarta)",
       "title": "Leluhur Raja-Raja Mataram Islam, Murid Sunan Kalijaga & Perintis Sentra Batik Laweyan Solo",
       "category": "Auliya Nusantara",
       "city": "Surakarta",
       "province": "Jawa Tengah",
       "address": "Jl. Liris No. 1, Belukan, Pajang / Kel. Laweyan, Kec. Laweyan, Kota Surakarta",
-      "url": "https://ziarahnusantara.my.id/situs/leluhur-raja-raja-mataram-islam-murid-sunan-kalijaga-perintis-sentra-batik-laweyan-solo-surakarta"
+      "url": "https://ziarahnusantara.my.id/situs/makam-ki-ageng-henis-ki-ageng-anis-surakarta"
     },
     {
       "id": "habib-anis-solo",
-      "slug": "khodimul-maulid-simthuddurar-pusat-haul-akbar-solo-yang-dihadiri-jutaan-peziarah-dunia-surakarta",
+      "slug": "makam-habib-anis-bin-alwi-al-habsyi-habib-alwi-bin-ali-al-habsyi-surakarta",
       "name": "Makam Habib Anis bin Alwi Al-Habsyi & Habib Alwi bin Ali Al-Habsyi (Masjid Riyadh, Pasar Kliwon, Surakarta)",
       "title": "Khodimul Maulid Simthuddurar & Pusat Haul Akbar Solo yang Dihadiri Jutaan Peziarah Dunia",
       "category": "Habaib",
       "city": "Surakarta",
       "province": "Jawa Tengah",
       "address": "Kompleks Masjid Ar-Riyadh, Jl. Kapten Mulyadi, Kel. Pasar Kliwon, Kec. Pasar Kliwon, Kota Surakarta",
-      "url": "https://ziarahnusantara.my.id/situs/khodimul-maulid-simthuddurar-pusat-haul-akbar-solo-yang-dihadiri-jutaan-peziarah-dunia-surakarta"
+      "url": "https://ziarahnusantara.my.id/situs/makam-habib-anis-bin-alwi-al-habsyi-habib-alwi-bin-ali-al-habsyi-surakarta"
     },
     {
       "id": "ki-ageng-gribig-jatinom",
-      "slug": "ulama-agung-penasihat-sultan-agung-mataram-pelopor-tradisi-sebaran-apem-ya-qowiyyu-klaten",
+      "slug": "makam-ki-ageng-gribig-sayyid-wasibagno-timur-klaten",
       "name": "Makam Ki Ageng Gribig (Sayyid Wasibagno Timur — Jatinom, Klaten)",
       "title": "Ulama Agung Penasihat Sultan Agung Mataram & Pelopor Tradisi Sebaran Apem Ya Qowiyyu (1619 M)",
       "category": "Auliya Nusantara",
       "city": "Klaten",
       "province": "Jawa Tengah",
       "address": "Kompleks Masjid Besar Jatinom, Kel. Krajan, Kec. Jatinom, Kabupaten Klaten",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-agung-penasihat-sultan-agung-mataram-pelopor-tradisi-sebaran-apem-ya-qowiyyu-klaten"
+      "url": "https://ziarahnusantara.my.id/situs/makam-ki-ageng-gribig-sayyid-wasibagno-timur-klaten"
     },
     {
       "id": "syekh-bela-belu",
-      "slug": "pangeran-majapahit-murid-syekh-maulana-maghribi-waliyullah-sufi-pesisir-parangtritis-bantul",
+      "slug": "makam-syekh-bela-belu-raden-dhandhun-joko-bandem-bantul",
       "name": "Makam Syekh Bela-Belu (Raden Dhandhun / Joko Bandem — Parangtritis, Bantul)",
       "title": "Pangeran Majapahit Murid Syekh Maulana Maghribi & Waliyullah Sufi Pesisir Parangtritis",
       "category": "Auliya Nusantara",
       "city": "Bantul",
       "province": "DI Yogyakarta",
       "address": "Bukit Parangtritis, Desa Parangtritis, Kec. Kretek, Kabupaten Bantul",
-      "url": "https://ziarahnusantara.my.id/situs/pangeran-majapahit-murid-syekh-maulana-maghribi-waliyullah-sufi-pesisir-parangtritis-bantul"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-bela-belu-raden-dhandhun-joko-bandem-bantul"
     },
     {
       "id": "panembahan-senopati-kotagede",
-      "slug": "pendiri-kesultanan-mataram-islam-kompleks-masjid-gedhe-mataram-kotagede-yogyakarta",
+      "slug": "makam-panembahan-senopati-ki-ageng-pemanahan-sultan-hadiwijaya-yogyakarta",
       "name": "Makam Panembahan Senopati, Ki Ageng Pemanahan & Sultan Hadiwijaya (Pasarean Agung Kotagede, Yogyakarta)",
       "title": "Pendiri Kesultanan Mataram Islam (1587–1601 M) & Kompleks Masjid Gedhe Mataram Kotagede",
       "category": "Auliya Nusantara",
       "city": "Yogyakarta",
       "province": "DI Yogyakarta",
       "address": "Kompleks Masjid Gedhe Mataram Kotagede, Jl. Masjid Mataram, Jagalan, Kotagede, Yogyakarta",
-      "url": "https://ziarahnusantara.my.id/situs/pendiri-kesultanan-mataram-islam-kompleks-masjid-gedhe-mataram-kotagede-yogyakarta"
+      "url": "https://ziarahnusantara.my.id/situs/makam-panembahan-senopati-ki-ageng-pemanahan-sultan-hadiwijaya-yogyakarta"
     },
     {
       "id": "sultan-agung-imogiri",
-      "slug": "pahlawan-nasional-pengarang-sastra-gending-pencipta-kalender-jawa-islam-pemimpin-ekspedisi-batavia-bantul",
+      "slug": "makam-sultan-agung-hanyakrakusuma-raja-raja-mataram-bantul",
       "name": "Makam Sultan Agung Hanyakrakusuma & Raja-Raja Mataram (Astana Pajimatan Himagiri / Imogiri, Bantul)",
       "title": "Pahlawan Nasional, Pengarang Sastra Gending, Pencipta Kalender Jawa Islam & Pemimpin Ekspedisi Batavia (1628–1629)",
       "category": "Auliya Nusantara",
       "city": "Bantul",
       "province": "DI Yogyakarta",
       "address": "Puncak Bukit Merak, Desa Girirejo & Wukirsari, Kec. Imogiri, Kabupaten Bantul",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-pengarang-sastra-gending-pencipta-kalender-jawa-islam-pemimpin-ekspedisi-batavia-bantul"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sultan-agung-hanyakrakusuma-raja-raja-mataram-bantul"
     },
     {
       "id": "kh-ahmad-dahlan-jogja",
-      "slug": "pahlawan-nasional-khatib-amin-kasultanan-yogyakarta-pendiri-persyarikatan-muhammadiyah",
+      "slug": "makam-kh-ahmad-dahlan-muhammad-darwis-yogyakarta",
       "name": "Makam KH. Ahmad Dahlan / Muhammad Darwis (Makam Karangkajen, Mergangsan, Yogyakarta)",
       "title": "Pahlawan Nasional, Khatib Amin Kasultanan Yogyakarta & Pendiri Persyarikatan Muhammadiyah (1912 M)",
       "category": "Ulama Nusantara",
       "city": "Yogyakarta",
       "province": "DI Yogyakarta",
       "address": "Makam Islam Karangkajen, Jl. Menukan, Kel. Brontokusuman, Kec. Mergangsan, Kota Yogyakarta",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-khatib-amin-kasultanan-yogyakarta-pendiri-persyarikatan-muhammadiyah"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-ahmad-dahlan-muhammad-darwis-yogyakarta"
     },
     {
       "id": "fatimah-binti-maimun",
@@ -1614,25 +1614,25 @@
     },
     {
       "id": "gus-dur-tebuireng",
-      "slug": "presiden-ke-4-republik-indonesia-bapak-pluralisme-waliyullah-kemanusiaan-nusantara-jombang",
+      "slug": "makam-kh-abdurrahman-wahid-jombang",
       "name": "Makam KH. Abdurrahman Wahid (Gus Dur) — Kompleks Pesantren Tebuireng, Jombang",
       "title": "Presiden ke-4 Republik Indonesia, Bapak Pluralisme & Waliyullah Kemanusiaan Nusantara",
       "category": "Ulama Nusantara",
       "city": "Jombang",
       "province": "Jawa Timur",
       "address": "Kompleks Maqbarah Pondok Pesantren Tebuireng, Jl. Irian Jaya No. 10, Desa Cukir, Kec. Diwek, Kabupaten Jombang",
-      "url": "https://ziarahnusantara.my.id/situs/presiden-ke-4-republik-indonesia-bapak-pluralisme-waliyullah-kemanusiaan-nusantara-jombang"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-abdurrahman-wahid-jombang"
     },
     {
       "id": "syekh-wasil-setono-gedong",
-      "slug": "ulama-sufi-abad-ke-12-dari-persia-rum-situs-epigrafi-arab-tertua-di-pedalaman-jawa-timur-kediri",
+      "slug": "makam-syekh-al-wasil-syamsuddin-mbah-wasil-kediri",
       "name": "Makam Syekh Al-Wasil Syamsuddin / Mbah Wasil (Setono Gedong, Kota Kediri)",
       "title": "Ulama Sufi Abad ke-12 dari Persia/Rum & Situs Epigrafi Arab Tertua di Pedalaman Jawa Timur",
       "category": "Auliya Nusantara",
       "city": "Kediri",
       "province": "Jawa Timur",
       "address": "Kompleks Masjid Auliya Setono Gedong, Jl. Dhoho Gang Setono Gedong, Kel. Setonogedong, Kec. Kota, Kota Kediri",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-sufi-abad-ke-12-dari-persia-rum-situs-epigrafi-arab-tertua-di-pedalaman-jawa-timur-kediri"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-al-wasil-syamsuddin-mbah-wasil-kediri"
     },
     {
       "id": "bathoro-katong-ponorogo",
@@ -1658,14 +1658,14 @@
     },
     {
       "id": "sunan-cendana-bangkalan",
-      "slug": "waliyullah-agung-pengislam-tanah-madura-cicit-sunan-giri-guru-para-wali-madura-abad-ke-16-bangkalan",
+      "slug": "makam-sunan-cendana-syaikh-zainal-abidin-bangkalan",
       "name": "Makam Sunan Cendana / Syaikh Zainal Abidin (Ketetang, Kwanyar, Bangkalan)",
       "title": "Waliyullah Agung Pengislam Tanah Madura, Cicit Sunan Giri & Guru Para Wali Madura Abad ke-16",
       "category": "Auliya Nusantara",
       "city": "Bangkalan",
       "province": "Jawa Timur",
       "address": "Kompleks Makam Sunan Cendana, Kampung Cendana, Desa Ketetang, Kec. Kwanyar, Kabupaten Bangkalan, Madura",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-agung-pengislam-tanah-madura-cicit-sunan-giri-guru-para-wali-madura-abad-ke-16-bangkalan"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sunan-cendana-syaikh-zainal-abidin-bangkalan"
     },
     {
       "id": "bujuk-batu-ampar",
@@ -1680,14 +1680,14 @@
     },
     {
       "id": "datu-sanggul-rantau",
-      "slug": "waliyullah-sufi-abad-ke-18-sahabat-ruhani-datu-kalampayan-pewaris-kitab-barencong-di-bumi-ruhui-rahayu-tapin",
+      "slug": "makam-datu-sanggul-syekh-abdussamad-tapin",
       "name": "Makam Datu Sanggul / Syekh Abdussamad (Desa Tatakan, Tapin Selatan, Kabupaten Tapin)",
       "title": "Waliyullah Sufi Abad ke-18 Sahabat Ruhani Datu Kalampayan & Pewaris Kitab Barencong di Bumi Ruhui Rahayu",
       "category": "Auliya Nusantara",
       "city": "Tapin",
       "province": "Kalimantan Selatan",
       "address": "Jl. Trans Kalimantan (Banjarmasin–Rantau), Desa Tatakan, Kec. Tapin Selatan, Kabupaten Tapin",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-sufi-abad-ke-18-sahabat-ruhani-datu-kalampayan-pewaris-kitab-barencong-di-bumi-ruhui-rahayu-tapin"
+      "url": "https://ziarahnusantara.my.id/situs/makam-datu-sanggul-syekh-abdussamad-tapin"
     },
     {
       "id": "sultan-syarif-abdurrahman-alkadrie-pontianak",
@@ -1702,36 +1702,36 @@
     },
     {
       "id": "kyai-gede-kotawaringin",
-      "slug": "ulama-pelopor-penyebar-islam-kalimantan-tengah-abad-ke-17-mangkubumi-kesultanan-kotawaringin-pendiri-masjid-kyai-gede-kotawaringin-barat",
+      "slug": "kompleks-makam-masjid-kyai-gede-kotawaringin-barat",
       "name": "Kompleks Makam & Masjid Kyai Gede (Kotawaringin Hulu, Kotawaringin Lama, Kotawaringin Barat)",
       "title": "Ulama Pelopor Penyebar Islam Kalimantan Tengah Abad ke-17, Mangkubumi Kesultanan Kotawaringin & Pendiri Masjid Kyai Gede (1632 M)",
       "category": "Walisongo",
       "city": "Kotawaringin Barat",
       "province": "Kalimantan Tengah",
       "address": "Kelurahan Kotawaringin Hulu, Kec. Kotawaringin Lama, Kabupaten Kotawaringin Barat",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-pelopor-penyebar-islam-kalimantan-tengah-abad-ke-17-mangkubumi-kesultanan-kotawaringin-pendiri-masjid-kyai-gede-kotawaringin-barat"
+      "url": "https://ziarahnusantara.my.id/situs/kompleks-makam-masjid-kyai-gede-kotawaringin-barat"
     },
     {
       "id": "tunggang-parangan-kutai-lama",
-      "slug": "ulama-pengislam-raja-mahkota-kesultanan-kutai-kartanegara-rekan-seperjuangan-datuk-ri-bandang",
+      "slug": "makam-habib-hasyim-bin-musayyakh-bin-yahya-datuk-tunggang-parangan-kutai-kartanegara",
       "name": "Makam Habib Hasyim bin Musayyakh bin Yahya / Datuk Tunggang Parangan (Kutai Lama, Anggana, Kutai Kartanegara)",
       "title": "Ulama Pengislam Raja Mahkota Kesultanan Kutai Kartanegara (1575 M) & Rekan Seperjuangan Datuk Ri Bandang",
       "category": "Habaib",
       "city": "Kutai Kartanegara",
       "province": "Kalimantan Timur",
       "address": "Jl. Habib Hasyim, Desa Kutai Lama, Kec. Anggana, Kabupaten Kutai Kartanegara",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-pengislam-raja-mahkota-kesultanan-kutai-kartanegara-rekan-seperjuangan-datuk-ri-bandang"
+      "url": "https://ziarahnusantara.my.id/situs/makam-habib-hasyim-bin-musayyakh-bin-yahya-datuk-tunggang-parangan-kutai-kartanegara"
     },
     {
       "id": "kh-abul-hasan-samarinda",
-      "slug": "ulama-kharismatik-perintis-pengajian-kitab-kuning-samarinda-pendiri-masjid-raya-darussalam",
+      "slug": "makam-tuan-guru-kh-abul-hasan-samarinda",
       "name": "Makam Tuan Guru KH. Abul Hasan (Kompleks Masjid Raya Darussalam, Pasar Pagi, Samarinda)",
       "title": "Ulama Kharismatik Perintis Pengajian Kitab Kuning Samarinda & Pendiri Masjid Raya Darussalam (1870–1944 M)",
       "category": "Ulama Nusantara",
       "city": "Samarinda",
       "province": "Kalimantan Timur",
       "address": "Kompleks Masjid Raya Darussalam, Kel. Pasar Pagi, Kec. Samarinda Kota, Kota Samarinda",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-kharismatik-perintis-pengajian-kitab-kuning-samarinda-pendiri-masjid-raya-darussalam"
+      "url": "https://ziarahnusantara.my.id/situs/makam-tuan-guru-kh-abul-hasan-samarinda"
     },
     {
       "id": "makam-raja-bulungan-tanjung-palas",
@@ -1757,212 +1757,212 @@
     },
     {
       "id": "agh-abdurrahman-ambo-dalle-barru",
-      "slug": "ulama-besar-bugis-makassar-pendiri-darud-da-wah-wal-irsyad-pengarang-kitab-risalah-ahlussunnah-wal-jama-ah-barru",
+      "slug": "makam-anregurutta-kh-abdurrahman-ambo-dalle-barru",
       "name": "Makam Anregurutta KH. Abdurrahman Ambo Dalle (Mangkoso, Soppeng Riaja, Kabupaten Barru)",
       "title": "Ulama Besar Bugis-Makassar, Pendiri Darud Da’wah wal Irsyad (DDI) & Pengarang Kitab Risalah Ahlussunnah wal Jama’ah (1900–1996 M)",
       "category": "Ulama Nusantara",
       "city": "Barru",
       "province": "Sulawesi Selatan",
       "address": "Kampus II Pondok Pesantren DDI Mangkoso (Bulu Lampoko), Kel. Mangkoso, Kec. Soppeng Riaja, Kabupaten Barru",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-besar-bugis-makassar-pendiri-darud-da-wah-wal-irsyad-pengarang-kitab-risalah-ahlussunnah-wal-jama-ah-barru"
+      "url": "https://ziarahnusantara.my.id/situs/makam-anregurutta-kh-abdurrahman-ambo-dalle-barru"
     },
     {
       "id": "imam-lapeo-polewali-mandar",
-      "slug": "waliyullah-agung-tanah-mandar-murid-syaikhona-kholil-pendiri-masjid-nurut-taubah-polewali-mandar",
+      "slug": "makam-kh-muhammad-thahir-imam-lapeo-polewali-mandar",
       "name": "Makam KH. Muhammad Thahir / Imam Lapeo (Desa Lapeo, Campalagian, Polewali Mandar)",
       "title": "Waliyullah Agung Tanah Mandar (\"Tosalamaq Imam Lapeo\"), Murid Syaikhona Kholil & Pendiri Masjid Nurut Taubah (1839–1952 M)",
       "category": "Ulama Nusantara",
       "city": "Polewali Mandar",
       "province": "Sulawesi Barat",
       "address": "Kompleks Masjid Jami’ Nurut Taubah, Jl. Poros Majene–Mamuju, Desa Lapeo, Kec. Campalagian, Kabupaten Polewali Mandar",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-agung-tanah-mandar-murid-syaikhona-kholil-pendiri-masjid-nurut-taubah-polewali-mandar"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-muhammad-thahir-imam-lapeo-polewali-mandar"
     },
     {
       "id": "syekh-abdul-mannan-salabose-majene",
-      "slug": "ulama-pelopor-pengislam-kerajaan-banggae-mandar-abad-ke-17-pendiri-masjid-kuno-salabose-majene",
+      "slug": "makam-syekh-abdul-mannan-tuan-di-salabose-majene",
       "name": "Makam Syekh Abdul Mannan / Tuan di Salabose (Pangali-Ali, Banggae, Kabupaten Majene)",
       "title": "Ulama Pelopor Pengislam Kerajaan Banggae Mandar Abad ke-17 & Pendiri Masjid Kuno Salabose (1608 M)",
       "category": "Auliya Nusantara",
       "city": "Majene",
       "province": "Sulawesi Barat",
       "address": "Lingkungan Salabose, Kel. Pangali-Ali, Kec. Banggae, Kabupaten Majene",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-pelopor-pengislam-kerajaan-banggae-mandar-abad-ke-17-pendiri-masjid-kuno-salabose-majene"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-abdul-mannan-tuan-di-salabose-majene"
     },
     {
       "id": "datuk-karama-palu",
-      "slug": "ulama-sufi-asal-minangkabau-pembawa-islam-pertama-di-lembah-palu-pada-abad-ke-17-m",
+      "slug": "kompleks-makam-syekh-abdullah-raqie-datuk-karama-palu",
       "name": "Kompleks Makam Syekh Abdullah Raqie / Datuk Karama (Kampung Lere, Palu Barat, Kota Palu)",
       "title": "Ulama Sufi Asal Minangkabau Pembawa Islam Pertama di Lembah Palu (Tanah Kaili) pada Abad ke-17 M",
       "category": "Auliya Nusantara",
       "city": "Palu",
       "province": "Sulawesi Tengah",
       "address": "Jl. Cumi-Cumi, Kampung Lere, Kel. Lere, Kec. Palu Barat, Kota Palu",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-sufi-asal-minangkabau-pembawa-islam-pertama-di-lembah-palu-pada-abad-ke-17-m"
+      "url": "https://ziarahnusantara.my.id/situs/kompleks-makam-syekh-abdullah-raqie-datuk-karama-palu"
     },
     {
       "id": "tuanku-imam-bonjol-minahasa",
-      "slug": "ulama-besar-pemimpin-perang-paderi-sumatera-barat-pahlawan-nasional-yang-wafat-dalam-pengasingan-di-minahasa",
+      "slug": "makam-pahlawan-nasional-tuanku-imam-bonjol-muhammad-shahab-minahasa",
       "name": "Makam Pahlawan Nasional Tuanku Imam Bonjol / Muhammad Shahab (Desa Lotta, Pineleng, Kabupaten Minahasa)",
       "title": "Ulama Besar Pemimpin Perang Paderi Sumatera Barat & Pahlawan Nasional yang Wafat dalam Pengasingan di Minahasa (1772–1864 M)",
       "category": "Ulama Nusantara",
       "city": "Minahasa",
       "province": "Sulawesi Utara",
       "address": "Jl. Raya Manado–Tomohon, Desa Lotta, Kec. Pineleng, Kabupaten Minahasa (Perbatasan Kota Manado)",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-besar-pemimpin-perang-paderi-sumatera-barat-pahlawan-nasional-yang-wafat-dalam-pengasingan-di-minahasa"
+      "url": "https://ziarahnusantara.my.id/situs/makam-pahlawan-nasional-tuanku-imam-bonjol-muhammad-shahab-minahasa"
     },
     {
       "id": "sultan-amai-gorontalo",
-      "slug": "raja-pertama-yang-mengislamkan-kerajaan-gorontalo-pendiri-masjid-hunto-peletak-falsafah-adat-bersendikan-syarak",
+      "slug": "kompleks-makam-masjid-hunto-sultan-amai-gorontalo",
       "name": "Kompleks Makam & Masjid Hunto Sultan Amai (Kelurahan Biawu, Kota Selatan, Kota Gorontalo)",
       "title": "Raja Pertama yang Mengislamkan Kerajaan Gorontalo (1525 M), Pendiri Masjid Hunto (1495 M) & Peletak Falsafah Adat Bersendikan Syarak",
       "category": "Auliya Nusantara",
       "city": "Gorontalo",
       "province": "Gorontalo",
       "address": "Kompleks Masjid Hunto Sultan Amai, Kel. Biawu, Kec. Kota Selatan, Kota Gorontalo",
-      "url": "https://ziarahnusantara.my.id/situs/raja-pertama-yang-mengislamkan-kerajaan-gorontalo-pendiri-masjid-hunto-peletak-falsafah-adat-bersendikan-syarak"
+      "url": "https://ziarahnusantara.my.id/situs/kompleks-makam-masjid-hunto-sultan-amai-gorontalo"
     },
     {
       "id": "ju-panggola-gorontalo",
-      "slug": "waliyullah-berjubah-putih-penyebar-islam-penjaga-spiritual-bumi-serambi-madinah-gorontalo",
+      "slug": "makam-keramat-auliya-ju-panggola-ta-lo-o-baya-lipu-gorontalo",
       "name": "Makam Keramat Auliya Ju Panggola / Ta Lo’o Baya Lipu (Kelurahan Dembe I, Kota Barat, Kota Gorontalo)",
       "title": "Waliyullah Berjubah Putih Penyebar Islam & Penjaga Spiritual Bumi Serambi Madinah Gorontalo (\"Ilomata\")",
       "category": "Auliya Nusantara",
       "city": "Gorontalo",
       "province": "Gorontalo",
       "address": "Bukit Dembe, Kel. Dembe I, Kec. Kota Barat, Kota Gorontalo",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-berjubah-putih-penyebar-islam-penjaga-spiritual-bumi-serambi-madinah-gorontalo"
+      "url": "https://ziarahnusantara.my.id/situs/makam-keramat-auliya-ju-panggola-ta-lo-o-baya-lipu-gorontalo"
     },
     {
       "id": "sultan-murhum-buton",
-      "slug": "raja-ke-6-dan-sultan-pertama-kesultanan-buton-yang-dibaiat-oleh-syekh-abdul-wahid-di-bumi-khalifatul-khamis-baubau",
+      "slug": "kompleks-makam-sultan-murhum-kaimuddin-khalifatul-khamis-baubau",
       "name": "Kompleks Makam Sultan Murhum Kaimuddin Khalifatul Khamis (Benteng Keraton Buton, Wolio, Kota Baubau)",
       "title": "Raja ke-6 dan Sultan Pertama Kesultanan Buton (1542 M) yang Dibaiat oleh Syekh Abdul Wahid di Bumi Khalifatul Khamis",
       "category": "Auliya Nusantara",
       "city": "Baubau",
       "province": "Sulawesi Tenggara",
       "address": "Kompleks Benteng Keraton Buton (Wolio), Kel. Melai, Kec. Murhum, Kota Baubau, Pulau Buton",
-      "url": "https://ziarahnusantara.my.id/situs/raja-ke-6-dan-sultan-pertama-kesultanan-buton-yang-dibaiat-oleh-syekh-abdul-wahid-di-bumi-khalifatul-khamis-baubau"
+      "url": "https://ziarahnusantara.my.id/situs/kompleks-makam-sultan-murhum-kaimuddin-khalifatul-khamis-baubau"
     },
     {
       "id": "sultan-iskandar-muda",
-      "slug": "pahlawan-nasional-penguasa-puncak-kejayaan-kesultanan-aceh-darussalam-pembangun-masjid-raya-baiturrahman-banda-aceh",
+      "slug": "makam-sultan-iskandar-muda-banda-aceh",
       "name": "Makam Sultan Iskandar Muda (Baperis, Peuniti, Baiturrahman, Banda Aceh)",
       "title": "Pahlawan Nasional, Penguasa Puncak Kejayaan Kesultanan Aceh Darussalam (1607–1636 M) & Pembangun Masjid Raya Baiturrahman",
       "category": "Auliya Nusantara",
       "city": "Banda Aceh",
       "province": "Aceh",
       "address": "Jl. Sultan Alaidin Mahmudsyah, Gampong Peuniti (Kompleks Baperis / Museum Aceh), Kec. Baiturrahman, Kota Banda Aceh",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-penguasa-puncak-kejayaan-kesultanan-aceh-darussalam-pembangun-masjid-raya-baiturrahman-banda-aceh"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sultan-iskandar-muda-banda-aceh"
     },
     {
       "id": "syekh-musthafa-husein-purba-baru",
-      "slug": "pendiri-pondok-pesantren-musthafawiyah-purba-baru-maha-guru-ulama-tapanuli-sumatera-utara-mandailing-natal",
+      "slug": "makam-syekh-musthafa-husein-nasution-al-mandili-mandailing-natal",
       "name": "Makam Syekh Musthafa Husein Nasution Al-Mandili (Pesantren Musthafawiyah Purba Baru, Mandailing Natal)",
       "title": "Pendiri Pondok Pesantren Musthafawiyah Purba Baru (1912 M) & Maha Guru Ulama Tapanuli–Sumatera Utara",
       "category": "Ulama Nusantara",
       "city": "Mandailing Natal",
       "province": "Sumatera Utara",
       "address": "Kompleks Pondok Pesantren Musthafawiyah, Desa Purba Baru, Kec. Lembah Sorik Marapi, Kabupaten Mandailing Natal",
-      "url": "https://ziarahnusantara.my.id/situs/pendiri-pondok-pesantren-musthafawiyah-purba-baru-maha-guru-ulama-tapanuli-sumatera-utara-mandailing-natal"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-musthafa-husein-nasution-al-mandili-mandailing-natal"
     },
     {
       "id": "syekh-hasan-mashum-medan",
-      "slug": "mufti-agung-kesultanan-deli-pengarang-kutubus-sittah-melayu-pendiri-al-jam-iyatul-washliyah-medan",
+      "slug": "makam-syekh-hasan-ma-shum-al-madani-tuan-guru-deli-medan",
       "name": "Makam Syekh Hasan Ma’shum Al-Madani / Tuan Guru Deli (Kompleks Masjid Raya Al-Mashun, Medan)",
       "title": "Mufti Agung Kesultanan Deli (Imam Paduka Tuan), Pengarang Kutubus Sittah Melayu & Pendiri Al-Jam’iyatul Washliyah",
       "category": "Ulama Nusantara",
       "city": "Medan",
       "province": "Sumatera Utara",
       "address": "Kompleks Masjid Raya Al-Mashun, Jl. Sisingamangaraja, Kel. Masjid, Kec. Medan Kota, Kota Medan",
-      "url": "https://ziarahnusantara.my.id/situs/mufti-agung-kesultanan-deli-pengarang-kutubus-sittah-melayu-pendiri-al-jam-iyatul-washliyah-medan"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-hasan-ma-shum-al-madani-tuan-guru-deli-medan"
     },
     {
       "id": "syekh-sulaiman-ar-rasuli-canduang",
-      "slug": "pendiri-madrasah-tarbiyah-islamiyah-canduang-muassis-persatuan-tarbiyah-islamiyah-penggagas-falsafah-abs-sbk-agam",
+      "slug": "makam-syekh-sulaiman-ar-rasuli-inyiak-canduang-agam",
       "name": "Makam Syekh Sulaiman Ar-Rasuli (Inyiak Canduang — Canduang Koto Laweh, Agam)",
       "title": "Pendiri Madrasah Tarbiyah Islamiyah (MTI) Canduang, Muassis Persatuan Tarbiyah Islamiyah (PERTI, 1928 M) & Penggagas Falsafah ABS-SBK",
       "category": "Ulama Nusantara",
       "city": "Agam",
       "province": "Sumatera Barat",
       "address": "Kompleks Pondok Pesantren MTI Canduang, Nagari Canduang Koto Laweh, Kec. Canduang, Kabupaten Agam",
-      "url": "https://ziarahnusantara.my.id/situs/pendiri-madrasah-tarbiyah-islamiyah-canduang-muassis-persatuan-tarbiyah-islamiyah-penggagas-falsafah-abs-sbk-agam"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-sulaiman-ar-rasuli-inyiak-canduang-agam"
     },
     {
       "id": "syekh-muhammad-jamil-jaho",
-      "slug": "ulama-besar-ahli-ushul-fiqh-minangkabau-pendiri-mti-jaho-ketua-umum-pertama-pb-perti-tanah-datar",
+      "slug": "makam-syekh-muhammad-jamil-jaho-inyiak-jaho-tanah-datar",
       "name": "Makam Syekh Muhammad Jamil Jaho (Inyiak Jaho — Sepuluh Koto, Tanah Datar)",
       "title": "Ulama Besar Ahli Ushul Fiqh Minangkabau, Pendiri MTI Jaho & Ketua Umum Pertama PB PERTI",
       "category": "Ulama Nusantara",
       "city": "Tanah Datar",
       "province": "Sumatera Barat",
       "address": "Kompleks Pondok Pesantren MTI Jaho, Nagari Jaho, Kec. Sepuluh Koto (X Koto), Kabupaten Tanah Datar",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-besar-ahli-ushul-fiqh-minangkabau-pendiri-mti-jaho-ketua-umum-pertama-pb-perti-tanah-datar"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-muhammad-jamil-jaho-inyiak-jaho-tanah-datar"
     },
     {
       "id": "sultan-syarif-kasim-ii-siak",
-      "slug": "pahlawan-nasional-sultan-terakhir-kesultanan-siak-sri-indrapura-yang-menyerahkan-mahkota-serta-13-juta-gulden-untuk-kemerdekaan-ri",
+      "slug": "makam-sultan-syarif-kasim-ii-siak",
       "name": "Makam Sultan Syarif Kasim II (Kompleks Masjid Sultan Syahabuddin, Siak Sri Indrapura)",
       "title": "Pahlawan Nasional & Sultan Terakhir Kesultanan Siak Sri Indrapura yang Menyerahkan Mahkota serta 13 Juta Gulden untuk Kemerdekaan RI",
       "category": "Auliya Nusantara",
       "city": "Siak",
       "province": "Riau",
       "address": "Kompleks Masjid Sultan Syahabuddin (Dekat Istana Siak), Kel. Kampung Dalam, Kec. Siak, Kabupaten Siak",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-sultan-terakhir-kesultanan-siak-sri-indrapura-yang-menyerahkan-mahkota-serta-13-juta-gulden-untuk-kemerdekaan-ri"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sultan-syarif-kasim-ii-siak"
     },
     {
       "id": "syekh-abdurrahman-siddiq-sapat",
-      "slug": "mufti-kerajaan-indragiri-cicit-datuk-kalampayan-martapura-pengarang-risalah-amal-ma-rifat-indragiri-hilir",
+      "slug": "makam-syekh-abdurrahman-siddiq-al-banjari-tuan-guru-sapat-indragiri-hilir",
       "name": "Makam Syekh Abdurrahman Siddiq Al-Banjari (Tuan Guru Sapat — Kuala Indragiri, Indragiri Hilir)",
       "title": "Mufti Kerajaan Indragiri, Cicit Datuk Kalampayan Martapura & Pengarang Risalah Amal Ma’rifat",
       "category": "Ulama Nusantara",
       "city": "Indragiri Hilir",
       "province": "Riau",
       "address": "Kampung Hidayat, Desa Teluk Dalam (Sapat), Kec. Kuala Indragiri (Kuindra), Kabupaten Indragiri Hilir",
-      "url": "https://ziarahnusantara.my.id/situs/mufti-kerajaan-indragiri-cicit-datuk-kalampayan-martapura-pengarang-risalah-amal-ma-rifat-indragiri-hilir"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-abdurrahman-siddiq-al-banjari-tuan-guru-sapat-indragiri-hilir"
     },
     {
       "id": "marhum-pekan-senapelan",
-      "slug": "pendiri-kota-pekanbaru-pembangun-masjid-raya-pekanbaru-sultan-siak-ke-5",
+      "slug": "makam-marhum-pekan-marhum-bukit-pekanbaru",
       "name": "Makam Marhum Pekan (Sultan Muhammad Ali) & Marhum Bukit (Kompleks Masjid Raya Senapelan, Pekanbaru)",
       "title": "Pendiri Kota Pekanbaru (23 Juni 1784 M), Pembangun Masjid Raya Pekanbaru (1762 M) & Sultan Siak ke-5",
       "category": "Auliya Nusantara",
       "city": "Pekanbaru",
       "province": "Riau",
       "address": "Kompleks Masjid Raya Pekanbaru, Jl. Senapelan, Kel. Kampung Bandar, Kec. Senapelan, Kota Pekanbaru",
-      "url": "https://ziarahnusantara.my.id/situs/pendiri-kota-pekanbaru-pembangun-masjid-raya-pekanbaru-sultan-siak-ke-5"
+      "url": "https://ziarahnusantara.my.id/situs/makam-marhum-pekan-marhum-bukit-pekanbaru"
     },
     {
       "id": "raja-ali-haji-penyengat",
-      "slug": "pahlawan-nasional-bapak-bahasa-indonesia-baku-sejarawan-tuhfat-al-nafis-pengarang-gurindam-dua-belas-tanjungpinang",
+      "slug": "makam-raja-ali-haji-engku-putri-raja-hamidah-tanjungpinang",
       "name": "Makam Raja Ali Haji & Engku Putri Raja Hamidah (Pulau Penyengat, Tanjungpinang)",
       "title": "Pahlawan Nasional, Bapak Bahasa Indonesia Baku, Sejarawan Tuhfat Al-Nafis & Pengarang Gurindam Dua Belas",
       "category": "Ulama Nusantara",
       "city": "Tanjungpinang",
       "province": "Kepulauan Riau",
       "address": "Kompleks Makam Engku Putri, Pulau Penyengat, Kel. Penyengat, Kec. Tanjungpinang Kota, Kota Tanjungpinang",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-bapak-bahasa-indonesia-baku-sejarawan-tuhfat-al-nafis-pengarang-gurindam-dua-belas-tanjungpinang"
+      "url": "https://ziarahnusantara.my.id/situs/makam-raja-ali-haji-engku-putri-raja-hamidah-tanjungpinang"
     },
     {
       "id": "sultan-mahmud-riayat-syah-lingga",
-      "slug": "pahlawan-nasional-pemimpin-perang-maritim-melawan-voc-pendiri-pusat-kesultanan-riau-lingga-johor-pahang-di-daik-lingga",
+      "slug": "makam-sultan-mahmud-riayat-syah-sultan-mahmud-syah-iii-lingga",
       "name": "Makam Sultan Mahmud Riayat Syah / Sultan Mahmud Syah III (Kompleks Masjid Sultan Lingga, Daik, Kabupaten Lingga)",
       "title": "Pahlawan Nasional, Pemimpin Perang Maritim Melawan VOC & Pendiri Pusat Kesultanan Riau–Lingga–Johor–Pahang di Daik Lingga",
       "category": "Auliya Nusantara",
       "city": "Lingga",
       "province": "Kepulauan Riau",
       "address": "Kompleks Masjid Sultan Lingga (Makam Merah), Kel. Daik, Kec. Lingga, Kabupaten Lingga",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-pemimpin-perang-maritim-melawan-voc-pendiri-pusat-kesultanan-riau-lingga-johor-pahang-di-daik-lingga"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sultan-mahmud-riayat-syah-sultan-mahmud-syah-iii-lingga"
     },
     {
       "id": "sultan-thaha-syaifuddin-tebo",
-      "slug": "pahlawan-nasional-sultan-terakhir-kesultanan-jambi-yang-gugur-syahid-melawan-kolonial-belanda-tebo",
+      "slug": "makam-sultan-thaha-syaifuddin-tebo",
       "name": "Makam Sultan Thaha Syaifuddin (Muara Tebo, Kabupaten Tebo, Jambi)",
       "title": "Pahlawan Nasional & Sultan Terakhir Kesultanan Jambi yang Gugur Syahid Melawan Kolonial Belanda (1816–1904 M)",
       "category": "Auliya Nusantara",
       "city": "Tebo",
       "province": "Jambi",
       "address": "Jl. Pahlawan, Kel. Muara Tebo, Kec. Tebo Tengah, Kabupaten Tebo",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-sultan-terakhir-kesultanan-jambi-yang-gugur-syahid-melawan-kolonial-belanda-tebo"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sultan-thaha-syaifuddin-tebo"
     },
     {
       "id": "guru-abdul-madjid-baragbah-jambi",
@@ -1977,14 +1977,14 @@
     },
     {
       "id": "gubah-duku-habib-ahmad-shahab-palembang",
-      "slug": "waliyullah-quthub-palembang-poros-utama-tradisi-ziarah-kubro-palembang-darussalam",
+      "slug": "makam-kompleks-pemakaman-gubah-duku-al-habib-ahmad-bin-syech-shahab-palembang",
       "name": "Kompleks Pemakaman Gubah Duku (Al-Habib Ahmad bin Syech Shahab — 3 Ilir, Palembang)",
       "title": "Waliyullah Quthub Palembang (\"Gubah Duku\") & Poros Utama Tradisi Ziarah Kubro Palembang Darussalam",
       "category": "Habaib",
       "city": "Palembang",
       "province": "Sumatera Selatan",
       "address": "Jl. Dr. M. Isa, Lorong Gubah Duku, Kel. Kuto Batu / 3 Ilir, Kec. Ilir Timur II, Kota Palembang",
-      "url": "https://ziarahnusantara.my.id/situs/waliyullah-quthub-palembang-poros-utama-tradisi-ziarah-kubro-palembang-darussalam"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kompleks-pemakaman-gubah-duku-al-habib-ahmad-bin-syech-shahab-palembang"
     },
     {
       "id": "tuan-guru-siddiq-muntok-bangka",
@@ -2010,47 +2010,47 @@
     },
     {
       "id": "sentot-alibasyah-bengkulu",
-      "slug": "panglima-besar-perang-jawa-pangeran-diponegoro-yang-wafat-dalam-pengasingan-di-bengkulu",
+      "slug": "makam-sentot-alibasyah-prawirodirdjo-bengkulu",
       "name": "Makam Sentot Alibasyah Prawirodirdjo (Kelurahan Bajak, Teluk Segara, Kota Bengkulu)",
       "title": "Panglima Besar Perang Jawa Pangeran Diponegoro (\"Ali Pasha\") yang Wafat dalam Pengasingan di Bengkulu (1808–1855 M)",
       "category": "Auliya Nusantara",
       "city": "Bengkulu",
       "province": "Bengkulu",
       "address": "Jl. Sentot Alibasyah, Kel. Bajak, Kec. Teluk Segara, Kota Bengkulu",
-      "url": "https://ziarahnusantara.my.id/situs/panglima-besar-perang-jawa-pangeran-diponegoro-yang-wafat-dalam-pengasingan-di-bengkulu"
+      "url": "https://ziarahnusantara.my.id/situs/makam-sentot-alibasyah-prawirodirdjo-bengkulu"
     },
     {
       "id": "syekh-burhanuddin-imam-senggolo-bengkulu",
-      "slug": "ulama-sufi-penyebar-islam-pesisir-bengkulu-pelopor-tradisi-keagamaan-muharram-di-bumi-rafflesia",
+      "slug": "makam-syekh-burhanuddin-imam-senggolo-bengkulu",
       "name": "Makam Syekh Burhanuddin / Imam Senggolo (Pasar Bengkulu, Kota Bengkulu)",
       "title": "Ulama Sufi Penyebar Islam Pesisir Bengkulu & Pelopor Tradisi Keagamaan Muharram (Tabut) di Bumi Rafflesia",
       "category": "Auliya Nusantara",
       "city": "Bengkulu",
       "province": "Bengkulu",
       "address": "Kawasan Karabela / Pasar Bengkulu, Kec. Teluk Segara, Kota Bengkulu",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-sufi-penyebar-islam-pesisir-bengkulu-pelopor-tradisi-keagamaan-muharram-di-bumi-rafflesia"
+      "url": "https://ziarahnusantara.my.id/situs/makam-syekh-burhanuddin-imam-senggolo-bengkulu"
     },
     {
       "id": "raden-intan-ii-lampung",
-      "slug": "pahlawan-nasional-lampung-keturunan-fatahillah-sunan-gunung-jati-panglima-jihad-antikolonial-gunung-rajabasa-lampung-selatan",
+      "slug": "makam-pahlawan-nasional-raden-intan-ii-lampung-selatan",
       "name": "Makam Pahlawan Nasional Raden Intan II (Benteng Cempaka, Gedung Harta, Kalianda, Lampung Selatan)",
       "title": "Pahlawan Nasional Lampung, Keturunan Fatahillah–Sunan Gunung Jati & Panglima Jihad Antikolonial Gunung Rajabasa (1834–1856 M)",
       "category": "Auliya Nusantara",
       "city": "Lampung Selatan",
       "province": "Lampung",
       "address": "Benteng Cempaka, Desa Gedung Harta, Kec. Penengahan (Kawasan Kalianda), Kabupaten Lampung Selatan",
-      "url": "https://ziarahnusantara.my.id/situs/pahlawan-nasional-lampung-keturunan-fatahillah-sunan-gunung-jati-panglima-jihad-antikolonial-gunung-rajabasa-lampung-selatan"
+      "url": "https://ziarahnusantara.my.id/situs/makam-pahlawan-nasional-raden-intan-ii-lampung-selatan"
     },
     {
       "id": "kh-ghalib-pringsewu-lampung",
-      "slug": "ulama-kharismatik-murid-syaikhona-kholil-bangkalan-panglima-laskar-hizbullah-sabilillah-pejuang-kemerdekaan-lampung-pringsewu",
+      "slug": "makam-kh-ghalib-bin-kh-rohani-pringsewu",
       "name": "Makam KH. Ghalib bin KH. Rohani (Pringsewu Barat, Kabupaten Pringsewu, Lampung)",
       "title": "Ulama Kharismatik Murid Syaikhona Kholil Bangkalan & Panglima Laskar Hizbullah–Sabilillah Pejuang Kemerdekaan Lampung (1899–1949 M)",
       "category": "Ulama Nusantara",
       "city": "Pringsewu",
       "province": "Lampung",
       "address": "Kompleks Masjid Jami’ KH. Ghalib, Jl. KH. Ghalib, Kel. Pringsewu Barat, Kec. Pringsewu, Kabupaten Pringsewu",
-      "url": "https://ziarahnusantara.my.id/situs/ulama-kharismatik-murid-syaikhona-kholil-bangkalan-panglima-laskar-hizbullah-sabilillah-pejuang-kemerdekaan-lampung-pringsewu"
+      "url": "https://ziarahnusantara.my.id/situs/makam-kh-ghalib-bin-kh-rohani-pringsewu"
     }
   ]
 }

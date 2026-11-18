@@ -93,7 +93,12 @@ export function getPublicTeaserOnly(val) {
 export function formatMakamHeading(rawTitle) {
   const cleaned = cleanSeoText(rawTitle).replace(/^(?:Makam\s+){2,}/i, 'Makam ');
   if (!cleaned) return 'Makam Waliyullah';
-  if (/^(?:makam|kompleks\s+makam|kompleks\s+pemakaman|kompleks\s+masjid|kompleks\s+cagar|situs|astana|kubah)\b/i.test(cleaned)) {
+  if (
+    /^(?:makam|kompleks\s+makam|astana|kubah|pasarean|masjid|pesantren|situs|petilasan)\b/i.test(
+      cleaned
+    ) ||
+    /\b(?:makam|maqbarah|astana|pasarean)\b/i.test(cleaned)
+  ) {
     return cleaned;
   }
   return `Makam ${cleaned}`;
@@ -110,6 +115,14 @@ export function extractQuotedField(block, fieldName, fallback = '') {
   const rawVal = extractRawQuotedField(block, fieldName, '');
   if (!rawVal) return fallback;
   return cleanSeoText(rawVal) || fallback;
+}
+
+export function extractNumericField(block, fieldName, fallback = 0) {
+  const regex = new RegExp(`\\b${fieldName}:\\s*(-?\\d+(?:\\.\\d+)?)`);
+  const m = block.match(regex);
+  if (!m) return fallback;
+  const num = Number(m[1]);
+  return Number.isFinite(num) ? num : fallback;
 }
 
 export function extractPublicTeaserField(block, fieldName, fallback = '') {
@@ -146,6 +159,8 @@ function parseSiteBlocksFromRawTs(raw) {
     const address = extractQuotedField(block, 'address', '');
     const city = extractQuotedField(block, 'city', '');
     const province = extractQuotedField(block, 'province', '');
+    const lat = extractNumericField(block, 'lat', 0);
+    const lng = extractNumericField(block, 'lng', 0);
     const era = extractQuotedField(block, 'era', '');
     const sanad = extractQuotedField(block, 'sanad', '');
     const karomah = extractPublicTeaserField(block, 'karomah', '');
@@ -162,6 +177,8 @@ function parseSiteBlocksFromRawTs(raw) {
       address,
       city,
       province,
+      lat,
+      lng,
       era,
       sanad,
       karomah,
@@ -323,10 +340,11 @@ export function extractSitesFromSource(customTarget) {
         if (prev) {
           const mergedTitle = item.title || prev.title;
           const mergedCity = item.city || prev.city;
+          const mergedName = item.name || prev.name;
           const mergedObj = {
             id: item.id,
-            slug: getSiteSlug(mergedTitle, mergedCity, item.id),
-            name: item.name || prev.name,
+            slug: getSiteSlug(mergedTitle, mergedCity, item.id, mergedName),
+            name: mergedName,
             title: mergedTitle,
             category: item.category || prev.category,
             description: item.description || prev.description,
@@ -334,6 +352,8 @@ export function extractSitesFromSource(customTarget) {
             address: item.address || prev.address,
             city: mergedCity,
             province: item.province || prev.province,
+            lat: item.lat || prev.lat || 0,
+            lng: item.lng || prev.lng || 0,
             era: item.era || prev.era,
             sanad: item.sanad || prev.sanad,
             karomah: item.karomah || prev.karomah || '',
@@ -441,6 +461,17 @@ function parseFirestoreStringField(fields, key, fallback = '') {
   return typeof val === 'string' && val.trim() ? cleanSeoText(val) : fallback;
 }
 
+function parseFirestoreNumberField(fields, key, fallback = 0) {
+  const f = fields?.[key];
+  if (!f || typeof f !== 'object') return fallback;
+  if (typeof f.doubleValue === 'number' && Number.isFinite(f.doubleValue)) return f.doubleValue;
+  if (f.integerValue !== undefined) {
+    const parsed = Number(f.integerValue);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
 async function fetchCloudSitesForSeo(localSites) {
   try {
     const configPath = path.resolve(cwd, 'firebase-applet-config.json');
@@ -479,6 +510,10 @@ async function fetchCloudSitesForSeo(localSites) {
 
     const mergedById = new Map();
     const slugToId = new Map();
+    const legacyToCanonicalId = new Map();
+    for (const [canonId, legacyId] of Object.entries(REGIONAL_ID_TO_LEGACY_ID)) {
+      legacyToCanonicalId.set(legacyId, canonId);
+    }
     for (const s of localSites) {
       mergedById.set(s.id, s);
       if (s.slug) slugToId.set(s.slug, s.id);
@@ -488,8 +523,9 @@ async function fetchCloudSitesForSeo(localSites) {
     for (const docItem of docs) {
       const f = docItem.fields || {};
       const docNameParts = String(docItem.name || '').split('/');
-      const docId = parseFirestoreStringField(f, 'id', docNameParts[docNameParts.length - 1]);
-      if (!docId) continue;
+      const rawDocId = parseFirestoreStringField(f, 'id', docNameParts[docNameParts.length - 1]);
+      if (!rawDocId) continue;
+      const docId = legacyToCanonicalId.get(rawDocId) || rawDocId;
 
       const isCuratorEdited = f.editedByCurator?.booleanValue === true;
 
@@ -507,7 +543,7 @@ async function fetchCloudSitesForSeo(localSites) {
       const name = parseFirestoreStringField(f, 'name', baseById?.name || docId);
       const title = parseFirestoreStringField(f, 'title', baseById?.title || formatMakamHeading(name));
       const city = parseFirestoreStringField(locFields, 'city', baseById?.city || 'Nusantara');
-      const slug = getSiteSlug(title, city, docId);
+      const slug = getSiteSlug(title, city, docId, name);
 
       // Deduplicate by id or slug
       const existingIdBySlug = slugToId.get(slug);
@@ -524,6 +560,8 @@ async function fetchCloudSitesForSeo(localSites) {
       const history = parseFirestoreStringField(f, 'history', base?.history || description);
       const address = parseFirestoreStringField(locFields, 'address', base?.address || '');
       const province = parseFirestoreStringField(locFields, 'province', base?.province || 'Indonesia');
+      const lat = parseFirestoreNumberField(locFields, 'lat', base?.lat || 0);
+      const lng = parseFirestoreNumberField(locFields, 'lng', base?.lng || 0);
       const era = parseFirestoreStringField(f, 'era', base?.era || '');
       const sanad = parseFirestoreStringField(f, 'sanad', base?.sanad || '');
       const karomah = getPublicTeaserOnly(parseFirestoreStringField(f, 'karomah', base?.karomah || ''));
@@ -541,6 +579,8 @@ async function fetchCloudSitesForSeo(localSites) {
         address,
         city,
         province,
+        lat,
+        lng,
         era,
         sanad,
         karomah,
@@ -692,7 +732,7 @@ function buildHomepageRootHtml() {
             <li><a href="${SITE_ORIGIN}/doa">Kumpulan Doa Khusus Ziarah Kubur, Tahlil, dan Tawassul</a></li>
             <li><a href="${SITE_ORIGIN}/rubrik">Rubrik Sejarah, Kisah Karomah, dan Wasiat Batin Para Wali</a></li>
             <li><a href="${SITE_ORIGIN}/kurasi">Standar Kurasi dan Metodologi Referensi Sejarah</a></li>
-            <li><a href="${SITE_ORIGIN}/infaq">Infaq Operasional &amp; Pemeliharaan Digital dan Ruang Munajat Doa Peziarah</a></li>
+            <li><a href="${SITE_ORIGIN}/donasi">Infaq Operasional &amp; Pemeliharaan Digital dan Ruang Munajat Doa Peziarah</a></li>
           </ul>
         </section>
       </main>`;
@@ -765,6 +805,92 @@ export function buildRubrikRootHtml() {
       </main>`;
 }
 
+export function buildPetaRootHtml() {
+  const provinceBlocks = uniqueProvinces
+    .map((prov) => {
+      const provSites = sites.filter((s) => s.province === prov);
+      const sampleLinks = provSites
+        .slice(0, 6)
+        .map(
+          (s) =>
+            `<li><a href="${SITE_ORIGIN}/situs/${escapeHtml(s.slug)}">${escapeHtml(formatMakamHeading(s.title))} — ${escapeHtml(s.city)} (${s.lat || 0}, ${s.lng || 0})</a></li>`
+        )
+        .join('\n              ');
+      return `<section>
+            <h2>Peta Titik Koordinat Makam Wali di Provinsi ${escapeHtml(prov)} (${provSites.length} Situs)</h2>
+            <ul>
+              ${sampleLinks}
+            </ul>
+          </section>`;
+    })
+    .join('\n        ');
+
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
+        <header>
+          <h1>Peta Rute Ziarah Makam Wali Songo &amp; Ulama Nusantara (${sites.length} Titik di ${uniqueProvinces.length} Provinsi)</h1>
+          <p>Peta geospasial interaktif dan titik koordinat GPS seluruh ${sites.length} makam Waliyullah, Wali Songo, Ulama Pesantren, dan Habaib di ${uniqueProvinces.length} provinsi kepulauan Indonesia untuk perencanaan rute perjalanan ziarah kubur.</p>
+        </header>
+        ${provinceBlocks}
+      </main>`;
+}
+
+export function buildDoaRootHtml() {
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
+        <header>
+          <h1>Kumpulan Doa Khusus Ziarah Kubur, Tahlil &amp; Tawassul Lengkap — Ziarah Nusantara</h1>
+          <p>Himpunan bacaan doa ziarah kubur orang tua dan makam Waliyullah lengkap teks Arab, transliterasi Latin, dan terjemahan Bahasa Indonesia beserta susunan tawassul khusus masing-masing tokoh.</p>
+        </header>
+        <section>
+          <h2>Rangkaian Pokok Doa Ziarah Kubur &amp; Tahlil Nusantara</h2>
+          <ol>
+            <li><strong>Salam Ziarah Kubur Umum (Assalamu&rsquo;alaikum Ahlad Diyar):</strong> Doa penghormatan dan permohonan keselamatan ketika memasuki area pemakaman kaum mukminin dan muslimin.</li>
+            <li><strong>Qasidah Salamullah Ya Sadah:</strong> Bait salam tawassul kepada para kekasih Allah SWT dan ahli kubur yang dirangkai secara khusyuk sebelum memulai dzikir.</li>
+            <li><strong>Tawassul Al-Fatihah &amp; Surah Pilihan:</strong> Pengiriman pahala bacaan Surah Al-Fatihah, Surah Yasin, Al-Ikhlas, Al-Falaq, An-Nas, dan Ayat Kursi kepada Rasulullah SAW, para Waliyullah, ulama, dan ahli kubur.</li>
+            <li><strong>Dzikir Tahlil, Tasbih &amp; Doa Arwah Penutup:</strong> Bacaan kalimat thayyibah La ilaha illallah, shalawat Nabi, serta doa permohonan ampunan dan keluasan rahmat bagi ahli kubur.</li>
+          </ol>
+          <p>Pelajari juga <a href="${SITE_ORIGIN}/panduan">Urutan Lengkap Tata Cara &amp; Adab Ziarah Kubur</a> atau telusuri <a href="${SITE_ORIGIN}/peta">Peta ${sites.length} Makam Waliyullah di ${uniqueProvinces.length} Provinsi</a>.</p>
+        </section>
+      </main>`;
+}
+
+export function buildDonasiRootHtml() {
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
+        <header>
+          <h1>Infaq Operasional &amp; Pemeliharaan Digital Arsip Sejarah Makam Wali — Ziarah Nusantara</h1>
+          <p>Program dukungan sukarela berbasis QRIS resmi Ziarah Nusantara untuk menopang riset sumber sejarah, digitalisasi manuskrip doa ziarah, serta pemeliharaan basis data ${sites.length} makam Waliyullah di ${uniqueProvinces.length} provinsi agar tetap terbuka dan gratis bagi peziarah.</p>
+        </header>
+        <section>
+          <h2>Pilar Pengelolaan Dana Pemeliharaan Arsip &amp; Layanan Peziarah</h2>
+          <ul>
+            <li><strong>Pelestarian Arsip Sejarah &amp; Sanad Ulama:</strong> Verifikasi naskah babad, inskripsi makam, karya kitab kuning, dan literatur akademik sejarah dakwah Islam Nusantara.</li>
+            <li><strong>Akses Terbuka Panduan Doa, Yasin &amp; Tahlil:</strong> Menjaga fitur panduan bacaan Arab-Latin, tasbih digital, dan direktori koordinat GPS makam tetap mudah diakses dari perangkat seluler.</li>
+            <li><strong>Ruang Munajat Doa Bersama Peziarah:</strong> Wadah kebersamaan peziarah untuk menitipkan hajat dan doa keselamatan keluarga yang turut diaminkan sesama jamaah.</li>
+          </ul>
+          <nav aria-label="Tautan Terkait Layanan">
+            <a href="${SITE_ORIGIN}/panduan">Panduan Doa &amp; Tahlil</a> · <a href="${SITE_ORIGIN}/kurasi">Standar Kurasi Sejarah</a> · <a href="${SITE_ORIGIN}/">Beranda Direktori</a>
+          </nav>
+        </section>
+      </main>`;
+}
+
+export function buildKurasiRootHtml() {
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
+        <header>
+          <h1>Standar Kurasi &amp; Metodologi Referensi Sejarah — Ziarah Nusantara</h1>
+          <p>Pedoman ilmiah dan kaidah penulisan biografi yang digunakan Tim Kurator Arsip Ziarah Nusantara dalam memverifikasi profil sejarah, koordinat lokasi, jadwal haul, dan rujukan pustaka ${sites.length} situs maqbarah di ${uniqueProvinces.length} provinsi.</p>
+        </header>
+        <section>
+          <h2>Hierarki Rujukan Historis dalam Kurasi Ziarah Nusantara</h2>
+          <ol>
+            <li><strong>Inskripsi &amp; Sumber Primer Cagar Budaya:</strong> Data nisan bersejarah, prasasti masjid kuno, piagam kesultanan, serta dokumentasi cagar budaya resmi.</li>
+            <li><strong>Catatan Sejarah, Babad &amp; Literatur Akademik:</strong> Rujukan kitab manaqib, babad klasik, disertasi, skripsi sejarah Islam, dan jurnal kajian filologi Nusantara.</li>
+            <li><strong>Riwayat Tradisi Lisan Terverifikasi:</strong> Kesaksian ahli waris, pengasuh pesantren, juru kunci maqbarah, dan majelis haul yang diakui secara turun-temurun.</li>
+          </ol>
+          <p>Lihat pula <a href="${SITE_ORIGIN}/rubrik">Rubrik Kisah &amp; Wasiat Batin Para Wali</a> dan <a href="${SITE_ORIGIN}/peta">Peta Direktori ${sites.length} Makam Wali</a>.</p>
+        </section>
+      </main>`;
+}
+
 export function buildSiteRootHtml(site) {
   const sameProvince = sites.filter((s) => s.id !== site.id && s.province === site.province);
   const otherSites = sites.filter((s) => s.id !== site.id && s.province !== site.province);
@@ -782,7 +908,7 @@ export function buildSiteRootHtml(site) {
 
   return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
         <article>
-          <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/direktori">Direktori Provinsi ${escapeHtml(site.province)}</a> &rsaquo; ${escapeHtml(headingTitle)}</p>
+          <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/peta">Peta &amp; Direktori ${escapeHtml(site.province)}</a> &rsaquo; ${escapeHtml(headingTitle)}</p>
           <h1>${escapeHtml(headingTitle)} (${escapeHtml(site.name)}) — ${escapeHtml(site.city)}, ${escapeHtml(site.province)}</h1>
           <p><strong>Kategori Tokoh:</strong> ${escapeHtml(site.category)} ${site.era ? `| <strong>Periode Sejarah:</strong> ${escapeHtml(site.era)}` : ''}</p>
           <p><strong>Alamat Lokasi Pemakaman:</strong> ${escapeHtml(site.address)}, Kota/Kabupaten ${escapeHtml(site.city)}, Provinsi ${escapeHtml(site.province)}, Indonesia.</p>
@@ -805,9 +931,12 @@ export function buildSiteRootHtml(site) {
       </main>`;
 }
 
-function buildRouteJsonLd(entry) {
+export function buildRouteJsonLd(entry) {
   const canonicalHref = entry.canonicalLoc || entry.loc;
   const fullImageUrl = `${SITE_ORIGIN}/pwa-512x512.png`;
+  const cleanTitle = cleanSeoText(entry.title);
+  const cleanDesc = cleanSeoText(entry.description);
+
   const graphNodes = [
     {
       '@type': 'Organization',
@@ -815,22 +944,24 @@ function buildRouteJsonLd(entry) {
       name: 'Ziarah Nusantara',
       legalName: 'Tim Kurator Arsip Ziarah Nusantara',
       url: `${SITE_ORIGIN}/`,
-      logo: {
+      logo: fullImageUrl,
+      image: {
         '@type': 'ImageObject',
         '@id': `${SITE_ORIGIN}/#logo`,
         url: fullImageUrl,
         contentUrl: fullImageUrl,
         width: 512,
         height: 512,
+        caption: 'Ziarah Nusantara',
       },
-      image: { '@id': `${SITE_ORIGIN}/#logo` },
     },
     {
       '@type': 'WebSite',
       '@id': `${SITE_ORIGIN}/#website`,
       url: `${SITE_ORIGIN}/`,
       name: 'Ziarah Nusantara',
-      description: cleanSeoText(entry.description),
+      alternateName: ['Portal Ziarah Nusantara', 'Direktori Makam Wali Nusantara'],
+      description: cleanDesc,
       inLanguage: 'id-ID',
       publisher: { '@id': `${SITE_ORIGIN}/#organization` },
     },
@@ -838,8 +969,8 @@ function buildRouteJsonLd(entry) {
       '@type': 'WebPage',
       '@id': `${canonicalHref}#webpage`,
       url: canonicalHref,
-      name: cleanSeoText(entry.title),
-      description: cleanSeoText(entry.description),
+      name: cleanTitle,
+      description: cleanDesc,
       inLanguage: 'id-ID',
       isPartOf: { '@id': `${SITE_ORIGIN}/#website` },
       primaryImageOfPage: { '@id': `${SITE_ORIGIN}/#logo` },
@@ -847,11 +978,40 @@ function buildRouteJsonLd(entry) {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Ziarah Nusantara',
+      item: `${SITE_ORIGIN}/`,
+    },
+  ];
+
   if (entry.site) {
+    const siteHeading = cleanSeoText(formatMakamHeading(entry.site.title || entry.site.name));
+    const lat = Number(entry.site.lat);
+    const lng = Number(entry.site.lng);
+    const hasCoords = Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0);
+
+    breadcrumbItems.push(
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Peta & Direktori Makam Wali',
+        item: `${SITE_ORIGIN}/peta`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: siteHeading,
+        item: canonicalHref,
+      }
+    );
+
     graphNodes.push({
-      '@type': 'TouristAttraction',
+      '@type': ['Place', 'LandmarksOrHistoricalBuildings'],
       '@id': `${canonicalHref}#place`,
-      name: `${cleanSeoText(formatMakamHeading(entry.site.title))} (${cleanSeoText(entry.site.name)})`,
+      name: `${siteHeading} (${cleanSeoText(entry.site.name)})`,
       description: cleanSeoText(entry.site.description),
       url: canonicalHref,
       address: {
@@ -861,6 +1021,54 @@ function buildRouteJsonLd(entry) {
         addressRegion: cleanSeoText(entry.site.province),
         addressCountry: 'ID',
       },
+      ...(hasCoords
+        ? {
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: lat,
+              longitude: lng,
+            },
+          }
+        : {}),
+    });
+  } else if (entry.path && entry.path !== '/') {
+    breadcrumbItems.push({
+      '@type': 'ListItem',
+      position: 2,
+      name: cleanTitle.split('—')[0].split('|')[0].trim(),
+      item: canonicalHref,
+    });
+  }
+
+  graphNodes.push({
+    '@type': 'BreadcrumbList',
+    '@id': `${canonicalHref}#breadcrumb`,
+    itemListElement: breadcrumbItems,
+  });
+
+  if (entry.path === '/' || entry.path === '/panduan') {
+    graphNodes.push({
+      '@type': 'FAQPage',
+      '@id': `${canonicalHref}#faq`,
+      inLanguage: 'id-ID',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'Apa Tujuan dan Hukum Ziarah Kubur dalam Islam?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Dalam syariat Islam, hukum ziarah kubur adalah sunnah sebagaimana sabda Rasulullah SAW dalam Hadits Riwayat Muslim: Dahulu aku pernah melarang kalian berziarah kubur, maka sekarang berziarahlah, karena sesungguhnya ziarah kubur itu dapat melembutkan hati, menitikkan air mata, dan mengingatkan kalian kepada kehidupan akhirat.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Bagaimana Urutan Bacaan Doa Ziarah Kubur Singkat dan Lengkap?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Urutan doa ziarah kubur meliputi berwudhu dan meluruskan niat, mengucapkan salam ahli kubur, membaca istighfar dan tawassul Al-Fatihah, membaca Surah Yasin, surat-surat pendek dan Ayat Kursi, dzikir tahlil dan shalawat Nabi, lalu menutup dengan doa arwah.',
+          },
+        },
+      ],
     });
   }
 
@@ -902,11 +1110,11 @@ export function renderCustomHtml(baseHtml, entry) {
     )
     .replace(
       /<meta property="og:description" id="og-description" content="[^"]*"\s*\/?>/i,
-      `<meta property="og:description" content="${escapeHtml(cleanDesc)}" />`
+      `<meta property="og:description" id="og-description" content="${escapeHtml(cleanDesc)}" />`
     )
     .replace(
       /<meta property="og:url" id="og-url" content="[^"]*"\s*\/?>/i,
-      `<meta property="og:url" id="og-url" content="${escapeHtml(entry.loc)}" />`
+      `<meta property="og:url" id="og-url" content="${escapeHtml(canonicalHref)}" />`
     )
     .replace(
       /<meta name="twitter:title" id="twitter-title" content="[^"]*"\s*\/?>/i,
@@ -917,7 +1125,7 @@ export function renderCustomHtml(baseHtml, entry) {
       `<meta name="twitter:description" id="twitter-description" content="${escapeHtml(cleanDesc)}" />`
     );
 
-  if (entry.site) {
+  if (entry.path && entry.path !== '/') {
     html = html.replace(
       /<script type="application\/ld\+json" id="schema-jsonld">[\s\S]*?<\/script>/i,
       `<script type="application/ld+json" id="schema-jsonld">${buildRouteJsonLd(entry)}</script>`
@@ -957,11 +1165,19 @@ if (!process.env.VITEST) {
       bodyHtml:
         r.path === '/panduan'
           ? buildPanduanRootHtml()
-          : r.path === '/rubrik'
-            ? buildRubrikRootHtml()
-            : r.path === '/direktori'
-              ? buildDirektoriRootHtml()
-              : buildHomepageRootHtml(),
+          : r.path === '/doa'
+            ? buildDoaRootHtml()
+            : r.path === '/peta'
+              ? buildPetaRootHtml()
+              : r.path === '/rubrik'
+                ? buildRubrikRootHtml()
+                : r.path === '/donasi' || r.path === '/infaq'
+                  ? buildDonasiRootHtml()
+                  : r.path === '/kurasi'
+                    ? buildKurasiRootHtml()
+                    : r.path === '/direktori'
+                      ? buildDirektoriRootHtml()
+                      : buildHomepageRootHtml(),
     })),
     ...sites.map((s) => {
       const legacyApostropheSlug = s.title.includes("'")

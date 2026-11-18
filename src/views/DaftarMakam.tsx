@@ -1209,7 +1209,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <div className="flex items-center gap-3.5 min-w-0">
               <img
                 src="/favicon.svg"
-                alt={`Logo Resmi Ziarah Nusantara — Panduan Ziarah Kubur, Doa Tahlil & Direktori ${totalCatalogCount} Makam Wali`}
+                alt="Ziarah Nusantara"
                 width={44}
                 height={44}
                 loading="lazy"
