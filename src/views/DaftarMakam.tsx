@@ -21,6 +21,7 @@ import {
   getRegionalArchitecturalPhoto,
   getSiteGoogleMapsPhotosUrl,
   isFirst12OwnerSite,
+  hasVerifiedSitePhoto,
 } from '../lib/authenticSiteImages';
 import { getSitePath, getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
@@ -1111,7 +1112,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                     >
                       {copy.cardSecondaryMapCta}
                     </button>
-                    {!isFirst12OwnerSite(site) && (
+                    {!hasVerifiedSitePhoto(site) && (
                       <a
                         href={getSiteGoogleMapsPhotosUrl(site)}
                         target="_blank"
