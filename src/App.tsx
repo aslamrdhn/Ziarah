@@ -694,10 +694,7 @@ export default function App() {
                   {copy.footerAboutText}
                 </p>
                 <p className="text-stone-700">
-                  <span>{copy.footerCopyrightText}</span> •{' '}
-                  <a href="https://ziarahnusantara.my.id" className="py-1 inline-block underline hover:text-stone-950">
-                    Portal Resmi Ziarah Nusantara
-                  </a>
+                  <span>{copy.footerCopyrightText}</span>
                 </p>
               </div>
             </div>
