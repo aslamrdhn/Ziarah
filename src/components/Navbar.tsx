@@ -17,7 +17,8 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import type { User as FirebaseUser } from 'firebase/auth';
+import { onAuthStateChanged, signOut, type User as FirebaseUser } from 'firebase/auth';
+import { auth, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
 import { APP_BRAND } from '../config/brand';
 import { useSiteCopy } from '../lib/siteCopy';
 
@@ -66,10 +67,6 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
       if (initialized || cancelled) return;
       initialized = true;
       try {
-        const [{ auth, isUserAdmin, ensureAdminUidRegistered }, { onAuthStateChanged }] = await Promise.all([
-          import('../lib/firebase'),
-          import('firebase/auth'),
-        ]);
         if (cancelled) return;
         unsubscribe = onAuthStateChanged(auth, (currentUser) => {
           setUser(currentUser);
@@ -102,10 +99,6 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
       try {
         localStorage.removeItem('zn_has_admin_session');
       } catch {}
-      const [{ auth }, { signOut }] = await Promise.all([
-        import('../lib/firebase'),
-        import('firebase/auth'),
-      ]);
       await signOut(auth);
     } catch {
       // Ignore sign-out errors

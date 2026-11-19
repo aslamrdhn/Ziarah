@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import type { ZiarahSite } from '../data/sites';
 import { INITIAL_FIRST_PAGE_SITES } from '../data/initialSites';
 import { getSiteSlug } from '../lib/siteSlugs';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export { INITIAL_FIRST_PAGE_SITES };
 
@@ -355,11 +357,6 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
-        const [{ db }, { collection, getDocs, query, where }] = await Promise.all([
-          import('../lib/firebase'),
-          import('firebase/firestore'),
-        ]);
-
         const snapshot =
           isAdminRoute || forceRefresh
             ? await getDocs(collection(db, 'sites'))

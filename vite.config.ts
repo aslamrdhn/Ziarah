@@ -20,39 +20,60 @@ export default defineConfig(({ command }) => {
       target: 'es2020',
       sourcemap: false,
       cssMinify: true,
-      chunkSizeWarningLimit: 650,
+      chunkSizeWarningLimit: 700,
       rollupOptions: {
         output: {
           manualChunks(id) {
-          if (id.includes('src/data/sites')) {
-            return 'data-sites';
-          }
-          if (id.includes('node_modules')) {
-            if (id.includes('@firebase/auth') || id.includes('firebase/auth')) {
-              return 'vendor-firebase-auth';
+            if (id.includes('src/data/regions/jawaBaratBantenDki')) {
+              return 'data-sites-jabar';
             }
-            if (id.includes('@firebase/firestore') || id.includes('firebase/firestore')) {
-              return 'vendor-firebase-firestore';
+            if (id.includes('src/data/regions/jawaTengahDiy')) {
+              return 'data-sites-jateng';
             }
-            if (id.includes('firebase') || id.includes('@firebase')) {
-              return 'vendor-firebase-core';
+            if (id.includes('src/data/regions/jawaTimurMadura')) {
+              return 'data-sites-jatim';
             }
-            if (id.includes('leaflet') || id.includes('react-leaflet')) {
-              return 'vendor-leaflet';
+            if (id.includes('src/data/regions/sumatera')) {
+              return 'data-sites-sumatera';
             }
-            if (
-              id.includes('/node_modules/react/') ||
-              id.includes('/node_modules/react-dom/') ||
-              id.includes('/node_modules/react-router') ||
-              id.includes('/node_modules/scheduler/')
-            ) {
-              return 'vendor-react';
+            if (id.includes('src/data/regions/kalimantanSulawesi')) {
+              return 'data-sites-kalsul';
             }
-          }
+            if (id.includes('src/data/regions/baliNusaMalukuPapua')) {
+              return 'data-sites-timur';
+            }
+            if (id.includes('src/data/initialSites')) {
+              return 'data-sites-initial';
+            }
+            if (id.includes('src/data/sites')) {
+              return 'data-sites-core';
+            }
+            if (id.includes('node_modules')) {
+              if (id.includes('@firebase/auth') || id.includes('firebase/auth')) {
+                return 'vendor-firebase-auth';
+              }
+              if (id.includes('@firebase/firestore') || id.includes('firebase/firestore')) {
+                return 'vendor-firebase-firestore';
+              }
+              if (id.includes('firebase') || id.includes('@firebase')) {
+                return 'vendor-firebase-core';
+              }
+              if (id.includes('leaflet') || id.includes('react-leaflet')) {
+                return 'vendor-leaflet';
+              }
+              if (
+                id.includes('/node_modules/react/') ||
+                id.includes('/node_modules/react-dom/') ||
+                id.includes('/node_modules/react-router') ||
+                id.includes('/node_modules/scheduler/')
+              ) {
+                return 'vendor-react';
+              }
+            }
+          },
         },
       },
     },
-  },
   plugins: [
     react(),
     tailwindcss(),

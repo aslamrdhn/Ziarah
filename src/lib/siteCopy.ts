@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db, handleFirestoreError, OperationType } from './firebase';
 import {
   MIN_DONATION_AMOUNT,
   sanitizePlainText,
@@ -767,10 +769,6 @@ export async function fetchSiteCopyFromCloud(force = false): Promise<SiteCopyCon
 
   cloudFetchPromise = (async () => {
     try {
-      const [{ db }, { doc, getDoc }] = await Promise.all([
-        import('./firebase'),
-        import('firebase/firestore'),
-      ]);
       const snap = await getDoc(doc(db, 'settings', 'site_copy'));
       if (snap.exists()) {
         const merged = mergeWithDefaultSiteCopy(snap.data() as Partial<SiteCopyConfig>);
@@ -789,8 +787,6 @@ export async function fetchSiteCopyFromCloud(force = false): Promise<SiteCopyCon
 export async function saveSiteCopyToCloud(newCopy: SiteCopyConfig): Promise<SiteCopyConfig> {
   const merged = mergeWithDefaultSiteCopy(newCopy);
   setCachedSiteCopy(merged, true);
-  const [{ db, handleFirestoreError, OperationType }, { doc, setDoc, serverTimestamp }] =
-    await Promise.all([import('./firebase'), import('firebase/firestore')]);
   try {
     await setDoc(doc(db, 'settings', 'site_copy'), {
       ...merged,

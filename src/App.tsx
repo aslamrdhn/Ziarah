@@ -14,7 +14,9 @@ const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ de
 import type { ZiarahSite } from './data/sites';
 import { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from './data/initialSites';
 import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
-import type { User } from 'firebase/auth';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db, handleFirestoreError, OperationType } from './lib/firebase';
 import { SiteProvider } from './context/SiteContext';
 import { findSiteByParam, getSitePath, formatMakamHeading } from './lib/siteSlugs';
 import { useSiteCopy } from './lib/siteCopy';
@@ -72,10 +74,6 @@ export default function App() {
       fetched = true;
       cleanup();
       try {
-        const [{ db }, { doc, getDoc }] = await Promise.all([
-          import('./lib/firebase'),
-          import('firebase/firestore'),
-        ]);
         const snap = await getDoc(doc(db, 'settings', 'infaq'));
         if (snap.exists()) {
           const data = snap.data();
@@ -433,12 +431,6 @@ export default function App() {
       if (initialized || cancelled) return;
       initialized = true;
       try {
-        const [{ auth, db, handleFirestoreError, OperationType }, { onAuthStateChanged }, { doc, getDoc, setDoc, serverTimestamp }] =
-          await Promise.all([
-            import('./lib/firebase'),
-            import('firebase/auth'),
-            import('firebase/firestore'),
-          ]);
         if (cancelled) return;
         unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
           setUser(currentUser);
@@ -506,10 +498,6 @@ export default function App() {
     const saveToFirestore = async () => {
       if (user) {
         try {
-          const [{ db }, { doc, setDoc, serverTimestamp }] = await Promise.all([
-            import('./lib/firebase'),
-            import('firebase/firestore'),
-          ]);
           const userRef = doc(db, 'users', user.uid);
           await setDoc(
             userRef,
@@ -523,7 +511,6 @@ export default function App() {
             { merge: true }
           );
         } catch (error) {
-          const { handleFirestoreError, OperationType } = await import('./lib/firebase');
           handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
         }
       }
