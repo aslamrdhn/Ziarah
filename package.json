@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "npx tsc --noEmit && npx vitest run && vite build && node scripts/vercel-postbuild.mjs",
-    "build:ci": "npx tsc --noEmit && npx vitest run && vite build && node scripts/vercel-postbuild.mjs",
+    "build": "tsc --noEmit && vitest run && vite build && node scripts/vercel-postbuild.mjs",
+    "build:ci": "tsc --noEmit && vitest run && vite build && node scripts/vercel-postbuild.mjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",

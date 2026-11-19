@@ -1,5 +1,6 @@
 {
-  "buildCommand": "npx tsc --noEmit && npx vitest run && vite build && node scripts/vercel-postbuild.mjs",
+  "installCommand": "npm install --include=dev",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,

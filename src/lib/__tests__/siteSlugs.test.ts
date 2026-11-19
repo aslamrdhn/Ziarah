@@ -143,9 +143,8 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
       fs.readFileSync(path.resolve(process.cwd(), 'vercel.json'), 'utf8')
     );
 
-    expect(vercelJson.buildCommand).toBe(
-      'npx tsc --noEmit && npx vitest run && vite build && node scripts/vercel-postbuild.mjs'
-    );
+    expect(vercelJson.installCommand).toBe('npm install --include=dev');
+    expect(vercelJson.buildCommand).toBe('npm run build');
     expect(Array.isArray(vercelJson.redirects)).toBe(true);
     expect(vercelJson.redirects.length).toBe(85);
 
