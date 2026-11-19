@@ -158,12 +158,12 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
     }
   });
 
-  it('enforces 12-hour TTL cache and delta-only editedByCurator query in SiteContext plus limit(50) on public donations listeners', async () => {
+  it('enforces 30-minute TTL cache and delta-only editedByCurator query in SiteContext plus limit(50) on public donations listeners', async () => {
     const fs = await import('node:fs');
     const path = await import('node:path');
     const { CLOUD_SITES_CACHE_TTL_MS } = await import('../../context/SiteContext');
 
-    expect(CLOUD_SITES_CACHE_TTL_MS).toBe(12 * 60 * 60 * 1000);
+    expect(CLOUD_SITES_CACHE_TTL_MS).toBe(30 * 60 * 1000);
 
     const siteContextSrc = fs.readFileSync(
       path.resolve(process.cwd(), 'src/context/SiteContext.tsx'),

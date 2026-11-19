@@ -26,7 +26,7 @@ const SiteContext = createContext<SiteContextType>({
 });
 
 export const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v4';
-export const CLOUD_SITES_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+export const CLOUD_SITES_CACHE_TTL_MS = 30 * 60 * 1000;
 const LEGACY_CLOUD_CACHE_KEYS = [
   'zn_cloud_sites_cache_v1',
   'zn_cloud_sites_cache_v2',
@@ -314,10 +314,10 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   /**
-   * Quota-Optimized Cloud Sync (12-Hour TTL Cache + Delta-Only Query for Public Visitors):
+   * Quota-Optimized Cloud Sync (30-Minute TTL Cache + Delta-Only Query for Public Visitors):
    * - On public routes (`!isAdminRoute`) with `!forceRefresh`, if `localStorage` (`CLOUD_SITES_CACHE_KEY`)
-   *   has a valid cache younger than 12 hours (`CLOUD_SITES_CACHE_TTL_MS`), hydrates state and returns immediately (0 Firestore reads).
-   * - When cache is missing or older than 12 hours on public routes, queries ONLY curator-edited documents
+   *   has a valid cache younger than 30 minutes (`CLOUD_SITES_CACHE_TTL_MS`), hydrates state and returns immediately (0 Firestore reads).
+   * - When cache is missing or older than 30 minutes on public routes, queries ONLY curator-edited documents
    *   (`where('editedByCurator', '==', true)`), avoiding full 183-document reads.
    * - On admin routes (`isAdminRoute || forceRefresh`), fetches the full `collection(db, 'sites')` for complete curator visibility.
    */
