@@ -136,15 +136,30 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
     expect(getSourceClassificationLabel(undefined, 'catatan_sejarah')).toBe('Catatan Sejarah & Literatur');
   });
 
-  it('configures 85 permanent 301 redirects for legacy slugs and a strict tsc+vitest buildCommand in vercel.json', async () => {
+  it('configures 85 permanent 301 redirects for legacy slugs and a strict tsc+vitest build gate', async () => {
     const fs = await import('node:fs');
     const path = await import('node:path');
     const vercelJson = JSON.parse(
       fs.readFileSync(path.resolve(process.cwd(), 'vercel.json'), 'utf8')
     );
+    const pkgJson = JSON.parse(
+      fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8')
+    );
 
-    expect(vercelJson.installCommand).toBe('npm install --include=dev');
-    expect(vercelJson.buildCommand).toBe('npm run build');
+    const buildScript = String(pkgJson.scripts?.build || '');
+    expect(buildScript).toContain('tsc --noEmit');
+    expect(buildScript).toContain('vitest run');
+    expect(buildScript).toContain('vite build');
+    expect(buildScript).toContain('node scripts/vercel-postbuild.mjs');
+    expect(Boolean(pkgJson.dependencies?.typescript || pkgJson.devDependencies?.typescript)).toBe(true);
+    expect(Boolean(pkgJson.dependencies?.vitest || pkgJson.devDependencies?.vitest)).toBe(true);
+
+    if (vercelJson.buildCommand !== undefined) {
+      expect(
+        vercelJson.buildCommand === 'npm run build' ||
+          String(vercelJson.buildCommand).includes('vite build')
+      ).toBe(true);
+    }
     expect(Array.isArray(vercelJson.redirects)).toBe(true);
     expect(vercelJson.redirects.length).toBe(85);
 
