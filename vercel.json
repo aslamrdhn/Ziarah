@@ -1,8 +1,5 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "vite",
-  "installCommand": "npm install --include=dev --no-audit --no-fund",
-  "buildCommand": "npm run build",
+  "buildCommand": "npx tsc --noEmit && npx vitest run && vite build && node scripts/vercel-postbuild.mjs",
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
@@ -161,10 +158,449 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/situs/waliyyul-ilmi-qadhi-agung-kesultanan-demak-pendiri-masjid-al-aqsha-menara-kudus",
+      "destination": "/situs/makam-sunan-kudus",
+      "permanent": true
+    },
+    {
+      "source": "/situs/wali-songo-pelopor-dakwah-kultural-nusantara-di-kadilangu-demak",
+      "destination": "/situs/makam-sunan-kalijaga-demak",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-sufi-persia-generasi-awal-wali-songo-paku-bumi-tanah-jawa-di-puncak-gunung-tidar-magelang",
+      "destination": "/situs/makam-petilasan-syekh-subakir-kyai-sepanjang-magelang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/adipati-semarang-yang-menanggalkan-tahta-demi-jalan-tasawuf-di-bawah-bimbingan-sunan-kalijaga-klaten",
+      "destination": "/situs/makam-sunan-pandanaran-ii-sunan-tembayat-klaten",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pendiri-raja-raja-kesultanan-islam-pertama-di-tanah-jawa-demak",
+      "destination": "/situs/makam-sultan-raden-patah-adipati-unus-sultan-trenggono-demak",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-sufi-abad-ke-18-guru-spiritual-paku-buwono-ii-leluhur-ulama-kajen-tebuireng-pati",
+      "destination": "/situs/makam-syekh-ahmad-mutamakkin-pati",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-sufi-pengembara-samudra-penasihat-ruhani-sultan-agung-mataram-pati",
+      "destination": "/situs/makam-syekh-jangkung-saridin-pati",
+      "permanent": true
+    },
+    {
+      "source": "/situs/mursyid-agung-thariqah-syadziliyah-penyusun-tanwirul-ma-ani-pembimbing-para-pejuang-kemerdekaan-magelang",
+      "destination": "/situs/makam-kh-dalhar-watucongol-kyai-raden-santri-magelang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/maha-guru-pendiri-nu-muhammadiyah-pelopor-tafsir-al-qur-an-aksara-pegon-jawa-semarang",
+      "destination": "/situs/makam-kh-muhammad-sholeh-darat-as-samarani-semarang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-quthub-penjaga-kota-santri-pekalongan-ulama-agung-marga-al-attas",
+      "destination": "/situs/makam-al-habib-ahmad-bin-abdullah-bin-thalib-al-attas-pekalongan",
+      "permanent": true
+    },
+    {
+      "source": "/situs/maha-guru-qira-at-sab-ah-mursyid-thariqah-naqsyabandiyah-khalidiyah-pendiri-yanbu-ul-qur-an-kudus",
+      "destination": "/situs/makam-kh-muhammad-arwani-amin-said-kudus",
+      "permanent": true
+    },
+    {
+      "source": "/situs/putra-mahkota-mataram-yang-memilih-jalan-santri-kakak-sultan-hamengkubuwono-i-pendiri-desa-pesantren-mlangi-sleman",
+      "destination": "/situs/makam-kyai-nur-iman-mlangi-bph-sandiyo-sleman",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-sufi-pelopor-syiar-islam-pesisir-selatan-jawa-di-bukit-sentono-parangtritis-bantul",
+      "destination": "/situs/makam-syekh-maulana-maghribi-bantul",
+      "permanent": true
+    },
+    {
+      "source": "/situs/maha-guru-ulama-pesantren-nusantara-waliyullah-quthbul-zaman-pemberi-restu-berdirinya-nu-bangkalan",
+      "destination": "/situs/makam-syaichona-muhammad-kholil-bangkalan",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-penggerak-utama-pendirian-nu-pencipta-syubbanul-wathan-jombang",
+      "destination": "/situs/makam-kh-abdul-wahab-chasbullah-jombang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pendiri-pesantren-mamba-ul-ma-arif-denanyar-pelopor-pesantren-putri-rais-aam-pbnu-jombang",
+      "destination": "/situs/makam-kh-bisri-syansuri-jombang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/mursyid-agung-thariqah-qadiriyah-wa-naqsyabandiyah-penyusun-wirid-istighotsah-jombang",
+      "destination": "/situs/makam-kh-romly-tamim-masyayikh-darul-ulum-jombang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-mediator-berdirinya-nu-poros-pesantren-tapal-kuda-situbondo",
+      "destination": "/situs/makam-khr-as-ad-syamsul-arifin-kh-zaini-mun-im-situbondo",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pendiri-pondok-pesantren-lirboyo-al-falah-ploso-benteng-utama-turats-salafiyah-nusantara-kediri",
+      "destination": "/situs/makam-kh-abdul-karim-kh-marzuqi-dahlan-kh-mahrus-aly-kediri",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-nyentrik-pendiri-majelis-semaan-al-qur-an-mantab-dzikrul-ghofilin-kediri",
+      "destination": "/situs/makam-kh-hamim-tohari-djazuli-kediri",
+      "permanent": true
+    },
+    {
+      "source": "/situs/maha-guru-leluhur-wali-songo-bukti-komunitas-muslim-di-jantung-ibu-kota-majapahit-abad-ke-14-mojokerto",
+      "destination": "/situs/makam-syekh-jumadil-kubro-kompleks-makam-islam-kuno-troloyo-mojokerto",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-hadramaut-penunjuk-isyarat-rihlah-dari-kubah-masjid-agung-sumenep-maqbarah-sultan-abdurrahman-pakunataningrat",
+      "destination": "/situs/makam-sayyid-yusuf-bin-ali-al-anggawi-kompleks-asta-tinggi-sumenep",
+      "permanent": true
+    },
+    {
+      "source": "/situs/mufti-agung-kesultanan-aceh-darussalam-pengarang-tafsir-tarjuman-al-mustafid-mursyid-utama-thariqah-syattariyah-nusantara-banda-aceh",
+      "destination": "/situs/makam-syekh-abdurrauf-bin-ali-al-fansuri-as-singkili-banda-aceh",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pelopor-utama-penyebaran-islam-mursyid-thariqah-syattariyah-di-ranah-minangkabau-padang-pariaman",
+      "destination": "/situs/makam-syekh-burhanuddin-ulakan-tuanku-ulakan-padang-pariaman",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-agung-palembang-abad-ke-19-mursyid-thariqah-sammaniyah-pembangun-masjid-lawang-kidul-serta-masjid-muara-ogan",
+      "destination": "/situs/makam-kh-masagus-abdul-hamid-bin-mahmud-kiai-marogan-palembang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-kharismatik-tanah-banjar-mursyid-thariqah-sammaniyah-magnet-haul-terbesar-di-asia-tenggara",
+      "destination": "/situs/makam-kh-muhammad-zaini-bin-abdul-ghani-al-banjari-abah-guru-sekumpul",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-majdzub-tepian-sungai-martapura-cagar-budaya-religi-utama-kota-banjarmasin",
+      "destination": "/situs/makam-al-habib-hamid-bin-abbas-bahasyim-habib-basirih-banjarmasin",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pendiri-perguruan-islam-alkhairaat-maha-guru-indonesia-timur-pahlawan-nasional-palu",
+      "destination": "/situs/makam-al-habib-sayyid-idrus-bin-salim-al-jufri-guru-tua-palu",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-besar-penasihat-spiritual-pangeran-diponegoro-dalam-perang-jawa-pendiri-kampung-jawa-tondano-minahasa",
+      "destination": "/situs/makam-kyai-mojo-kh-muslim-muhammad-khalifah-minahasa",
+      "permanent": true
+    },
+    {
+      "source": "/situs/poros-sanad-keilmuan-haramain-pesantren-nusantara-di-pesisir-timur-jawa-tengah-rembang",
+      "destination": "/situs/pesantren-al-anwar-maqbarah-masyayikh-sarang-rembang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-leluhur-ulama-jawa-madura-tiga-pendiri-nahdlatul-ulama-dari-tiongkok-kecil-lasem-rembang",
+      "destination": "/situs/makam-mbah-sambu-kh-ma-shum-ahmad-kh-baidlowi-rembang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-quthub-pesisir-utara-jawa-leluhur-maulana-habib-luthfi-bin-yahya-di-sapuro-pekalongan",
+      "destination": "/situs/makam-habib-hasyim-bin-umar-bin-thoha-bin-yahya-kakek-habib-luthfi-pekalongan",
+      "permanent": true
+    },
+    {
+      "source": "/situs/maha-guru-tahfidzul-qur-an-qira-at-sab-ah-nusantara-rais-aam-pbnu-pengasuh-pesantren-krapyak-bantul",
+      "destination": "/situs/makam-kh-muhammad-moenauwir-kh-ali-maksum-bantul",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pengarang-kitab-fenomenal-sirajuth-thalibin-yang-diakui-al-azhar-kairo-kediri",
+      "destination": "/situs/makam-syekh-ihsan-muhammad-dahlan-al-jampesi-kediri",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-quthub-hadramaut-aceh-abad-ke-18-pendiri-masjid-bersejarah-teungku-di-anjong-banda-aceh",
+      "destination": "/situs/makam-al-habib-abu-bakar-bin-husein-balfaqih-teungku-di-anjong-banda-aceh",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pendiri-kesultanan-samudera-pasai-bukti-epigrafi-kerajaan-islam-pertama-di-nusantara-aceh-utara",
+      "destination": "/situs/makam-sultan-malikussaleh-meurah-silu-aceh-utara",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-sufi-falsafi-abad-ke-18-di-tanah-banjar-situs-masjid-jami-syekh-abdul-hamid-abulung",
+      "destination": "/situs/makam-syekh-abdul-hamid-abulung-datu-abulung-banjar",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-besar-asal-tarim-hadramaut-mufti-agung-kerajaan-matan-mempawah-serta-ayahanda-pendiri-kota-pontianak",
+      "destination": "/situs/makam-al-habib-husein-bin-ahmad-alkadrie-kramat-sebukit-rama-mempawah",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-mujaddid-kitab-tarajumah-pegon-pejuang-antikolonial-abad-ke-19-batang",
+      "destination": "/situs/situs-pesantren-maqbarah-dzurriyah-kh-ahmad-rifa-i-kalisalak-batang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/maha-guru-raja-pujangga-ulama-jawa-di-pesantren-gebang-tinatar-tegalsari-abad-ke-18-ponorogo",
+      "destination": "/situs/makam-kiai-ageng-muhammad-besari-kiai-ageng-hasan-besari-ponorogo",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-penguasa-maritim-jepara-pelopor-seni-ukir-pembangun-masjid-astana-mantingan",
+      "destination": "/situs/makam-ratu-kalinyamat-sultan-hadlirin-jepara",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pendiri-bupati-pertama-kota-semarang-serta-penyebar-islam-perbukitan-pragota",
+      "destination": "/situs/makam-ki-ageng-pandanaran-i-pangeran-made-pandan-semarang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/penyebar-islam-pesisir-kendal-abad-ke-15-maha-guru-kota-santri-kaliwungu",
+      "destination": "/situs/makam-sunan-katong-kyai-guru-kh-asy-ari-kendal",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-sufi-pengijazah-doa-bambu-runcing-bagi-laskar-pejuang-kemerdekaan-1945-temanggung",
+      "destination": "/situs/makam-kh-subchi-temanggung",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pecinta-agung-al-qur-an-penggagas-mushaf-al-qur-an-akbar-pendiri-unsiq-wonosobo",
+      "destination": "/situs/makam-kh-muntaha-al-hafizh-kh-asy-ari-wonosobo",
+      "permanent": true
+    },
+    {
+      "source": "/situs/utusan-kesultanan-demak-pengislam-kadipaten-pasirluhur-pelopor-islam-bumi-banyumas",
+      "destination": "/situs/makam-syekh-makhdum-wali-pangeran-senopati-mangkubumi-banyumas",
+      "permanent": true
+    },
+    {
+      "source": "/situs/leluhur-raja-raja-mataram-islam-murid-sunan-kalijaga-perintis-sentra-batik-laweyan-solo-surakarta",
+      "destination": "/situs/makam-ki-ageng-henis-ki-ageng-anis-surakarta",
+      "permanent": true
+    },
+    {
+      "source": "/situs/khodimul-maulid-simthuddurar-pusat-haul-akbar-solo-yang-dihadiri-jutaan-peziarah-dunia-surakarta",
+      "destination": "/situs/makam-habib-anis-bin-alwi-al-habsyi-habib-alwi-bin-ali-al-habsyi-surakarta",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-agung-penasihat-sultan-agung-mataram-pelopor-tradisi-sebaran-apem-ya-qowiyyu-klaten",
+      "destination": "/situs/makam-ki-ageng-gribig-sayyid-wasibagno-timur-klaten",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pangeran-majapahit-murid-syekh-maulana-maghribi-waliyullah-sufi-pesisir-parangtritis-bantul",
+      "destination": "/situs/makam-syekh-bela-belu-raden-dhandhun-joko-bandem-bantul",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pendiri-kesultanan-mataram-islam-kompleks-masjid-gedhe-mataram-kotagede-yogyakarta",
+      "destination": "/situs/makam-panembahan-senopati-ki-ageng-pemanahan-sultan-hadiwijaya-yogyakarta",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-pengarang-sastra-gending-pencipta-kalender-jawa-islam-pemimpin-ekspedisi-batavia-bantul",
+      "destination": "/situs/makam-sultan-agung-hanyakrakusuma-raja-raja-mataram-bantul",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-khatib-amin-kasultanan-yogyakarta-pendiri-persyarikatan-muhammadiyah",
+      "destination": "/situs/makam-kh-ahmad-dahlan-muhammad-darwis-yogyakarta",
+      "permanent": true
+    },
+    {
+      "source": "/situs/presiden-ke-4-republik-indonesia-bapak-pluralisme-waliyullah-kemanusiaan-nusantara-jombang",
+      "destination": "/situs/makam-kh-abdurrahman-wahid-jombang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-sufi-abad-ke-12-dari-persia-rum-situs-epigrafi-arab-tertua-di-pedalaman-jawa-timur-kediri",
+      "destination": "/situs/makam-syekh-al-wasil-syamsuddin-mbah-wasil-kediri",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-agung-pengislam-tanah-madura-cicit-sunan-giri-guru-para-wali-madura-abad-ke-16-bangkalan",
+      "destination": "/situs/makam-sunan-cendana-syaikh-zainal-abidin-bangkalan",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-penguasa-puncak-kejayaan-kesultanan-aceh-darussalam-pembangun-masjid-raya-baiturrahman-banda-aceh",
+      "destination": "/situs/makam-sultan-iskandar-muda-banda-aceh",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pendiri-pondok-pesantren-musthafawiyah-purba-baru-maha-guru-ulama-tapanuli-sumatera-utara-mandailing-natal",
+      "destination": "/situs/makam-syekh-musthafa-husein-nasution-al-mandili-mandailing-natal",
+      "permanent": true
+    },
+    {
+      "source": "/situs/mufti-agung-kesultanan-deli-pengarang-kutubus-sittah-melayu-pendiri-al-jam-iyatul-washliyah-medan",
+      "destination": "/situs/makam-syekh-hasan-ma-shum-al-madani-tuan-guru-deli-medan",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pendiri-madrasah-tarbiyah-islamiyah-canduang-muassis-persatuan-tarbiyah-islamiyah-penggagas-falsafah-abs-sbk-agam",
+      "destination": "/situs/makam-syekh-sulaiman-ar-rasuli-inyiak-canduang-agam",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-besar-ahli-ushul-fiqh-minangkabau-pendiri-mti-jaho-ketua-umum-pertama-pb-perti-tanah-datar",
+      "destination": "/situs/makam-syekh-muhammad-jamil-jaho-inyiak-jaho-tanah-datar",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-sultan-terakhir-kesultanan-siak-sri-indrapura-yang-menyerahkan-mahkota-serta-13-juta-gulden-untuk-kemerdekaan-ri",
+      "destination": "/situs/makam-sultan-syarif-kasim-ii-siak",
+      "permanent": true
+    },
+    {
+      "source": "/situs/mufti-kerajaan-indragiri-cicit-datuk-kalampayan-martapura-pengarang-risalah-amal-ma-rifat-indragiri-hilir",
+      "destination": "/situs/makam-syekh-abdurrahman-siddiq-al-banjari-tuan-guru-sapat-indragiri-hilir",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pendiri-kota-pekanbaru-pembangun-masjid-raya-pekanbaru-sultan-siak-ke-5",
+      "destination": "/situs/makam-marhum-pekan-marhum-bukit-pekanbaru",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-bapak-bahasa-indonesia-baku-sejarawan-tuhfat-al-nafis-pengarang-gurindam-dua-belas-tanjungpinang",
+      "destination": "/situs/makam-raja-ali-haji-engku-putri-raja-hamidah-tanjungpinang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-pemimpin-perang-maritim-melawan-voc-pendiri-pusat-kesultanan-riau-lingga-johor-pahang-di-daik-lingga",
+      "destination": "/situs/makam-sultan-mahmud-riayat-syah-sultan-mahmud-syah-iii-lingga",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-sultan-terakhir-kesultanan-jambi-yang-gugur-syahid-melawan-kolonial-belanda-tebo",
+      "destination": "/situs/makam-sultan-thaha-syaifuddin-tebo",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-quthub-palembang-poros-utama-tradisi-ziarah-kubro-palembang-darussalam",
+      "destination": "/situs/makam-kompleks-pemakaman-gubah-duku-al-habib-ahmad-bin-syech-shahab-palembang",
+      "permanent": true
+    },
+    {
+      "source": "/situs/panglima-besar-perang-jawa-pangeran-diponegoro-yang-wafat-dalam-pengasingan-di-bengkulu",
+      "destination": "/situs/makam-sentot-alibasyah-prawirodirdjo-bengkulu",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-sufi-penyebar-islam-pesisir-bengkulu-pelopor-tradisi-keagamaan-muharram-di-bumi-rafflesia",
+      "destination": "/situs/makam-syekh-burhanuddin-imam-senggolo-bengkulu",
+      "permanent": true
+    },
+    {
+      "source": "/situs/pahlawan-nasional-lampung-keturunan-fatahillah-sunan-gunung-jati-panglima-jihad-antikolonial-gunung-rajabasa-lampung-selatan",
+      "destination": "/situs/makam-pahlawan-nasional-raden-intan-ii-lampung-selatan",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-kharismatik-murid-syaikhona-kholil-bangkalan-panglima-laskar-hizbullah-sabilillah-pejuang-kemerdekaan-lampung-pringsewu",
+      "destination": "/situs/makam-kh-ghalib-bin-kh-rohani-pringsewu",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-sufi-abad-ke-18-sahabat-ruhani-datu-kalampayan-pewaris-kitab-barencong-di-bumi-ruhui-rahayu-tapin",
+      "destination": "/situs/makam-datu-sanggul-syekh-abdussamad-tapin",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-pelopor-penyebar-islam-kalimantan-tengah-abad-ke-17-mangkubumi-kesultanan-kotawaringin-pendiri-masjid-kyai-gede-kotawaringin-barat",
+      "destination": "/situs/kompleks-makam-masjid-kyai-gede-kotawaringin-barat",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-pengislam-raja-mahkota-kesultanan-kutai-kartanegara-rekan-seperjuangan-datuk-ri-bandang",
+      "destination": "/situs/makam-habib-hasyim-bin-musayyakh-bin-yahya-datuk-tunggang-parangan-kutai-kartanegara",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-kharismatik-perintis-pengajian-kitab-kuning-samarinda-pendiri-masjid-raya-darussalam",
+      "destination": "/situs/makam-tuan-guru-kh-abul-hasan-samarinda",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-besar-bugis-makassar-pendiri-darud-da-wah-wal-irsyad-pengarang-kitab-risalah-ahlussunnah-wal-jama-ah-barru",
+      "destination": "/situs/makam-anregurutta-kh-abdurrahman-ambo-dalle-barru",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-agung-tanah-mandar-murid-syaikhona-kholil-pendiri-masjid-nurut-taubah-polewali-mandar",
+      "destination": "/situs/makam-kh-muhammad-thahir-imam-lapeo-polewali-mandar",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-pelopor-pengislam-kerajaan-banggae-mandar-abad-ke-17-pendiri-masjid-kuno-salabose-majene",
+      "destination": "/situs/makam-syekh-abdul-mannan-tuan-di-salabose-majene",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-sufi-asal-minangkabau-pembawa-islam-pertama-di-lembah-palu-pada-abad-ke-17-m",
+      "destination": "/situs/kompleks-makam-syekh-abdullah-raqie-datuk-karama-palu",
+      "permanent": true
+    },
+    {
+      "source": "/situs/ulama-besar-pemimpin-perang-paderi-sumatera-barat-pahlawan-nasional-yang-wafat-dalam-pengasingan-di-minahasa",
+      "destination": "/situs/makam-pahlawan-nasional-tuanku-imam-bonjol-muhammad-shahab-minahasa",
+      "permanent": true
+    },
+    {
+      "source": "/situs/raja-pertama-yang-mengislamkan-kerajaan-gorontalo-pendiri-masjid-hunto-peletak-falsafah-adat-bersendikan-syarak",
+      "destination": "/situs/kompleks-makam-masjid-hunto-sultan-amai-gorontalo",
+      "permanent": true
+    },
+    {
+      "source": "/situs/waliyullah-berjubah-putih-penyebar-islam-penjaga-spiritual-bumi-serambi-madinah-gorontalo",
+      "destination": "/situs/makam-keramat-auliya-ju-panggola-ta-lo-o-baya-lipu-gorontalo",
+      "permanent": true
+    },
+    {
+      "source": "/situs/raja-ke-6-dan-sultan-pertama-kesultanan-buton-yang-dibaiat-oleh-syekh-abdul-wahid-di-bumi-khalifatul-khamis-baubau",
+      "destination": "/situs/kompleks-makam-sultan-murhum-kaimuddin-khalifatul-khamis-baubau",
+      "permanent": true
+    },
+    {
+      "source": "/situs/agh-muhammad-as-wajo",
+      "destination": "/situs/agh-muhammad-as-ad-wajo",
+      "permanent": true
+    }
+  ],
   "rewrites": [
-    { "source": "/admin", "destination": "/index.html" },
-    { "source": "/kurator-admin", "destination": "/index.html" },
-    { "source": "/situs/:id*", "destination": "/index.html" },
-    { "source": "/makam/:id*", "destination": "/index.html" }
+    {
+      "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kurator-admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/situs/:id*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/makam/:id*",
+      "destination": "/index.html"
+    }
   ]
 }

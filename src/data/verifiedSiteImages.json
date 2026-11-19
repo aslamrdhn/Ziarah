@@ -1,233 +1,1157 @@
 {
-  "syekh-maulana-malik-ibrahim": "/thumbs/wali-1.webp",
-  "sunan-gresik": "/thumbs/wali-1.webp",
-  "wali-1": "/thumbs/wali-1.webp",
-  "sunan-ampel": "/thumbs/wali-2.webp",
-  "sunan-ampel-surabaya": "/thumbs/wali-2.webp",
-  "wali-2": "/thumbs/wali-2.webp",
-  "sunan-bonang": "/thumbs/wali-3.webp",
-  "sunan-bonang-tuban": "/thumbs/wali-3.webp",
-  "wali-3": "/thumbs/wali-3.webp",
-  "sunan-drajat": "/thumbs/wali-4.webp",
-  "sunan-drajat-lamongan": "/thumbs/wali-4.webp",
-  "wali-4": "/thumbs/wali-4.webp",
-  "sunan-kudus": "/thumbs/wali-5.webp",
-  "makam-sunan-kudus": "/thumbs/wali-5.webp",
-  "wali-5": "/thumbs/wali-5.webp",
-  "sunan-giri": "/thumbs/wali-6.webp",
-  "sunan-giri-gresik": "/thumbs/wali-6.webp",
-  "wali-6": "/thumbs/wali-6.webp",
-  "sunan-kalijaga": "/thumbs/wali-7.webp",
-  "makam-sunan-kalijaga-demak": "/thumbs/wali-7.webp",
-  "wali-7": "/thumbs/wali-7.webp",
-  "sunan-muria": "/thumbs/wali-8.webp",
-  "sunan-muria-kudus": "/thumbs/wali-8.webp",
-  "wali-8": "/thumbs/wali-8.webp",
-  "sunan-gunung-jati": "/thumbs/wali-9.webp",
-  "sunan-gunung-jati-cirebon": "/thumbs/wali-9.webp",
-  "wali-9": "/thumbs/wali-9.webp",
-  "habib-ali-kwitang": "/thumbs/wali-10.webp",
-  "habib-ali-bin-abdurrahman-al-habsyi-jakarta-pusat": "/thumbs/wali-10.webp",
-  "habib-1": "/thumbs/wali-10.webp",
-  "habib-husein-luar-batang": "/thumbs/wali-11.webp",
-  "habib-husein-bin-abubakar-alaydrus-jakarta-utara": "/thumbs/wali-11.webp",
-  "habib-2": "/thumbs/wali-11.webp",
-  "mbah-priok": "/thumbs/wali-12.webp",
-  "habib-hasan-bin-muhammad-al-haddad-jakarta-utara": "/thumbs/wali-12.webp",
-  "habib-3": "/thumbs/wali-12.webp",
-  "pangeran-jayakarta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Makam_Pangeran_Jayakarta_-_panoramio.jpg/960px-Makam_Pangeran_Jayakarta_-_panoramio.jpg",
-  "pangeran-jayakarta-jakarta-timur": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Makam_Pangeran_Jayakarta_-_panoramio.jpg/960px-Makam_Pangeran_Jayakarta_-_panoramio.jpg",
-  "auliya-1": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Makam_Pangeran_Jayakarta_-_panoramio.jpg/960px-Makam_Pangeran_Jayakarta_-_panoramio.jpg",
-  "guru-marzuki-cipinang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg/960px-Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg",
-  "guru-marzuki-cipinang-muara-jakarta-timur": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg/960px-Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg",
-  "ulama-5": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg/960px-Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg",
-  "syekh-nawawi-al-bantani": "https://upload.wikimedia.org/wikipedia/id/8/8f/Lukisan_Syekh_Nawawi_al-Bantani_oleh_Kang_Alam.jpg",
-  "syekh-nawawi-al-bantani-serang": "https://upload.wikimedia.org/wikipedia/id/8/8f/Lukisan_Syekh_Nawawi_al-Bantani_oleh_Kang_Alam.jpg",
-  "ulama-6": "https://upload.wikimedia.org/wikipedia/id/8/8f/Lukisan_Syekh_Nawawi_al-Bantani_oleh_Kang_Alam.jpg",
-  "sultan-maulana-hasanuddin": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Masjid_agung_banten_lama.jpg/960px-Masjid_agung_banten_lama.jpg",
-  "sultan-maulana-hasanuddin-serang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Masjid_agung_banten_lama.jpg/960px-Masjid_agung_banten_lama.jpg",
-  "auliya-2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Masjid_agung_banten_lama.jpg/960px-Masjid_agung_banten_lama.jpg",
-  "syekh-asnawi-caringin": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Masjid_Caringin_%282%29.jpg/960px-Masjid_Caringin_%282%29.jpg",
-  "syekh-asnawi-caringin-pandeglang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Masjid_Caringin_%282%29.jpg/960px-Masjid_Caringin_%282%29.jpg",
-  "ulama-7": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Masjid_Caringin_%282%29.jpg/960px-Masjid_Caringin_%282%29.jpg",
-  "habib-abdullah-empang-bogor": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Masjid_An_Nur_Keramat_Empang.jpg/960px-Masjid_An_Nur_Keramat_Empang.jpg",
-  "habib-abdullah-bin-mukhsin-al-attas-bogor": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Masjid_An_Nur_Keramat_Empang.jpg/960px-Masjid_An_Nur_Keramat_Empang.jpg",
-  "habib-6": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Masjid_An_Nur_Keramat_Empang.jpg/960px-Masjid_An_Nur_Keramat_Empang.jpg",
-  "syekh-quro-karawang": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Makam_Quro_dan_Bentong_-_Tan_Go_Wat.jpg",
-  "syekh-qurotul-ain-karawang": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Makam_Quro_dan_Bentong_-_Tan_Go_Wat.jpg",
-  "ulama-10": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Makam_Quro_dan_Bentong_-_Tan_Go_Wat.jpg",
-  "syekh-subakir-tidar": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Makam_Syekh_Subakir.jpg/960px-Makam_Syekh_Subakir.jpg",
-  "makam-petilasan-syekh-subakir-kyai-sepanjang-magelang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Makam_Syekh_Subakir.jpg/960px-Makam_Syekh_Subakir.jpg",
-  "auliya-4": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Makam_Syekh_Subakir.jpg/960px-Makam_Syekh_Subakir.jpg",
-  "raden-patah-demak": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Masjid_demak.jpg",
-  "makam-sultan-raden-patah-adipati-unus-sultan-trenggono-demak": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Masjid_demak.jpg",
-  "auliya-6": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Masjid_demak.jpg",
-  "habib-ahmad-sapuro": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Makam_Sapuro.jpg/960px-Makam_Sapuro.jpg",
-  "makam-al-habib-ahmad-bin-abdullah-bin-thalib-al-attas-pekalongan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Makam_Sapuro.jpg/960px-Makam_Sapuro.jpg",
-  "habib-7": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Makam_Sapuro.jpg/960px-Makam_Sapuro.jpg",
-  "kyai-nur-iman-mlangi": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg/960px-Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg",
-  "makam-kyai-nur-iman-mlangi-bph-sandiyo-sleman": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg/960px-Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg",
-  "auliya-8": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg/960px-Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg",
-  "syaichona-kholil-bangkalan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4d/Masjid_Syaikhona_Kholil_Bangkalan.jpg/960px-Masjid_Syaikhona_Kholil_Bangkalan.jpg",
-  "makam-syaichona-muhammad-kholil-bangkalan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4d/Masjid_Syaikhona_Kholil_Bangkalan.jpg/960px-Masjid_Syaikhona_Kholil_Bangkalan.jpg",
-  "ulama-15": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4d/Masjid_Syaikhona_Kholil_Bangkalan.jpg/960px-Masjid_Syaikhona_Kholil_Bangkalan.jpg",
-  "kh-hasyim-asyari-tebuireng": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Pesantren_Tebuireng%2C_Jombang.jpg/960px-Pesantren_Tebuireng%2C_Jombang.jpg",
-  "rais-akbar-pendiri-nahdlatul-ulama-pahlawan-nasional-pencetus-resolusi-jihad-22-oktober-1945-jombang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Pesantren_Tebuireng%2C_Jombang.jpg/960px-Pesantren_Tebuireng%2C_Jombang.jpg",
-  "ulama-1": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Pesantren_Tebuireng%2C_Jombang.jpg/960px-Pesantren_Tebuireng%2C_Jombang.jpg",
-  "kh-wahab-chasbullah": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Abdul_Wahab_Hasbullah.jpg",
-  "makam-kh-abdul-wahab-chasbullah-jombang": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Abdul_Wahab_Hasbullah.jpg",
-  "ulama-16": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Abdul_Wahab_Hasbullah.jpg",
-  "kh-bisri-syansuri": "https://upload.wikimedia.org/wikipedia/commons/3/38/K.H._Bisri_Syansuri.jpg",
-  "makam-kh-bisri-syansuri-jombang": "https://upload.wikimedia.org/wikipedia/commons/3/38/K.H._Bisri_Syansuri.jpg",
-  "ulama-17": "https://upload.wikimedia.org/wikipedia/commons/3/38/K.H._Bisri_Syansuri.jpg",
-  "habib-sholeh-tanggul-jember": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg/960px-Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg",
-  "wali-quthub-mustajabud-da-wah-penggubah-shalawat-manshub-jember": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg/960px-Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg",
-  "habib-9": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg/960px-Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg",
-  "kh-abdul-karim-lirboyo": "https://upload.wikimedia.org/wikipedia/commons/1/1c/ABDUL_KARIM_KDR.jpg",
-  "makam-kh-abdul-karim-kh-marzuqi-dahlan-kh-mahrus-aly-kediri": "https://upload.wikimedia.org/wikipedia/commons/1/1c/ABDUL_KARIM_KDR.jpg",
-  "ulama-21": "https://upload.wikimedia.org/wikipedia/commons/1/1c/ABDUL_KARIM_KDR.jpg",
-  "syekh-jumadil-kubro-troloyo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg/960px-054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg",
-  "makam-syekh-jumadil-kubro-kompleks-makam-islam-kuno-troloyo-mojokerto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg/960px-054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg",
-  "auliya-10": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg/960px-054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg",
-  "habib-umar-bedugul-tabanan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg/960px-Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg",
-  "syekh-habib-umar-bukit-bedugul-tabanan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg/960px-Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg",
-  "auliya-14": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg/960px-Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg",
-  "makam-loang-baloq": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/TAMAN_LOANG_BALOQ_-_panoramio.jpg/960px-TAMAN_LOANG_BALOQ_-_panoramio.jpg",
-  "syekh-gauz-abdurrazzaq-makam-loang-baloq-mataram": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/TAMAN_LOANG_BALOQ_-_panoramio.jpg/960px-TAMAN_LOANG_BALOQ_-_panoramio.jpg",
-  "auliya-15": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/TAMAN_LOANG_BALOQ_-_panoramio.jpg/960px-TAMAN_LOANG_BALOQ_-_panoramio.jpg",
-  "syekh-abdurrauf-as-singkili": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Meuseujid_Raya_Baiturrahman_.jpg/960px-Meuseujid_Raya_Baiturrahman_.jpg",
-  "makam-syekh-abdurrauf-bin-ali-al-fansuri-as-singkili-banda-aceh": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Meuseujid_Raya_Baiturrahman_.jpg/960px-Meuseujid_Raya_Baiturrahman_.jpg",
-  "ulama-3": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Meuseujid_Raya_Baiturrahman_.jpg/960px-Meuseujid_Raya_Baiturrahman_.jpg",
-  "syekh-burhanuddin-ulakan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg/960px-Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg",
-  "makam-syekh-burhanuddin-ulakan-tuanku-ulakan-padang-pariaman": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg/960px-Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg",
-  "ulama-25": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg/960px-Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg",
-  "syekh-abdul-wahab-rokan-besilam": "https://upload.wikimedia.org/wikipedia/commons/a/ae/COLLECTIE_TROPENMUSEUM_De_Azizi_Moskee_Tandjoengpoera_TMnr_60021732.jpg",
-  "mujaddid-thariqah-naqsyabandiyah-khalidiyah-sumatera-semenanjung-malaya-pendiri-kampung-suluk-babussalam-langkat": "https://upload.wikimedia.org/wikipedia/commons/a/ae/COLLECTIE_TROPENMUSEUM_De_Azizi_Moskee_Tandjoengpoera_TMnr_60021732.jpg",
-  "ulama-26": "https://upload.wikimedia.org/wikipedia/commons/a/ae/COLLECTIE_TROPENMUSEUM_De_Azizi_Moskee_Tandjoengpoera_TMnr_60021732.jpg",
-  "syekh-muhammad-arsyad-al-banjari": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Masjid_Agung_Al-Karomah_001.jpg/960px-Masjid_Agung_Al-Karomah_001.jpg",
-  "matahari-islam-kalimantan-pengarang-kitab-sabilal-muhtadin-maha-guru-dzurriyah-ulama-nusantara-banjar": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Masjid_Agung_Al-Karomah_001.jpg/960px-Masjid_Agung_Al-Karomah_001.jpg",
-  "ulama-28": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Masjid_Agung_Al-Karomah_001.jpg/960px-Masjid_Agung_Al-Karomah_001.jpg",
-  "guru-sekumpul-martapura": "https://upload.wikimedia.org/wikipedia/commons/4/45/Guru-ijai-sekumpul.jpg",
-  "makam-kh-muhammad-zaini-bin-abdul-ghani-al-banjari-abah-guru-sekumpul": "https://upload.wikimedia.org/wikipedia/commons/4/45/Guru-ijai-sekumpul.jpg",
-  "ulama-2": "https://upload.wikimedia.org/wikipedia/commons/4/45/Guru-ijai-sekumpul.jpg",
-  "habib-basirih-banjarmasin": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Kubah_Basirih_-_panoramio.jpg/960px-Kubah_Basirih_-_panoramio.jpg",
-  "makam-al-habib-hamid-bin-abbas-bahasyim-habib-basirih-banjarmasin": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Kubah_Basirih_-_panoramio.jpg/960px-Kubah_Basirih_-_panoramio.jpg",
-  "habib-12": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Kubah_Basirih_-_panoramio.jpg/960px-Kubah_Basirih_-_panoramio.jpg",
-  "sultan-suriansyah-banjarmasin": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Masjidbersejarahsultansuriansyah.jpg/960px-Masjidbersejarahsultansuriansyah.jpg",
-  "raja-banjar-pertama-yang-memeluk-islam-ulama-utusan-kesultanan-demak-pengislam-tanah-banjar-banjarmasin": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Masjidbersejarahsultansuriansyah.jpg/960px-Masjidbersejarahsultansuriansyah.jpg",
-  "auliya-16": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Masjidbersejarahsultansuriansyah.jpg/960px-Masjidbersejarahsultansuriansyah.jpg",
-  "datuk-ri-bandang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Bangunan_Makam_Datuk_ri_Bandang.jpg/960px-Bangunan_Makam_Datuk_ri_Bandang.jpg",
-  "anggota-tiga-serangkai-dato-tallua-pengislam-raja-gowa-sultan-alauddin-raja-tallo-sultan-awalul-islam-makassar": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Bangunan_Makam_Datuk_ri_Bandang.jpg/960px-Bangunan_Makam_Datuk_ri_Bandang.jpg",
-  "auliya-17": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Bangunan_Makam_Datuk_ri_Bandang.jpg/960px-Bangunan_Makam_Datuk_ri_Bandang.jpg",
-  "syekh-yusuf-al-makassari": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Masjid_Tua_Al-Hilal_Katangka.jpg/960px-Masjid_Tua_Al-Hilal_Katangka.jpg",
-  "wali-quthub-nusantara-mursyid-thariqah-khalwatiyah-pahlawan-nasional-dua-benua-indonesia-dan-afrika-selatan-gowa": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Masjid_Tua_Al-Hilal_Katangka.jpg/960px-Masjid_Tua_Al-Hilal_Katangka.jpg",
-  "ulama-4": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Masjid_Tua_Al-Hilal_Katangka.jpg/960px-Masjid_Tua_Al-Hilal_Katangka.jpg",
-  "kyai-mojo-tondano": "https://upload.wikimedia.org/wikipedia/commons/4/49/Makam-kyai-modjo-1_Djoko_Sanudin.jpg",
-  "makam-kyai-mojo-kh-muslim-muhammad-khalifah-minahasa": "https://upload.wikimedia.org/wikipedia/commons/4/49/Makam-kyai-modjo-1_Djoko_Sanudin.jpg",
-  "ulama-29": "https://upload.wikimedia.org/wikipedia/commons/4/49/Makam-kyai-modjo-1_Djoko_Sanudin.jpg",
-  "habib-idrus-bin-salim-al-jufri-palu": "https://upload.wikimedia.org/wikipedia/commons/6/61/Habib_Idrus_bin_Salim_al-Jufri.jpg",
-  "makam-al-habib-sayyid-idrus-bin-salim-al-jufri-guru-tua-palu": "https://upload.wikimedia.org/wikipedia/commons/6/61/Habib_Idrus_bin_Salim_al-Jufri.jpg",
-  "habib-13": "https://upload.wikimedia.org/wikipedia/commons/6/61/Habib_Idrus_bin_Salim_al-Jufri.jpg",
-  "sultan-maulana-yusuf": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Keraton_Surosowan_%283%29.jpg/960px-Keraton_Surosowan_%283%29.jpg",
-  "sultan-maulana-yusuf-serang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Keraton_Surosowan_%283%29.jpg/960px-Keraton_Surosowan_%283%29.jpg",
-  "auliya-18": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Keraton_Surosowan_%283%29.jpg/960px-Keraton_Surosowan_%283%29.jpg",
-  "masyayikh-lasem-rembang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg/960px-Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg",
-  "makam-mbah-sambu-kh-ma-shum-ahmad-kh-baidlowi-rembang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg/960px-Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg",
-  "ulama-32": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg/960px-Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg",
-  "syekh-datuk-kahfi": "https://upload.wikimedia.org/wikipedia/commons/0/0c/COLLECTIE_TROPENMUSEUM_Astana_Gunung_Jati_bij_Cheribon_TMnr_60005191.jpg",
-  "syekh-datuk-kahfi-cirebon": "https://upload.wikimedia.org/wikipedia/commons/0/0c/COLLECTIE_TROPENMUSEUM_Astana_Gunung_Jati_bij_Cheribon_TMnr_60005191.jpg",
-  "auliya-19": "https://upload.wikimedia.org/wikipedia/commons/0/0c/COLLECTIE_TROPENMUSEUM_Astana_Gunung_Jati_bij_Cheribon_TMnr_60005191.jpg",
-  "guru-bangil-pasuruan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Masjid_Manarul_Islam_Bangil-1.jpg/960px-Masjid_Manarul_Islam_Bangil-1.jpg",
-  "mutiara-kalimantan-di-tanah-jawa-pendiri-pp-datuk-kalampayan-bangil-guru-abah-guru-sekumpul-pasuruan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Masjid_Manarul_Islam_Bangil-1.jpg/960px-Masjid_Manarul_Islam_Bangil-1.jpg",
-  "ulama-35": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Masjid_Manarul_Islam_Bangil-1.jpg/960px-Masjid_Manarul_Islam_Bangil-1.jpg",
-  "sultan-malikussaleh": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg/960px-Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg",
-  "makam-sultan-malikussaleh-meurah-silu-aceh-utara": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg/960px-Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg",
-  "auliya-25": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg/960px-Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg",
-  "makam-papan-tinggi-mahligai-barus": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG/960px-Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG",
-  "cagar-budaya-nasional-titik-nol-peradaban-islam-nusantara-di-bandar-kapur-barus-kuno-tapanuli-tengah": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG/960px-Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG",
-  "ulama-36": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG/960px-Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG",
-  "syekh-kasyful-anwar-martapura": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Pondok_Pesantren_Darussalam_001.jpg/960px-Pondok_Pesantren_Darussalam_001.jpg",
-  "mujaddid-kurikulum-pondok-pesantren-darussalam-martapura-maha-guru-ulama-kalimantan-banjar": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Pondok_Pesantren_Darussalam_001.jpg/960px-Pondok_Pesantren_Darussalam_001.jpg",
-  "ulama-37": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Pondok_Pesantren_Darussalam_001.jpg/960px-Pondok_Pesantren_Darussalam_001.jpg",
-  "datu-abulung-sungai-batang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Datu_Abulung_-_Kubah_001.jpg/960px-Datu_Abulung_-_Kubah_001.jpg",
-  "makam-syekh-abdul-hamid-abulung-datu-abulung-banjar": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Datu_Abulung_-_Kubah_001.jpg/960px-Datu_Abulung_-_Kubah_001.jpg",
-  "ulama-38": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Datu_Abulung_-_Kubah_001.jpg/960px-Datu_Abulung_-_Kubah_001.jpg",
-  "sultan-baabullah-ternate": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Makam_Sultan_Babullah.jpg/960px-Makam_Sultan_Babullah.jpg",
-  "sultan-baabullah-datu-syah-ternate": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Makam_Sultan_Babullah.jpg/960px-Makam_Sultan_Babullah.jpg",
-  "auliya-29": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Makam_Sultan_Babullah.jpg/960px-Makam_Sultan_Babullah.jpg",
-  "kh-hasan-besari-tegalsari": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Masjid_Baiturrahman_Setono_Tegalsari_Ponorogo_Tampak_Dari_Depan.jpg",
-  "makam-kiai-ageng-muhammad-besari-kiai-ageng-hasan-besari-ponorogo": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Masjid_Baiturrahman_Setono_Tegalsari_Ponorogo_Tampak_Dari_Depan.jpg",
-  "auliya-30": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Masjid_Baiturrahman_Setono_Tegalsari_Ponorogo_Tampak_Dari_Depan.jpg",
-  "pangeran-cakrabuana": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Mosque_of_Keraton_Kasepuhan.jpg/960px-Mosque_of_Keraton_Kasepuhan.jpg",
-  "pangeran-cakrabuana-cirebon": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Mosque_of_Keraton_Kasepuhan.jpg/960px-Mosque_of_Keraton_Kasepuhan.jpg",
-  "syekh-magelung-sakti": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/The_Great_Mosque_of_Cirebon.jpg/960px-The_Great_Mosque_of_Cirebon.jpg",
-  "syekh-magelung-sakti-cirebon": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/The_Great_Mosque_of_Cirebon.jpg/960px-The_Great_Mosque_of_Cirebon.jpg",
-  "syekh-bentong-karawang": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Makam_Quro_dan_Bentong_-_Tan_Go_Wat.jpg",
-  "sultan-ageng-tirtayasa": "https://upload.wikimedia.org/wikipedia/id/d/dc/Lukisan_Sultan_Ageng_Tirtayasa_oleh_Kang_Alam.jpg",
-  "sultan-ageng-tirtayasa-serang": "https://upload.wikimedia.org/wikipedia/id/d/dc/Lukisan_Sultan_Ageng_Tirtayasa_oleh_Kang_Alam.jpg",
-  "raden-saleh-syarif-bustaman-bogor": "https://upload.wikimedia.org/wikipedia/commons/3/39/Portrait_of_Raden_Saleh_c._1872.jpg",
-  "makam-raden-saleh-syarif-bustaman-bogor": "https://upload.wikimedia.org/wikipedia/commons/3/39/Portrait_of_Raden_Saleh_c._1872.jpg",
-  "ratu-kalinyamat-jepara": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f1/Masjid_Mantingan_Jepara.jpg/960px-Masjid_Mantingan_Jepara.jpg",
-  "makam-ratu-kalinyamat-sultan-hadlirin-jepara": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f1/Masjid_Mantingan_Jepara.jpg/960px-Masjid_Mantingan_Jepara.jpg",
-  "ki-ageng-pandanaran-semarang": "https://upload.wikimedia.org/wikipedia/commons/5/53/Pintu_menuju_ke_Makam_Ki_Ageng-Sunan_Pandanaran_-_panoramio.jpg",
-  "makam-ki-ageng-pandanaran-i-pangeran-made-pandan-semarang": "https://upload.wikimedia.org/wikipedia/commons/5/53/Pintu_menuju_ke_Makam_Ki_Ageng-Sunan_Pandanaran_-_panoramio.jpg",
-  "syekh-makhdum-wali": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Masjid_Nur_Sulaiman_Banyumas.jpg/960px-Masjid_Nur_Sulaiman_Banyumas.jpg",
-  "makam-syekh-makhdum-wali-pangeran-senopati-mangkubumi-banyumas": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Masjid_Nur_Sulaiman_Banyumas.jpg/960px-Masjid_Nur_Sulaiman_Banyumas.jpg",
-  "ki-ageng-henis-laweyan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Masjid_Laweyan.jpg/960px-Masjid_Laweyan.jpg",
-  "makam-ki-ageng-henis-ki-ageng-anis-surakarta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Masjid_Laweyan.jpg/960px-Masjid_Laweyan.jpg",
-  "habib-anis-solo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Rouhah_di_Masjid_Riyadh_Solo.jpg/960px-Rouhah_di_Masjid_Riyadh_Solo.jpg",
-  "makam-habib-anis-bin-alwi-al-habsyi-habib-alwi-bin-ali-al-habsyi-surakarta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Rouhah_di_Masjid_Riyadh_Solo.jpg/960px-Rouhah_di_Masjid_Riyadh_Solo.jpg",
-  "ki-ageng-gribig-jatinom": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Makam_Gribig_Pj_IMG_3213.JPG/960px-Makam_Gribig_Pj_IMG_3213.JPG",
-  "makam-ki-ageng-gribig-sayyid-wasibagno-timur-klaten": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Makam_Gribig_Pj_IMG_3213.JPG/960px-Makam_Gribig_Pj_IMG_3213.JPG",
-  "panembahan-senopati-kotagede": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Masjid_Mataram_Kotagede.jpg/960px-Masjid_Mataram_Kotagede.jpg",
-  "makam-panembahan-senopati-ki-ageng-pemanahan-sultan-hadiwijaya-yogyakarta": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Masjid_Mataram_Kotagede.jpg/960px-Masjid_Mataram_Kotagede.jpg",
-  "kh-ahmad-dahlan-jogja": "https://upload.wikimedia.org/wikipedia/commons/8/87/Ahmad_Dahlan.jpg",
-  "makam-kh-ahmad-dahlan-muhammad-darwis-yogyakarta": "https://upload.wikimedia.org/wikipedia/commons/8/87/Ahmad_Dahlan.jpg",
-  "sultan-agung-imogiri": "https://upload.wikimedia.org/wikipedia/commons/f/f5/COLLECTIE_TROPENMUSEUM_Imogiri_nabij_Yogyakarta_de_vorstelijke_begraafplaats_waar_de_familiegraven_van_de_Midden_Javaanse_vorsten_zijn._TMnr_60004749.jpg",
-  "makam-sultan-agung-hanyakrakusuma-raja-raja-mataram-bantul": "https://upload.wikimedia.org/wikipedia/commons/f/f5/COLLECTIE_TROPENMUSEUM_Imogiri_nabij_Yogyakarta_de_vorstelijke_begraafplaats_waar_de_familiegraven_van_de_Midden_Javaanse_vorsten_zijn._TMnr_60004749.jpg",
-  "fatimah-binti-maimun": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Tomb_of_Fatimah_bt_Maimun.jpeg",
-  "bukti-epigrafis-tertua-kehadiran-islam-di-nusantara-gresik": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Tomb_of_Fatimah_bt_Maimun.jpeg",
-  "gus-dur-tebuireng": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/President_Abdurrahman_Wahid_-_Indonesia.jpg/960px-President_Abdurrahman_Wahid_-_Indonesia.jpg",
-  "makam-kh-abdurrahman-wahid-jombang": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/President_Abdurrahman_Wahid_-_Indonesia.jpg/960px-President_Abdurrahman_Wahid_-_Indonesia.jpg",
-  "sultan-iskandar-muda": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Lukisan_Iskandar_muda.jpg",
-  "makam-sultan-iskandar-muda-banda-aceh": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Lukisan_Iskandar_muda.jpg",
-  "syekh-musthafa-husein-purba-baru": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Pondok_Pesantren_Musthafawiyah_Purba_Baru_Mandailing_002.jpg/960px-Pondok_Pesantren_Musthafawiyah_Purba_Baru_Mandailing_002.jpg",
-  "makam-syekh-musthafa-husein-nasution-al-mandili-mandailing-natal": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Pondok_Pesantren_Musthafawiyah_Purba_Baru_Mandailing_002.jpg/960px-Pondok_Pesantren_Musthafawiyah_Purba_Baru_Mandailing_002.jpg",
-  "syekh-hasan-mashum-medan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Great_mosque_in_Medan_cropped.jpg/960px-Great_mosque_in_Medan_cropped.jpg",
-  "makam-syekh-hasan-ma-shum-al-madani-tuan-guru-deli-medan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Great_mosque_in_Medan_cropped.jpg/960px-Great_mosque_in_Medan_cropped.jpg",
-  "marhum-pekan-senapelan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Masjid_Raya_Pekanbaru_%284%29.jpg/960px-Masjid_Raya_Pekanbaru_%284%29.jpg",
-  "makam-marhum-pekan-marhum-bukit-pekanbaru": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Masjid_Raya_Pekanbaru_%284%29.jpg/960px-Masjid_Raya_Pekanbaru_%284%29.jpg",
-  "sultan-mahmud-riayat-syah-lingga": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Masjid_Jami_Sultan_Lingga_ruang_salat.jpg/960px-Masjid_Jami_Sultan_Lingga_ruang_salat.jpg",
-  "makam-sultan-mahmud-riayat-syah-sultan-mahmud-syah-iii-lingga": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Masjid_Jami_Sultan_Lingga_ruang_salat.jpg/960px-Masjid_Jami_Sultan_Lingga_ruang_salat.jpg",
-  "raja-ali-haji-penyengat": "https://thumb.wikimedia.org/wikipedia/id/thumb/4/40/Masjid_sultan_Riau_Penyengat.JPG/960px-Masjid_sultan_Riau_Penyengat.JPG",
-  "makam-raja-ali-haji-engku-putri-raja-hamidah-tanjungpinang": "https://thumb.wikimedia.org/wikipedia/id/thumb/4/40/Masjid_sultan_Riau_Penyengat.JPG/960px-Masjid_sultan_Riau_Penyengat.JPG",
-  "sultan-thaha-syaifuddin-tebo": "https://upload.wikimedia.org/wikipedia/commons/2/24/Sultan_Thaha_Syaifuddin.jpg",
-  "makam-sultan-thaha-syaifuddin-tebo": "https://upload.wikimedia.org/wikipedia/commons/2/24/Sultan_Thaha_Syaifuddin.jpg",
-  "sentot-alibasyah-bengkulu": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/Sentot%2C_opperbevelhebber_der_rebellen.jpg/960px-Sentot%2C_opperbevelhebber_der_rebellen.jpg",
-  "makam-sentot-alibasyah-prawirodirdjo-bengkulu": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/Sentot%2C_opperbevelhebber_der_rebellen.jpg/960px-Sentot%2C_opperbevelhebber_der_rebellen.jpg",
-  "syekh-burhanuddin-imam-senggolo-bengkulu": "https://upload.wikimedia.org/wikipedia/commons/9/94/Masjid_Jamik_Bengkulu.jpg",
-  "makam-syekh-burhanuddin-imam-senggolo-bengkulu": "https://upload.wikimedia.org/wikipedia/commons/9/94/Masjid_Jamik_Bengkulu.jpg",
-  "datu-sanggul-rantau": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Makam_Datu_Sanggul_Tatakan_%28view_7%29_-_panoramio.jpg",
-  "makam-datu-sanggul-syekh-abdussamad-tapin": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Makam_Datu_Sanggul_Tatakan_%28view_7%29_-_panoramio.jpg",
-  "sultan-syarif-abdurrahman-alkadrie-pontianak": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Masjid_Jami_Pontianak_%282026%29_01.jpg/960px-Masjid_Jami_Pontianak_%282026%29_01.jpg",
-  "sayyid-pendiri-kota-pontianak-sultan-pertama-kesultanan-kadriah-pontianak": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Masjid_Jami_Pontianak_%282026%29_01.jpg/960px-Masjid_Jami_Pontianak_%282026%29_01.jpg",
-  "kyai-gede-kotawaringin": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Masjid_Kyai_Gede_001.jpg/960px-Masjid_Kyai_Gede_001.jpg",
-  "kompleks-makam-masjid-kyai-gede-kotawaringin-barat": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Masjid_Kyai_Gede_001.jpg/960px-Masjid_Kyai_Gede_001.jpg",
-  "tunggang-parangan-kutai-lama": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Masjid_Jami_Aji_Amir_Hasanuddin_001.jpg/960px-Masjid_Jami_Aji_Amir_Hasanuddin_001.jpg",
-  "makam-habib-hasyim-bin-musayyakh-bin-yahya-datuk-tunggang-parangan-kutai-kartanegara": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Masjid_Jami_Aji_Amir_Hasanuddin_001.jpg/960px-Masjid_Jami_Aji_Amir_Hasanuddin_001.jpg",
-  "kh-abul-hasan-samarinda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Masjid_Darussalam_Samarinda_-_panoramio.jpg/960px-Masjid_Darussalam_Samarinda_-_panoramio.jpg",
-  "makam-tuan-guru-kh-abul-hasan-samarinda": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Masjid_Darussalam_Samarinda_-_panoramio.jpg/960px-Masjid_Darussalam_Samarinda_-_panoramio.jpg",
-  "pangeran-diponegoro-makassar": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Diponegoro.jpg",
-  "sultan-abdulhamid-herucokro-amirul-mukminin-panatagama-jawa-panglima-agung-perang-jawa-penulis-babad-diponegoro-makassar": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Diponegoro.jpg",
-  "sultan-amai-gorontalo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Masjid_Hunto_Sultan_Amai.jpg/960px-Masjid_Hunto_Sultan_Amai.jpg",
-  "kompleks-makam-masjid-hunto-sultan-amai-gorontalo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Masjid_Hunto_Sultan_Amai.jpg/960px-Masjid_Hunto_Sultan_Amai.jpg",
-  "tuanku-imam-bonjol-minahasa": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Portret_van_Tuanku_Imam_Bonjol.jpg/960px-Portret_van_Tuanku_Imam_Bonjol.jpg",
-  "makam-pahlawan-nasional-tuanku-imam-bonjol-muhammad-shahab-minahasa": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Portret_van_Tuanku_Imam_Bonjol.jpg/960px-Portret_van_Tuanku_Imam_Bonjol.jpg",
-  "masjid-tua-wapauwe-kaitetu": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Masjid_Tua_Wapauwe_Kaitetu.jpg/960px-Masjid_Tua_Wapauwe_Kaitetu.jpg",
-  "kompleks-makam-ulama-masjid-tua-wapauwe-kaitetu-maluku-tengah": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Masjid_Tua_Wapauwe_Kaitetu.jpg/960px-Masjid_Tua_Wapauwe_Kaitetu.jpg",
-  "sultan-nuku-tidore": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Penjelasan_Makam_Sultan_Nuku.jpg/960px-Penjelasan_Makam_Sultan_Nuku.jpg",
-  "sultan-nuku-muhammad-amiruddin-jou-barakati-tidore-kepulauan": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Penjelasan_Makam_Sultan_Nuku.jpg/960px-Penjelasan_Makam_Sultan_Nuku.jpg",
-  "sultan-zainal-abidin-ternate": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Masjid_Sultan_Ternate.jpg/960px-Masjid_Sultan_Ternate.jpg",
-  "masjid-tua-patimburak-fakfak": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Masjid_Tua_Patimburak.jpg",
-  "kompleks-masjid-tua-patimburak-makam-penyebar-islam-kokas-fakfak": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Masjid_Tua_Patimburak.jpg"
+  "syekh-maulana-malik-ibrahim": {
+    "url": "/thumbs/wali-1.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-gresik": {
+    "url": "/thumbs/wali-1.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "wali-1": {
+    "url": "/thumbs/wali-1.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-ampel": {
+    "url": "/thumbs/wali-2.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-ampel-surabaya": {
+    "url": "/thumbs/wali-2.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "wali-2": {
+    "url": "/thumbs/wali-2.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-bonang": {
+    "url": "/thumbs/wali-3.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-bonang-tuban": {
+    "url": "/thumbs/wali-3.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "wali-3": {
+    "url": "/thumbs/wali-3.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-drajat": {
+    "url": "/thumbs/wali-4.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-drajat-lamongan": {
+    "url": "/thumbs/wali-4.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "wali-4": {
+    "url": "/thumbs/wali-4.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-kudus": {
+    "url": "/thumbs/wali-5.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "makam-sunan-kudus": {
+    "url": "/thumbs/wali-5.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "wali-5": {
+    "url": "/thumbs/wali-5.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-giri": {
+    "url": "/thumbs/wali-6.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-giri-gresik": {
+    "url": "/thumbs/wali-6.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "wali-6": {
+    "url": "/thumbs/wali-6.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-kalijaga": {
+    "url": "/thumbs/wali-7.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "makam-sunan-kalijaga-demak": {
+    "url": "/thumbs/wali-7.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "wali-7": {
+    "url": "/thumbs/wali-7.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-muria": {
+    "url": "/thumbs/wali-8.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-muria-kudus": {
+    "url": "/thumbs/wali-8.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "wali-8": {
+    "url": "/thumbs/wali-8.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-gunung-jati": {
+    "url": "/thumbs/wali-9.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "sunan-gunung-jati-cirebon": {
+    "url": "/thumbs/wali-9.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "wali-9": {
+    "url": "/thumbs/wali-9.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "habib-ali-kwitang": {
+    "url": "/thumbs/wali-10.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "habib-ali-bin-abdurrahman-al-habsyi-jakarta-pusat": {
+    "url": "/thumbs/wali-10.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "habib-1": {
+    "url": "/thumbs/wali-10.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "habib-husein-luar-batang": {
+    "url": "/thumbs/wali-11.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "habib-husein-bin-abubakar-alaydrus-jakarta-utara": {
+    "url": "/thumbs/wali-11.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "habib-2": {
+    "url": "/thumbs/wali-11.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "mbah-priok": {
+    "url": "/thumbs/wali-12.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "habib-hasan-bin-muhammad-al-haddad-jakarta-utara": {
+    "url": "/thumbs/wali-12.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "habib-3": {
+    "url": "/thumbs/wali-12.webp",
+    "author": "Arsip Dokumentasi Wikimedia Commons / Tropenmuseum",
+    "license": "Domain Publik / CC BY-SA"
+  },
+  "pangeran-jayakarta": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Makam_Pangeran_Jayakarta_-_panoramio.jpg/960px-Makam_Pangeran_Jayakarta_-_panoramio.jpg",
+    "author": "Akhmad Fauzi",
+    "license": "CC BY 3.0"
+  },
+  "pangeran-jayakarta-jakarta-timur": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Makam_Pangeran_Jayakarta_-_panoramio.jpg/960px-Makam_Pangeran_Jayakarta_-_panoramio.jpg",
+    "author": "Akhmad Fauzi",
+    "license": "CC BY 3.0"
+  },
+  "auliya-1": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Makam_Pangeran_Jayakarta_-_panoramio.jpg/960px-Makam_Pangeran_Jayakarta_-_panoramio.jpg",
+    "author": "Akhmad Fauzi",
+    "license": "CC BY 3.0"
+  },
+  "guru-marzuki-cipinang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg/960px-Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg",
+    "author": "Tim WikiBarakat - WikiBanua",
+    "license": "CC BY-SA 4.0"
+  },
+  "guru-marzuki-cipinang-muara-jakarta-timur": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg/960px-Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg",
+    "author": "Tim WikiBarakat - WikiBanua",
+    "license": "CC BY-SA 4.0"
+  },
+  "ulama-5": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg/960px-Syekh_H._Ahmad_Marzuki_-_Makam_001.jpg",
+    "author": "Tim WikiBarakat - WikiBanua",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-nawawi-al-bantani": {
+    "url": "https://upload.wikimedia.org/wikipedia/id/8/8f/Lukisan_Syekh_Nawawi_al-Bantani_oleh_Kang_Alam.jpg",
+    "author": "Raudalkhudri",
+    "license": "Penggunaan wajar"
+  },
+  "syekh-nawawi-al-bantani-serang": {
+    "url": "https://upload.wikimedia.org/wikipedia/id/8/8f/Lukisan_Syekh_Nawawi_al-Bantani_oleh_Kang_Alam.jpg",
+    "author": "Raudalkhudri",
+    "license": "Penggunaan wajar"
+  },
+  "ulama-6": {
+    "url": "https://upload.wikimedia.org/wikipedia/id/8/8f/Lukisan_Syekh_Nawawi_al-Bantani_oleh_Kang_Alam.jpg",
+    "author": "Raudalkhudri",
+    "license": "Penggunaan wajar"
+  },
+  "sultan-maulana-hasanuddin": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Masjid_agung_banten_lama.jpg/960px-Masjid_agung_banten_lama.jpg",
+    "author": "Firdaus31",
+    "license": "CC BY-SA 4.0"
+  },
+  "sultan-maulana-hasanuddin-serang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Masjid_agung_banten_lama.jpg/960px-Masjid_agung_banten_lama.jpg",
+    "author": "Firdaus31",
+    "license": "CC BY-SA 4.0"
+  },
+  "auliya-2": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Masjid_agung_banten_lama.jpg/960px-Masjid_agung_banten_lama.jpg",
+    "author": "Firdaus31",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-asnawi-caringin": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Masjid_Caringin_%282%29.jpg/960px-Masjid_Caringin_%282%29.jpg",
+    "author": "Arif Permana Putra",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-asnawi-caringin-pandeglang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Masjid_Caringin_%282%29.jpg/960px-Masjid_Caringin_%282%29.jpg",
+    "author": "Arif Permana Putra",
+    "license": "CC BY-SA 4.0"
+  },
+  "ulama-7": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Masjid_Caringin_%282%29.jpg/960px-Masjid_Caringin_%282%29.jpg",
+    "author": "Arif Permana Putra",
+    "license": "CC BY-SA 4.0"
+  },
+  "habib-abdullah-empang-bogor": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Masjid_An_Nur_Keramat_Empang.jpg/960px-Masjid_An_Nur_Keramat_Empang.jpg",
+    "author": "Ilham Mufti Laksono",
+    "license": "CC BY 4.0"
+  },
+  "habib-abdullah-bin-mukhsin-al-attas-bogor": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Masjid_An_Nur_Keramat_Empang.jpg/960px-Masjid_An_Nur_Keramat_Empang.jpg",
+    "author": "Ilham Mufti Laksono",
+    "license": "CC BY 4.0"
+  },
+  "habib-6": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Masjid_An_Nur_Keramat_Empang.jpg/960px-Masjid_An_Nur_Keramat_Empang.jpg",
+    "author": "Ilham Mufti Laksono",
+    "license": "CC BY 4.0"
+  },
+  "syekh-quro-karawang": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Makam_Quro_dan_Bentong_-_Tan_Go_Wat.jpg",
+    "author": "Kang Ari Tea",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-qurotul-ain-karawang": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Makam_Quro_dan_Bentong_-_Tan_Go_Wat.jpg",
+    "author": "Kang Ari Tea",
+    "license": "CC BY-SA 4.0"
+  },
+  "ulama-10": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Makam_Quro_dan_Bentong_-_Tan_Go_Wat.jpg",
+    "author": "Kang Ari Tea",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-subakir-tidar": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Makam_Syekh_Subakir.jpg/960px-Makam_Syekh_Subakir.jpg",
+    "author": "Risanprasetyo /Febri Ady Prasetyo",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-petilasan-syekh-subakir-kyai-sepanjang-magelang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Makam_Syekh_Subakir.jpg/960px-Makam_Syekh_Subakir.jpg",
+    "author": "Risanprasetyo /Febri Ady Prasetyo",
+    "license": "CC BY-SA 4.0"
+  },
+  "auliya-4": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Makam_Syekh_Subakir.jpg/960px-Makam_Syekh_Subakir.jpg",
+    "author": "Risanprasetyo /Febri Ady Prasetyo",
+    "license": "CC BY-SA 4.0"
+  },
+  "raden-patah-demak": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Masjid_demak.jpg",
+    "author": "Astayoga at English Wikipedia",
+    "license": "Public domain"
+  },
+  "makam-sultan-raden-patah-adipati-unus-sultan-trenggono-demak": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Masjid_demak.jpg",
+    "author": "Astayoga at English Wikipedia",
+    "license": "Public domain"
+  },
+  "auliya-6": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Masjid_demak.jpg",
+    "author": "Astayoga at English Wikipedia",
+    "license": "Public domain"
+  },
+  "habib-ahmad-sapuro": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Makam_Sapuro.jpg/960px-Makam_Sapuro.jpg",
+    "author": "Akhsan Bae",
+    "license": "CC0"
+  },
+  "makam-al-habib-ahmad-bin-abdullah-bin-thalib-al-attas-pekalongan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Makam_Sapuro.jpg/960px-Makam_Sapuro.jpg",
+    "author": "Akhsan Bae",
+    "license": "CC0"
+  },
+  "habib-7": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Makam_Sapuro.jpg/960px-Makam_Sapuro.jpg",
+    "author": "Akhsan Bae",
+    "license": "CC0"
+  },
+  "kyai-nur-iman-mlangi": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg/960px-Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg",
+    "author": "RaFaDa20631",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-kyai-nur-iman-mlangi-bph-sandiyo-sleman": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg/960px-Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg",
+    "author": "RaFaDa20631",
+    "license": "CC BY-SA 4.0"
+  },
+  "auliya-8": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg/960px-Masjid_Pathok_Nagara_Mlangi_%282025%29.jpg",
+    "author": "RaFaDa20631",
+    "license": "CC BY-SA 4.0"
+  },
+  "syaichona-kholil-bangkalan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4d/Masjid_Syaikhona_Kholil_Bangkalan.jpg/960px-Masjid_Syaikhona_Kholil_Bangkalan.jpg",
+    "author": "Royhanah",
+    "license": "CC0"
+  },
+  "makam-syaichona-muhammad-kholil-bangkalan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4d/Masjid_Syaikhona_Kholil_Bangkalan.jpg/960px-Masjid_Syaikhona_Kholil_Bangkalan.jpg",
+    "author": "Royhanah",
+    "license": "CC0"
+  },
+  "ulama-15": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4d/Masjid_Syaikhona_Kholil_Bangkalan.jpg/960px-Masjid_Syaikhona_Kholil_Bangkalan.jpg",
+    "author": "Royhanah",
+    "license": "CC0"
+  },
+  "kh-hasyim-asyari-tebuireng": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Pesantren_Tebuireng%2C_Jombang.jpg/960px-Pesantren_Tebuireng%2C_Jombang.jpg",
+    "author": "Annisa Alwita from Malang, Indonesia",
+    "license": "CC BY-SA 2.0"
+  },
+  "rais-akbar-pendiri-nahdlatul-ulama-pahlawan-nasional-pencetus-resolusi-jihad-22-oktober-1945-jombang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Pesantren_Tebuireng%2C_Jombang.jpg/960px-Pesantren_Tebuireng%2C_Jombang.jpg",
+    "author": "Annisa Alwita from Malang, Indonesia",
+    "license": "CC BY-SA 2.0"
+  },
+  "ulama-1": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Pesantren_Tebuireng%2C_Jombang.jpg/960px-Pesantren_Tebuireng%2C_Jombang.jpg",
+    "author": "Annisa Alwita from Malang, Indonesia",
+    "license": "CC BY-SA 2.0"
+  },
+  "kh-wahab-chasbullah": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Abdul_Wahab_Hasbullah.jpg",
+    "author": "Uncredited, document of Nahdlatul Ulama",
+    "license": "Public domain"
+  },
+  "makam-kh-abdul-wahab-chasbullah-jombang": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Abdul_Wahab_Hasbullah.jpg",
+    "author": "Uncredited, document of Nahdlatul Ulama",
+    "license": "Public domain"
+  },
+  "ulama-16": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Abdul_Wahab_Hasbullah.jpg",
+    "author": "Uncredited, document of Nahdlatul Ulama",
+    "license": "Public domain"
+  },
+  "kh-bisri-syansuri": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/38/K.H._Bisri_Syansuri.jpg",
+    "author": "Uncredited, document of Nahdlatul Ulama",
+    "license": "Public domain"
+  },
+  "makam-kh-bisri-syansuri-jombang": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/38/K.H._Bisri_Syansuri.jpg",
+    "author": "Uncredited, document of Nahdlatul Ulama",
+    "license": "Public domain"
+  },
+  "ulama-17": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/38/K.H._Bisri_Syansuri.jpg",
+    "author": "Uncredited, document of Nahdlatul Ulama",
+    "license": "Public domain"
+  },
+  "habib-sholeh-tanggul-jember": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg/960px-Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg",
+    "author": "Astari28",
+    "license": "CC BY-SA 4.0"
+  },
+  "wali-quthub-mustajabud-da-wah-penggubah-shalawat-manshub-jember": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg/960px-Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg",
+    "author": "Astari28",
+    "license": "CC BY-SA 4.0"
+  },
+  "habib-9": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg/960px-Makam_Habib_Sholeh_Tanggul_dikunjungi_penziarah.jpg",
+    "author": "Astari28",
+    "license": "CC BY-SA 4.0"
+  },
+  "kh-abdul-karim-lirboyo": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/1/1c/ABDUL_KARIM_KDR.jpg",
+    "author": "Syahidan Haq",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-kh-abdul-karim-kh-marzuqi-dahlan-kh-mahrus-aly-kediri": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/1/1c/ABDUL_KARIM_KDR.jpg",
+    "author": "Syahidan Haq",
+    "license": "CC BY-SA 4.0"
+  },
+  "ulama-21": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/1/1c/ABDUL_KARIM_KDR.jpg",
+    "author": "Syahidan Haq",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-jumadil-kubro-troloyo": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg/960px-054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg",
+    "author": "Anandajoti Bhikkhu from Sadao, Thailand",
+    "license": "CC BY 2.0"
+  },
+  "makam-syekh-jumadil-kubro-kompleks-makam-islam-kuno-troloyo-mojokerto": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg/960px-054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg",
+    "author": "Anandajoti Bhikkhu from Sadao, Thailand",
+    "license": "CC BY 2.0"
+  },
+  "auliya-10": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg/960px-054_Signboard%2C_Makam_Troloyo_%2840448161991%29.jpg",
+    "author": "Anandajoti Bhikkhu from Sadao, Thailand",
+    "license": "CC BY 2.0"
+  },
+  "habib-umar-bedugul-tabanan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg/960px-Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg",
+    "author": "Astari28",
+    "license": "CC BY 4.0"
+  },
+  "syekh-habib-umar-bukit-bedugul-tabanan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg/960px-Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg",
+    "author": "Astari28",
+    "license": "CC BY 4.0"
+  },
+  "auliya-14": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg/960px-Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg",
+    "author": "Astari28",
+    "license": "CC BY 4.0"
+  },
+  "makam-loang-baloq": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/TAMAN_LOANG_BALOQ_-_panoramio.jpg/960px-TAMAN_LOANG_BALOQ_-_panoramio.jpg",
+    "author": "wonktjoekir",
+    "license": "CC BY 3.0"
+  },
+  "syekh-gauz-abdurrazzaq-makam-loang-baloq-mataram": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/TAMAN_LOANG_BALOQ_-_panoramio.jpg/960px-TAMAN_LOANG_BALOQ_-_panoramio.jpg",
+    "author": "wonktjoekir",
+    "license": "CC BY 3.0"
+  },
+  "auliya-15": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/TAMAN_LOANG_BALOQ_-_panoramio.jpg/960px-TAMAN_LOANG_BALOQ_-_panoramio.jpg",
+    "author": "wonktjoekir",
+    "license": "CC BY 3.0"
+  },
+  "syekh-abdurrauf-as-singkili": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Meuseujid_Raya_Baiturrahman_.jpg/960px-Meuseujid_Raya_Baiturrahman_.jpg",
+    "author": "Si_Gam",
+    "license": "CC BY-SA 3.0"
+  },
+  "makam-syekh-abdurrauf-bin-ali-al-fansuri-as-singkili-banda-aceh": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Meuseujid_Raya_Baiturrahman_.jpg/960px-Meuseujid_Raya_Baiturrahman_.jpg",
+    "author": "Si_Gam",
+    "license": "CC BY-SA 3.0"
+  },
+  "ulama-3": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Meuseujid_Raya_Baiturrahman_.jpg/960px-Meuseujid_Raya_Baiturrahman_.jpg",
+    "author": "Si_Gam",
+    "license": "CC BY-SA 3.0"
+  },
+  "syekh-burhanuddin-ulakan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg/960px-Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg",
+    "author": "Rahmat Irfan Denas",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-syekh-burhanuddin-ulakan-tuanku-ulakan-padang-pariaman": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg/960px-Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg",
+    "author": "Rahmat Irfan Denas",
+    "license": "CC BY-SA 4.0"
+  },
+  "ulama-25": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg/960px-Surau_Gadang_Syekh_Burhanuddin_2020_01.jpg",
+    "author": "Rahmat Irfan Denas",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-abdul-wahab-rokan-besilam": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/ae/COLLECTIE_TROPENMUSEUM_De_Azizi_Moskee_Tandjoengpoera_TMnr_60021732.jpg",
+    "author": "Unknown author Unknown author",
+    "license": "CC BY-SA 3.0"
+  },
+  "mujaddid-thariqah-naqsyabandiyah-khalidiyah-sumatera-semenanjung-malaya-pendiri-kampung-suluk-babussalam-langkat": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/ae/COLLECTIE_TROPENMUSEUM_De_Azizi_Moskee_Tandjoengpoera_TMnr_60021732.jpg",
+    "author": "Unknown author Unknown author",
+    "license": "CC BY-SA 3.0"
+  },
+  "ulama-26": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/ae/COLLECTIE_TROPENMUSEUM_De_Azizi_Moskee_Tandjoengpoera_TMnr_60021732.jpg",
+    "author": "Unknown author Unknown author",
+    "license": "CC BY-SA 3.0"
+  },
+  "syekh-muhammad-arsyad-al-banjari": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Masjid_Agung_Al-Karomah_001.jpg/960px-Masjid_Agung_Al-Karomah_001.jpg",
+    "author": "Ilham Mufti Laksono",
+    "license": "CC BY 4.0"
+  },
+  "matahari-islam-kalimantan-pengarang-kitab-sabilal-muhtadin-maha-guru-dzurriyah-ulama-nusantara-banjar": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Masjid_Agung_Al-Karomah_001.jpg/960px-Masjid_Agung_Al-Karomah_001.jpg",
+    "author": "Ilham Mufti Laksono",
+    "license": "CC BY 4.0"
+  },
+  "ulama-28": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Masjid_Agung_Al-Karomah_001.jpg/960px-Masjid_Agung_Al-Karomah_001.jpg",
+    "author": "Ilham Mufti Laksono",
+    "license": "CC BY 4.0"
+  },
+  "guru-sekumpul-martapura": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/45/Guru-ijai-sekumpul.jpg",
+    "author": "The original uploader was Ezagren at Indonesian Wikipedia .",
+    "license": "GFDL"
+  },
+  "makam-kh-muhammad-zaini-bin-abdul-ghani-al-banjari-abah-guru-sekumpul": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/45/Guru-ijai-sekumpul.jpg",
+    "author": "The original uploader was Ezagren at Indonesian Wikipedia .",
+    "license": "GFDL"
+  },
+  "ulama-2": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/45/Guru-ijai-sekumpul.jpg",
+    "author": "The original uploader was Ezagren at Indonesian Wikipedia .",
+    "license": "GFDL"
+  },
+  "habib-basirih-banjarmasin": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Kubah_Basirih_-_panoramio.jpg/960px-Kubah_Basirih_-_panoramio.jpg",
+    "author": "Zubaydah",
+    "license": "CC BY 3.0"
+  },
+  "makam-al-habib-hamid-bin-abbas-bahasyim-habib-basirih-banjarmasin": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Kubah_Basirih_-_panoramio.jpg/960px-Kubah_Basirih_-_panoramio.jpg",
+    "author": "Zubaydah",
+    "license": "CC BY 3.0"
+  },
+  "habib-12": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Kubah_Basirih_-_panoramio.jpg/960px-Kubah_Basirih_-_panoramio.jpg",
+    "author": "Zubaydah",
+    "license": "CC BY 3.0"
+  },
+  "sultan-suriansyah-banjarmasin": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Masjidbersejarahsultansuriansyah.jpg/960px-Masjidbersejarahsultansuriansyah.jpg",
+    "author": "Ahyaru Andrestyo",
+    "license": "Public domain"
+  },
+  "raja-banjar-pertama-yang-memeluk-islam-ulama-utusan-kesultanan-demak-pengislam-tanah-banjar-banjarmasin": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Masjidbersejarahsultansuriansyah.jpg/960px-Masjidbersejarahsultansuriansyah.jpg",
+    "author": "Ahyaru Andrestyo",
+    "license": "Public domain"
+  },
+  "auliya-16": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Masjidbersejarahsultansuriansyah.jpg/960px-Masjidbersejarahsultansuriansyah.jpg",
+    "author": "Ahyaru Andrestyo",
+    "license": "Public domain"
+  },
+  "datuk-ri-bandang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Bangunan_Makam_Datuk_ri_Bandang.jpg/960px-Bangunan_Makam_Datuk_ri_Bandang.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "anggota-tiga-serangkai-dato-tallua-pengislam-raja-gowa-sultan-alauddin-raja-tallo-sultan-awalul-islam-makassar": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Bangunan_Makam_Datuk_ri_Bandang.jpg/960px-Bangunan_Makam_Datuk_ri_Bandang.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "auliya-17": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Bangunan_Makam_Datuk_ri_Bandang.jpg/960px-Bangunan_Makam_Datuk_ri_Bandang.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-yusuf-al-makassari": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Masjid_Tua_Al-Hilal_Katangka.jpg/960px-Masjid_Tua_Al-Hilal_Katangka.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "wali-quthub-nusantara-mursyid-thariqah-khalwatiyah-pahlawan-nasional-dua-benua-indonesia-dan-afrika-selatan-gowa": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Masjid_Tua_Al-Hilal_Katangka.jpg/960px-Masjid_Tua_Al-Hilal_Katangka.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "ulama-4": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Masjid_Tua_Al-Hilal_Katangka.jpg/960px-Masjid_Tua_Al-Hilal_Katangka.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "kyai-mojo-tondano": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/49/Makam-kyai-modjo-1_Djoko_Sanudin.jpg",
+    "author": "Djoko Sanudin",
+    "license": "CC BY-SA 3.0"
+  },
+  "makam-kyai-mojo-kh-muslim-muhammad-khalifah-minahasa": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/49/Makam-kyai-modjo-1_Djoko_Sanudin.jpg",
+    "author": "Djoko Sanudin",
+    "license": "CC BY-SA 3.0"
+  },
+  "ulama-29": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/49/Makam-kyai-modjo-1_Djoko_Sanudin.jpg",
+    "author": "Djoko Sanudin",
+    "license": "CC BY-SA 3.0"
+  },
+  "habib-idrus-bin-salim-al-jufri-palu": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/61/Habib_Idrus_bin_Salim_al-Jufri.jpg",
+    "author": "Unknown author Unknown author , published by Rabithah Alawiyah",
+    "license": "Public domain"
+  },
+  "makam-al-habib-sayyid-idrus-bin-salim-al-jufri-guru-tua-palu": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/61/Habib_Idrus_bin_Salim_al-Jufri.jpg",
+    "author": "Unknown author Unknown author , published by Rabithah Alawiyah",
+    "license": "Public domain"
+  },
+  "habib-13": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/61/Habib_Idrus_bin_Salim_al-Jufri.jpg",
+    "author": "Unknown author Unknown author , published by Rabithah Alawiyah",
+    "license": "Public domain"
+  },
+  "sultan-maulana-yusuf": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Keraton_Surosowan_%283%29.jpg/960px-Keraton_Surosowan_%283%29.jpg",
+    "author": "Mirani Pramitasari",
+    "license": "CC BY-SA 4.0"
+  },
+  "sultan-maulana-yusuf-serang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Keraton_Surosowan_%283%29.jpg/960px-Keraton_Surosowan_%283%29.jpg",
+    "author": "Mirani Pramitasari",
+    "license": "CC BY-SA 4.0"
+  },
+  "auliya-18": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Keraton_Surosowan_%283%29.jpg/960px-Keraton_Surosowan_%283%29.jpg",
+    "author": "Mirani Pramitasari",
+    "license": "CC BY-SA 4.0"
+  },
+  "masyayikh-lasem-rembang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg/960px-Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg",
+    "author": "Ris00l may00",
+    "license": "CC BY 4.0"
+  },
+  "makam-mbah-sambu-kh-ma-shum-ahmad-kh-baidlowi-rembang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg/960px-Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg",
+    "author": "Ris00l may00",
+    "license": "CC BY 4.0"
+  },
+  "ulama-32": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg/960px-Arsitektur_Masjid_Jami%27_Lasem_portrait.jpg",
+    "author": "Ris00l may00",
+    "license": "CC BY 4.0"
+  },
+  "syekh-datuk-kahfi": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/0c/COLLECTIE_TROPENMUSEUM_Astana_Gunung_Jati_bij_Cheribon_TMnr_60005191.jpg",
+    "author": "G.F.J. (Georg Friedrich Johannes) Bley (Fotograaf/photographer).",
+    "license": "CC BY-SA 3.0"
+  },
+  "syekh-datuk-kahfi-cirebon": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/0c/COLLECTIE_TROPENMUSEUM_Astana_Gunung_Jati_bij_Cheribon_TMnr_60005191.jpg",
+    "author": "G.F.J. (Georg Friedrich Johannes) Bley (Fotograaf/photographer).",
+    "license": "CC BY-SA 3.0"
+  },
+  "auliya-19": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/0c/COLLECTIE_TROPENMUSEUM_Astana_Gunung_Jati_bij_Cheribon_TMnr_60005191.jpg",
+    "author": "G.F.J. (Georg Friedrich Johannes) Bley (Fotograaf/photographer).",
+    "license": "CC BY-SA 3.0"
+  },
+  "guru-bangil-pasuruan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Masjid_Manarul_Islam_Bangil-1.jpg/960px-Masjid_Manarul_Islam_Bangil-1.jpg",
+    "author": "Indonesiagood",
+    "license": "CC BY 4.0"
+  },
+  "mutiara-kalimantan-di-tanah-jawa-pendiri-pp-datuk-kalampayan-bangil-guru-abah-guru-sekumpul-pasuruan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Masjid_Manarul_Islam_Bangil-1.jpg/960px-Masjid_Manarul_Islam_Bangil-1.jpg",
+    "author": "Indonesiagood",
+    "license": "CC BY 4.0"
+  },
+  "ulama-35": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Masjid_Manarul_Islam_Bangil-1.jpg/960px-Masjid_Manarul_Islam_Bangil-1.jpg",
+    "author": "Indonesiagood",
+    "license": "CC BY 4.0"
+  },
+  "sultan-malikussaleh": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg/960px-Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg",
+    "author": "Iqbalhafidh",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-sultan-malikussaleh-meurah-silu-aceh-utara": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg/960px-Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg",
+    "author": "Iqbalhafidh",
+    "license": "CC BY-SA 4.0"
+  },
+  "auliya-25": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg/960px-Makam_Sultan_Malik_As-Shalih_%28Malikussaleh%29.jpg",
+    "author": "Iqbalhafidh",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-papan-tinggi-mahligai-barus": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG/960px-Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG",
+    "author": "Barus Raya",
+    "license": "CC BY-SA 3.0"
+  },
+  "cagar-budaya-nasional-titik-nol-peradaban-islam-nusantara-di-bandar-kapur-barus-kuno-tapanuli-tengah": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG/960px-Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG",
+    "author": "Barus Raya",
+    "license": "CC BY-SA 3.0"
+  },
+  "ulama-36": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG/960px-Makam_Syeikh_Mahmud_Barus%2C_Papan_Tinggi_..JPG",
+    "author": "Barus Raya",
+    "license": "CC BY-SA 3.0"
+  },
+  "syekh-kasyful-anwar-martapura": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Pondok_Pesantren_Darussalam_001.jpg/960px-Pondok_Pesantren_Darussalam_001.jpg",
+    "author": "Tim WikiBanua 2.0",
+    "license": "CC BY-SA 4.0"
+  },
+  "mujaddid-kurikulum-pondok-pesantren-darussalam-martapura-maha-guru-ulama-kalimantan-banjar": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Pondok_Pesantren_Darussalam_001.jpg/960px-Pondok_Pesantren_Darussalam_001.jpg",
+    "author": "Tim WikiBanua 2.0",
+    "license": "CC BY-SA 4.0"
+  },
+  "ulama-37": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Pondok_Pesantren_Darussalam_001.jpg/960px-Pondok_Pesantren_Darussalam_001.jpg",
+    "author": "Tim WikiBanua 2.0",
+    "license": "CC BY-SA 4.0"
+  },
+  "datu-abulung-sungai-batang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Datu_Abulung_-_Kubah_001.jpg/960px-Datu_Abulung_-_Kubah_001.jpg",
+    "author": "Tim WikiBarakat - WikiBanua",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-syekh-abdul-hamid-abulung-datu-abulung-banjar": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Datu_Abulung_-_Kubah_001.jpg/960px-Datu_Abulung_-_Kubah_001.jpg",
+    "author": "Tim WikiBarakat - WikiBanua",
+    "license": "CC BY-SA 4.0"
+  },
+  "ulama-38": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Datu_Abulung_-_Kubah_001.jpg/960px-Datu_Abulung_-_Kubah_001.jpg",
+    "author": "Tim WikiBarakat - WikiBanua",
+    "license": "CC BY-SA 4.0"
+  },
+  "sultan-baabullah-ternate": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Makam_Sultan_Babullah.jpg/960px-Makam_Sultan_Babullah.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "sultan-baabullah-datu-syah-ternate": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Makam_Sultan_Babullah.jpg/960px-Makam_Sultan_Babullah.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "auliya-29": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Makam_Sultan_Babullah.jpg/960px-Makam_Sultan_Babullah.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "kh-hasan-besari-tegalsari": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Masjid_Baiturrahman_Setono_Tegalsari_Ponorogo_Tampak_Dari_Depan.jpg",
+    "author": "Ardhi Satria",
+    "license": "CC0"
+  },
+  "makam-kiai-ageng-muhammad-besari-kiai-ageng-hasan-besari-ponorogo": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Masjid_Baiturrahman_Setono_Tegalsari_Ponorogo_Tampak_Dari_Depan.jpg",
+    "author": "Ardhi Satria",
+    "license": "CC0"
+  },
+  "auliya-30": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Masjid_Baiturrahman_Setono_Tegalsari_Ponorogo_Tampak_Dari_Depan.jpg",
+    "author": "Ardhi Satria",
+    "license": "CC0"
+  },
+  "pangeran-cakrabuana": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Mosque_of_Keraton_Kasepuhan.jpg/960px-Mosque_of_Keraton_Kasepuhan.jpg",
+    "author": "NaidNdeso",
+    "license": "CC BY-SA 3.0"
+  },
+  "pangeran-cakrabuana-cirebon": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Mosque_of_Keraton_Kasepuhan.jpg/960px-Mosque_of_Keraton_Kasepuhan.jpg",
+    "author": "NaidNdeso",
+    "license": "CC BY-SA 3.0"
+  },
+  "syekh-magelung-sakti": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/The_Great_Mosque_of_Cirebon.jpg/960px-The_Great_Mosque_of_Cirebon.jpg",
+    "author": "Bellmaker5698",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-magelung-sakti-cirebon": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/The_Great_Mosque_of_Cirebon.jpg/960px-The_Great_Mosque_of_Cirebon.jpg",
+    "author": "Bellmaker5698",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-bentong-karawang": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Makam_Quro_dan_Bentong_-_Tan_Go_Wat.jpg",
+    "author": "Kang Ari Tea",
+    "license": "CC BY-SA 4.0"
+  },
+  "sultan-ageng-tirtayasa": {
+    "url": "https://upload.wikimedia.org/wikipedia/id/d/dc/Lukisan_Sultan_Ageng_Tirtayasa_oleh_Kang_Alam.jpg",
+    "author": "Raudalkhudri",
+    "license": "Penggunaan wajar"
+  },
+  "sultan-ageng-tirtayasa-serang": {
+    "url": "https://upload.wikimedia.org/wikipedia/id/d/dc/Lukisan_Sultan_Ageng_Tirtayasa_oleh_Kang_Alam.jpg",
+    "author": "Raudalkhudri",
+    "license": "Penggunaan wajar"
+  },
+  "raden-saleh-syarif-bustaman-bogor": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/39/Portrait_of_Raden_Saleh_c._1872.jpg",
+    "author": "Woodbury & Page (Walter B. Woodbury died in 1885)",
+    "license": "Public domain"
+  },
+  "makam-raden-saleh-syarif-bustaman-bogor": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/39/Portrait_of_Raden_Saleh_c._1872.jpg",
+    "author": "Woodbury & Page (Walter B. Woodbury died in 1885)",
+    "license": "Public domain"
+  },
+  "ratu-kalinyamat-jepara": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f1/Masjid_Mantingan_Jepara.jpg/960px-Masjid_Mantingan_Jepara.jpg",
+    "author": "AnsyahF",
+    "license": "CC BY 4.0"
+  },
+  "makam-ratu-kalinyamat-sultan-hadlirin-jepara": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f1/Masjid_Mantingan_Jepara.jpg/960px-Masjid_Mantingan_Jepara.jpg",
+    "author": "AnsyahF",
+    "license": "CC BY 4.0"
+  },
+  "ki-ageng-pandanaran-semarang": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/53/Pintu_menuju_ke_Makam_Ki_Ageng-Sunan_Pandanaran_-_panoramio.jpg",
+    "author": "Muhammad Cordiaz",
+    "license": "CC BY-SA 3.0"
+  },
+  "makam-ki-ageng-pandanaran-i-pangeran-made-pandan-semarang": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/53/Pintu_menuju_ke_Makam_Ki_Ageng-Sunan_Pandanaran_-_panoramio.jpg",
+    "author": "Muhammad Cordiaz",
+    "license": "CC BY-SA 3.0"
+  },
+  "syekh-makhdum-wali": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Masjid_Nur_Sulaiman_Banyumas.jpg/960px-Masjid_Nur_Sulaiman_Banyumas.jpg",
+    "author": "Tyo Satriany",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-syekh-makhdum-wali-pangeran-senopati-mangkubumi-banyumas": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Masjid_Nur_Sulaiman_Banyumas.jpg/960px-Masjid_Nur_Sulaiman_Banyumas.jpg",
+    "author": "Tyo Satriany",
+    "license": "CC BY-SA 4.0"
+  },
+  "ki-ageng-henis-laweyan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Masjid_Laweyan.jpg/960px-Masjid_Laweyan.jpg",
+    "author": "Kiaryabagusadiwardana",
+    "license": "CC0"
+  },
+  "makam-ki-ageng-henis-ki-ageng-anis-surakarta": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Masjid_Laweyan.jpg/960px-Masjid_Laweyan.jpg",
+    "author": "Kiaryabagusadiwardana",
+    "license": "CC0"
+  },
+  "habib-anis-solo": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Rouhah_di_Masjid_Riyadh_Solo.jpg/960px-Rouhah_di_Masjid_Riyadh_Solo.jpg",
+    "author": "Sekar Jarwo Soekarno",
+    "license": "CC BY 4.0"
+  },
+  "makam-habib-anis-bin-alwi-al-habsyi-habib-alwi-bin-ali-al-habsyi-surakarta": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Rouhah_di_Masjid_Riyadh_Solo.jpg/960px-Rouhah_di_Masjid_Riyadh_Solo.jpg",
+    "author": "Sekar Jarwo Soekarno",
+    "license": "CC BY 4.0"
+  },
+  "ki-ageng-gribig-jatinom": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Makam_Gribig_Pj_IMG_3213.JPG/960px-Makam_Gribig_Pj_IMG_3213.JPG",
+    "author": "Kembangraps",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-ki-ageng-gribig-sayyid-wasibagno-timur-klaten": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Makam_Gribig_Pj_IMG_3213.JPG/960px-Makam_Gribig_Pj_IMG_3213.JPG",
+    "author": "Kembangraps",
+    "license": "CC BY-SA 4.0"
+  },
+  "panembahan-senopati-kotagede": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Masjid_Mataram_Kotagede.jpg/960px-Masjid_Mataram_Kotagede.jpg",
+    "author": "Fandy Aprianto Rohman",
+    "license": "Attribution"
+  },
+  "makam-panembahan-senopati-ki-ageng-pemanahan-sultan-hadiwijaya-yogyakarta": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Masjid_Mataram_Kotagede.jpg/960px-Masjid_Mataram_Kotagede.jpg",
+    "author": "Fandy Aprianto Rohman",
+    "license": "Attribution"
+  },
+  "kh-ahmad-dahlan-jogja": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/87/Ahmad_Dahlan.jpg",
+    "author": "Unknown author Unknown author",
+    "license": "Public domain"
+  },
+  "makam-kh-ahmad-dahlan-muhammad-darwis-yogyakarta": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/87/Ahmad_Dahlan.jpg",
+    "author": "Unknown author Unknown author",
+    "license": "Public domain"
+  },
+  "sultan-agung-imogiri": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/COLLECTIE_TROPENMUSEUM_Imogiri_nabij_Yogyakarta_de_vorstelijke_begraafplaats_waar_de_familiegraven_van_de_Midden_Javaanse_vorsten_zijn._TMnr_60004749.jpg",
+    "author": "Unknown author Unknown author",
+    "license": "CC BY-SA 3.0"
+  },
+  "makam-sultan-agung-hanyakrakusuma-raja-raja-mataram-bantul": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/COLLECTIE_TROPENMUSEUM_Imogiri_nabij_Yogyakarta_de_vorstelijke_begraafplaats_waar_de_familiegraven_van_de_Midden_Javaanse_vorsten_zijn._TMnr_60004749.jpg",
+    "author": "Unknown author Unknown author",
+    "license": "CC BY-SA 3.0"
+  },
+  "fatimah-binti-maimun": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Tomb_of_Fatimah_bt_Maimun.jpeg",
+    "author": "No machine-readable author provided. Naval Scene assumed (based on copyright claims).",
+    "license": "CC BY-SA 4.0"
+  },
+  "bukti-epigrafis-tertua-kehadiran-islam-di-nusantara-gresik": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Tomb_of_Fatimah_bt_Maimun.jpeg",
+    "author": "No machine-readable author provided. Naval Scene assumed (based on copyright claims).",
+    "license": "CC BY-SA 4.0"
+  },
+  "gus-dur-tebuireng": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/President_Abdurrahman_Wahid_-_Indonesia.jpg/960px-President_Abdurrahman_Wahid_-_Indonesia.jpg",
+    "author": "National Information and Communication Agency Republic of Indonesia",
+    "license": "Public domain"
+  },
+  "makam-kh-abdurrahman-wahid-jombang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/President_Abdurrahman_Wahid_-_Indonesia.jpg/960px-President_Abdurrahman_Wahid_-_Indonesia.jpg",
+    "author": "National Information and Communication Agency Republic of Indonesia",
+    "license": "Public domain"
+  },
+  "sultan-iskandar-muda": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Lukisan_Iskandar_muda.jpg",
+    "author": "Unknown author Unknown author",
+    "license": "Public domain"
+  },
+  "makam-sultan-iskandar-muda-banda-aceh": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Lukisan_Iskandar_muda.jpg",
+    "author": "Unknown author Unknown author",
+    "license": "Public domain"
+  },
+  "syekh-musthafa-husein-purba-baru": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Pondok_Pesantren_Musthafawiyah_Purba_Baru_Mandailing_002.jpg/960px-Pondok_Pesantren_Musthafawiyah_Purba_Baru_Mandailing_002.jpg",
+    "author": "Nasution007",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-syekh-musthafa-husein-nasution-al-mandili-mandailing-natal": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Pondok_Pesantren_Musthafawiyah_Purba_Baru_Mandailing_002.jpg/960px-Pondok_Pesantren_Musthafawiyah_Purba_Baru_Mandailing_002.jpg",
+    "author": "Nasution007",
+    "license": "CC BY-SA 4.0"
+  },
+  "syekh-hasan-mashum-medan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Great_mosque_in_Medan_cropped.jpg/960px-Great_mosque_in_Medan_cropped.jpg",
+    "author": "Daniel Berthold",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-syekh-hasan-ma-shum-al-madani-tuan-guru-deli-medan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Great_mosque_in_Medan_cropped.jpg/960px-Great_mosque_in_Medan_cropped.jpg",
+    "author": "Daniel Berthold",
+    "license": "CC BY-SA 4.0"
+  },
+  "marhum-pekan-senapelan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Masjid_Raya_Pekanbaru_%284%29.jpg/960px-Masjid_Raya_Pekanbaru_%284%29.jpg",
+    "author": "DinaMardiati",
+    "license": "CC BY 4.0"
+  },
+  "makam-marhum-pekan-marhum-bukit-pekanbaru": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Masjid_Raya_Pekanbaru_%284%29.jpg/960px-Masjid_Raya_Pekanbaru_%284%29.jpg",
+    "author": "DinaMardiati",
+    "license": "CC BY 4.0"
+  },
+  "sultan-mahmud-riayat-syah-lingga": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Masjid_Jami_Sultan_Lingga_ruang_salat.jpg/960px-Masjid_Jami_Sultan_Lingga_ruang_salat.jpg",
+    "author": "Official Website of The Ministry of Education and Culture",
+    "license": "Public domain"
+  },
+  "makam-sultan-mahmud-riayat-syah-sultan-mahmud-syah-iii-lingga": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Masjid_Jami_Sultan_Lingga_ruang_salat.jpg/960px-Masjid_Jami_Sultan_Lingga_ruang_salat.jpg",
+    "author": "Official Website of The Ministry of Education and Culture",
+    "license": "Public domain"
+  },
+  "raja-ali-haji-penyengat": {
+    "url": "https://thumb.wikimedia.org/wikipedia/id/thumb/4/40/Masjid_sultan_Riau_Penyengat.JPG/960px-Masjid_sultan_Riau_Penyengat.JPG",
+    "author": "https://id.wikipedia.org/wiki/Pengguna:Masgatotkaca",
+    "license": "CC0"
+  },
+  "makam-raja-ali-haji-engku-putri-raja-hamidah-tanjungpinang": {
+    "url": "https://thumb.wikimedia.org/wikipedia/id/thumb/4/40/Masjid_sultan_Riau_Penyengat.JPG/960px-Masjid_sultan_Riau_Penyengat.JPG",
+    "author": "https://id.wikipedia.org/wiki/Pengguna:Masgatotkaca",
+    "license": "CC0"
+  },
+  "sultan-thaha-syaifuddin-tebo": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/24/Sultan_Thaha_Syaifuddin.jpg",
+    "author": "Government of Indonesia",
+    "license": "Public domain"
+  },
+  "makam-sultan-thaha-syaifuddin-tebo": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/24/Sultan_Thaha_Syaifuddin.jpg",
+    "author": "Government of Indonesia",
+    "license": "Public domain"
+  },
+  "sentot-alibasyah-bengkulu": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/Sentot%2C_opperbevelhebber_der_rebellen.jpg/960px-Sentot%2C_opperbevelhebber_der_rebellen.jpg",
+    "author": "J.P. de Veer",
+    "license": "Public domain"
+  },
+  "makam-sentot-alibasyah-prawirodirdjo-bengkulu": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/Sentot%2C_opperbevelhebber_der_rebellen.jpg/960px-Sentot%2C_opperbevelhebber_der_rebellen.jpg",
+    "author": "J.P. de Veer",
+    "license": "Public domain"
+  },
+  "syekh-burhanuddin-imam-senggolo-bengkulu": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/94/Masjid_Jamik_Bengkulu.jpg",
+    "author": "Hyurika",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-syekh-burhanuddin-imam-senggolo-bengkulu": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/94/Masjid_Jamik_Bengkulu.jpg",
+    "author": "Hyurika",
+    "license": "CC BY-SA 4.0"
+  },
+  "datu-sanggul-rantau": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Makam_Datu_Sanggul_Tatakan_%28view_7%29_-_panoramio.jpg",
+    "author": "Zubaydah",
+    "license": "CC BY 3.0"
+  },
+  "makam-datu-sanggul-syekh-abdussamad-tapin": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Makam_Datu_Sanggul_Tatakan_%28view_7%29_-_panoramio.jpg",
+    "author": "Zubaydah",
+    "license": "CC BY 3.0"
+  },
+  "sultan-syarif-abdurrahman-alkadrie-pontianak": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Masjid_Jami_Pontianak_%282026%29_01.jpg/960px-Masjid_Jami_Pontianak_%282026%29_01.jpg",
+    "author": "Medelam",
+    "license": "CC BY-SA 4.0"
+  },
+  "sayyid-pendiri-kota-pontianak-sultan-pertama-kesultanan-kadriah-pontianak": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Masjid_Jami_Pontianak_%282026%29_01.jpg/960px-Masjid_Jami_Pontianak_%282026%29_01.jpg",
+    "author": "Medelam",
+    "license": "CC BY-SA 4.0"
+  },
+  "kyai-gede-kotawaringin": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Masjid_Kyai_Gede_001.jpg/960px-Masjid_Kyai_Gede_001.jpg",
+    "author": "Ilham Mufti Laksono",
+    "license": "CC BY-SA 4.0"
+  },
+  "kompleks-makam-masjid-kyai-gede-kotawaringin-barat": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Masjid_Kyai_Gede_001.jpg/960px-Masjid_Kyai_Gede_001.jpg",
+    "author": "Ilham Mufti Laksono",
+    "license": "CC BY-SA 4.0"
+  },
+  "tunggang-parangan-kutai-lama": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Masjid_Jami_Aji_Amir_Hasanuddin_001.jpg/960px-Masjid_Jami_Aji_Amir_Hasanuddin_001.jpg",
+    "author": "Ezagren ( bicara / talk )",
+    "license": "CC BY-SA 4.0"
+  },
+  "makam-habib-hasyim-bin-musayyakh-bin-yahya-datuk-tunggang-parangan-kutai-kartanegara": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Masjid_Jami_Aji_Amir_Hasanuddin_001.jpg/960px-Masjid_Jami_Aji_Amir_Hasanuddin_001.jpg",
+    "author": "Ezagren ( bicara / talk )",
+    "license": "CC BY-SA 4.0"
+  },
+  "kh-abul-hasan-samarinda": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Masjid_Darussalam_Samarinda_-_panoramio.jpg/960px-Masjid_Darussalam_Samarinda_-_panoramio.jpg",
+    "author": "Bloesafir Pamanjagau",
+    "license": "CC BY 3.0"
+  },
+  "makam-tuan-guru-kh-abul-hasan-samarinda": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Masjid_Darussalam_Samarinda_-_panoramio.jpg/960px-Masjid_Darussalam_Samarinda_-_panoramio.jpg",
+    "author": "Bloesafir Pamanjagau",
+    "license": "CC BY 3.0"
+  },
+  "pangeran-diponegoro-makassar": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Diponegoro.jpg",
+    "author": "Lithograph by C. C. A. Last in 1835 to an original pencil drawing by A. J. Bik from 1830",
+    "license": "Public domain"
+  },
+  "sultan-abdulhamid-herucokro-amirul-mukminin-panatagama-jawa-panglima-agung-perang-jawa-penulis-babad-diponegoro-makassar": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Diponegoro.jpg",
+    "author": "Lithograph by C. C. A. Last in 1835 to an original pencil drawing by A. J. Bik from 1830",
+    "license": "Public domain"
+  },
+  "sultan-amai-gorontalo": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Masjid_Hunto_Sultan_Amai.jpg/960px-Masjid_Hunto_Sultan_Amai.jpg",
+    "author": "Supardisahabu",
+    "license": "CC BY-SA 4.0"
+  },
+  "kompleks-makam-masjid-hunto-sultan-amai-gorontalo": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Masjid_Hunto_Sultan_Amai.jpg/960px-Masjid_Hunto_Sultan_Amai.jpg",
+    "author": "Supardisahabu",
+    "license": "CC BY-SA 4.0"
+  },
+  "tuanku-imam-bonjol-minahasa": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Portret_van_Tuanku_Imam_Bonjol.jpg/960px-Portret_van_Tuanku_Imam_Bonjol.jpg",
+    "author": "Hubert Joseph Jean Lambert de Stuers",
+    "license": "CC BY-SA 3.0"
+  },
+  "makam-pahlawan-nasional-tuanku-imam-bonjol-muhammad-shahab-minahasa": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Portret_van_Tuanku_Imam_Bonjol.jpg/960px-Portret_van_Tuanku_Imam_Bonjol.jpg",
+    "author": "Hubert Joseph Jean Lambert de Stuers",
+    "license": "CC BY-SA 3.0"
+  },
+  "masjid-tua-wapauwe-kaitetu": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Masjid_Tua_Wapauwe_Kaitetu.jpg/960px-Masjid_Tua_Wapauwe_Kaitetu.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "kompleks-makam-ulama-masjid-tua-wapauwe-kaitetu-maluku-tengah": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Masjid_Tua_Wapauwe_Kaitetu.jpg/960px-Masjid_Tua_Wapauwe_Kaitetu.jpg",
+    "author": "Si Gam",
+    "license": "CC BY-SA 4.0"
+  },
+  "sultan-nuku-tidore": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Penjelasan_Makam_Sultan_Nuku.jpg/960px-Penjelasan_Makam_Sultan_Nuku.jpg",
+    "author": "Oceanmuse",
+    "license": "CC BY 4.0"
+  },
+  "sultan-nuku-muhammad-amiruddin-jou-barakati-tidore-kepulauan": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Penjelasan_Makam_Sultan_Nuku.jpg/960px-Penjelasan_Makam_Sultan_Nuku.jpg",
+    "author": "Oceanmuse",
+    "license": "CC BY 4.0"
+  },
+  "sultan-zainal-abidin-ternate": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Masjid_Sultan_Ternate.jpg/960px-Masjid_Sultan_Ternate.jpg",
+    "author": "Si Gam",
+    "license": "CC BY 4.0"
+  },
+  "masjid-tua-patimburak-fakfak": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Masjid_Tua_Patimburak.jpg",
+    "author": "Ezagren",
+    "license": "GFDL"
+  },
+  "kompleks-masjid-tua-patimburak-makam-penyebar-islam-kokas-fakfak": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Masjid_Tua_Patimburak.jpg",
+    "author": "Ezagren",
+    "license": "GFDL"
+  }
 }

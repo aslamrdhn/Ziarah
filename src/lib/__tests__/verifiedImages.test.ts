@@ -9,16 +9,27 @@ import {
   isFirst12OwnerSite,
   isValidPhotoUrl,
   getInitialAuthenticSiteImage,
+  getSitePhotoAttribution,
 } from '../authenticSiteImages';
 
 describe('Strict Heritage Image Verification', () => {
-  it('verifies all entries in verifiedSiteImages.json pass strict heritage & anti-junk rules', () => {
-    const entries = Object.entries(verifiedSiteImages as Record<string, string>);
+  it('verifies all entries in verifiedSiteImages.json pass strict heritage & anti-junk rules and include author/license metadata', () => {
+    const entries = Object.entries(
+      verifiedSiteImages as Record<string, string | { url: string; author: string; license: string }>
+    );
     expect(entries.length).toBeGreaterThanOrEqual(12);
 
-    for (const [key, url] of entries) {
+    for (const [key, rawEntry] of entries) {
+      const url = typeof rawEntry === 'string' ? rawEntry : rawEntry.url;
       expect(typeof url).toBe('string');
       expect(url.length).toBeGreaterThan(0);
+
+      if (typeof rawEntry === 'object' && rawEntry !== null) {
+        expect(typeof rawEntry.author).toBe('string');
+        expect(rawEntry.author.length).toBeGreaterThan(1);
+        expect(typeof rawEntry.license).toBe('string');
+        expect(rawEntry.license.length).toBeGreaterThan(1);
+      }
 
       let decodedLower = url.toLowerCase();
       try {
@@ -79,7 +90,10 @@ describe('Strict Heritage Image Verification', () => {
     }
 
     // Also verify verifiedSiteImages.json never assigns /thumbs/wali-* to non-owner keys
-    for (const [key, url] of Object.entries(verifiedSiteImages as Record<string, string>)) {
+    for (const [key, rawEntry] of Object.entries(
+      verifiedSiteImages as Record<string, string | { url: string; author: string; license: string }>
+    )) {
+      const url = typeof rawEntry === 'string' ? rawEntry : rawEntry.url;
       if (url.startsWith('/thumbs/wali-')) {
         const ownerSite = SITES.slice(0, 12).find(
           (s) => s.id === key || s.legacyId === key || key.includes(s.id.split('-')[0])
@@ -87,6 +101,44 @@ describe('Strict Heritage Image Verification', () => {
         expect(ownerSite || FIRST_12_THUMB_BY_ID[key]).toBeTruthy();
       }
     }
+  });
+
+  it('stores author and license attribution metadata for all 78 Wikimedia photo sites and hides Wikimedia link for 93 Golden Dome SVG sites', () => {
+    let wikimediaCount = 0;
+    let localArchiveCount = 0;
+    let domeSvgCount = 0;
+
+    for (const site of SITES) {
+      const resolvedUrl = getInitialAuthenticSiteImage(site);
+      const attr = getSitePhotoAttribution(site, resolvedUrl);
+
+      if (attr.kind === 'dome_svg') {
+        domeSvgCount++;
+        expect(attr.isDomeSvg).toBe(true);
+        expect(attr.url).toBeNull();
+        expect(attr.author).toBeNull();
+        expect(attr.license).toBeNull();
+        expect(attr.formattedAttribution).toBe(
+          "Ilustrasi Arsitektur Maqbarah Ziarah Nusantara — gunakan tombol 'Lihat Foto Asli Lokasi di Google Maps' untuk dokumentasi lokasi terkini."
+        );
+      } else if (attr.kind === 'wikimedia') {
+        wikimediaCount++;
+        expect(attr.isDomeSvg).toBe(false);
+        expect(attr.isWikimediaPhoto).toBe(true);
+        expect(Boolean(attr.author && attr.author.length > 1)).toBe(true);
+        expect(Boolean(attr.license && attr.license.length > 1)).toBe(true);
+        expect(attr.formattedAttribution).toContain('via Wikimedia Commons');
+      } else if (attr.kind === 'local_archive') {
+        localArchiveCount++;
+        expect(attr.isDomeSvg).toBe(false);
+        expect(Boolean(attr.author && attr.author.length > 1)).toBe(true);
+        expect(Boolean(attr.license && attr.license.length > 1)).toBe(true);
+      }
+    }
+
+    expect(wikimediaCount).toBe(78);
+    expect(localArchiveCount).toBe(12);
+    expect(domeSvgCount).toBe(93);
   });
 
   it('rejects copyright icons, bupati/mayor portraits, birds, bridges, tourists, Earth globes, and ZN logos', () => {

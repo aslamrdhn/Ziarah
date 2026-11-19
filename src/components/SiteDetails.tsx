@@ -8,7 +8,7 @@ import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRec
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useVerifiedDonationUnlock, useVerifiedBarokahUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
-import { useAuthenticSiteImage, getRegionalArchitecturalPhoto, getSiteGoogleMapsPhotosUrl } from '../lib/authenticSiteImages';
+import { useAuthenticSiteImage, getRegionalArchitecturalPhoto, getSiteGoogleMapsPhotosUrl, getSitePhotoAttribution } from '../lib/authenticSiteImages';
 import { getSiteLogistics, getSiteBarokahHajat, getSiteCompleteBarokahGuide, estimateHaulGregorian2026, sanitizeHistoricalLogisticsText, sanitizePureArabicText } from '../lib/siteLogistics';
 import { buildStructuredTawassul, getCanonicalWasilahPrayers, buildDeepTadabburAndContext } from '../lib/premiumKitabEnrichment';
 import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
@@ -1018,7 +1018,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
             </div>
             <div className="pt-2 border-t border-emerald-200/70">
               <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-900 mb-1.5">
-                5 Bagian Kitab Amalan yang Terbuka Penuh (Infaq Rp {barokahAmount.toLocaleString('id-ID')}):
+                5 BAGIAN KITAB AMALAN YANG TERBUKA PENUH (INFAQ RP {barokahAmount.toLocaleString('id-ID')}):
               </div>
               <ol className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-slate-700 list-decimal list-inside">
                 <li>Salam &amp; Adab Khusus Maqbarah {safeSiteName}</li>
@@ -1030,49 +1030,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
             </div>
           </div>
 
-          {/* Seluruh Panduan Amalan Lengkap dalam keadaan BLUR */}
-          <div className="blur-[6px] select-none pointer-events-none opacity-50 space-y-5" aria-hidden="true">
-            <div className="space-y-1.5">
-              <div className="text-xs font-bold text-slate-900">
-                1. Tata Cara &amp; Silsilah Hadiah Al-Fatihah di {safeSiteName}
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                {completeBarokahGuide.tataCaraWaktu.join(' ')}
-              </p>
-            </div>
-            {effectiveDoaKhusus.map((doa, idx) => (
-              <div key={idx} className="pt-3 border-t border-slate-200 space-y-2">
-                <div className="text-xs font-semibold text-slate-800">
-                  2. {doa.title}
-                </div>
-                <p
-                  className="text-xl sm:text-2xl font-arabic text-slate-900 leading-[2.2] text-right"
-                  dir="rtl"
-                >
-                  {sanitizePureArabicText(doa.text)}
-                </p>
-                {doa.latin && (
-                  <p className="text-xs text-slate-700 italic">{doa.latin}</p>
-                )}
-                {doa.translation && (
-                  <p className="text-xs sm:text-sm text-slate-600 italic leading-relaxed">
-                    {doa.translation}
-                  </p>
-                )}
-              </div>
-            ))}
-            <div className="pt-3 border-t border-slate-200 space-y-1">
-              <div className="text-xs font-bold text-slate-900">
-                3. Rangkaian Ayat Al-Qur&apos;an, Doa Nabawi Sahih &amp; Wirid Penutup
-              </div>
-              <p className="text-xs text-slate-600">
-                {completeBarokahGuide.wiridPenutupAdab.join(' ')}
-              </p>
-            </div>
+          {/* Afirmasi Jujur Bacaan Gratis vs Dukungan Operasional */}
+          <div className="mb-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed">
+            Bacaan Yasin, Tahlil &amp; Salam Ahli Kubur tetap 100% gratis di menu Panduan. Infaq Rp 2.000 adalah dukungan operasional penyusunan lembar amalan khusus per maqbarah &amp; fitur cetak PDF.
           </div>
 
           {/* Overlay Kartu Gembok Bersih */}
-          <div className="mt-4 pt-4 border-t border-slate-200 bg-white space-y-3">
+          <div className="pt-3 border-t border-slate-200 bg-white space-y-3">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
               <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
               <span>KITAB AMALAN &amp; TASBIH DIGITAL · RP {barokahAmount.toLocaleString('id-ID')}</span>
@@ -1467,9 +1431,6 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                       <p className={bodyParagraphClass}>
                                         {renderFormattedText(cliffhanger.preview)}
                                       </p>
-                                      <p className="blur-[5px] select-none pointer-events-none opacity-60 text-slate-600 leading-relaxed">
-                                        {stripMarkdownAsterisks(cliffhanger.remainder)}
-                                      </p>
                                     </div>
 
                                     {idx === site.karomah!.length - 1 && !hasUntold && (
@@ -1594,23 +1555,6 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                 <p className={bodyParagraphClass}>
                                   {renderFormattedText(untoldCliffhanger.preview)}
                                 </p>
-                                <div className="blur-[6px] select-none pointer-events-none opacity-50 space-y-3 text-slate-600 leading-relaxed" aria-hidden="true">
-                                  {splitIntoReadableParagraphs(untoldCliffhanger.remainder).map((para, pIdx) => (
-                                    <p key={pIdx}>
-                                      {stripMarkdownAsterisks(para)}
-                                    </p>
-                                  ))}
-                                  <div className="pt-2 border-t border-slate-200 space-y-1">
-                                    <div className="font-semibold text-slate-800">
-                                      3 Butir Muhasabah &amp; Teladan Hidup Sepulang Ziarah (QS. Yunus: 62–64)
-                                    </div>
-                                    {deepTadabburContext.muhasabahPoints.map((pt) => (
-                                      <p key={pt.number} className="text-xs">
-                                        {pt.number}. {pt.title} — {pt.body}
-                                      </p>
-                                    ))}
-                                  </div>
-                                </div>
                               </div>
 
                               {/* Kartu Pembuka Khazanah (In-Place Unlock Rp 10.000) */}
@@ -1975,42 +1919,58 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     </section>
 
                     {/* Referensi Literatur & Dokumentasi Foto */}
-                    {(site.references?.length || site.imageSource) && (
-                      <section className="space-y-4">
-                        {site.references && site.references.length > 0 && (
-                          <div>
-                            <h4 className="font-serif text-lg text-stone-900 mb-2">
-                              Sumber Literatur &amp; Ensiklopedia
-                            </h4>
-                            <ol className="space-y-1.5 list-decimal list-inside">
-                              {site.references.map((ref, idx) => (
-                                <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
-                                  {ref}
-                                </li>
-                              ))}
-                            </ol>
-                          </div>
-                        )}
-                        {site.imageSource && (
+                    <section className="space-y-4">
+                      {site.references && site.references.length > 0 && (
+                        <div>
+                          <h4 className="font-serif text-lg text-stone-900 mb-2">
+                            Sumber Literatur &amp; Ensiklopedia
+                          </h4>
+                          <ol className="space-y-1.5 list-decimal list-inside">
+                            {site.references.map((ref, idx) => (
+                              <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
+                                {ref}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+                      {(() => {
+                        const photoAttribution = getSitePhotoAttribution(site, resolvedSiteImageUrl);
+                        return (
                           <div className="pt-2 space-y-1">
-                            <div className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-                              Referensi &amp; Atribusi Dokumentasi Foto
-                            </div>
-                            <p className="text-xs sm:text-sm text-stone-600 font-serif italic leading-relaxed">
-                              {site.imageSource}
-                            </p>
-                            <a
-                              href={site.imageUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-block text-xs font-medium text-emerald-800 hover:underline underline-offset-4 pt-0.5"
-                            >
-                              Lihat Berkas Foto Asli (Wikimedia / Wikipedia) ↗
-                            </a>
+                            {photoAttribution.isDomeSvg ? (
+                              <p className="text-xs sm:text-sm text-stone-600 font-serif italic leading-relaxed">
+                                {photoAttribution.formattedAttribution}
+                              </p>
+                            ) : (
+                              <>
+                                <div className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">
+                                  Atribusi Dokumentasi Foto: Wikimedia Commons
+                                </div>
+                                <p className="text-xs sm:text-sm text-stone-700 font-medium leading-relaxed">
+                                  {photoAttribution.formattedAttribution}
+                                </p>
+                                {site.imageSource && (
+                                  <p className="text-xs sm:text-sm text-stone-600 font-serif italic leading-relaxed">
+                                    {site.imageSource}
+                                  </p>
+                                )}
+                                {photoAttribution.url && (
+                                  <a
+                                    href={photoAttribution.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block text-xs font-medium text-emerald-800 hover:underline underline-offset-4 pt-0.5"
+                                  >
+                                    Lihat Berkas Foto Asli (Wikimedia / Wikipedia) ↗
+                                  </a>
+                                )}
+                              </>
+                            )}
                           </div>
-                        )}
-                      </section>
-                    )}
+                        );
+                      })()}
+                    </section>
                   </motion.div>
                 )}
               </div>

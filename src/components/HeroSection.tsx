@@ -1,13 +1,15 @@
 import React from 'react';
+import { SITES } from '../data/sites';
 import { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from '../data/initialSites';
-import { useSiteCopy } from '../lib/siteCopy';
+import { useSiteCopy, formatDynamicHeroSubtitle } from '../lib/siteCopy';
 
 export { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT };
 
 export const HeroSection: React.FC = () => {
   const { copy } = useSiteCopy();
-  const totalSites = TOTAL_SITES_COUNT;
-  const totalProvinces = TOTAL_PROVINCES_COUNT;
+  const totalSites = SITES.length || TOTAL_SITES_COUNT;
+  const totalProvinces =
+    new Set(SITES.map((s) => s.location?.province).filter(Boolean)).size || TOTAL_PROVINCES_COUNT;
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-6">
@@ -22,7 +24,7 @@ export const HeroSection: React.FC = () => {
         {copy.heroTitle}
       </h1>
       <p className="text-xs sm:text-base text-stone-600 max-w-3xl leading-relaxed">
-        {copy.heroSubtitle}
+        {formatDynamicHeroSubtitle(copy.heroSubtitle, totalSites, totalProvinces)}
       </p>
     </section>
   );

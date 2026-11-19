@@ -135,6 +135,28 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
     expect(getSourceClassificationLabel('tradisi_lisan')).toBe('Riwayat Tradisi Lisan');
     expect(getSourceClassificationLabel(undefined, 'catatan_sejarah')).toBe('Catatan Sejarah & Literatur');
   });
+
+  it('configures 85 permanent 301 redirects for legacy slugs and a strict tsc+vitest buildCommand in vercel.json', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const vercelJson = JSON.parse(
+      fs.readFileSync(path.resolve(process.cwd(), 'vercel.json'), 'utf8')
+    );
+
+    expect(vercelJson.buildCommand).toBe(
+      'npx tsc --noEmit && npx vitest run && vite build && node scripts/vercel-postbuild.mjs'
+    );
+    expect(Array.isArray(vercelJson.redirects)).toBe(true);
+    expect(vercelJson.redirects.length).toBe(85);
+
+    const validCanonicalDestinations = new Set(SITES.map((s) => `/situs/${getSiteSlug(s)}`));
+    for (const r of vercelJson.redirects) {
+      expect(r.permanent).toBe(true);
+      expect(r.source.startsWith('/situs/')).toBe(true);
+      expect(r.source).not.toBe(r.destination);
+      expect(validCanonicalDestinations.has(r.destination)).toBe(true);
+    }
+  });
 });
 
 

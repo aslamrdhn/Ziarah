@@ -216,5 +216,8 @@ export default defineConfig(({ command }) => {
       },
     }),
   ],
+  test: {
+    isolate: false,
+  },
   };
 });

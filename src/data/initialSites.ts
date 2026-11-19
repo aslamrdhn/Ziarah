@@ -1,8 +1,8 @@
 import { SITES, type ZiarahSite } from './sites';
 
-export const TOTAL_SITE_COUNT = 183;
-export const TOTAL_SITES_COUNT = 183;
-export const TOTAL_PROVINCES_COUNT = 34;
+export const TOTAL_SITE_COUNT = SITES.length;
+export const TOTAL_SITES_COUNT = SITES.length;
+export const TOTAL_PROVINCES_COUNT = new Set(SITES.map((s) => s.location?.province).filter(Boolean)).size;
 
 export const ALL_PROVINCES: string[] = [
   'Semua Provinsi',

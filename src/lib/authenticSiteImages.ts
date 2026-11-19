@@ -1,6 +1,82 @@
 import { useState, useEffect } from 'react';
 import type { ZiarahSite } from '../data/sites';
-import { PRE_RESOLVED_AUTHENTIC_IMAGES } from '../data/authenticImageUrls';
+import {
+  PRE_RESOLVED_AUTHENTIC_IMAGES,
+  PRE_RESOLVED_AUTHENTIC_IMAGE_META,
+} from '../data/authenticImageUrls';
+
+export interface SitePhotoAttribution {
+  kind: 'wikimedia' | 'local_archive' | 'dome_svg';
+  isDomeSvg: boolean;
+  isWikimediaPhoto: boolean;
+  url: string | null;
+  author: string | null;
+  license: string | null;
+  formattedAttribution: string;
+}
+
+/**
+ * Resolves exact photo attribution metadata for a site and its currently rendered image URL.
+ * - For 93 sites using Golden Dome SVG (`data:image/svg` or no external photo): returns kind === 'dome_svg'
+ *   with honest note and hides Wikimedia Commons attribution / file link.
+ * - For 78 Wikimedia photo sites and 12 local WebP sites: returns author and license metadata.
+ */
+export function getSitePhotoAttribution(
+  site: Pick<ZiarahSite, 'id' | 'imageUrl' | 'imageSource'> & { legacyId?: string },
+  activeImageUrl?: string | null
+): SitePhotoAttribution {
+  const effectiveUrl = (activeImageUrl ?? getInitialAuthenticSiteImage(site as ZiarahSite) ?? '').trim();
+  const isSvgOrEmpty =
+    !effectiveUrl ||
+    effectiveUrl.startsWith('data:image/svg') ||
+    effectiveUrl.includes('svg+xml');
+
+  if (isSvgOrEmpty) {
+    return {
+      kind: 'dome_svg',
+      isDomeSvg: true,
+      isWikimediaPhoto: false,
+      url: null,
+      author: null,
+      license: null,
+      formattedAttribution:
+        "Ilustrasi Arsitektur Maqbarah Ziarah Nusantara — gunakan tombol 'Lihat Foto Asli Lokasi di Google Maps' untuk dokumentasi lokasi terkini.",
+    };
+  }
+
+  const meta =
+    PRE_RESOLVED_AUTHENTIC_IMAGE_META[site.id] ||
+    (site.legacyId ? PRE_RESOLVED_AUTHENTIC_IMAGE_META[site.legacyId] : undefined);
+  const isWikimediaUrl =
+    effectiveUrl.startsWith('https://upload.wikimedia.org/') ||
+    effectiveUrl.startsWith('https://thumb.wikimedia.org/');
+
+  if (isWikimediaUrl) {
+    const author = meta?.author || 'Kontributor Wikimedia Commons';
+    const license = meta?.license || 'CC BY-SA 4.0';
+    return {
+      kind: 'wikimedia',
+      isDomeSvg: false,
+      isWikimediaPhoto: true,
+      url: effectiveUrl,
+      author,
+      license,
+      formattedAttribution: `Foto: ${author} (${license}) via Wikimedia Commons`,
+    };
+  }
+
+  const author = meta?.author || 'Arsip Dokumentasi Wikimedia Commons / Tropenmuseum';
+  const license = meta?.license || 'Domain Publik / CC BY-SA';
+  return {
+    kind: 'local_archive',
+    isDomeSvg: false,
+    isWikimediaPhoto: false,
+    url: effectiveUrl,
+    author,
+    license,
+    formattedAttribution: `Foto: ${author} (${license}) via Wikimedia Commons`,
+  };
+}
 
 export const AUTHENTIC_IMAGES_STORAGE_KEY = 'ziarah_verified_images_v4_strict';
 const LEGACY_IMAGES_STORAGE_KEYS = [

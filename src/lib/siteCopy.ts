@@ -12,10 +12,32 @@ export { MIN_DONATION_AMOUNT };
 const DYNAMIC_SITE_COUNT = TOTAL_SITE_COUNT;
 const DYNAMIC_PROVINCE_COUNT = TOTAL_PROVINCES_COUNT;
 
-export const ADMIN_WHATSAPP_NUMBER =
+export function formatDynamicHeroSubtitle(
+  rawSubtitle: string,
+  siteCount: number = DYNAMIC_SITE_COUNT,
+  provinceCount: number = DYNAMIC_PROVINCE_COUNT
+): string {
+  const safeSiteCount = siteCount > 0 ? siteCount : DYNAMIC_SITE_COUNT;
+  const safeProvinceCount = provinceCount > 0 ? provinceCount : DYNAMIC_PROVINCE_COUNT;
+  if (!rawSubtitle) {
+    return `Menghimpun riwayat ${safeSiteCount} maqbarah di ${safeProvinceCount} provinsi agar setiap langkah ziarah menjadi pengingat akhirat, penguat iman, dan bakti doa bagi ahli kubur.`;
+  }
+  return rawSubtitle.replace(
+    /\b\d+\s+maqbarah\s+di\s+\d+\s+provinsi\b/i,
+    `${safeSiteCount} maqbarah di ${safeProvinceCount} provinsi`
+  );
+}
+
+const rawEnvWhatsapp =
   (typeof import.meta !== 'undefined' &&
-    (import.meta as { env?: Record<string, string> }).env?.VITE_ADMIN_WHATSAPP?.trim()) ||
-  '6285717605655';
+    (import.meta as { env?: Record<string, string> }).env?.VITE_ADMIN_WHATSAPP?.replace(/\D+/g, '')) ||
+  '';
+const normalizedEnvWhatsapp = rawEnvWhatsapp.startsWith('0')
+  ? `62${rawEnvWhatsapp.slice(1)}`
+  : rawEnvWhatsapp;
+
+export const ADMIN_WHATSAPP_NUMBER =
+  /^62\d{8,14}$/.test(normalizedEnvWhatsapp) ? normalizedEnvWhatsapp : '6285717605655';
 
 export interface QuickNominalPackage {
   amount: number;
@@ -148,8 +170,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   // 1. Beranda & Filter
   heroBadge: 'Arsip Resmi Waliyullah & Ulama Nusantara',
   heroTitle: 'Merawat Sanad Ulama, Menemukan Ketenangan Batin.',
-  heroSubtitle:
-    'Menghimpun riwayat 183 maqbarah di 34 provinsi agar setiap langkah ziarah menjadi pengingat akhirat, penguat iman, dan bakti doa bagi ahli kubur.',
+  heroSubtitle: `Menghimpun riwayat ${DYNAMIC_SITE_COUNT} maqbarah di ${DYNAMIC_PROVINCE_COUNT} provinsi agar setiap langkah ziarah menjadi pengingat akhirat, penguat iman, dan bakti doa bagi ahli kubur.`,
   jumatBannerTitle: 'Malam & Hari Jumat Penuh Keberkahan',
   jumatBannerSubtitle:
     'Mari hadiahkan Al-Fatihah dan selami kembali kisah para kekasih Allah yang meneduhkan batin.',

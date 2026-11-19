@@ -25,7 +25,7 @@ import {
 } from '../lib/authenticSiteImages';
 import { getSitePath, getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
-import { useSiteCopy } from '../lib/siteCopy';
+import { useSiteCopy, formatDynamicHeroSubtitle } from '../lib/siteCopy';
 import { ZiarahStoryReel } from '../components/ZiarahStoryReel';
 import { stripMarkdownAsterisks } from '../lib/formatText';
 
@@ -630,6 +630,12 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
     return filteredSites.slice(0, visibleCount);
   }, [filteredSites, isFiltered, visibleCount]);
 
+  const dynamicSiteCount = ziarahSites.length >= TOTAL_SITE_COUNT ? ziarahSites.length : TOTAL_SITE_COUNT;
+  const dynamicProvinceCount = useMemo(() => {
+    const uniqueCount = new Set(ziarahSites.map((s) => s.location?.province).filter(Boolean)).size;
+    return uniqueCount >= TOTAL_PROVINCES_COUNT ? uniqueCount : TOTAL_PROVINCES_COUNT;
+  }, [ziarahSites]);
+
   if (isLoading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-12 text-stone-600">
@@ -652,7 +658,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               {copy.heroTitle}
             </h1>
             <p className="text-xs sm:text-base text-stone-600 max-w-2xl leading-relaxed">
-              {copy.heroSubtitle}
+              {formatDynamicHeroSubtitle(copy.heroSubtitle, dynamicSiteCount, dynamicProvinceCount)}
             </p>
           </div>
 

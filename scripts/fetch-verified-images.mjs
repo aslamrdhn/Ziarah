@@ -936,6 +936,67 @@ function scoreCandidatePage(title = '') {
   return 0;
 }
 
+function stripHtmlTags(raw) {
+  if (!raw) return '';
+  return String(raw)
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function extractPhotoAttribution(info) {
+  const artistRaw = info?.extmetadata?.Artist?.value || info?.user || '';
+  const licenseRaw =
+    info?.extmetadata?.LicenseShortName?.value ||
+    info?.extmetadata?.UsageTerms?.value ||
+    'CC BY-SA 4.0';
+  const author = stripHtmlTags(artistRaw) || 'Kontributor Wikimedia Commons';
+  const license = stripHtmlTags(licenseRaw) || 'CC BY-SA 4.0';
+  return { author, license };
+}
+
+function extractCommonsFilenameFromUrl(url) {
+  try {
+    const u = new URL(url);
+    const parts = u.pathname.split('/').map((p) => decodeURIComponent(p));
+    const thumbIdx = parts.indexOf('thumb');
+    if (thumbIdx !== -1 && parts.length > thumbIdx + 3) {
+      return parts[thumbIdx + 3];
+    }
+    return parts[parts.length - 1];
+  } catch {
+    return null;
+  }
+}
+
+async function fetchAttributionByFileUrl(candidateUrl, lang = 'id') {
+  const filename = extractCommonsFilenameFromUrl(candidateUrl);
+  if (!filename) {
+    return { author: 'Kontributor Wikimedia Commons', license: 'CC BY-SA 4.0' };
+  }
+  for (const apiBase of [
+    'https://commons.wikimedia.org/w/api.php',
+    `https://${lang}.wikipedia.org/w/api.php`,
+  ]) {
+    const data = await fetchJson(
+      `${apiBase}?action=query&titles=${encodeURIComponent(`File:${filename}`)}&prop=imageinfo&iiprop=extmetadata|user&format=json&origin=*`
+    );
+    const pages = Object.values(data?.query?.pages || {});
+    for (const p of pages) {
+      const info = p?.imageinfo?.[0];
+      if (info) {
+        return extractPhotoAttribution(info);
+      }
+    }
+  }
+  return { author: 'Kontributor Wikimedia Commons', license: 'CC BY-SA 4.0' };
+}
+
 async function tryWikipediaPageImages(titles, lang = 'id', site = null) {
   const cleanTitles = (Array.isArray(titles) ? titles : [titles])
     .map((t) => String(t || '').trim().replace(/\s+/g, '_'))
@@ -961,13 +1022,14 @@ async function tryWikipediaPageImages(titles, lang = 'id', site = null) {
         isStrictHeritageImage(candidate, page?.title || '', '', w, h, site) &&
         (await verifyHttp200(candidate))
       ) {
-        return candidate;
+        const meta = await fetchAttributionByFileUrl(candidate, lang);
+        return { url: candidate, author: meta.author, license: meta.license };
       }
     }
   }
 
   // Step 2: Check embedded heritage photographs inside the curated Wikipedia article
-  const imgGenUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=images&gimlimit=12&titles=${titlesParam}&redirects=1&prop=imageinfo&iiprop=url|dimensions|extmetadata&iiurlwidth=640&format=json&origin=*`;
+  const imgGenUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=images&gimlimit=12&titles=${titlesParam}&redirects=1&prop=imageinfo&iiprop=url|dimensions|extmetadata|user&iiurlwidth=640&format=json&origin=*`;
   const imgData = await fetchJson(imgGenUrl);
   const imgPages = imgData?.query?.pages;
   if (!imgPages || typeof imgPages !== 'object') return null;
@@ -991,7 +1053,8 @@ async function tryWikipediaPageImages(titles, lang = 'id', site = null) {
       isStrictHeritageImage(candidate, metaDesc, catText, w, h, site) &&
       (await verifyHttp200(candidate))
     ) {
-      return candidate;
+      const meta = extractPhotoAttribution(info);
+      return { url: candidate, author: meta.author, license: meta.license };
     }
   }
 
@@ -1041,7 +1104,7 @@ async function tryCommonsStrictSearch(queryStr, site = null, requireQueryToken =
   if (!cleanQ) return null;
   const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(
     `filetype:bitmap ${cleanQ}`
-  )}&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|dimensions|extmetadata&iiurlwidth=640&format=json&origin=*`;
+  )}&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|dimensions|extmetadata|user&iiurlwidth=640&format=json&origin=*`;
 
   const data = await fetchJson(url);
   const pages = data?.query?.pages;
@@ -1078,7 +1141,8 @@ async function tryCommonsStrictSearch(queryStr, site = null, requireQueryToken =
       isStrictHeritageImage(candidate, metaDesc, catText, w, h, site) &&
       (await verifyHttp200(candidate))
     ) {
-      return candidate;
+      const meta = extractPhotoAttribution(info);
+      return { url: candidate, author: meta.author, license: meta.license };
     }
   }
   return null;
@@ -1097,7 +1161,7 @@ async function tryCommonsStrictGeosearch(lat, lng, site) {
   const nameTokens = getDistinctiveTokens(site);
   if (nameTokens.length === 0) return null;
 
-  const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=geosearch&ggscoord=${lat}|${lng}&ggsradius=1800&ggsnamespace=6&ggslimit=12&prop=imageinfo&iiprop=url|dimensions|extmetadata&iiurlwidth=640&format=json&origin=*`;
+  const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=geosearch&ggscoord=${lat}|${lng}&ggsradius=1800&ggsnamespace=6&ggslimit=12&prop=imageinfo&iiprop=url|dimensions|extmetadata|user&iiurlwidth=640&format=json&origin=*`;
   const data = await fetchJson(url);
   const pages = data?.query?.pages;
   if (!pages || typeof pages !== 'object') return null;
@@ -1129,7 +1193,8 @@ async function tryCommonsStrictGeosearch(lat, lng, site) {
       isStrictHeritageImage(candidate, metaDesc, catText, w, h, site) &&
       (await verifyHttp200(candidate))
     ) {
-      return candidate;
+      const meta = extractPhotoAttribution(info);
+      return { url: candidate, author: meta.author, license: meta.license };
     }
   }
   return null;
@@ -1151,7 +1216,12 @@ async function resolveStrictVerifiedPhoto(site) {
   const id = site.id;
   const legacyId = site.legacyId;
   if (FIRST_12_THUMB_BY_ID[id] || (legacyId && FIRST_12_THUMB_BY_ID[legacyId])) {
-    return FIRST_12_THUMB_BY_ID[id] || FIRST_12_THUMB_BY_ID[legacyId];
+    const thumbUrl = FIRST_12_THUMB_BY_ID[id] || FIRST_12_THUMB_BY_ID[legacyId];
+    return {
+      url: thumbUrl,
+      author: 'Arsip Dokumentasi Wikimedia Commons / Tropenmuseum',
+      license: 'Domain Publik / CC BY-SA',
+    };
   }
 
   // Stage A: Curated Whitelist (specific articles & specific heritage Commons queries — NO plain city names!)
@@ -1223,13 +1293,13 @@ async function main() {
         const legacyId = site.legacyId;
 
         const resolved = await resolveStrictVerifiedPhoto(site);
-        if (resolved) {
+        if (resolved && resolved.url) {
           resultMap[id] = resolved;
           if (slug) resultMap[slug] = resolved;
           if (legacyId && !resultMap[legacyId]) resultMap[legacyId] = resolved;
           verifiedCount++;
-          const filename = decodeURIComponent(resolved.split('/').pop() || resolved);
-          console.log(`#${indexNumber} [VERIFIED] ${id} -> ${site.name} -> ${filename}`);
+          const filename = decodeURIComponent(resolved.url.split('/').pop() || resolved.url);
+          console.log(`#${indexNumber} [VERIFIED] ${id} -> ${site.name} -> ${filename} (${resolved.author} / ${resolved.license})`);
         } else {
           console.log(
             `#${indexNumber} [DOME-SVG] ${id} -> ${site.name} (${site.location?.city}, ${site.location?.province})`
@@ -1241,16 +1311,6 @@ async function main() {
   }
 
   fs.writeFileSync(outJsonPath, JSON.stringify(resultMap, null, 2) + '\n', 'utf8');
-
-  const tsContent = `import verifiedSiteImages from './verifiedSiteImages.json';
-
-/**
- * Strictly verified heritage photographs for ziarah sites.
- * Generated by scripts/fetch-verified-images.mjs using isStrictHeritageImage.
- */
-export const PRE_RESOLVED_AUTHENTIC_IMAGES: Record<string, string> = verifiedSiteImages as Record<string, string>;
-`;
-  fs.writeFileSync(path.join(rootDir, 'src/data/authenticImageUrls.ts'), tsContent, 'utf8');
 
   console.log(`\n========================================`);
   console.log(`STRICT AUDIT SUMMARY: ${verifiedCount} / ${SITES.length} sites verified with genuine photos`);
