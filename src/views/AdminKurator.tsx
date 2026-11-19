@@ -806,11 +806,12 @@ export const AdminKurator: React.FC = () => {
     try {
       await setDoc(
         doc(db, 'sites', siteId),
-        { id: siteId, isDeleted: true, updatedAt: new Date().toISOString() },
+        { id: siteId, isDeleted: true, editedByCurator: true, updatedAt: new Date().toISOString() },
         { merge: true }
       );
       try {
         localStorage.removeItem('zn_cloud_sites_cache_v1');
+        localStorage.removeItem('zn_cloud_sites_cache_v4');
         localStorage.setItem('zn_admin_dirty_ts', String(Date.now()));
       } catch {
         // Ignore storage error

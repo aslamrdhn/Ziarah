@@ -157,6 +157,39 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
       expect(validCanonicalDestinations.has(r.destination)).toBe(true);
     }
   });
+
+  it('enforces 12-hour TTL cache and delta-only editedByCurator query in SiteContext plus limit(50) on public donations listeners', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const { CLOUD_SITES_CACHE_TTL_MS } = await import('../../context/SiteContext');
+
+    expect(CLOUD_SITES_CACHE_TTL_MS).toBe(12 * 60 * 60 * 1000);
+
+    const siteContextSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/context/SiteContext.tsx'),
+      'utf8'
+    );
+    expect(siteContextSrc).toContain("where('editedByCurator', '==', true)");
+    expect(siteContextSrc).toContain('Date.now() - parsed.ts < CLOUD_SITES_CACHE_TTL_MS');
+
+    const adminSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/views/AdminKurator.tsx'),
+      'utf8'
+    );
+    expect(adminSrc).toContain('editedByCurator: true');
+
+    const infaqSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/views/InfaqDigital.tsx'),
+      'utf8'
+    );
+    expect(infaqSrc).toContain("where('status', 'in', ['confirmed', 'verified']), limit(50)");
+
+    const rubrikSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/views/RubrikKisah.tsx'),
+      'utf8'
+    );
+    expect(rubrikSrc).toContain("where('status', 'in', ['confirmed', 'verified']), limit(50)");
+  });
 });
 
 

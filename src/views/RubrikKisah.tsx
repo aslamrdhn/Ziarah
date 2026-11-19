@@ -244,7 +244,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     );
 
     const unsubDonations = onSnapshot(
-      query(collection(db, 'donations'), where('status', 'in', ['confirmed', 'verified']), limit(25)),
+      query(collection(db, 'donations'), where('status', 'in', ['confirmed', 'verified']), limit(50)),
       (snapshot) => {
         const fetched: CuratedMunajatItem[] = snapshot.docs
           .filter((docSnap) => {

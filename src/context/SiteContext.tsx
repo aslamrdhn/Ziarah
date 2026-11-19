@@ -26,6 +26,7 @@ const SiteContext = createContext<SiteContextType>({
 });
 
 export const CLOUD_SITES_CACHE_KEY = 'zn_cloud_sites_cache_v4';
+export const CLOUD_SITES_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const LEGACY_CLOUD_CACHE_KEYS = [
   'zn_cloud_sites_cache_v1',
   'zn_cloud_sites_cache_v2',
@@ -313,28 +314,39 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   /**
-   * Stale-While-Revalidate Cloud Sync (via one-shot getDocs, zero Listen/channel overhead):
-   * - If `forceRefresh === true`, clears `zn_cloud_sites_cache_v1` first.
-   * - If `!forceRefresh` and `localStorage` has cached cloud sites, immediately renders
-   *   the merged cached state, then fetches fresh `/sites` from Firestore so Admin changes appear immediately.
+   * Quota-Optimized Cloud Sync (12-Hour TTL Cache + Delta-Only Query for Public Visitors):
+   * - On public routes (`!isAdminRoute`) with `!forceRefresh`, if `localStorage` (`CLOUD_SITES_CACHE_KEY`)
+   *   has a valid cache younger than 12 hours (`CLOUD_SITES_CACHE_TTL_MS`), hydrates state and returns immediately (0 Firestore reads).
+   * - When cache is missing or older than 12 hours on public routes, queries ONLY curator-edited documents
+   *   (`where('editedByCurator', '==', true)`), avoiding full 183-document reads.
+   * - On admin routes (`isAdminRoute || forceRefresh`), fetches the full `collection(db, 'sites')` for complete curator visibility.
    */
   const refreshCloudSites = useCallback(
     async (forceRefresh = false) => {
       const localCatalog = await ensureFullSitesLoaded();
+      const isAdminRoute =
+        typeof window !== 'undefined' &&
+        (window.location.pathname.startsWith('/admin') ||
+          window.location.pathname.startsWith('/kurator'));
 
       if (forceRefresh) {
         try {
           localStorage.removeItem(CLOUD_SITES_CACHE_KEY);
+          localStorage.removeItem(ADMIN_DIRTY_TS_KEY);
         } catch {
           // Ignore storage error
         }
-      } else {
+      } else if (!isAdminRoute) {
         try {
           const rawCached = localStorage.getItem(CLOUD_SITES_CACHE_KEY);
           if (rawCached) {
             const parsed = JSON.parse(rawCached) as CachedCloudSitesPayload;
-            if (parsed && Array.isArray(parsed.sites)) {
+            if (parsed && Array.isArray(parsed.sites) && typeof parsed.ts === 'number') {
               setSites(mergeLocalAndCloudSites(localCatalog, parsed.sites));
+              setCloudSiteCount(parsed.sites.filter((s) => !s.isDeleted).length);
+              if (Date.now() - parsed.ts < CLOUD_SITES_CACHE_TTL_MS) {
+                return;
+              }
             }
           }
         } catch {
@@ -343,15 +355,19 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
-        const [{ db }, { collection, getDocs }] = await Promise.all([
+        const [{ db }, { collection, getDocs, query, where }] = await Promise.all([
           import('../lib/firebase'),
           import('firebase/firestore'),
         ]);
 
-        const snapshot = await getDocs(collection(db, 'sites'));
-        const cloudSites: Array<ZiarahSite & { isDeleted?: boolean }> = [];
+        const snapshot =
+          isAdminRoute || forceRefresh
+            ? await getDocs(collection(db, 'sites'))
+            : await getDocs(query(collection(db, 'sites'), where('editedByCurator', '==', true)));
+
+        const cloudSites: Array<ZiarahSite & { isDeleted?: boolean; editedByCurator?: boolean }> = [];
         snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as ZiarahSite & { isDeleted?: boolean };
+          const data = docSnap.data() as ZiarahSite & { isDeleted?: boolean; editedByCurator?: boolean };
           cloudSites.push({ ...data, id: docSnap.id });
         });
 

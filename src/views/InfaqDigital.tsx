@@ -251,7 +251,7 @@ export const InfaqDigital: React.FC = () => {
     );
 
     const unsubDonations = onSnapshot(
-      query(collection(db, 'donations'), where('status', 'in', ['confirmed', 'verified']), limit(30)),
+      query(collection(db, 'donations'), where('status', 'in', ['confirmed', 'verified']), limit(50)),
       (snapshot) => {
         const list: DonationRecord[] = snapshot.docs
           .filter((docSnap) => {
