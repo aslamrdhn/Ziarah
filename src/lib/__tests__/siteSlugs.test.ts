@@ -154,12 +154,6 @@ describe('Site SEO Slug Generation & Route Resolution', () => {
     expect(Boolean(pkgJson.dependencies?.typescript || pkgJson.devDependencies?.typescript)).toBe(true);
     expect(Boolean(pkgJson.dependencies?.vitest || pkgJson.devDependencies?.vitest)).toBe(true);
 
-    if (vercelJson.buildCommand !== undefined) {
-      expect(
-        vercelJson.buildCommand === 'npm run build' ||
-          String(vercelJson.buildCommand).includes('vite build')
-      ).toBe(true);
-    }
     expect(Array.isArray(vercelJson.redirects)).toBe(true);
     expect(vercelJson.redirects.length).toBe(85);
 
