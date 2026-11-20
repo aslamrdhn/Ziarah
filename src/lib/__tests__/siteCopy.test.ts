@@ -63,7 +63,23 @@ describe('siteCopy & cliffhanger utilities', () => {
     });
     expect(customWa.adminWhatsappNumber).toBe('6281234567890');
     expect(DEFAULT_SITE_COPY.adminWhatsappNumber.length).toBeGreaterThanOrEqual(10);
-    expect(DEFAULT_SITE_COPY.infaqTitle).toContain('Infaq Operasional & Pemeliharaan Digital');
+    expect(DEFAULT_SITE_COPY.heroBadge).toBe('Panduan Ziarah & Khazanah Ulama Nusantara');
+    expect(DEFAULT_SITE_COPY.barokahPaywallTitle).toBe(
+      'Buka Lembar Amalan & Doa Khusus Maqbarah Ini'
+    );
+    expect(DEFAULT_SITE_COPY.paywallBadge).toBe('Lanjutan Kisah & Wasiat Maqbarah');
+    expect(DEFAULT_SITE_COPY.whatsappSharePrefix).toBe(
+      'Hati ikut tenang membaca kisah keteladanan'
+    );
+    expect(DEFAULT_SITE_COPY.infaqTitle).toBe(
+      'Dukung Kelangsungan Ziarah Nusantara & Titipkan Doa Anda'
+    );
+    expect(DEFAULT_SITE_COPY.infaqTransparencyNote).toContain(
+      'Infaq Operasional & Pemeliharaan Digital'
+    );
+    expect(DEFAULT_SITE_COPY.footerCopyrightText).toBe(
+      'Dirawat bersama oleh Tim Kurator Ziarah Nusantara'
+    );
     for (const pkg of DEFAULT_SITE_COPY.quickNominalPackages) {
       expect(pkg.tag.toLowerCase()).not.toContain('wakaf');
       expect(pkg.desc.toLowerCase()).not.toContain('wakaf');

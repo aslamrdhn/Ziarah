@@ -170,12 +170,12 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   navDonateCtaLabel: 'Infaq & Munajat',
 
   // 1. Beranda & Filter
-  heroBadge: 'Arsip Resmi Waliyullah & Ulama Nusantara',
+  heroBadge: 'Panduan Ziarah & Khazanah Ulama Nusantara',
   heroTitle: 'Merawat Sanad Ulama, Menemukan Ketenangan Batin.',
   heroSubtitle: `Menghimpun riwayat ${DYNAMIC_SITE_COUNT} maqbarah di ${DYNAMIC_PROVINCE_COUNT} provinsi agar setiap langkah ziarah menjadi pengingat akhirat, penguat iman, dan bakti doa bagi ahli kubur.`,
   jumatBannerTitle: 'Malam & Hari Jumat Penuh Keberkahan',
   jumatBannerSubtitle:
-    'Mari hadiahkan Al-Fatihah dan selami kembali kisah para kekasih Allah yang meneduhkan batin.',
+    'Mari hadiahkan Al-Fatihah bagi ahli kubur dan resapi kembali kisah keteladanan para ulama yang menenangkan hati.',
   searchPlaceholder:
     'Cari nama Waliyullah, kota, atau kisah batin (misal: Sunan Kalijaga, sabar, rezeki)...',
   tabLabelAll: 'Semua Tokoh',
@@ -262,17 +262,17 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   karomahSectionTitle: 'Babak II — Kesaksian Karomah & Keajaiban Batin',
   barokahSectionTitle: 'Barokah Hajat & Doa Khusus Peziarah',
   barokahHookPrefix: 'Harapan & Wasilah Hajat Jamaah',
-  barokahPaywallTitle: 'Amalan & Doa Khusus Hajat Terkunci',
+  barokahPaywallTitle: 'Buka Lembar Amalan & Doa Khusus Maqbarah Ini',
   barokahPaywallDescription:
-    'Buka penuh 3 Bagian Panduan Amalan (Tata Cara & Waktu Mustajab, Lafaz Arab Naskh, Transliterasi Latin, Terjemahan Hajat, serta Wirid Penutup) dengan Infaq Operasional & Pemeliharaan Digital.',
+    'Buka penuh 5 Bagian Kitab Amalan (Salam & Adab Maqbarah, Silsilah Al-Fatihah 4 Simpul Sanad, Wirid Makam + Tasbih Mini, 3 Ayat & Doa Nabawi Sahih, serta Cetak PDF Saku) melalui infaq pemeliharaan situs.',
   barokahPaywallButtonText: 'Buka Barokah & Doa Khusus',
-  paywallBadge: 'Arsip Khazanah & Wasiat Terkunci',
+  paywallBadge: 'Lanjutan Kisah & Wasiat Maqbarah',
   paywallTitle: 'Teruskan Membaca Wasiat & Kesaksian Batin Beliau',
-  paywallDescription: `Bagian lanjutan naskah ini disimpan dalam Khazanah Khusus. Dengan niat Infaq Operasional & Pemeliharaan Digital satu kali, Anda ikut menjaga kelangsungan arsip sejarah ulama Nusantara sekaligus membuka seluruh ${DYNAMIC_SITE_COUNT}+ kisah rahasia di perangkat ini.`,
-  paywallSubtitle: `Bagian lanjutan naskah ini disimpan dalam Khazanah Khusus. Dengan niat Infaq Operasional & Pemeliharaan Digital satu kali, Anda ikut menjaga kelangsungan arsip sejarah ulama Nusantara sekaligus membuka seluruh ${DYNAMIC_SITE_COUNT}+ kisah rahasia di perangkat ini.`,
+  paywallDescription: `Bagian lanjutan naskah ini disimpan dalam Khazanah Khusus. Dengan niat infaq dukungan satu kali, Anda ikut menjaga kelangsungan arsip sejarah ulama Nusantara sekaligus membuka seluruh ${DYNAMIC_SITE_COUNT}+ kisah rahasia di perangkat ini.`,
+  paywallSubtitle: `Bagian lanjutan naskah ini disimpan dalam Khazanah Khusus. Dengan niat infaq dukungan satu kali, Anda ikut menjaga kelangsungan arsip sejarah ulama Nusantara sekaligus membuka seluruh ${DYNAMIC_SITE_COUNT}+ kisah rahasia di perangkat ini.`,
   paywallButtonText: 'Buka Seluruh Kisah & Wasiat',
   paywallPrimaryButton: 'Buka Seluruh Kisah & Wasiat',
-  whatsappSharePrefix: 'Merinding membaca cuplikan kisah & karomah',
+  whatsappSharePrefix: 'Hati ikut tenang membaca kisah keteladanan',
   rubrikTitle: 'Rubrik Ziarah Nusantara.',
   rubrikSubtitle:
     'Lembaran catatan sejarah, kesaksian karomah, dan wasiat keteladanan para Auliya yang dikurasi dari babad serta penuturan lisan.',
@@ -280,23 +280,23 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
     'Lembaran catatan sejarah, kesaksian karomah, dan wasiat keteladanan para Auliya yang dikurasi dari babad serta penuturan lisan.',
 
   // 3. Infaq, Paket Nominal & Munajat
-  infaqTitle: 'Infaq Operasional & Pemeliharaan Digital Arsip Sejarah Para Kekasih Allah',
-  infaqHeadline: 'Infaq Operasional & Pemeliharaan Digital Arsip Sejarah Para Kekasih Allah',
+  infaqTitle: 'Dukung Kelangsungan Ziarah Nusantara & Titipkan Doa Anda',
+  infaqHeadline: 'Dukung Kelangsungan Ziarah Nusantara & Titipkan Doa Anda',
   infaqSubtitle:
-    'Setiap rupiah Infaq Operasional & Pemeliharaan Digital Anda digunakan untuk perawatan server arsip digital, riset naskah sejarah pesantren, dan penyebaran tuntunan adab ziarah ke seluruh penjuru Nusantara.',
+    'Infaq Anda menjaga portal ini tetap bebas iklan, membiayai perawatan server, serta merawat catatan sejarah dan panduan ziarah ulama Nusantara.',
   infaqSubheadline:
-    'Setiap rupiah Infaq Operasional & Pemeliharaan Digital Anda digunakan untuk perawatan server arsip digital, riset naskah sejarah pesantren, dan penyebaran tuntunan adab ziarah ke seluruh penjuru Nusantara.',
+    'Infaq Anda menjaga portal ini tetap bebas iklan, membiayai perawatan server, serta merawat catatan sejarah dan panduan ziarah ulama Nusantara.',
   infaqTransparencyNote:
     '100% dikelola secara amanah sebagai Infaq Operasional & Pemeliharaan Digital untuk pelestarian literasi sejarah Islam Nusantara, pemeliharaan sistem direktori bebas iklan, dan dokumentasi lapangan.',
   munajatTitle: 'Dinding Munajat & Doa Bersama Peziarah',
   munajatHeaderTitle: 'Dinding Munajat & Doa Bersama Peziarah',
   munajatSubtitle:
-    'Titipkan doa terbaik Anda bersama Infaq Operasional & Pemeliharaan Digital, dan mari saling mengaminkan hajat sesama peziarah.',
+    'Titipkan doa terbaik Anda bersama infaq dukungan, dan mari saling mengaminkan hajat sesama peziarah.',
   munajatHeaderSubtitle:
-    'Titipkan doa terbaik Anda bersama Infaq Operasional & Pemeliharaan Digital, dan mari saling mengaminkan hajat sesama peziarah.',
+    'Titipkan doa terbaik Anda bersama infaq dukungan, dan mari saling mengaminkan hajat sesama peziarah.',
   doaHajatPlaceholder:
     'Contoh: Semoga almarhum ayahanda diampuni segala khilafnya dan keluarga kami diberi ketenangan batin serta kelapangan rezeki yang berkah...',
-  unlockSuccessMessage: `Alhamdulillah, terima kasih atas Infaq Operasional & Pemeliharaan Digital Anda. Seluruh ${DYNAMIC_SITE_COUNT}+ kisah rahasia, catatan karomah, dan manuskrip kini telah terbuka penuh di perangkat Anda.`,
+  unlockSuccessMessage: `Alhamdulillah, terima kasih atas infaq dukungan Anda. Seluruh ${DYNAMIC_SITE_COUNT}+ kisah keteladanan, catatan karomah, dan lembar amalan kini telah terbuka penuh di perangkat Anda.`,
   quickNominalPackages: [
     {
       amount: 10000,
@@ -308,7 +308,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
       amount: 25000,
       label: 'Rp 25rb',
       tag: 'Paling Banyak Dipilih',
-      desc: 'Infaq Operasional & Pemeliharaan Digital arsip harian',
+      desc: 'Dukungan perawatan harian direktori & peta ziarah',
     },
     {
       amount: 50000,
@@ -332,7 +332,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
       amount: 500000,
       label: 'Rp 500rb',
       tag: 'Penjaga Arsip Utama',
-      desc: 'Infaq Operasional & Pemeliharaan Digital infrastruktur direktori bebas iklan',
+      desc: 'Dukungan utama infrastruktur direktori bebas iklan',
     },
   ],
 
@@ -357,7 +357,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
 
   // 5. Footer
   footerAboutText: 'Ziarah Nusantara — Panduan Ziarah Kubur & Direktori Makam Wali Nusantara',
-  footerCopyrightText: 'Dikelola secara resmi oleh Tim Kurator Arsip Ziarah Nusantara',
+  footerCopyrightText: 'Dirawat bersama oleh Tim Kurator Ziarah Nusantara',
 };
 
 const SITE_COPY_CACHE_KEY = 'zn_site_copy_cache_v4';
