@@ -1308,6 +1308,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 >
                   <span>Buka Susunan Tahlil &amp; Tawassul</span>
                 </Link>
+                <span className="text-stone-300" aria-hidden="true">•</span>
+                <Link
+                  to="/artikel"
+                  className="py-1.5 min-h-[32px] inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline"
+                >
+                  <span>Artikel Panduan &amp; Rute Ziarah</span>
+                </Link>
               </div>
             </div>
           </div>

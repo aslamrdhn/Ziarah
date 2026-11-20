@@ -453,7 +453,116 @@ function buildStaticRoutes(siteCount, provinceCount) {
       title: 'Standar Kurasi & Metodologi Referensi Sejarah — Ziarah Nusantara',
       description: `Pedoman metodologi verifikasi sumber sejarah, jurnal akademik, naskah babad, dan kurasi ${siteCount} situs makam di ${provinceCount} provinsi oleh Tim Kurator Arsip Ziarah Nusantara.`,
     },
+    {
+      path: '/artikel',
+      priority: '0.9',
+      changefreq: 'weekly',
+      title: 'Artikel Panduan, Fikih & Rute Ziarah Wali Nusantara — Ziarah Nusantara',
+      description: `Kumpulan artikel panduan rute ziarah Wali Songo dan ulama Nusantara, urutan doa ziarah kubur orang tua, kaidah tawassul, dan kalender haul di ${provinceCount} provinsi.`,
+    },
   ];
+}
+
+function extractStringArrayFromBlock(block, fieldName) {
+  const regex = new RegExp(`\\b${fieldName}:\\s*\\[([\\s\\S]*?)\\]`);
+  const m = block.match(regex);
+  if (!m || !m[1]) return [];
+  const items = [];
+  const strRegex = /(['"])((?:\\.|(?!\1).)*)\1/g;
+  let sm;
+  while ((sm = strRegex.exec(m[1])) !== null) {
+    const cleaned = cleanSeoText(sm[2]);
+    if (cleaned) items.push(cleaned);
+  }
+  return items;
+}
+
+function extractSectionsFromArticleBlock(block) {
+  const secMatch = block.match(/\bsections:\s*\[([\s\S]*?)\],\s*relatedSiteSlugs:/);
+  if (!secMatch || !secMatch[1]) return [];
+  const secRaw = secMatch[1];
+  const headingRegex = /\bheading:\s*(['"])((?:\\.|(?!\1).)*)\1/g;
+  const hPos = [];
+  let hm;
+  while ((hm = headingRegex.exec(secRaw)) !== null) {
+    hPos.push({ heading: cleanSeoText(hm[2]), index: hm.index });
+  }
+  const sections = [];
+  for (let i = 0; i < hPos.length; i++) {
+    const start = hPos[i].index;
+    const end = i + 1 < hPos.length ? hPos[i + 1].index : secRaw.length;
+    const sBlock = secRaw.slice(start, end);
+    const paragraphs = extractStringArrayFromBlock(sBlock, 'paragraphs');
+    const bulletPoints = extractStringArrayFromBlock(sBlock, 'bulletPoints');
+    sections.push({
+      heading: hPos[i].heading,
+      paragraphs,
+      ...(bulletPoints.length > 0 ? { bulletPoints } : {}),
+    });
+  }
+  return sections;
+}
+
+export function extractArticlesFromSource(customTarget) {
+  let articlesFile = path.resolve(cwd, 'src', 'data', 'articles.ts');
+  if (customTarget && typeof customTarget === 'string') {
+    const resolvedTarget = path.resolve(customTarget);
+    if (fs.existsSync(resolvedTarget) && fs.statSync(resolvedTarget).isDirectory()) {
+      articlesFile = path.join(resolvedTarget, 'src', 'data', 'articles.ts');
+    } else if (resolvedTarget.endsWith('.ts')) {
+      articlesFile = resolvedTarget;
+    }
+  }
+  if (!fs.existsSync(articlesFile)) return [];
+  const raw = fs.readFileSync(articlesFile, 'utf8');
+  const arrayStart = raw.indexOf('export const ZIARAH_ARTICLES');
+  const bodyRaw = arrayStart >= 0 ? raw.slice(arrayStart) : raw;
+
+  const slugRegex = /\bslug:\s*(['"])((?:\\.|(?!\1).)*)\1/g;
+  const positions = [];
+  let match;
+  while ((match = slugRegex.exec(bodyRaw)) !== null) {
+    positions.push({ slug: cleanSeoText(match[2]), index: match.index });
+  }
+
+  const extracted = [];
+  for (let i = 0; i < positions.length; i++) {
+    const { slug, index } = positions[i];
+    if (!slug) continue;
+    const nextIndex = i + 1 < positions.length ? positions[i + 1].index : bodyRaw.length;
+    const block = bodyRaw.slice(index, nextIndex);
+    const title = extractQuotedField(block, 'title', slug);
+    const metaDescription = extractQuotedField(block, 'metaDescription', '');
+    const category = extractQuotedField(block, 'category', 'Rute Ziarah');
+    const publishedAt = extractQuotedField(block, 'publishedAt', '2026-11-20');
+    const readTimeMinutes = extractNumericField(block, 'readTimeMinutes', 6);
+    const excerpt = extractQuotedField(block, 'excerpt', metaDescription);
+    const sections = extractSectionsFromArticleBlock(block);
+    const relatedSiteSlugs = extractStringArrayFromBlock(block, 'relatedSiteSlugs');
+    const references = extractStringArrayFromBlock(block, 'references');
+    const ctaMatch = block.match(/\bctaTarget:\s*\{([\s\S]*?)\}/);
+    const ctaBlock = ctaMatch ? ctaMatch[1] : '';
+    const ctaTarget = {
+      label: extractQuotedField(ctaBlock, 'label', 'Buka Peta Rute Ziarah'),
+      to: extractQuotedField(ctaBlock, 'to', '/peta'),
+      description: extractQuotedField(ctaBlock, 'description', ''),
+    };
+
+    extracted.push({
+      slug,
+      title,
+      metaDescription,
+      category,
+      publishedAt,
+      readTimeMinutes,
+      excerpt,
+      sections,
+      relatedSiteSlugs,
+      ctaTarget,
+      references,
+    });
+  }
+  return extracted;
 }
 
 function parseFirestoreStringField(fields, key, fallback = '') {
@@ -602,6 +711,7 @@ async function fetchCloudSitesForSeo(localSites) {
 
 const localExtractedSites = extractSitesFromSource();
 const sites = process.env.VITEST ? localExtractedSites : await fetchCloudSitesForSeo(localExtractedSites);
+const articles = extractArticlesFromSource();
 const uniqueProvinces = Array.from(new Set(sites.map((s) => s.province).filter(Boolean))).sort();
 const staticRoutes = buildStaticRoutes(sites.length, uniqueProvinces.length);
 
@@ -891,6 +1001,106 @@ export function buildKurasiRootHtml() {
       </main>`;
 }
 
+export function buildArtikelIndexRootHtml() {
+  const listItemsHtml = articles
+    .map((art) => {
+      const safeSlug = escapeHtml(art.slug);
+      const safeTitle = escapeHtml(art.title);
+      const safeCategory = escapeHtml(art.category);
+      const safeExcerpt = escapeHtml(art.excerpt || art.metaDescription);
+      return `<li>
+              <article>
+                <span>${safeCategory} &middot; ${art.readTimeMinutes || 6} menit baca</span>
+                <h2><a href="/artikel/${safeSlug}">${safeTitle}</a></h2>
+                <p>${safeExcerpt}</p>
+              </article>
+            </li>`;
+    })
+    .join('\n            ');
+
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
+        <header>
+          <h1>Artikel Panduan, Fikih &amp; Rute Ziarah Wali Nusantara — Ziarah Nusantara</h1>
+          <p>Kumpulan ${articles.length} panduan praktis rute ziarah Wali Songo dan ulama pesantren, urutan doa ziarah kubur orang tua (Arab, Latin, Artinya), kaidah tawassul Ahlussunnah wal Jamaah, serta kalender haul tahunan di ${uniqueProvinces.length} provinsi.</p>
+        </header>
+        <section aria-label="Daftar Artikel Panduan dan Rute Ziarah">
+          <ul>
+            ${listItemsHtml}
+          </ul>
+        </section>
+      </main>`;
+}
+
+export function buildArticleDetailRootHtml(article) {
+  const sectionsHtml = (Array.isArray(article.sections) ? article.sections : [])
+    .map((sec) => {
+      const paragraphsHtml = (Array.isArray(sec.paragraphs) ? sec.paragraphs : [])
+        .map((p) => `<p>${escapeHtml(p.replace(/\*\*/g, ''))}</p>`)
+        .join('\n            ');
+      const bulletsHtml =
+        Array.isArray(sec.bulletPoints) && sec.bulletPoints.length > 0
+          ? `<ul>\n              ${sec.bulletPoints
+              .map((bp) => `<li>${escapeHtml(bp.replace(/\*\*/g, ''))}</li>`)
+              .join('\n              ')}\n            </ul>`
+          : '';
+      return `<section>
+            <h2>${escapeHtml(sec.heading)}</h2>
+            ${paragraphsHtml}
+            ${bulletsHtml}
+          </section>`;
+    })
+    .join('\n          ');
+
+  const relatedLinksHtml = (Array.isArray(article.relatedSiteSlugs) ? article.relatedSiteSlugs : [])
+    .map((siteSlug) => {
+      const matched = sites.find((s) => s.slug === siteSlug || s.id === siteSlug);
+      if (matched) {
+        return `<li><a href="/situs/${escapeHtml(matched.slug)}">${escapeHtml(formatMakamHeading(matched.title))} (${escapeHtml(matched.city)}, ${escapeHtml(matched.province)})</a></li>`;
+      }
+      return `<li><a href="/situs/${escapeHtml(siteSlug)}">${escapeHtml(formatMakamHeading(siteSlug.replace(/-/g, ' ')))}</a></li>`;
+    })
+    .join('\n              ');
+
+  const refsHtml = (Array.isArray(article.references) ? article.references : [])
+    .map((ref) => `<li>${escapeHtml(ref)}</li>`)
+    .join('\n              ');
+
+  return `<main id="seo-prerender-shell" class="zn-prerender-shell" lang="id">
+        <article>
+          <p><a href="${SITE_ORIGIN}/">Beranda Ziarah Nusantara</a> &rsaquo; <a href="${SITE_ORIGIN}/artikel">Artikel Panduan Ziarah</a> &rsaquo; ${escapeHtml(article.category)}</p>
+          <h1>${escapeHtml(article.title)}</h1>
+          <p><strong>Kategori:</strong> ${escapeHtml(article.category)} | <strong>Terbit:</strong> ${escapeHtml(article.publishedAt)} | <strong>Estimasi Baca:</strong> ${article.readTimeMinutes || 6} menit</p>
+          <p>${escapeHtml(article.excerpt || article.metaDescription)}</p>
+          ${sectionsHtml}
+          <nav aria-label="Maqbarah Terkait dalam Artikel Ini">
+            <h2>Maqbarah Terkait dalam Artikel Ini</h2>
+            <ul>
+              ${relatedLinksHtml}
+            </ul>
+          </nav>
+          ${
+            article.ctaTarget
+              ? `<section aria-label="Fitur Pendamping Ziarah">
+            <h2>${escapeHtml(article.ctaTarget.label)}</h2>
+            <p>${escapeHtml(article.ctaTarget.description)}</p>
+            <p><a href="${escapeHtml(article.ctaTarget.to)}">${escapeHtml(article.ctaTarget.label)}</a></p>
+          </section>`
+              : ''
+          }
+          ${
+            refsHtml
+              ? `<section aria-label="Referensi dan Rujukan">
+            <h2>Referensi &amp; Rujukan Pustaka</h2>
+            <ol>
+              ${refsHtml}
+            </ol>
+          </section>`
+              : ''
+          }
+        </article>
+      </main>`;
+}
+
 export function buildSiteRootHtml(site) {
   const sameProvince = sites.filter((s) => s.id !== site.id && s.province === site.province);
   const otherSites = sites.filter((s) => s.id !== site.id && s.province !== site.province);
@@ -1030,6 +1240,36 @@ export function buildRouteJsonLd(entry) {
             },
           }
         : {}),
+    });
+  } else if (entry.article) {
+    breadcrumbItems.push(
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Artikel Panduan Ziarah',
+        item: `${SITE_ORIGIN}/artikel`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: cleanSeoText(entry.article.title),
+        item: canonicalHref,
+      }
+    );
+
+    graphNodes.push({
+      '@type': 'Article',
+      '@id': `${canonicalHref}#article`,
+      headline: cleanSeoText(entry.article.title),
+      description: cleanSeoText(entry.article.metaDescription || entry.description),
+      articleSection: cleanSeoText(entry.article.category || 'Panduan Ziarah'),
+      inLanguage: 'id-ID',
+      datePublished: entry.article.publishedAt || '2026-11-20',
+      dateModified: entry.article.publishedAt || '2026-11-20',
+      mainEntityOfPage: { '@id': `${canonicalHref}#webpage` },
+      author: { '@id': `${SITE_ORIGIN}/#organization` },
+      publisher: { '@id': `${SITE_ORIGIN}/#organization` },
+      image: fullImageUrl,
     });
   } else if (entry.path && entry.path !== '/') {
     breadcrumbItems.push({
@@ -1175,9 +1415,23 @@ if (!process.env.VITEST) {
                   ? buildDonasiRootHtml()
                   : r.path === '/kurasi'
                     ? buildKurasiRootHtml()
-                    : r.path === '/direktori'
-                      ? buildDirektoriRootHtml()
-                      : buildHomepageRootHtml(),
+                    : r.path === '/artikel'
+                      ? buildArtikelIndexRootHtml()
+                      : r.path === '/direktori'
+                        ? buildDirektoriRootHtml()
+                        : buildHomepageRootHtml(),
+    })),
+    ...articles.map((art) => ({
+      loc: `${SITE_ORIGIN}/artikel/${encodeURIComponent(art.slug)}`,
+      canonicalLoc: `${SITE_ORIGIN}/artikel/${encodeURIComponent(art.slug)}`,
+      isAliasRoute: false,
+      changefreq: 'weekly',
+      priority: '0.8',
+      title: cleanSeoText(`${art.title} | Ziarah Nusantara`),
+      description: cleanSeoText(art.metaDescription || art.excerpt),
+      path: `/artikel/${art.slug}`,
+      article: art,
+      bodyHtml: buildArticleDetailRootHtml(art),
     })),
     ...sites.map((s) => {
       const legacyApostropheSlug = s.title.includes("'")

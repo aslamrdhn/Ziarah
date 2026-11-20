@@ -107,25 +107,27 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
 
   const isAdminLoggedIn = Boolean(user && checkIsUserAdmin(user));
 
-  // Unified 4 Core Navigation Items across Desktop, Mobile Web & Installed PWA
+  // Unified Core Navigation Items across Desktop, Mobile Web & Installed PWA
   const desktopNavItems = [
     { id: '/', label: copy.navHomeLabel, shortLabel: copy.navHomeLabel, icon: Compass },
     { id: '/rubrik', label: copy.navRubrikLabel, shortLabel: copy.navRubrikLabel, icon: ScrollText },
     { id: '/peta', label: copy.navMapLabel, shortLabel: copy.navMapLabel, icon: MapIcon },
     { id: '/panduan', label: copy.navPrayerLabel, shortLabel: copy.navPrayerLabel, icon: BookOpen },
+    { id: '/artikel', label: 'Artikel', shortLabel: 'Artikel', icon: BookOpen },
   ];
 
   const isNavActive = (id: string) => {
     if (id === '/') return currentPath === '/' || currentPath === '/direktori';
     if (id === '/peta') return currentPath === '/peta' || currentPath.startsWith('/makam') || currentPath.startsWith('/situs');
     if (id === '/panduan') return currentPath === '/panduan' || currentPath === '/doa';
+    if (id === '/artikel') return currentPath === '/artikel' || currentPath.startsWith('/artikel/');
     if (id === '/infaq' || id === '/donasi') return currentPath === '/infaq' || currentPath === '/donasi';
     return currentPath === id;
   };
 
   return (
     <>
-      {/* Top Navbar: Clean 3-Zone Single-Row Editorial Contract (4 Core Menus + 1 Action Button) */}
+      {/* Top Navbar: Clean 3-Zone Single-Row Editorial Contract (Core Menus + 1 Action Button) */}
       <nav
         aria-label="Navigasi Utama"
         className="w-full h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6 px-4 sm:px-6 lg:px-8"
@@ -152,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
           </div>
         </Link>
 
-        {/* Zone 2: 4 Core Editorial Text Navigation Links (Desktop & Tablet) */}
+        {/* Zone 2: Core Editorial Text Navigation Links (Desktop & Tablet) */}
         <div className="hidden md:flex items-center justify-center gap-5 lg:gap-7 text-xs lg:text-sm font-medium tracking-tight text-stone-600">
           {desktopNavItems.map((item) => {
             const active = isNavActive(item.id);
@@ -252,6 +254,16 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                       <PlusCircle className="w-4 h-4 mr-2.5 text-emerald-800" aria-hidden="true" />
                       <span>Kontribusi Riwayat / Makam</span>
                     </button>
+
+                    <Link
+                      to="/artikel"
+                      role="menuitem"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900 rounded-xl flex items-center transition-colors"
+                    >
+                      <BookOpen className="w-4 h-4 mr-2.5 text-emerald-800" aria-hidden="true" />
+                      <span>Artikel Panduan &amp; Rute Ziarah</span>
+                    </Link>
 
                     <Link
                       to="/doa"

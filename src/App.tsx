@@ -10,9 +10,11 @@ import { KontribusiModal } from './components/KontribusiModal';
 const PetaLokasi = lazy(() => import('./views/PetaLokasi').then((m) => ({ default: m.PetaLokasi })));
 const AdminKurator = lazy(() => import('./views/AdminKurator').then((m) => ({ default: m.AdminKurator })));
 const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })));
+const ArtikelZiarah = lazy(() => import('./views/ArtikelZiarah').then((m) => ({ default: m.ArtikelZiarah })));
 
 import type { ZiarahSite } from './data/sites';
 import { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from './data/initialSites';
+import { findArticleBySlug } from './data/articles';
 import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -157,9 +159,16 @@ export default function App() {
         title: 'Standar Kurasi & Metodologi Referensi Sejarah — Ziarah Nusantara',
         desc: `Pedoman metodologi verifikasi sumber sejarah, jurnal akademik, naskah babad, dan kurasi ${TOTAL_SITES_COUNT} situs makam di ${TOTAL_PROVINCES_COUNT} provinsi oleh Tim Kurator Arsip Ziarah Nusantara.`,
       },
+      '/artikel': {
+        title: 'Artikel Panduan, Fikih & Rute Ziarah Wali Nusantara — Ziarah Nusantara',
+        desc: `Kumpulan artikel panduan rute ziarah Wali Songo dan ulama Nusantara, urutan doa ziarah kubur orang tua, kaidah tawassul, dan kalender haul di ${TOTAL_PROVINCES_COUNT} provinsi.`,
+      },
     };
 
     let cancelled = false;
+    const matchedArticle = cleanPath.startsWith('/artikel/')
+      ? findArticleBySlug(cleanPath.replace(/^\/artikel\//, ''))
+      : null;
 
     const applySeoMetadata = (matchedSite: ZiarahSite | null) => {
       if (cancelled) return;
@@ -176,6 +185,12 @@ export default function App() {
         canonicalUrl = `${baseOrigin}/`;
       } else if (cleanPath === '/infaq') {
         canonicalUrl = `${baseOrigin}/donasi`;
+      }
+
+      if (matchedArticle) {
+        activeTitle = `${matchedArticle.title} | Ziarah Nusantara`;
+        activeDesc = matchedArticle.metaDescription;
+        canonicalUrl = `${baseOrigin}/artikel/${matchedArticle.slug}`;
       }
 
       if (matchedSite) {
@@ -321,6 +336,35 @@ export default function App() {
               latitude: matchedSite.location.lat,
               longitude: matchedSite.location.lng,
             },
+          });
+        } else if (matchedArticle) {
+          breadcrumbItems.push(
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'Artikel Panduan Ziarah',
+              item: `${baseOrigin}/artikel`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: matchedArticle.title,
+              item: canonicalUrl,
+            }
+          );
+          graphNodes.push({
+            '@type': 'Article',
+            '@id': `${canonicalUrl}#article`,
+            headline: matchedArticle.title,
+            description: matchedArticle.metaDescription,
+            articleSection: matchedArticle.category,
+            inLanguage: 'id-ID',
+            datePublished: matchedArticle.publishedAt,
+            dateModified: matchedArticle.publishedAt,
+            mainEntityOfPage: { '@id': `${canonicalUrl}#webpage` },
+            author: { '@id': `${baseOrigin}/#organization` },
+            publisher: { '@id': `${baseOrigin}/#organization` },
+            image: fullImageUrl,
           });
         } else if (canonicalUrl !== `${baseOrigin}/`) {
           breadcrumbItems.push({
@@ -639,6 +683,8 @@ export default function App() {
                 }
               />
               <Route path="/doa" element={<KumpulanDoa savedDoas={savedDoas} onToggleSaveDoa={handleToggleSaveDoa} />} />
+              <Route path="/artikel" element={<ArtikelZiarah />} />
+              <Route path="/artikel/:slug" element={<ArtikelZiarah />} />
               <Route path="/infaq" element={<InfaqDigital />} />
               <Route path="/donasi" element={<InfaqDigital />} />
               <Route path="/kurasi" element={<KebijakanKurasi />} />
@@ -691,6 +737,9 @@ export default function App() {
               </Link>
               <Link to="/peta" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
                 Peta Rute
+              </Link>
+              <Link to="/artikel" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
+                Artikel
               </Link>
               <Link to="/panduan" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
                 Panduan Adab
