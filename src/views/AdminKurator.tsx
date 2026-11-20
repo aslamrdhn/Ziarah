@@ -37,7 +37,7 @@ import { ziarahSites as localSites, ZiarahSite } from '../data/sites';
 import { DEFAULT_INFAQ_PROGRAMS, InfaqProgramItem } from './InfaqDigital';
 import { DEFAULT_RUBRIK_GATE_SETTINGS, RubrikGateSettings, RubrikItem } from './RubrikKisah';
 import { CuratedDoaItem } from './KumpulanDoa';
-import { useSites } from '../context/SiteContext';
+import { useSites, CLOUD_SITES_CACHE_KEY } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, browserPopupRedirectResolver, User } from 'firebase/auth';
@@ -52,6 +52,8 @@ import { SiteCopyAdminSection } from './admin/SiteCopyAdminSection';
 import { DoaWiridAdminSection } from './admin/DoaWiridAdminSection';
 import {
   SiteCopyConfig,
+  SITE_COPY_CACHE_KEY,
+  SITE_COPY_CACHE_TS_KEY,
   fetchSiteCopyFromCloud,
   saveSiteCopyToCloud,
   getCachedSiteCopy,
@@ -501,7 +503,7 @@ export const AdminKurator: React.FC = () => {
         );
       }
       try {
-        localStorage.removeItem('zn_cloud_sites_cache_v4');
+        localStorage.removeItem(CLOUD_SITES_CACHE_KEY);
         localStorage.setItem('zn_admin_dirty_ts', String(Date.now()));
       } catch {}
       await refreshCloudSites(true);
@@ -782,8 +784,10 @@ export const AdminKurator: React.FC = () => {
       }
       setPendingContributionIdToApprove(null);
       try {
+        localStorage.removeItem(CLOUD_SITES_CACHE_KEY);
         localStorage.removeItem('zn_cloud_sites_cache_v1');
-        localStorage.removeItem('zn_cloud_sites_cache_v4');
+        localStorage.removeItem('zn_cloud_sites_cache_v2');
+        localStorage.removeItem('zn_cloud_sites_cache_v3');
         localStorage.setItem('zn_admin_dirty_ts', String(Date.now()));
       } catch {
         // Ignore storage error
@@ -806,12 +810,19 @@ export const AdminKurator: React.FC = () => {
     try {
       await setDoc(
         doc(db, 'sites', siteId),
-        { id: siteId, isDeleted: true, editedByCurator: true, updatedAt: new Date().toISOString() },
+        {
+          id: siteId,
+          isDeleted: true,
+          editedByCurator: true,
+          updatedAt: new Date().toISOString(),
+        },
         { merge: true }
       );
       try {
+        localStorage.removeItem(CLOUD_SITES_CACHE_KEY);
         localStorage.removeItem('zn_cloud_sites_cache_v1');
-        localStorage.removeItem('zn_cloud_sites_cache_v4');
+        localStorage.removeItem('zn_cloud_sites_cache_v2');
+        localStorage.removeItem('zn_cloud_sites_cache_v3');
         localStorage.setItem('zn_admin_dirty_ts', String(Date.now()));
       } catch {
         // Ignore storage error
@@ -899,14 +910,25 @@ export const AdminKurator: React.FC = () => {
     setSettingsMsg('Membersihkan cache browser & menyinkronkan ulang data terbaru dari Cloud Firestore...');
     try {
       try {
-        localStorage.removeItem('zn_cloud_sites_cache_v1');
-        localStorage.removeItem('zn_site_copy_cache_v1');
+        localStorage.removeItem(CLOUD_SITES_CACHE_KEY);
+        localStorage.removeItem(SITE_COPY_CACHE_KEY);
+        localStorage.removeItem(SITE_COPY_CACHE_TS_KEY);
         localStorage.removeItem('ziarah_local_settings_cache');
+        for (const legacyKey of [
+          'zn_cloud_sites_cache_v1',
+          'zn_cloud_sites_cache_v2',
+          'zn_cloud_sites_cache_v3',
+          'zn_site_copy_cache_v1',
+          'zn_site_copy_cache_v2',
+          'zn_site_copy_cache_v3',
+        ]) {
+          localStorage.removeItem(legacyKey);
+        }
       } catch {}
 
       const [, latestCopy, infaqSnap] = await Promise.all([
         refreshCloudSites(true),
-        fetchSiteCopyFromCloud(),
+        fetchSiteCopyFromCloud(true),
         getDoc(doc(db, 'settings', 'infaq')),
       ]);
 
@@ -939,7 +961,7 @@ export const AdminKurator: React.FC = () => {
       }
 
       setSettingsMsg(
-        'Seluruh cache browser (zn_cloud_sites_cache_v1 & zn_site_copy_cache_v1) berhasil dibersihkan dan data terbaru dari Cloud Firestore telah disinkronkan!'
+        `Seluruh cache browser (${CLOUD_SITES_CACHE_KEY} & ${SITE_COPY_CACHE_KEY}) berhasil dibersihkan dan data terbaru dari Cloud Firestore telah disinkronkan!`
       );
     } catch (err: any) {
       setSettingsMsg('Gagal menyinkronkan ulang: ' + (err?.message || 'Error'));

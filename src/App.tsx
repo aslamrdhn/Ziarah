@@ -92,12 +92,27 @@ export default function App() {
       } catch {}
     };
 
+    let cancelIdle: (() => void) | null = null;
+    const scheduleIdleSettingsFetch = () => {
+      if (typeof window === 'undefined' || fetched) return;
+      if (cancelIdle) cancelIdle();
+      const w = window as Window & {
+        requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
+        cancelIdleCallback?: (id: number) => void;
+      };
+      if (typeof w.requestIdleCallback === 'function') {
+        const id = w.requestIdleCallback(() => void fetchSettings(), { timeout: 2800 });
+        cancelIdle = () => w.cancelIdleCallback?.(id);
+      } else {
+        const timer = window.setTimeout(() => void fetchSettings(), 1800);
+        cancelIdle = () => window.clearTimeout(timer);
+      }
+    };
+
     const handleInteraction = (e: Event) => {
       if (e.type === 'scroll' && window.scrollY < 48) return;
       cleanup();
-      window.setTimeout(() => {
-        fetchSettings();
-      }, 1800);
+      scheduleIdleSettingsFetch();
     };
 
     const events: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'scroll'];
@@ -105,8 +120,12 @@ export default function App() {
       events.forEach((evt) => window.removeEventListener(evt, handleInteraction));
     };
     events.forEach((evt) => window.addEventListener(evt, handleInteraction, { passive: true }));
+    scheduleIdleSettingsFetch();
 
-    return cleanup;
+    return () => {
+      cleanup();
+      if (cancelIdle) cancelIdle();
+    };
   }, []);
 
   // Dynamically sync canonical URL, OpenGraph URL/image, and Schema.org @graph on route/domain change

@@ -433,8 +433,21 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       pathname.startsWith('/doa');
 
     let hasAdminDirtyFlag = false;
+    let isCloudCacheStaleOrMissing = true;
     try {
       hasAdminDirtyFlag = Boolean(localStorage.getItem(ADMIN_DIRTY_TS_KEY));
+      const rawCached = localStorage.getItem(CLOUD_SITES_CACHE_KEY);
+      if (rawCached) {
+        const parsed = JSON.parse(rawCached) as CachedCloudSitesPayload;
+        if (
+          parsed &&
+          Array.isArray(parsed.sites) &&
+          typeof parsed.ts === 'number' &&
+          Date.now() - parsed.ts <= 5 * 60 * 1000
+        ) {
+          isCloudCacheStaleOrMissing = false;
+        }
+      }
     } catch {}
 
     const interactionEvents = ['pointerdown', 'keydown', 'scroll', 'touchstart'] as const;
@@ -448,7 +461,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (isAdminRoute || hasAdminDirtyFlag) {
       triggerFullAndCloudSync(hasAdminDirtyFlag);
-    } else if (needsCatalogRoute) {
+    } else if (needsCatalogRoute || isCloudCacheStaleOrMissing) {
       scheduleIdleSync(() => triggerFullAndCloudSync(false));
     } else if (typeof window !== 'undefined') {
       interactionEvents.forEach((evt) =>

@@ -723,9 +723,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             {copy.heroBadge}
           </span>
 
-          <h1 className="apple-headline text-4xl sm:text-6xl font-semibold text-[#F5F5F7] max-w-4xl mx-auto">
-            {copy.heroTitle}
+          <h1 className="apple-headline text-4xl sm:text-6xl md:text-[64px] font-semibold text-[#F5F5F7]">
+            Ziarah Nusantara.
           </h1>
+
+          <p className="text-lg sm:text-2xl text-[#E5E5EA] font-medium tracking-tight max-w-2xl mx-auto">
+            {copy.heroTitle}
+          </p>
 
           <p className="text-base sm:text-xl text-[#D2D2D7] max-w-2xl mx-auto leading-relaxed">
             {formatDynamicHeroSubtitle(copy.heroSubtitle, dynamicSiteCount, dynamicProvinceCount)}

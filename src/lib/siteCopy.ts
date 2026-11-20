@@ -358,7 +358,14 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   footerCopyrightText: 'Dirawat bersama oleh Tim Kurator Ziarah Nusantara',
 };
 
-const SITE_COPY_CACHE_KEY = 'zn_site_copy_cache_v4';
+export const SITE_COPY_CACHE_KEY = 'zn_site_copy_cache_v4';
+export const SITE_COPY_CACHE_TS_KEY = 'zn_site_copy_cache_v4_ts';
+export const SITE_COPY_CACHE_TTL_MS = 5 * 60 * 1000;
+const LEGACY_SITE_COPY_CACHE_KEYS = [
+  'zn_site_copy_cache_v1',
+  'zn_site_copy_cache_v2',
+  'zn_site_copy_cache_v3',
+];
 const SITE_COPY_EVENT = 'zn-site-copy-updated';
 const SITE_COPY_LEGACY_EVENT = 'zn_site_copy_updated';
 const ADMIN_DIRTY_TS_KEY = 'zn_admin_dirty_ts';
@@ -735,21 +742,48 @@ export function mergeWithDefaultSiteCopy(raw?: Partial<SiteCopyConfig> | null): 
 export function getCachedSiteCopy(): SiteCopyConfig {
   if (typeof window === 'undefined') return { ...DEFAULT_SITE_COPY };
   try {
+    for (const oldKey of LEGACY_SITE_COPY_CACHE_KEYS) {
+      localStorage.removeItem(oldKey);
+    }
     const cached = localStorage.getItem(SITE_COPY_CACHE_KEY);
     if (!cached) return { ...DEFAULT_SITE_COPY };
-    return mergeWithDefaultSiteCopy(JSON.parse(cached));
+    const parsed = JSON.parse(cached);
+    if (parsed && typeof parsed === 'object' && 'copy' in parsed && parsed.copy && typeof parsed.ts === 'number') {
+      return mergeWithDefaultSiteCopy(parsed.copy as Partial<SiteCopyConfig>);
+    }
+    return mergeWithDefaultSiteCopy(parsed);
   } catch {
     return { ...DEFAULT_SITE_COPY };
   }
+}
+
+function isSiteCopyCacheFresh(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const cached = localStorage.getItem(SITE_COPY_CACHE_KEY);
+    if (!cached) return false;
+    const rawTs = localStorage.getItem(SITE_COPY_CACHE_TS_KEY);
+    const ts = rawTs ? Number(rawTs) : NaN;
+    if (Number.isFinite(ts) && ts > 0) {
+      return Date.now() - ts < SITE_COPY_CACHE_TTL_MS;
+    }
+    const parsed = JSON.parse(cached);
+    if (parsed && typeof parsed.ts === 'number') {
+      return Date.now() - parsed.ts < SITE_COPY_CACHE_TTL_MS;
+    }
+  } catch {}
+  return false;
 }
 
 export function setCachedSiteCopy(copy: SiteCopyConfig, markAdminDirty = false): void {
   if (typeof window === 'undefined') return;
   try {
     const merged = mergeWithDefaultSiteCopy(copy);
+    const nowStr = String(Date.now());
     localStorage.setItem(SITE_COPY_CACHE_KEY, JSON.stringify(merged));
+    localStorage.setItem(SITE_COPY_CACHE_TS_KEY, nowStr);
     if (markAdminDirty) {
-      localStorage.setItem(ADMIN_DIRTY_TS_KEY, String(Date.now()));
+      localStorage.setItem(ADMIN_DIRTY_TS_KEY, nowStr);
     }
     window.dispatchEvent(new CustomEvent(SITE_COPY_EVENT, { detail: merged }));
     window.dispatchEvent(new CustomEvent(SITE_COPY_LEGACY_EVENT, { detail: merged }));
@@ -761,6 +795,9 @@ export function setCachedSiteCopy(copy: SiteCopyConfig, markAdminDirty = false):
 let cloudFetchPromise: Promise<SiteCopyConfig> | null = null;
 
 export async function fetchSiteCopyFromCloud(force = false): Promise<SiteCopyConfig> {
+  if (!force && typeof window !== 'undefined' && isSiteCopyCacheFresh()) {
+    return getCachedSiteCopy();
+  }
   if (!force && cloudFetchPromise) {
     return cloudFetchPromise;
   }
@@ -779,6 +816,8 @@ export async function fetchSiteCopyFromCloud(force = false): Promise<SiteCopyCon
       }
     } catch {
       // Fallback silently to cached or default copy when offline
+    } finally {
+      cloudFetchPromise = null;
     }
     return getCachedSiteCopy();
   })();
@@ -796,7 +835,8 @@ export async function saveSiteCopyToCloud(newCopy: SiteCopyConfig): Promise<Site
       ...merged,
       updatedAt: serverTimestamp(),
     });
-    cloudFetchPromise = Promise.resolve(merged);
+    setCachedSiteCopy(merged, true);
+    cloudFetchPromise = null;
     return merged;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, 'settings/site_copy');
@@ -849,7 +889,7 @@ export function useSiteCopy(): UseSiteCopyReturn {
     const interactionEvents = ['pointerdown', 'scroll', 'keydown', 'touchstart'] as const;
     let cancelIdle: (() => void) | null = null;
 
-    const scheduleIdleCopyFetch = () => {
+    const scheduleIdleCopyFetch = (force = false) => {
       if (typeof window === 'undefined') return;
       if (cancelIdle) cancelIdle();
       const w = window as Window & {
@@ -857,10 +897,10 @@ export function useSiteCopy(): UseSiteCopyReturn {
         cancelIdleCallback?: (id: number) => void;
       };
       if (typeof w.requestIdleCallback === 'function') {
-        const id = w.requestIdleCallback(() => void fetchLatestSiteCopy(false), { timeout: 2500 });
+        const id = w.requestIdleCallback(() => void fetchLatestSiteCopy(force), { timeout: 2500 });
         cancelIdle = () => w.cancelIdleCallback?.(id);
       } else {
-        const timer = window.setTimeout(() => void fetchLatestSiteCopy(false), 1800);
+        const timer = window.setTimeout(() => void fetchLatestSiteCopy(force), 1500);
         cancelIdle = () => window.clearTimeout(timer);
       }
     };
@@ -869,12 +909,15 @@ export function useSiteCopy(): UseSiteCopyReturn {
       interactionEvents.forEach((evt) =>
         window.removeEventListener(evt, handleFirstInteraction)
       );
-      scheduleIdleCopyFetch();
+      scheduleIdleCopyFetch(false);
     };
 
     if (isAdminRoute || hasAdminDirtyFlag) {
       void fetchLatestSiteCopy(true);
     } else if (typeof window !== 'undefined') {
+      if (!isSiteCopyCacheFresh()) {
+        scheduleIdleCopyFetch(true);
+      }
       interactionEvents.forEach((evt) =>
         window.addEventListener(evt, handleFirstInteraction, { once: true, passive: true })
       );
@@ -901,7 +944,7 @@ export function useSiteCopy(): UseSiteCopyReturn {
     const handleFocus = () => {
       if (!mounted) return;
       try {
-        if (localStorage.getItem(ADMIN_DIRTY_TS_KEY)) {
+        if (localStorage.getItem(ADMIN_DIRTY_TS_KEY) || !isSiteCopyCacheFresh()) {
           void fetchLatestSiteCopy(true);
         }
       } catch {}
