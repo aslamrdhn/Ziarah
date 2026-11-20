@@ -1,9 +1,9 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { DaftarMakam } from './views/DaftarMakam';
-import { BacaanZiarah } from './views/BacaanZiarah';
-import { KebijakanKurasi } from './views/KebijakanKurasi';
 
+const BacaanZiarah = lazy(() => import('./views/BacaanZiarah').then((m) => ({ default: m.BacaanZiarah })));
+const KebijakanKurasi = lazy(() => import('./views/KebijakanKurasi').then((m) => ({ default: m.KebijakanKurasi })));
 const KumpulanDoa = lazy(() => import('./views/KumpulanDoa').then((m) => ({ default: m.KumpulanDoa })));
 const RubrikKisah = lazy(() => import('./views/RubrikKisah').then((m) => ({ default: m.RubrikKisah })));
 const KontribusiModal = lazy(() => import('./components/KontribusiModal').then((m) => ({ default: m.KontribusiModal })));
@@ -13,8 +13,8 @@ const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ de
 const ArtikelZiarah = lazy(() => import('./views/ArtikelZiarah').then((m) => ({ default: m.ArtikelZiarah })));
 
 import type { ZiarahSite } from './data/sites';
-import { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from './data/initialSites';
-import { findArticleBySlug } from './data/articles';
+import type { ZiarahArticle } from './data/articles';
+import { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from './lib/catalogMeta';
 import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { SiteProvider } from './context/SiteContext';
@@ -168,11 +168,8 @@ export default function App() {
     };
 
     let cancelled = false;
-    const matchedArticle = cleanPath.startsWith('/artikel/')
-      ? findArticleBySlug(cleanPath.replace(/^\/artikel\//, ''))
-      : null;
 
-    const applySeoMetadata = (matchedSite: ZiarahSite | null) => {
+    const applySeoMetadata = (matchedSite: ZiarahSite | null, matchedArticle: ZiarahArticle | null = null) => {
       if (cancelled) return;
       const isInternalAdminRoute =
         cleanPath.startsWith('/admin') || cleanPath.startsWith('/kurator');
@@ -428,11 +425,18 @@ export default function App() {
       const rawParam = cleanPath.replace(/^\/(situs|makam)\//, '');
       import('./data/sites')
         .then(({ ziarahSites }) => {
-          applySeoMetadata(findSiteByParam(ziarahSites, rawParam));
+          applySeoMetadata(findSiteByParam(ziarahSites, rawParam), null);
         })
-        .catch(() => applySeoMetadata(null));
+        .catch(() => applySeoMetadata(null, null));
+    } else if (cleanPath.startsWith('/artikel/')) {
+      const articleSlug = cleanPath.replace(/^\/artikel\//, '');
+      import('./data/articles')
+        .then(({ findArticleBySlug }) => {
+          applySeoMetadata(null, findArticleBySlug(articleSlug) || null);
+        })
+        .catch(() => applySeoMetadata(null, null));
     } else {
-      applySeoMetadata(null);
+      applySeoMetadata(null, null);
     }
 
     return () => {

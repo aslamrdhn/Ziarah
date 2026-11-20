@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ZiarahSite } from '../data/sites';
-import { INITIAL_FIRST_PAGE_SITES } from '../data/initialSites';
 import { getSiteSlug } from '../lib/siteSlugs';
 
-export { INITIAL_FIRST_PAGE_SITES };
+export const INITIAL_FIRST_PAGE_SITES: ZiarahSite[] = [];
 
 interface SiteContextType {
   sites: ZiarahSite[];
@@ -16,12 +15,12 @@ interface SiteContextType {
 }
 
 const SiteContext = createContext<SiteContextType>({
-  sites: INITIAL_FIRST_PAGE_SITES,
+  sites: [],
   isLoading: false,
-  isFullCatalogLoaded: true,
+  isFullCatalogLoaded: false,
   isSeededInCloud: false,
   cloudSiteCount: 0,
-  ensureFullSitesLoaded: async () => INITIAL_FIRST_PAGE_SITES,
+  ensureFullSitesLoaded: async () => [],
   refreshCloudSites: async () => {},
 });
 
@@ -256,29 +255,25 @@ export function mergeLocalAndCloudSites(
 
 export const mergeSites = mergeLocalAndCloudSites;
 
-function getInitialHydratedSites(): ZiarahSite[] {
-  if (typeof window === 'undefined') return INITIAL_FIRST_PAGE_SITES;
+function cleanupLegacyCloudCache(): void {
+  if (typeof window === 'undefined') return;
   try {
     for (const oldKey of LEGACY_CLOUD_CACHE_KEYS) {
       localStorage.removeItem(oldKey);
     }
-    const rawCached = localStorage.getItem(CLOUD_SITES_CACHE_KEY);
-    if (!rawCached) return INITIAL_FIRST_PAGE_SITES;
-    const parsed = JSON.parse(rawCached) as CachedCloudSitesPayload;
-    if (parsed && Array.isArray(parsed.sites) && parsed.sites.length > 0) {
-      return mergeLocalAndCloudSites(INITIAL_FIRST_PAGE_SITES, parsed.sites);
-    }
   } catch {
-    // Ignore malformed cache
+    // Ignore storage error
   }
-  return INITIAL_FIRST_PAGE_SITES;
 }
 
 export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [sites, setSites] = useState<ZiarahSite[]>(() => getInitialHydratedSites());
-  const [isFullCatalogLoaded, setIsFullCatalogLoaded] = useState(true);
+  const [sites, setSites] = useState<ZiarahSite[]>(() => {
+    cleanupLegacyCloudCache();
+    return [];
+  });
+  const [isFullCatalogLoaded, setIsFullCatalogLoaded] = useState(false);
   const [cloudSiteCount, setCloudSiteCount] = useState(0);
-  const fullLocalSitesRef = useRef<ZiarahSite[] | null>(INITIAL_FIRST_PAGE_SITES);
+  const fullLocalSitesRef = useRef<ZiarahSite[] | null>(null);
   const fullLoadPromiseRef = useRef<Promise<ZiarahSite[]> | null>(null);
   const cloudLoadedRef = useRef(false);
 
@@ -312,6 +307,10 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     return fullLoadPromiseRef.current;
   }, []);
+
+  useEffect(() => {
+    void ensureFullSitesLoaded();
+  }, [ensureFullSitesLoaded]);
 
   /**
    * Quota-Optimized Cloud Sync (30-Minute TTL Cache + Delta-Only Query for Public Visitors):

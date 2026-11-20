@@ -45,8 +45,15 @@ export default defineConfig(({ command }) => {
             if (id.includes('src/data/initialSites')) {
               return 'data-sites-initial';
             }
-            if (id.includes('src/data/sites')) {
+            if (id.includes('/src/data/sites.ts') || id.endsWith('src/data/sites.ts')) {
               return 'data-sites-core';
+            }
+            if (
+              id.includes('authenticSiteImages') ||
+              id.includes('authenticImageUrls') ||
+              id.includes('verifiedSiteImages')
+            ) {
+              return 'site-media-utils';
             }
             if (id.includes('node_modules')) {
               if (id.includes('@firebase/auth') || id.includes('firebase/auth')) {

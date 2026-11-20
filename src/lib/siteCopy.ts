@@ -5,7 +5,7 @@ import {
   sanitizeMultilineText,
   sanitizeDonationAmount,
 } from './sanitize';
-import { TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/initialSites';
+import { TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from './catalogMeta';
 
 export { MIN_DONATION_AMOUNT };
 

@@ -1,5 +1,5 @@
 import type { ZiarahSite } from '../data/sites';
-import { REGIONAL_ID_TO_LEGACY_ID } from '../data/initialSites';
+import { REGIONAL_ID_TO_LEGACY_ID } from './catalogMeta';
 
 export function slugifySiteText(input: string): string {
   return String(input || '')

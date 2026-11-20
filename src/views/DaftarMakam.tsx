@@ -11,7 +11,7 @@ import {
   Film,
 } from 'lucide-react';
 import type { ZiarahSite } from '../data/sites';
-import { ALL_PROVINCES, TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/initialSites';
+import { ALL_PROVINCES, TOTAL_SITE_COUNT, TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from '../lib/catalogMeta';
 import { useSites } from '../context/SiteContext';
 import { Link } from 'react-router-dom';
 import { optimizeSiteImageUrl, getSiteImageSrcSet, handleOptimizedImageError } from '../lib/imageOptimizer';
@@ -447,30 +447,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   const { copy } = useSiteCopy();
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      ensureFullSitesLoaded();
-      return;
-    }
-    const win = window as Window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-      cancelIdleCallback?: (id: number) => void;
-    };
-    let idleId: number | null = null;
-    const timerId = window.setTimeout(() => {
-      if ( typeof win.requestIdleCallback === 'function') {
-        idleId = win.requestIdleCallback(() => {
-          ensureFullSitesLoaded();
-        }, { timeout: 3000 });
-      } else {
-        ensureFullSitesLoaded();
-      }
-    }, 1600);
-    return () => {
-      window.clearTimeout(timerId);
-      if (idleId !== null && typeof win.cancelIdleCallback === 'function') {
-        win.cancelIdleCallback(idleId);
-      }
-    };
+    void ensureFullSitesLoaded();
   }, [ensureFullSitesLoaded]);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -722,11 +699,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
     return () => observer.disconnect();
   }, [isFiltered, visibleCount, totalCatalogCount, filteredSites.length, ensureFullSitesLoaded]);
 
-  const dynamicSiteCount = ziarahSites.length >= TOTAL_SITE_COUNT ? ziarahSites.length : TOTAL_SITE_COUNT;
-  const dynamicProvinceCount = useMemo(() => {
-    const uniqueCount = new Set(ziarahSites.map((s) => s.location?.province).filter(Boolean)).size;
-    return uniqueCount >= TOTAL_PROVINCES_COUNT ? uniqueCount : TOTAL_PROVINCES_COUNT;
-  }, [ziarahSites]);
+  const dynamicSiteCount = ziarahSites.length >= TOTAL_SITES_COUNT ? ziarahSites.length : TOTAL_SITES_COUNT;
+  const dynamicProvinceCount = TOTAL_PROVINCES_COUNT;
+  const isCatalogHydrating = ziarahSites.length === 0;
 
   if (isLoading) {
     return (
@@ -1174,9 +1149,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         {/* Subtle Results Status Row */}
         <div className="flex items-center justify-between text-xs text-[#6E6E73] px-0.5">
           <p>
-            Menampilkan <strong className="font-semibold text-[#1D1D1F]">{displayedSites.length}</strong> dari{' '}
+            Menampilkan{' '}
             <strong className="font-semibold text-[#1D1D1F]">
-              {isFiltered ? filteredSites.length : totalCatalogCount}
+              {isCatalogHydrating ? INITIAL_VISIBLE_COUNT : displayedSites.length}
+            </strong>{' '}
+            dari{' '}
+            <strong className="font-semibold text-[#1D1D1F]">
+              {isFiltered && !isCatalogHydrating ? filteredSites.length : totalCatalogCount}
             </strong>{' '}
             makam di {TOTAL_PROVINCES_COUNT} provinsi
             {selectedCategory !== 'Semua' && <span> · {selectedCategory}</span>}
@@ -1326,7 +1305,21 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             );
           })}
 
-          {filteredSites.length === 0 && (
+          {isCatalogHydrating && (
+            <div
+              aria-hidden="true"
+              className="col-span-full min-h-[420px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7"
+            >
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="bg-[#F5F5F7] border border-black/[0.06] rounded-[24px] h-[420px]"
+                />
+              ))}
+            </div>
+          )}
+
+          {!isCatalogHydrating && filteredSites.length === 0 && (
             <div className="col-span-full bg-[#F5F5F7] rounded-[24px] p-8 sm:p-12 text-center border border-black/[0.06] my-4">
               <div className="inline-flex p-3.5 bg-white text-[#6E6E73] rounded-2xl mb-3 border border-black/[0.06]">
                 <Compass className="w-6 h-6" strokeWidth={1.75} aria-hidden="true" />
