@@ -25,9 +25,12 @@ import {
 import { getSitePath, getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { useSiteCopy, formatDynamicHeroSubtitle } from '../lib/siteCopy';
-import { ZiarahStoryReel } from '../components/ZiarahStoryReel';
 import { TasbihRingWidget } from '../components/TasbihRingWidget';
 import { stripMarkdownAsterisks } from '../lib/formatText';
+
+const ZiarahStoryReel = lazy(() =>
+  import('../components/ZiarahStoryReel').then((m) => ({ default: m.ZiarahStoryReel }))
+);
 
 const SiteCardThumbnail: React.FC<{
   site: ZiarahSite;
@@ -418,7 +421,9 @@ export function matchesEmotionalIntent(site: ZiarahSite, intent: EmotionalIntent
   }
 }
 
-const INITIAL_VISIBLE_SITES = 12;
+const INITIAL_VISIBLE_COUNT = 12;
+const INITIAL_VISIBLE_SITES = INITIAL_VISIBLE_COUNT;
+const PROGRESSIVE_BATCH_SIZE = 18;
 
 const FULL_CATALOG_INTENT_COUNTS: Record<EmotionalIntentId, number> = {
   all: TOTAL_SITE_COUNT,
@@ -442,7 +447,30 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   const { copy } = useSiteCopy();
 
   useEffect(() => {
-    ensureFullSitesLoaded();
+    if (typeof window === 'undefined') {
+      ensureFullSitesLoaded();
+      return;
+    }
+    const win = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    let idleId: number | null = null;
+    const timerId = window.setTimeout(() => {
+      if ( typeof win.requestIdleCallback === 'function') {
+        idleId = win.requestIdleCallback(() => {
+          ensureFullSitesLoaded();
+        }, { timeout: 3000 });
+      } else {
+        ensureFullSitesLoaded();
+      }
+    }, 1600);
+    return () => {
+      window.clearTimeout(timerId);
+      if (idleId !== null && typeof win.cancelIdleCallback === 'function') {
+        win.cancelIdleCallback(idleId);
+      }
+    };
   }, [ensureFullSitesLoaded]);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -452,10 +480,11 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   const [showVisualShowcase, setShowVisualShowcase] = useState(false);
   const [showEditorialFaq, setShowEditorialFaq] = useState(false);
   const [heroMediaMode, setHeroMediaMode] = useState<'video' | 'constellation'>('video');
-  const [visibleCount, setVisibleCount] = useState<number>(INITIAL_VISIBLE_SITES);
+  const [visibleCount, setVisibleCount] = useState<number>(INITIAL_VISIBLE_COUNT);
   const [activeSiteModal, setActiveSiteModal] = useState<ZiarahSite | null>(null);
   const [originPathBeforeModal, setOriginPathBeforeModal] = useState<string>('/');
   const heroImgRef = useRef<HTMLImageElement | null>(null);
+  const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -671,6 +700,28 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
     return filteredSites.slice(0, visibleCount);
   }, [filteredSites, isFiltered, visibleCount]);
 
+  useEffect(() => {
+    if (isFiltered || visibleCount >= totalCatalogCount) return;
+    const node = loadMoreSentinelRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          ensureFullSitesLoaded().then((all) => {
+            setVisibleCount((prev) =>
+              Math.min(Math.max(all.length, filteredSites.length, totalCatalogCount), prev + PROGRESSIVE_BATCH_SIZE)
+            );
+          });
+        }
+      },
+      { rootMargin: '360px 0px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isFiltered, visibleCount, totalCatalogCount, filteredSites.length, ensureFullSitesLoaded]);
+
   const dynamicSiteCount = ziarahSites.length >= TOTAL_SITE_COUNT ? ziarahSites.length : TOTAL_SITE_COUNT;
   const dynamicProvinceCount = useMemo(() => {
     const uniqueCount = new Set(ziarahSites.map((s) => s.location?.province).filter(Boolean)).size;
@@ -692,12 +743,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
           1. HERO GELAP SINEMATIK (Cinematic Dark Hero `#000000` bergaya Apple)
           ===================================================================== */}
       <div className="bg-[#000000] text-[#F5F5F7]">
-        <motion.header
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: [0.28, 0.11, 0.32, 1] }}
-          className="max-w-[980px] mx-auto px-5 pt-14 sm:pt-20 pb-4 text-center space-y-4 sm:space-y-5"
-        >
+        <header className="max-w-[980px] mx-auto px-5 pt-14 sm:pt-20 pb-4 text-center space-y-4 sm:space-y-5">
           <span className="inline-block text-xs font-medium tracking-widest uppercase text-[#A1A1A6]">
             {copy.heroBadge}
           </span>
@@ -757,7 +803,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               <span>Hikmah Ziarah · 5 Slide</span>
             </button>
           </div>
-        </motion.header>
+        </header>
 
         {/* Visual Arsitektur 21:9 + Parallax Halus Bergaya Apple Flagship */}
         <div className="relative max-w-[1160px] mx-auto px-0 sm:px-6 pt-6 pb-0">
@@ -765,8 +811,15 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <img
               ref={heroImgRef}
               src="/hero-fajar.webp"
+              srcSet="/hero-fajar-mobile.webp 720w, /hero-fajar.webp 1200w"
+              sizes="(max-width: 768px) 100vw, 1160px"
               onError={(e) => {
                 const img = e.currentTarget;
+                if (img.srcset) {
+                  img.srcset = '';
+                  img.src = '/hero-fajar.webp';
+                  return;
+                }
                 if (!img.dataset.fallbackStage) {
                   img.dataset.fallbackStage = 'jpg';
                   img.src = '/hero-fajar.jpg';
@@ -1299,29 +1352,37 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
           )}
         </div>
 
-        {/* Progressive Load More Controls */}
-        {!isFiltered && visibleCount < filteredSites.length && (
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+        {/* Progressive Load More Controls + IntersectionObserver Sentinel */}
+        {!isFiltered && visibleCount < totalCatalogCount && (
+          <div
+            ref={loadMoreSentinelRef}
+            className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3"
+          >
             <button
               type="button"
               onClick={async () => {
                 const all = await ensureFullSitesLoaded();
-                setVisibleCount((prev) => Math.min(Math.max(all.length, filteredSites.length), prev + 12));
+                setVisibleCount((prev) =>
+                  Math.min(Math.max(all.length, filteredSites.length), prev + PROGRESSIVE_BATCH_SIZE)
+                );
               }}
               className="px-6 py-3 bg-[#1D1D1F] hover:bg-[#1E6B47] text-white rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-2 transition cursor-pointer shadow-2xs"
             >
-              <span>Tampilkan Lebih Banyak (+{Math.min(12, filteredSites.length - visibleCount)} Situs)</span>
+              <span>
+                Tampilkan Lebih Banyak (+
+                {Math.min(PROGRESSIVE_BATCH_SIZE, Math.max(totalCatalogCount, filteredSites.length) - visibleCount)} Situs)
+              </span>
               <ArrowDown className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={async () => {
                 const all = await ensureFullSitesLoaded();
-                setVisibleCount(Math.max(all.length, filteredSites.length));
+                setVisibleCount(Math.max(all.length, filteredSites.length, totalCatalogCount));
               }}
               className="px-6 py-3 bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#1D1D1F] border border-black/[0.08] rounded-full text-xs font-medium tracking-tight transition cursor-pointer"
             >
-              Buka Seluruh {filteredSites.length} Situs
+              Tampilkan Semua ({Math.max(totalCatalogCount, filteredSites.length)})
             </button>
           </div>
         )}
@@ -1332,7 +1393,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
           3.8. STORY REEL & AUDIO-VISUAL CAROUSEL (OPSI 2: 5 SLIDE HIKMAH ZIARAH)
           ===================================================================== */}
       <div id="hikmah-ziarah-reel" className="max-w-6xl mx-auto mt-12 mb-6">
-        <ZiarahStoryReel />
+        <Suspense fallback={null}>
+          <ZiarahStoryReel />
+        </Suspense>
       </div>
 
       {/* =====================================================================

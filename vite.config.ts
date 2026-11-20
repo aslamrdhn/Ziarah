@@ -174,7 +174,7 @@ export default defineConfig(({ command }) => {
             },
           },
           {
-            urlPattern: /\/(?:thumbs\/.*\.(?:webp|png|jpg|jpeg)|hero-fajar\.(?:webp|jpg))$/i,
+            urlPattern: /\/(?:thumbs\/.*\.(?:webp|png|jpg|jpeg)|hero-fajar(?:-mobile)?\.(?:webp|jpg))$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'ziarah-local-thumbs-v1',
