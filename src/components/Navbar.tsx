@@ -127,35 +127,35 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
 
   return (
     <>
-      {/* Top Navbar: Clean 3-Zone Single-Row Editorial Contract (Core Menus + 1 Action Button) */}
+      {/* Top Navbar: Thin 48px Apple Indonesia Glass Navbar (apple.com/id) */}
       <nav
         aria-label="Navigasi Utama"
-        className="w-full h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6 px-4 sm:px-6 lg:px-8"
+        style={{
+          backgroundColor: 'rgba(251, 251, 253, 0.82)',
+          backdropFilter: 'saturate(180%) blur(20px)',
+          WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+        }}
+        className="w-full h-12 apple-glass-nav border-b border-black/[0.06] sticky top-0 z-50 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6 px-4 sm:px-6 lg:px-8"
       >
         {/* Zone 1: Official Kubah Emas ZN Logo & Brand Wordmark */}
-        <Link to="/" className="group flex items-center gap-2.5 sm:gap-3 min-w-0 shrink-0">
+        <Link to="/" className="group flex items-center gap-2 sm:gap-2.5 min-w-0 shrink-0">
           <img
             src="/favicon.svg"
             alt=""
             aria-hidden="true"
-            width={36}
-            height={36}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-xs border border-stone-200/80 shrink-0"
+            width={28}
+            height={28}
+            className="w-7 h-7 rounded-lg shadow-2xs border border-black/[0.08] shrink-0"
           />
           <div className="flex flex-col justify-center min-w-0">
-            <span className="font-serif font-semibold tracking-tight text-stone-900 group-hover:text-emerald-800 transition-colors text-base sm:text-lg lg:text-xl leading-tight whitespace-nowrap">
+            <span className="font-sans font-semibold tracking-tight text-[#1D1D1F] group-hover:text-[#1E6B47] transition-colors text-sm sm:text-[15px] leading-tight whitespace-nowrap">
               {copy.brandName || APP_BRAND.name}
             </span>
-            {(copy.brandSubtitle || APP_BRAND.tagline) && (
-              <span className="hidden xl:block text-[10px] font-medium tracking-wider uppercase text-stone-600 leading-tight truncate mt-0.5">
-                {copy.brandSubtitle || APP_BRAND.tagline}
-              </span>
-            )}
           </div>
         </Link>
 
         {/* Zone 2: Core Editorial Text Navigation Links (Desktop & Tablet) */}
-        <div className="hidden md:flex items-center justify-center gap-5 lg:gap-7 text-xs lg:text-sm font-medium tracking-tight text-stone-600">
+        <div className="hidden md:flex items-center justify-center gap-6 lg:gap-8">
           {desktopNavItems.map((item) => {
             const active = isNavActive(item.id);
             return (
@@ -163,14 +163,16 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                 key={item.id}
                 to={item.id}
                 aria-current={active ? 'page' : undefined}
-                className={`relative py-1.5 whitespace-nowrap shrink-0 transition-colors duration-150 ${
-                  active ? 'text-stone-900 font-semibold' : 'text-stone-600 hover:text-stone-900'
+                className={`relative py-1 whitespace-nowrap shrink-0 text-[12px] tracking-tight transition-colors duration-150 ${
+                  active
+                    ? 'text-[#1D1D1F] font-semibold'
+                    : 'font-medium text-[#1D1D1F]/80 hover:text-[#1D1D1F]'
                 }`}
               >
                 <span className="lg:hidden">{item.shortLabel}</span>
                 <span className="hidden lg:inline">{item.label}</span>
                 {active && (
-                  <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-emerald-800 rounded-full" />
+                  <span className="absolute left-0 right-0 -bottom-1 h-[1.5px] bg-[#1D1D1F] rounded-full" />
                 )}
               </Link>
             );
@@ -182,10 +184,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
           <Link
             to="/donasi"
             aria-current={isNavActive('/donasi') ? 'page' : undefined}
-            className={`hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full font-medium text-xs tracking-tight transition-all whitespace-nowrap shrink-0 ${
+            className={`hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-medium text-[12px] tracking-tight transition-all whitespace-nowrap shrink-0 ${
               isNavActive('/donasi')
-                ? 'bg-emerald-900 text-white shadow-xs'
-                : 'bg-stone-900 hover:bg-emerald-900 text-white'
+                ? 'bg-[#175639] text-white shadow-2xs'
+                : 'bg-[#1E6B47] hover:bg-[#175639] text-white'
             }`}
           >
             <HeartHandshake className="w-3.5 h-3.5" aria-hidden="true" />
@@ -200,10 +202,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
               aria-expanded={dropdownOpen}
               aria-haspopup="menu"
               aria-label={isAdminLoggedIn ? `Menu Kurator ${user?.displayName || ''}` : 'Menu Sekunder, Donasi & Pengaturan'}
-              className={`min-w-[38px] min-h-[38px] p-2 rounded-full transition-all flex items-center justify-center border cursor-pointer ${
+              className={`min-w-[34px] min-h-[34px] p-1.5 rounded-full transition-all flex items-center justify-center border cursor-pointer ${
                 isAdminLoggedIn
-                  ? 'text-emerald-900 bg-white border-emerald-300 shadow-xs'
-                  : 'text-stone-700 bg-white border-stone-200/80 hover:text-stone-900 hover:border-stone-300 shadow-2xs'
+                  ? 'text-[#1E6B47] bg-white border-[#1E6B47]/30 shadow-2xs'
+                  : 'text-[#1D1D1F]/80 bg-white/80 border-black/[0.08] hover:text-[#1D1D1F] hover:border-black/20'
               }`}
               title="Menu Informasi & Donasi"
             >
@@ -371,14 +373,14 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
             aria-label="Navigasi Utama Mobile"
             className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] inset-x-0 z-[2500] md:hidden px-3 pointer-events-none"
           >
-            <div className="grid grid-cols-5 items-center w-full max-w-[420px] mx-auto px-1.5 py-1.5 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_12px_32px_rgba(15,23,42,0.14)] pointer-events-auto">
+            <div className="grid grid-cols-5 items-center w-full max-w-[420px] mx-auto px-1.5 py-1.5 rounded-2xl bg-white/95 backdrop-blur-xl border border-t border-black/[0.08] text-[#1D1D1F] shadow-[0_12px_32px_rgba(0,0,0,0.12)] pointer-events-auto">
               <Link
                 to="/"
                 aria-current={isNavActive('/') ? 'page' : undefined}
                 className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl gap-1 min-h-[50px] transition-all ${
                   isNavActive('/')
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-700 hover:text-slate-900'
+                    ? 'bg-[#1D1D1F] text-white shadow-2xs'
+                    : 'text-[#1D1D1F]/80 hover:text-[#1D1D1F]'
                 }`}
               >
                 <Compass className="w-4 h-4 shrink-0" aria-hidden="true" />
@@ -392,8 +394,8 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                 aria-current={isNavActive('/rubrik') ? 'page' : undefined}
                 className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl gap-1 min-h-[50px] transition-all ${
                   isNavActive('/rubrik')
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-700 hover:text-slate-900'
+                    ? 'bg-[#1D1D1F] text-white shadow-2xs'
+                    : 'text-[#1D1D1F]/80 hover:text-[#1D1D1F]'
                 }`}
               >
                 <ScrollText className="w-4 h-4 shrink-0" aria-hidden="true" />
@@ -407,8 +409,8 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                 aria-current={isNavActive('/peta') ? 'page' : undefined}
                 className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl gap-1 min-h-[50px] transition-all ${
                   isNavActive('/peta')
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-700 hover:text-slate-900'
+                    ? 'bg-[#1D1D1F] text-white shadow-2xs'
+                    : 'text-[#1D1D1F]/80 hover:text-[#1D1D1F]'
                 }`}
               >
                 <MapIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
@@ -422,8 +424,8 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                 aria-current={isNavActive('/panduan') ? 'page' : undefined}
                 className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl gap-1 min-h-[50px] transition-all ${
                   isNavActive('/panduan')
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-700 hover:text-slate-900'
+                    ? 'bg-[#1D1D1F] text-white shadow-2xs'
+                    : 'text-[#1D1D1F]/80 hover:text-[#1D1D1F]'
                 }`}
               >
                 <BookOpen className="w-4 h-4 shrink-0" aria-hidden="true" />
@@ -437,12 +439,12 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                 aria-current={isNavActive('/donasi') ? 'page' : undefined}
                 className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl gap-1 min-h-[50px] transition-all ${
                   isNavActive('/donasi')
-                    ? 'bg-emerald-800 text-white shadow-xs'
-                    : 'text-emerald-800 bg-emerald-50/80 hover:bg-emerald-100'
+                    ? 'bg-[#1E6B47] text-white shadow-2xs'
+                    : 'text-[#1E6B47] bg-[#F2F7F4] hover:bg-[#E1EFE7]'
                 }`}
               >
                 <HeartHandshake
-                  className={`w-4 h-4 shrink-0 ${isNavActive('/donasi') ? 'text-white' : 'text-emerald-700'}`}
+                  className={`w-4 h-4 shrink-0 ${isNavActive('/donasi') ? 'text-white' : 'text-[#1E6B47]'}`}
                   aria-hidden="true"
                 />
                 <span className="text-[11px] font-semibold leading-none tracking-tight truncate max-w-full">

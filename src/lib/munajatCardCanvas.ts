@@ -1,8 +1,11 @@
+export type MunajatCardPaletteId = 'deep-pine' | 'midnight' | 'warm-stone';
+
 export interface PersonalMunajatCardParams {
   recipientName: string;
   prayerText: string;
   themeLabel: string;
   createdDateLabel: string;
+  cardPalette?: MunajatCardPaletteId;
 }
 
 export function sanitizeMunajatCardInput(params: Partial<PersonalMunajatCardParams>): PersonalMunajatCardParams {
@@ -30,6 +33,12 @@ export function sanitizeMunajatCardInput(params: Partial<PersonalMunajatCardPara
     .trim()
     .slice(0, 50);
 
+  const rawPalette = params.cardPalette;
+  const cardPalette: MunajatCardPaletteId =
+    rawPalette === 'midnight' || rawPalette === 'warm-stone' || rawPalette === 'deep-pine'
+      ? rawPalette
+      : 'deep-pine';
+
   return {
     recipientName: cleanRecipient || 'Hamba Allah & Keluarga',
     prayerText:
@@ -43,6 +52,7 @@ export function sanitizeMunajatCardInput(params: Partial<PersonalMunajatCardPara
         month: 'long',
         year: 'numeric',
       }),
+    cardPalette,
   };
 }
 
@@ -129,8 +139,15 @@ export async function renderPersonalMunajatCard(
       return FALLBACK_1X1_PNG;
     }
 
-    // 1. Background: Deep Contemplative Emerald (#071A15) with warm archival inner paper (#FAF8F5)
-    ctx.fillStyle = '#071A15';
+    // 1. Background frame based on Apple Swatch Dots selection
+    const outerFrameColor =
+      params.cardPalette === 'midnight'
+        ? '#16181A'
+        : params.cardPalette === 'warm-stone'
+          ? '#EDEBE6'
+          : '#163326';
+    const innerPaperColor = params.cardPalette === 'warm-stone' ? '#FFFFFF' : '#FAF8F5';
+    ctx.fillStyle = outerFrameColor;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
     // Outer gold border (#C5A059)
@@ -139,7 +156,7 @@ export async function renderPersonalMunajatCard(
     ctx.strokeRect(42, 42, WIDTH - 84, HEIGHT - 84);
 
     // Warm archival cream paper panel
-    ctx.fillStyle = '#FAF8F5';
+    ctx.fillStyle = innerPaperColor;
     ctx.fillRect(62, 62, WIDTH - 124, HEIGHT - 124);
 
     // Inner double gold border (#C5A059)

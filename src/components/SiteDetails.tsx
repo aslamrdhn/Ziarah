@@ -577,7 +577,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       </div>
 
 
-      {/* Kitab Amalan 5 Bagian Terstruktur (Terbuka Penuh saat isBarokahUnlocked, atau Peta 5 Bagian + BLUR saat Terkunci) */}
+      {/* Kitab Amalan 5 Bagian Terstruktur (Terbuka Penuh saat isBarokahUnlocked, atau Peta 5 Bagian saat Belum Dibuka) */}
       {isBarokahUnlocked ? (
         <div className="space-y-6">
           {/* Bila Peziarah Menuliskan Hajat Pribadi, Tampilkan di Kartu Munajat Khusus */}
@@ -1040,7 +1040,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           <div className="pt-3 border-t border-slate-200 bg-white space-y-3">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
               <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
-              <span>KITAB AMALAN &amp; TASBIH DIGITAL · RP {barokahAmount.toLocaleString('id-ID')}</span>
+              <span>LEMBAR AMALAN &amp; DOA KHUSUS · RP {barokahAmount.toLocaleString('id-ID')}</span>
             </div>
             <h4 className="font-serif text-xl text-slate-900">
               {copy.barokahPaywallTitle}
@@ -1435,7 +1435,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                   </div>
                                 ) : (
                                   <div className="space-y-4">
-                                    <div>
+                                    <div className="soft-paper-fade">
                                       <p className={bodyParagraphClass}>
                                         {renderFormattedText(cliffhanger.preview)}
                                       </p>
@@ -1568,7 +1568,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                 </p>
                               </div>
 
-                              <div>
+                              <div className="soft-paper-fade">
                                 <p className={bodyParagraphClass}>
                                   {renderFormattedText(untoldCliffhanger.preview)}
                                 </p>
@@ -2002,36 +2002,38 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
               </div>
 
               {/* Action Footer: Google Maps Navigation + Optional Interactive Map View */}
-              <div className="px-6 sm:px-10 py-3.5 border-t border-stone-200/80 bg-white shrink-0 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+              <div className="px-6 sm:px-8 py-4 border-t border-black/[0.08] bg-white shrink-0 flex flex-wrap items-center justify-between gap-2.5">
                 <a
                   href={getSiteGoogleMapsNavigationUrl(site)}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="w-full sm:flex-1 flex items-center justify-center py-2.5 px-4 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0 px-4 py-2.5 rounded-full bg-[#1E6B47] hover:bg-[#175639] text-white text-xs sm:text-sm font-medium transition-colors"
                 >
-                  <Navigation className="w-3.5 h-3.5 mr-2" strokeWidth={1.75} />
-                  Buka Navigasi Rute (Google Maps)
+                  <Navigation className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} />
+                  <span>Buka Rute (Google Maps)</span>
                 </a>
-                <a
-                  href={getSiteGoogleMapsPhotosUrl(site)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full sm:w-auto flex items-center justify-center py-2.5 px-4 bg-stone-100 hover:bg-stone-200/80 text-stone-800 rounded-xl font-medium text-xs sm:text-sm transition-colors"
-                >
-                  <span>📷 Lihat Foto Asli Lokasi di Google Maps</span>
-                </a>
-                {onViewOnMap && (
-                  <button
-                    type="button"
-                    onClick={() => onViewOnMap(site)}
-                    className="w-full sm:w-auto flex items-center justify-center py-2.5 px-4 bg-stone-100 hover:bg-stone-200/80 text-stone-800 rounded-xl font-medium text-xs sm:text-sm transition-colors cursor-pointer"
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href={getSiteGoogleMapsPhotosUrl(site)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 px-4 py-2.5 rounded-full bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#1D1D1F] text-xs sm:text-sm font-medium transition-colors"
                   >
-                    <MapIcon className="w-3.5 h-3.5 mr-2 text-emerald-800" strokeWidth={1.75} />
-                    Lihat Titik di Peta Nusantara
-                  </button>
-                )}
+                    <span>Foto Lokasi</span>
+                  </a>
+                  {onViewOnMap && (
+                    <button
+                      type="button"
+                      onClick={() => onViewOnMap(site)}
+                      className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 px-4 py-2.5 rounded-full bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#1D1D1F] text-xs sm:text-sm font-medium transition-colors cursor-pointer"
+                    >
+                      <MapIcon className="w-3.5 h-3.5 shrink-0 text-[#1E6B47]" strokeWidth={1.75} />
+                      <span>Lihat di Peta</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </motion.div>
           </div>

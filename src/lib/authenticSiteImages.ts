@@ -467,33 +467,19 @@ export function createArchitecturalPlaceholderDataUri(
   const locationLine = city && province && city !== province ? `${city} • ${province}` : city || province;
   const categoryLabel = String(site?.category || 'Khazanah Maqbarah').toUpperCase();
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" width="640" height="480">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#022c22"/>
-      <stop offset="55%" stop-color="#064e3b"/>
-      <stop offset="100%" stop-color="#0f2922"/>
-    </linearGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#d4af37" stop-opacity="0.35"/>
-      <stop offset="50%" stop-color="#f3e5ab" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="#d4af37" stop-opacity="0.35"/>
-    </linearGradient>
-  </defs>
-  <rect width="640" height="480" fill="url(#bg)"/>
-  <circle cx="320" cy="195" r="165" fill="#047857" fill-opacity="0.16"/>
-  <path d="M120 420 L120 250 Q120 190 175 190 L175 420 Z" fill="#065f46" fill-opacity="0.35"/>
-  <path d="M465 420 L465 190 Q520 190 520 250 L520 420 Z" fill="#065f46" fill-opacity="0.35"/>
-  <path d="M205 420 L205 225 Q320 95 435 225 L435 420 Z" fill="#047857" fill-opacity="0.28" stroke="url(#gold)" stroke-width="1.5"/>
-  <path d="M245 420 L245 255 Q320 165 395 255 L395 420 Z" fill="#022c22" fill-opacity="0.55" stroke="#d4af37" stroke-opacity="0.4" stroke-width="1.2"/>
-  <line x1="320" y1="78" x2="320" y2="112" stroke="#f3e5ab" stroke-width="2" stroke-opacity="0.8"/>
-  <circle cx="320" cy="72" r="5" fill="#f3e5ab" fill-opacity="0.85"/>
-  <line x1="70" y1="420" x2="570" y2="420" stroke="url(#gold)" stroke-width="1.5"/>
-  <text x="320" y="150" text-anchor="middle" fill="#f3e5ab" font-family="Georgia, serif" font-size="22" opacity="0.9">مَقَامُ أَوْلِيَاءِ اللّٰهِ</text>
-  <text x="320" y="182" text-anchor="middle" fill="#B9D4C8" font-family="system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="3">${escapeSvgText(categoryLabel)}</text>
-  <text x="320" y="315" text-anchor="middle" fill="#ffffff" font-family="Georgia, serif" font-size="21" font-weight="bold">${escapeSvgText(displayTitle)}</text>
-  <text x="320" y="348" text-anchor="middle" fill="#DCEAE3" font-family="system-ui, sans-serif" font-size="14" font-weight="500">${escapeSvgText(locationLine)}</text>
-  <text x="320" y="395" text-anchor="middle" fill="#f3e5ab" font-family="system-ui, sans-serif" font-size="11" opacity="0.75">Arsip Cagar Budaya &amp; Maqbarah Nusantara</text>
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <rect width="800" height="500" fill="#F5F5F7"/>
+  <rect x="28" y="28" width="744" height="444" rx="22" fill="none" stroke="#1D1D1F" stroke-opacity="0.12" stroke-width="1.5"/>
+  <g transform="translate(400, 215)">
+    <path d="M-110,55 L-110,-5 C-110,-65 -55,-105 0,-125 C55,-105 110,-65 110,-5 L110,55 Z" fill="#FFFFFF" stroke="#1D1D1F" stroke-opacity="0.75" stroke-width="1.75"/>
+    <path d="M-82,55 L-82,0 C-82,-48 -40,-80 0,-96 C40,-80 82,-48 82,0 L82,55" fill="none" stroke="#1E6B47" stroke-opacity="0.55" stroke-width="1.25" stroke-dasharray="4 4"/>
+    <line x1="-150" y1="55" x2="150" y2="55" stroke="#1D1D1F" stroke-opacity="0.25" stroke-width="1.5"/>
+    <circle cx="0" cy="-136" r="3.5" fill="#1E6B47"/>
+  </g>
+  <text x="400" y="328" text-anchor="middle" fill="#1E6B47" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif" font-size="13" font-weight="600" letter-spacing="2.5">${escapeSvgText(categoryLabel)}</text>
+  <text x="400" y="366" text-anchor="middle" fill="#1D1D1F" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif" font-size="25" font-weight="600">${escapeSvgText(displayTitle)}</text>
+  <text x="400" y="398" text-anchor="middle" fill="#6E6E73" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif" font-size="16" font-weight="400">${escapeSvgText(locationLine)}</text>
+  <text x="400" y="442" text-anchor="middle" fill="#86868B" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif" font-size="11" letter-spacing="1.8">ARSIP CAGAR BUDAYA · ZIARAH NUSANTARA</text>
 </svg>`;
 
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;

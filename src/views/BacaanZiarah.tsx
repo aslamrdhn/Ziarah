@@ -8,6 +8,7 @@ import {
   BookOpen,
   Check,
   Eye,
+  ArrowUp,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
@@ -218,6 +219,17 @@ export const BacaanZiarah: React.FC = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [wakeLockActive, setWakeLockActive] = useState<boolean>(false);
   const [wakeLockSupported, setWakeLockSupported] = useState<boolean>(false);
+  const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (typeof window !== 'undefined') {
+        setShowBackToTop(window.scrollY > 420);
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const [tawassulIntent, setTawassulIntent] = useState<string>(() => {
     try {
@@ -1022,6 +1034,23 @@ export const BacaanZiarah: React.FC = () => {
           <li><Link to="/situs/sunan-gunung-jati-cirebon">Makam Sunan Gunung Jati Cirebon</Link></li>
         </ul>
       </div>
+
+      {/* Tombol Mengambang Kecil "Kembali ke Atas" (↑) */}
+      {showBackToTop && (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Kembali ke Atas"
+          className={`fixed bottom-24 md:bottom-8 right-4 sm:right-6 z-40 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium shadow-lg transition-all cursor-pointer border ${
+            outdoorMode
+              ? 'bg-black text-white border-black'
+              : 'bg-[#1D1D1F]/90 hover:bg-[#1D1D1F] text-white border-white/15 backdrop-blur-md'
+          }`}
+        >
+          <ArrowUp className="w-3.5 h-3.5" strokeWidth={2} aria-hidden="true" />
+          <span>Kembali ke Atas</span>
+        </button>
+      )}
     </section>
   );
 };

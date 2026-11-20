@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useDeferredValue, lazy, Suspense } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import {
   Search,
   X,
@@ -8,8 +9,6 @@ import {
   BookOpen,
   Map as MapIcon,
   Film,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import type { ZiarahSite } from '../data/sites';
 import { ALL_PROVINCES, TOTAL_SITE_COUNT, TOTAL_PROVINCES_COUNT } from '../data/initialSites';
@@ -27,6 +26,7 @@ import { getSitePath, getSiteSlug, formatMakamHeading, getSiteDisplayHeading } f
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { useSiteCopy, formatDynamicHeroSubtitle } from '../lib/siteCopy';
 import { ZiarahStoryReel } from '../components/ZiarahStoryReel';
+import { TasbihRingWidget } from '../components/TasbihRingWidget';
 import { stripMarkdownAsterisks } from '../lib/formatText';
 
 const SiteCardThumbnail: React.FC<{
@@ -70,7 +70,7 @@ const SiteCardThumbnail: React.FC<{
   return (
     <div
       ref={containerRef}
-      className="relative aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden rounded-2xl bg-emerald-950"
+      className="relative aspect-[16/10] w-full overflow-hidden bg-[#E8E8ED]"
     >
       <img
         src={optimizedThumb}
@@ -79,14 +79,14 @@ const SiteCardThumbnail: React.FC<{
         onError={(e) => handleOptimizedImageError(e, resolvedImageUrl, fallbackThumb)}
         alt={altText}
         width={400}
-        height={300}
+        height={250}
         loading={isLcpCandidate ? 'eager' : 'lazy'}
         fetchPriority={isLcpCandidate ? 'high' : 'auto'}
         decoding={isLcpCandidate ? 'sync' : 'async'}
         referrerPolicy="no-referrer"
-        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035]"
       />
-      <span className="absolute top-3 left-3 text-[11px] font-medium px-2.5 py-1 rounded-md bg-slate-950/80 text-white backdrop-blur-xs">
+      <span className="absolute top-3 left-3 text-[11px] font-medium px-2.5 py-1 rounded-full bg-black/75 text-white backdrop-blur-md">
         {badgeLabel}
       </span>
     </div>
@@ -126,14 +126,16 @@ export type EmotionalIntentId =
 const EMOTIONAL_INTENTS: Array<{
   id: EmotionalIntentId;
   label: string;
+  shortLabel: string;
   empathyTitle?: string;
   empathyMessage?: string;
   practicalAnchor?: string;
 }> = [
-  { id: 'all', label: 'Semua Riwayat' },
+  { id: 'all', label: 'Semua Riwayat', shortLabel: 'Semua' },
   {
     id: 'keteduhan',
     label: 'Hati Gelisah & Mencari Ketenangan Batin',
+    shortLabel: 'Hati Gelisah',
     empathyTitle: 'Cermin Pintu Ruhani — Saat Hati Terasa Penuh & Sulit Tenang',
     empathyMessage:
       'Ketika pikiran terus berisik dan dada terasa sempit, para ulama mengajarkan untuk melambatkan langkah: melepaskan sejenak hal-hal di luar kendali kita, lalu menenangkan batin lewat dzikir dan meneladani kesabaran para wali.',
@@ -143,6 +145,7 @@ const EMOTIONAL_INTENTS: Array<{
   {
     id: 'ikhtiar',
     label: 'Ikhtiar Rezeki, Usaha & Bebas Lilitan Hutang',
+    shortLabel: 'Ikhtiar Rezeki',
     empathyTitle: 'Cermin Pintu Ruhani — Ketika Ikhtiar Lahir Terasa Sempit',
     empathyMessage:
       'Saat hitungan usaha terasa buntu dan rasa takut akan hari esok menekan pikiran, para ulama mengingatkan agar hati tidak ikut menyempit: rapikan niat, mohonkan ridha orang tua, jaga kejujuran usaha, dan tetap sisihkan kebaikan sekecil apa pun.',
@@ -152,6 +155,7 @@ const EMOTIONAL_INTENTS: Array<{
   {
     id: 'syifa',
     label: "Ikhtiar Kesembuhan & Syifa' Penyakit",
+    shortLabel: 'Kesembuhan',
     empathyTitle: 'Cermin Pintu Ruhani — Menguatkan Hati Mendampingi Ikhtiar Medis',
     empathyMessage:
       'Menghadapi ujian sakit—baik untuk diri sendiri maupun orang tercinta—menguras tenaga lahir dan batin. Di samping terus berobat secara medis, memohon langsung kepada Allah Yang Maha Menyembuhkan membantu menjaga hati tetap lapang dan sabar.',
@@ -161,6 +165,7 @@ const EMOTIONAL_INTENTS: Array<{
   {
     id: 'ilmu',
     label: 'Memohon Ilmu Berkah & Keshalihan Keturunan',
+    shortLabel: 'Ilmu & Kebijaksanaan',
     empathyTitle: 'Cermin Pintu Ruhani — Merawat Cahaya Ilmu & Doa untuk Anak Cucu',
     empathyMessage:
       'Tradisi pesantren mengajarkan bahwa doa tulus orang tua yang istiqamah dan kecintaan pada majelis ilmu adalah benteng terbaik bagi masa depan keturunan.',
@@ -170,6 +175,7 @@ const EMOTIONAL_INTENTS: Array<{
   {
     id: 'keteguhan',
     label: 'Keteguhan Iman, Wibawa & Amanah Kepemimpinan',
+    shortLabel: 'Keteguhan & Amanah',
     empathyTitle: 'Cermin Pintu Ruhani — Menjaga Prinsip di Tengah Ujian Berat',
     empathyMessage:
       'Memikul amanah besar atau mencoba memperbaiki diri dari kesalahan masa lalu membutuhkan keteguhan hati. Para ulama dan pemimpin adil Nusantara dahulu pun melewati keterasingan dan tekanan sebelum menemukan jalan keluarnya.',
@@ -179,6 +185,7 @@ const EMOTIONAL_INTENTS: Array<{
   {
     id: 'keluarga',
     label: 'Keluarga Sakinah & Melembutkan Hati',
+    shortLabel: 'Keluarga & Jodoh',
     empathyTitle: 'Cermin Pintu Ruhani — Melembutkan Hati & Menjaga Keutuhan Rumah Tangga',
     empathyMessage:
       'Banyak keretakan lahir bukan karena kurangnya cinta, melainkan karena hati yang sama-sama lelah dan keras. Meneladani kelembutan dakwah para ulama membantu kita kembali melihat keluarga dengan kasih sayang dan kesabaran.',
@@ -448,15 +455,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   const [visibleCount, setVisibleCount] = useState<number>(INITIAL_VISIBLE_SITES);
   const [activeSiteModal, setActiveSiteModal] = useState<ZiarahSite | null>(null);
   const [originPathBeforeModal, setOriginPathBeforeModal] = useState<string>('/');
-  const intentScrollRef = useRef<HTMLDivElement | null>(null);
-
-  const handleScrollIntents = React.useCallback((direction: 'left' | 'right') => {
-    if (!intentScrollRef.current) return;
-    intentScrollRef.current.scrollBy({
-      left: direction === 'left' ? -280 : 280,
-      behavior: 'smooth',
-    });
-  }, []);
+  const { scrollY } = useScroll();
+  const heroImgScale = useTransform(scrollY, [0, 500], [1, 1.06]);
+  const heroImgY = useTransform(scrollY, [0, 500], [0, 18]);
 
   const handleOpenReaderModal = React.useCallback(
     (site: ZiarahSite, e?: React.MouseEvent) => {
@@ -517,6 +518,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       EMOTIONAL_INTENTS.map((item) => ({
         id: item.id,
         label: item.label,
+        shortLabel: item.shortLabel,
         empathyTitle: item.empathyTitle,
         empathyMessage: item.empathyMessage,
         practicalAnchor: item.practicalAnchor,
@@ -660,241 +662,389 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   }
 
   return (
-    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 px-4 py-5 pb-28 sm:py-10 sm:pb-14 md:px-8 relative z-10">
+    <section className="min-h-screen bg-[#FFFFFF] text-[#1D1D1F] pb-28 sm:pb-16 relative z-10">
+      {/* =====================================================================
+          1. HERO GELAP SINEMATIK (Cinematic Dark Hero `#000000` bergaya Apple)
+          ===================================================================== */}
+      <div className="bg-[#000000] text-[#F5F5F7]">
+        <motion.header
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: [0.28, 0.11, 0.32, 1] }}
+          className="max-w-[980px] mx-auto px-5 pt-14 sm:pt-20 pb-4 text-center space-y-4 sm:space-y-5"
+        >
+          <span className="inline-block text-xs font-medium tracking-widest uppercase text-[#A1A1A6]">
+            {copy.heroBadge}
+          </span>
 
-      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
-        {/* =====================================================================
-            1. EDITORIAL HEADER: Kompak di Ponsel (< 640px), Tanpa Kapsul Berlapis
-            ===================================================================== */}
-        <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-3 sm:gap-5">
-          <div className="space-y-1.5 sm:space-y-2.5 max-w-2xl">
-            <h1 className="font-serif text-2xl sm:text-4xl font-normal tracking-tight text-stone-900 leading-snug">
-              {copy.heroTitle}
-            </h1>
-            <p className="text-xs sm:text-base text-stone-600 max-w-2xl leading-relaxed">
-              {formatDynamicHeroSubtitle(copy.heroSubtitle, dynamicSiteCount, dynamicProvinceCount)}
-            </p>
+          <h1 className="apple-headline text-4xl sm:text-6xl font-semibold text-[#F5F5F7] max-w-4xl mx-auto">
+            {copy.heroTitle}
+          </h1>
+
+          <p className="text-base sm:text-xl text-[#D2D2D7] max-w-2xl mx-auto leading-relaxed">
+            {formatDynamicHeroSubtitle(copy.heroSubtitle, dynamicSiteCount, dynamicProvinceCount)}
+          </p>
+
+          {/* 2 Tombol Pill CTA Bergaya Apple */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3.5">
+            <button
+              type="button"
+              onClick={() =>
+                document.getElementById('katalog-direktori')?.scrollIntoView({ behavior: 'smooth' })
+              }
+              className="bg-[#1E6B47] hover:bg-[#175639] text-white rounded-full px-6 py-2.5 text-sm font-medium transition-colors cursor-pointer"
+            >
+              Jelajahi Makam
+            </button>
+
+            <Link
+              to="/panduan"
+              className="border border-white/50 text-[#F5F5F7] hover:bg-white hover:text-[#1D1D1F] rounded-full px-6 py-2.5 text-sm font-medium transition-colors"
+            >
+              Panduan Doa Gratis
+            </Link>
           </div>
 
-          {/* Subtle Editorial Quick Actions (1 Baris Geser Horizontal Kompak di HP) */}
-          <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1 items-center shrink-0">
-            <Link
-              to="/peta"
-              className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-stone-900 hover:bg-emerald-900 text-white text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition"
-            >
+          {/* Tautan fitur sekunder di bawah CTA sebagai baris tautan teks bersih */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[#A1A1A6]">
+            <Link to="/peta" className="hover:text-white transition-colors inline-flex items-center gap-1.5">
               <MapIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
               <span>Peta &amp; Jalur Wali Songo</span>
             </Link>
-            <Link
-              to="/panduan"
-              className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white hover:border-stone-400 text-stone-700 border border-stone-200/80 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-emerald-800 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-              <span>Yasin, Tahlil &amp; Tasbih</span>
-            </Link>
+            <span className="text-white/20" aria-hidden="true">·</span>
             <button
               type="button"
               onClick={() => setShowVisualShowcase(!showVisualShowcase)}
-              className={`px-3.5 py-2 sm:py-2.5 rounded-xl text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer border ${
-                showVisualShowcase
-                  ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
-                  : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
-              }`}
+              className="hover:text-white transition-colors inline-flex items-center gap-1.5 cursor-pointer"
             >
-              <Film className="w-3.5 h-3.5 text-emerald-800 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-              <span>{showVisualShowcase ? 'Tutup Eksplorasi Visual' : 'Buka Eksplorasi Visual Nusantara'}</span>
+              <Film className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+              <span>{showVisualShowcase ? 'Tutup Eksplorasi Visual' : 'Eksplorasi Visual Nusantara'}</span>
             </button>
+            <span className="text-white/20" aria-hidden="true">·</span>
             <button
               type="button"
               onClick={() =>
                 document.getElementById('hikmah-ziarah-reel')?.scrollIntoView({ behavior: 'smooth' })
               }
-              className="px-3.5 py-2 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer"
+              className="hover:text-white transition-colors inline-flex items-center gap-1.5 cursor-pointer"
             >
+              <BookOpen className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
               <span>Hikmah Ziarah · 5 Slide</span>
             </button>
           </div>
-        </header>
+        </motion.header>
 
-        {/* Optional Collapsible Documentary / Constellation Showcase */}
-        {showVisualShowcase && (
-          <div className="bg-white rounded-2xl p-4 sm:p-6 border border-stone-200/70 shadow-2xs space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-medium text-stone-600 tracking-tight">
-                Eksplorasi Visual Jaringan Dakwah Nusantara
-              </span>
-              <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200/70">
+        {/* Visual Arsitektur 21:9 + Parallax Halus Bergaya Apple Flagship */}
+        <div className="relative max-w-[1160px] mx-auto px-0 sm:px-6 pt-6 pb-0">
+          <div className="relative aspect-[16/9] sm:aspect-[21/9] overflow-hidden sm:rounded-t-[28px] bg-[#0A0B0D]">
+            <motion.img
+              src="/hero-fajar.jpg"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = '/thumbs/wali-9.webp';
+              }}
+              alt="Suasana pagi di pelataran masjid dan cagar budaya Nusantara"
+              style={{ scale: heroImgScale, y: heroImgY }}
+              className="w-full h-full object-cover object-center transition-transform duration-500 ease-out"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75 pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+      {/* Pemisah Putih 12px khas Apple */}
+      <div className="h-3 bg-white" />
+
+      {/* =====================================================================
+          2. PITA CERMIN PINTU RUHANI `#F5F5F7` YANG LAPANG & PILLS PENDEK
+          ===================================================================== */}
+      <div className="bg-[#F5F5F7] border-b border-black/[0.06] py-12 sm:py-16 px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto">
+          {/* Optional Collapsible Documentary / Constellation Showcase */}
+          {showVisualShowcase && (
+            <div className="mb-8 bg-white rounded-[24px] p-4 sm:p-6 border border-black/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-medium text-[#6E6E73] tracking-tight">
+                  Eksplorasi Visual Jaringan Dakwah Nusantara
+                </span>
+                <div className="flex items-center gap-1 p-1 bg-[#F5F5F7] rounded-full border border-black/10">
+                  <button
+                    type="button"
+                    onClick={() => setHeroMediaMode('video')}
+                    className={`px-3.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer ${
+                      heroMediaMode === 'video' ? 'bg-[#1D1D1F] text-white' : 'text-[#515154] hover:text-[#1D1D1F]'
+                    }`}
+                  >
+                    <Film className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
+                    <span>Dokumenter</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHeroMediaMode('constellation')}
+                    className={`px-3.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer ${
+                      heroMediaMode === 'constellation' ? 'bg-[#1D1D1F] text-white' : 'text-[#515154] hover:text-[#1D1D1F]'
+                    }`}
+                  >
+                    <Compass className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
+                    <span>Konstelasi</span>
+                  </button>
+                </div>
+              </div>
+
+              <Suspense
+                fallback={
+                  <div className="h-[340px] rounded-2xl bg-[#1D1D1F] flex items-center justify-center text-[#F5F5F7] text-xs">
+                    Memuat Visualisasi...
+                  </div>
+                }
+              >
+                {heroMediaMode === 'video' ? (
+                  <HeroCinemaShowcase
+                    onSelectCategory={(cat) => {
+                      ensureFullSitesLoaded();
+                      setSelectedCategory(cat);
+                    }}
+                  />
+                ) : (
+                  <InteractiveHeritageCanvas
+                    activeCategory={selectedCategory}
+                    onSelectCategory={(cat) => {
+                      ensureFullSitesLoaded();
+                      setSelectedCategory(cat);
+                    }}
+                  />
+                )}
+              </Suspense>
+            </div>
+          )}
+
+          {/* Header Rata Tengah Cermin Pintu Ruhani */}
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="block text-xs font-semibold uppercase tracking-widest text-[#1E6B47]">
+              Cermin Pintu Ruhani
+            </span>
+            <h2 className="mt-2 text-2xl sm:text-4xl font-semibold tracking-[-0.03em] text-[#1D1D1F]">
+              Apa yang sedang Anda bawa hari ini?
+            </h2>
+          </div>
+
+          {/* Apple-style Segmented Pill Control */}
+          <div className="mt-6 flex justify-center">
+            <div className="inline-flex flex-wrap justify-center gap-1.5 p-1.5 rounded-3xl sm:rounded-full bg-white border border-black/10 shadow-xs max-w-full">
+              {dynamicEmotionalIntents.map((intent) => {
+                const isSelected = emotionalFilter === intent.id;
+                const count = intentCountMap[intent.id];
+                return (
+                  <button
+                    key={intent.id}
+                    type="button"
+                    aria-pressed={isSelected}
+                    title={intent.label}
+                    onClick={() => {
+                      ensureFullSitesLoaded();
+                      setEmotionalFilter(intent.id);
+                    }}
+                    className={`px-3.5 py-1.5 min-h-[34px] rounded-full text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#1D1D1F] text-white shadow-xs font-medium'
+                        : 'text-[#515154] hover:text-[#1D1D1F]'
+                    }`}
+                  >
+                    {intent.shortLabel} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Kartu Refleksi Cermin Pintu Ruhani (`max-w-4xl mx-auto mt-6 bg-white rounded-[28px]`) */}
+          <AnimatePresence mode="wait">
+            {emotionalFilter !== 'all' && (() => {
+              const activeIntentObj = dynamicEmotionalIntents.find((i) => i.id === emotionalFilter);
+              if (!activeIntentObj?.empathyMessage) return null;
+              return (
+                <motion.div
+                  key={activeIntentObj.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.25 }}
+                  className="max-w-4xl mx-auto mt-6 bg-white rounded-[28px] p-6 sm:p-8 border border-black/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.04)] flex flex-col sm:flex-row items-start justify-between gap-4"
+                >
+                  <div className="space-y-2 max-w-3xl">
+                    <div className="text-sm sm:text-base font-semibold text-[#1D1D1F]">
+                      {activeIntentObj.empathyTitle}
+                    </div>
+                    <p className="text-xs sm:text-sm text-[#515154] leading-relaxed">
+                      {activeIntentObj.empathyMessage}
+                    </p>
+                    {activeIntentObj.practicalAnchor && (
+                      <p className="text-xs sm:text-sm font-medium text-[#1E6B47] leading-relaxed">
+                        {activeIntentObj.practicalAnchor}
+                      </p>
+                    )}
+                    <div className="pt-1.5 flex flex-wrap items-center gap-4 text-xs font-semibold text-[#1E6B47]">
+                      <Link to="/panduan" className="hover:text-[#175639] underline underline-offset-4">
+                        Baca Panduan Doa Gratis →
+                      </Link>
+                      <Link to="/donasi" className="hover:text-[#175639] underline underline-offset-4">
+                        Susun Lembar Munajat Pribadi →
+                      </Link>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEmotionalFilter('all')}
+                    className="text-xs font-semibold text-[#1E6B47] hover:underline shrink-0 cursor-pointer"
+                  >
+                    Tampilkan Semua
+                  </button>
+                </motion.div>
+              );
+            })()}
+          </AnimatePresence>
+
+          {/* Pita Tipis Minimalis Pengingat Jumat / Haul di Bawah Segmented Control */}
+          {isJumatMomentum ? (
+            <div className="max-w-4xl mx-auto mt-6 pt-4 border-t border-black/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#6E6E73]">
+              <p className="leading-relaxed">
+                <strong className="font-semibold text-[#1D1D1F]">{copy.jumatBannerTitle}</strong> — {copy.jumatBannerSubtitle}
+              </p>
+              <div className="flex items-center gap-4 shrink-0">
+                <Link
+                  to="/rubrik"
+                  className="py-1 min-h-[28px] inline-flex items-center text-xs font-medium text-[#1E6B47] hover:text-[#175639] underline underline-offset-4"
+                >
+                  Buka kisah pengobat hati
+                </Link>
+                <Link
+                  to="/infaq#dinding-munajat"
+                  className="py-1 min-h-[28px] inline-flex items-center text-xs font-medium text-[#6E6E73] hover:text-[#1D1D1F] underline underline-offset-4"
+                >
+                  Titip doa
+                </Link>
+              </div>
+            </div>
+          ) : featuredHaulSite ? (
+            <div className="max-w-4xl mx-auto mt-6 pt-4 border-t border-black/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#6E6E73]">
+              <p className="leading-relaxed">
+                <strong className="font-semibold text-[#1D1D1F]">
+                  Jejak Haul &amp; Wasiat {formatMakamHeading(featuredHaulSite.title)}
+                </strong>{' '}
+                ({featuredHaulSite.haulSchedule || 'Waliyullah Nusantara'}) — Menyelami rahasia keteguhan batin beliau saat menghadapi ujian zaman.
+              </p>
+              <div className="flex items-center gap-4 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setHeroMediaMode('video')}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer ${
-                    heroMediaMode === 'video' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'
-                  }`}
+                  onClick={(e) => handleOpenReaderModal(featuredHaulSite, e)}
+                  className="py-1 min-h-[28px] inline-flex items-center text-xs font-medium text-[#1E6B47] hover:text-[#175639] underline underline-offset-4 cursor-pointer"
                 >
-                  <Film className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
-                  <span>Dokumenter</span>
+                  Baca wasiat beliau
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setHeroMediaMode('constellation')}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer ${
-                    heroMediaMode === 'constellation' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'
-                  }`}
+                <Link
+                  to="/infaq#dinding-munajat"
+                  className="py-1 min-h-[28px] inline-flex items-center text-xs font-medium text-[#6E6E73] hover:text-[#1D1D1F] underline underline-offset-4"
                 >
-                  <Compass className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
-                  <span>Konstelasi</span>
-                </button>
+                  Dinding munajat
+                </Link>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {/* =====================================================================
+          3. BLOK 2-KOLOM HIGHLIGHT: FILTER PENCARIAN CEPAT (KIRI) & TASBIH RING (KANAN)
+          ===================================================================== */}
+      <div
+        id="katalog-direktori"
+        className="max-w-6xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-3"
+      >
+        {/* Kolom Kiri (lg:col-span-7): Kartu Terang #F5F5F7 — Bilah Pencarian + Provinsi + Tab Kategori */}
+        <div className="lg:col-span-7 bg-[#F5F5F7] rounded-[28px] p-5 sm:p-7 border border-black/[0.06] flex flex-col justify-between gap-5">
+          <div className="space-y-1">
+            <span className="block text-[11px] font-semibold uppercase tracking-widest text-[#1E6B47]">
+              Direktori &amp; Pencarian Cepat
+            </span>
+            <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#1D1D1F]">
+              Telusuri {totalCatalogCount} Maqbarah di {TOTAL_PROVINCES_COUNT} Provinsi
+            </h3>
+            <p className="text-xs sm:text-sm text-[#6E6E73]">
+              Cari berdasarkan nama ulama, gelar, kota, provinsi, atau kelompok kategori.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {/* Bilah Pencarian Bersih Bergaya Apple (`rounded-full`) + Filter Provinsi */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+              <div className="relative flex-1 bg-white rounded-full border border-black/10 px-4 py-2.5 shadow-2xs flex items-center">
+                <label htmlFor="site-search-input" className="sr-only">
+                  Cari nama tokoh, makam, atau kota
+                </label>
+                <Search
+                  className="w-4 h-4 text-[#86868B] shrink-0 mr-2.5 pointer-events-none"
+                  strokeWidth={1.75}
+                  aria-hidden="true"
+                />
+                <input
+                  id="site-search-input"
+                  type="search"
+                  placeholder={copy.searchPlaceholder}
+                  value={searchQuery}
+                  onFocus={() => {
+                    ensureFullSitesLoaded();
+                  }}
+                  onChange={(e) => {
+                    ensureFullSitesLoaded();
+                    setSearchQuery(e.target.value);
+                  }}
+                  className="w-full bg-transparent text-sm text-[#1D1D1F] placeholder-[#86868B] focus:outline-none"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    aria-label="Hapus pencarian"
+                    className="ml-2 text-[#86868B] hover:text-[#1D1D1F] cursor-pointer"
+                  >
+                    <X className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+
+              <div className="relative sm:w-52 shrink-0 bg-white rounded-full border border-black/10 px-4 py-2.5 shadow-2xs">
+                <label htmlFor="province-filter-select" className="sr-only">
+                  Filter berdasarkan provinsi
+                </label>
+                <select
+                  id="province-filter-select"
+                  aria-label="Filter berdasarkan provinsi"
+                  value={selectedProvince}
+                  onFocus={() => {
+                    ensureFullSitesLoaded();
+                  }}
+                  onChange={(e) => {
+                    ensureFullSitesLoaded();
+                    setSelectedProvince(e.target.value);
+                  }}
+                  className="w-full appearance-none pr-6 bg-transparent text-xs sm:text-sm font-medium text-[#1D1D1F] cursor-pointer focus:outline-none"
+                >
+                  {provinces.map((prov) => (
+                    <option key={prov} value={prov} className="bg-white text-[#1D1D1F]">
+                      {prov}
+                    </option>
+                  ))}
+                </select>
+                <Filter
+                  className="w-3.5 h-3.5 text-[#86868B] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                  strokeWidth={1.75}
+                  aria-hidden="true"
+                />
               </div>
             </div>
 
-            <Suspense
-              fallback={
-                <div className="h-[340px] rounded-2xl bg-stone-900 flex items-center justify-center text-stone-200 text-xs">
-                  Memuat Visualisasi...
-                </div>
-              }
-            >
-              {heroMediaMode === 'video' ? (
-                <HeroCinemaShowcase
-                  onSelectCategory={(cat) => {
-                    ensureFullSitesLoaded();
-                    setSelectedCategory(cat);
-                  }}
-                />
-              ) : (
-                <InteractiveHeritageCanvas
-                  activeCategory={selectedCategory}
-                  onSelectCategory={(cat) => {
-                    ensureFullSitesLoaded();
-                    setSelectedCategory(cat);
-                  }}
-                />
-              )}
-            </Suspense>
-          </div>
-        )}
-
-        {/* =====================================================================
-            1B. SATU BARIS KALIMAT PEMBUKA MINIMALIS TANPA KOTAK (Editorial Lead)
-            ===================================================================== */}
-        {isJumatMomentum ? (
-          <div className="py-2.5 border-y border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
-            <p className="font-serif italic text-stone-700 leading-relaxed">
-              {copy.jumatBannerTitle} — {copy.jumatBannerSubtitle}
-            </p>
-            <div className="flex items-center gap-4 shrink-0">
-              <Link
-                to="/rubrik"
-                className="py-1.5 min-h-[32px] inline-flex items-center text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4"
-              >
-                Buka kisah pengobat hati
-              </Link>
-              <Link
-                to="/infaq#dinding-munajat"
-                className="py-1.5 min-h-[32px] inline-flex items-center text-xs font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
-              >
-                Titip doa
-              </Link>
-            </div>
-          </div>
-        ) : featuredHaulSite ? (
-          <div className="py-2.5 border-y border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
-            <p className="font-serif italic text-stone-700 leading-relaxed">
-              Jejak Haul &amp; Wasiat {formatMakamHeading(featuredHaulSite.title)} ({featuredHaulSite.haulSchedule || 'Waliyullah Nusantara'}) — Menyelami rahasia keteguhan batin beliau saat menghadapi ujian zaman.
-            </p>
-            <div className="flex items-center gap-4 shrink-0">
-              <button
-                type="button"
-                onClick={(e) => handleOpenReaderModal(featuredHaulSite, e)}
-                className="py-1.5 min-h-[32px] inline-flex items-center text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 cursor-pointer"
-              >
-                Baca wasiat beliau
-              </button>
-              <Link
-                to="/infaq#dinding-munajat"
-                className="py-1.5 min-h-[32px] inline-flex items-center text-xs font-medium text-stone-600 hover:text-stone-900 underline underline-offset-4"
-              >
-                Dinding munajat
-              </Link>
-            </div>
-          </div>
-        ) : null}
-
-        {/* =====================================================================
-            2. UNIFIED SEARCH & FILTER BAR (Direct-to-Content Layout)
-            ===================================================================== */}
-        <div id="katalog-direktori" className="space-y-4">
-          {/* Unified Search Input + Province Select */}
-          <div className="bg-white rounded-2xl border border-stone-200/80 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center divide-y sm:divide-y-0 sm:divide-x divide-stone-200/70">
-            <div className="relative flex-1">
-              <label htmlFor="site-search-input" className="sr-only">
-                Cari nama tokoh, makam, atau kota
-              </label>
-              <Search
-                className="w-4 h-4 text-stone-600 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-                strokeWidth={1.75}
-                aria-hidden="true"
-              />
-              <input
-                id="site-search-input"
-                type="search"
-                placeholder={copy.searchPlaceholder}
-                value={searchQuery}
-                onFocus={() => {
-                  ensureFullSitesLoaded();
-                }}
-                onChange={(e) => {
-                  ensureFullSitesLoaded();
-                  setSearchQuery(e.target.value);
-                }}
-                className="w-full pl-11 pr-10 py-3 bg-transparent text-sm text-stone-900 placeholder-stone-600 focus:outline-none"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Hapus pencarian"
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-600 hover:text-stone-900 cursor-pointer"
-                >
-                  <X className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
-                </button>
-              )}
-            </div>
-
-            <div className="relative sm:w-56 shrink-0">
-              <label htmlFor="province-filter-select" className="sr-only">
-                Filter berdasarkan provinsi
-              </label>
-              <select
-                id="province-filter-select"
-                aria-label="Filter berdasarkan provinsi"
-                value={selectedProvince}
-                onFocus={() => {
-                  ensureFullSitesLoaded();
-                }}
-                onChange={(e) => {
-                  ensureFullSitesLoaded();
-                  setSelectedProvince(e.target.value);
-                }}
-                className="w-full appearance-none pl-4 pr-9 py-3 bg-transparent text-xs sm:text-sm font-medium text-stone-700 cursor-pointer focus:outline-none"
-              >
-                {provinces.map((prov) => (
-                  <option key={prov} value={prov} className="bg-white text-stone-900">
-                    {prov}
-                  </option>
-                ))}
-              </select>
-              <Filter
-                className="w-3.5 h-3.5 text-stone-600 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-                strokeWidth={1.75}
-                aria-hidden="true"
-              />
-            </div>
-          </div>
-
-          {/* Minimalist Underline Tabs for Category + Clean Text Chips for Emotional Intent */}
-          <div className="w-full max-w-full overflow-hidden flex flex-col lg:flex-row lg:items-end justify-between gap-3 border-b border-stone-200">
-            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar shrink-0">
+            {/* Tab Kategori */}
+            <div className="flex items-center gap-5 overflow-x-auto no-scrollbar border-t border-black/[0.06] pt-3">
               {categories.map((cat) => {
                 const isSelected = selectedCategory === cat.id;
                 return (
@@ -906,10 +1056,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       ensureFullSitesLoaded();
                       setSelectedCategory(cat.id);
                     }}
-                    className={`pb-3 -mb-px text-xs sm:text-sm whitespace-nowrap transition-colors cursor-pointer border-b-2 ${
+                    className={`py-1 text-xs sm:text-sm whitespace-nowrap transition-colors cursor-pointer border-b-2 ${
                       isSelected
-                        ? 'border-emerald-800 text-emerald-950 font-semibold'
-                        : 'border-transparent text-stone-600 hover:text-stone-900 font-medium'
+                        ? 'border-[#1D1D1F] text-[#1D1D1F] font-semibold'
+                        : 'border-transparent text-[#6E6E73] hover:text-[#1D1D1F] font-medium'
                     }`}
                   >
                     {cat.label}
@@ -917,112 +1067,26 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 );
               })}
             </div>
-
-            {/* Clean Text Chips for Emotional Intent ("Apa yang Sedang Dicari Hati Anda Hari Ini?") */}
-            <div className="min-w-0 flex-1 max-w-full lg:max-w-[58%] flex flex-col gap-1.5 pb-2.5 lg:pb-2 overflow-hidden">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800 truncate">
-                  Apa yang Sedang Dicari Hati Anda Hari Ini?
-                </span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => handleScrollIntents('left')}
-                    aria-label="Geser filter ke kiri"
-                    title="Geser ke kiri"
-                    className="w-6 h-6 rounded-md bg-stone-100 hover:bg-stone-200 border border-stone-200/80 text-stone-700 hover:text-stone-900 inline-flex items-center justify-center transition-colors cursor-pointer"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" strokeWidth={2} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleScrollIntents('right')}
-                    aria-label="Geser filter ke kanan"
-                    title="Geser ke kanan"
-                    className="w-6 h-6 rounded-md bg-stone-100 hover:bg-stone-200 border border-stone-200/80 text-stone-700 hover:text-stone-900 inline-flex items-center justify-center transition-colors cursor-pointer"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5" strokeWidth={2} />
-                  </button>
-                </div>
-              </div>
-              <div
-                ref={intentScrollRef}
-                onWheel={(e) => {
-                  if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                    e.currentTarget.scrollLeft += e.deltaY;
-                  }
-                }}
-                className="w-full max-w-full flex items-center gap-2 overflow-x-auto scroll-smooth no-scrollbar py-0.5"
-              >
-                {dynamicEmotionalIntents.map((intent) => {
-                  const isSelected = emotionalFilter === intent.id;
-                  const count = intentCountMap[intent.id];
-                  return (
-                    <button
-                      key={intent.id}
-                      type="button"
-                      aria-pressed={isSelected}
-                      onClick={() => {
-                        ensureFullSitesLoaded();
-                        setEmotionalFilter(intent.id);
-                      }}
-                      className={`px-3 py-1.5 min-h-[32px] rounded-lg text-xs whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
-                        isSelected
-                          ? 'bg-emerald-900 text-white font-medium'
-                          : 'bg-stone-100 text-stone-700 hover:text-stone-900 hover:bg-stone-200/70'
-                      }`}
-                    >
-                      {intent.label} ({count})
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
-
-          {emotionalFilter !== 'all' && (() => {
-            const activeIntentObj = dynamicEmotionalIntents.find((i) => i.id === emotionalFilter);
-            if (!activeIntentObj?.empathyMessage) return null;
-            return (
-              <div className="mt-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row items-start justify-between gap-3">
-                <div className="space-y-1.5">
-                  <div className="text-xs sm:text-sm font-serif font-bold text-emerald-950">
-                    {activeIntentObj.empathyTitle}
-                  </div>
-                  <p className="text-xs text-stone-700 leading-relaxed">
-                    {activeIntentObj.empathyMessage}
-                  </p>
-                  {activeIntentObj.practicalAnchor && (
-                    <p className="text-xs font-medium text-emerald-900 leading-relaxed">
-                      {activeIntentObj.practicalAnchor}
-                    </p>
-                  )}
-                  <div className="pt-1 flex flex-wrap items-center gap-4 text-xs font-semibold text-emerald-900">
-                    <Link to="/panduan" className="hover:text-emerald-950 underline underline-offset-4">
-                      Baca Panduan Doa Gratis →
-                    </Link>
-                    <Link to="/donasi" className="hover:text-emerald-950 underline underline-offset-4">
-                      Susun Lembar Munajat Pribadi →
-                    </Link>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEmotionalFilter('all')}
-                  className="text-[11px] font-semibold text-emerald-900 hover:underline shrink-0 cursor-pointer"
-                >
-                  Tampilkan Semua
-                </button>
-              </div>
-            );
-          })()}
         </div>
 
+        {/* Kolom Kanan (lg:col-span-5): TasbihRingWidget Gelap #0A0B0D */}
+        <div className="lg:col-span-5 flex">
+          <div className="w-full">
+            <TasbihRingWidget />
+          </div>
+        </div>
+      </div>
+
+      {/* =====================================================================
+          4. MAIN CONTENT CONTAINER: STATUS & KARTU PROMO TILE APPLE
+          ===================================================================== */}
+      <div className="max-w-6xl mx-auto px-4 pt-2 sm:pt-4 md:px-6 space-y-6">
         {/* Subtle Results Status Row */}
-        <div className="flex items-center justify-between text-xs text-stone-600 px-0.5">
+        <div className="flex items-center justify-between text-xs text-[#6E6E73] px-0.5">
           <p>
-            Menampilkan <strong className="font-semibold text-stone-900">{displayedSites.length}</strong> dari{' '}
-            <strong className="font-semibold text-stone-900">
+            Menampilkan <strong className="font-semibold text-[#1D1D1F]">{displayedSites.length}</strong> dari{' '}
+            <strong className="font-semibold text-[#1D1D1F]">
               {isFiltered ? filteredSites.length : totalCatalogCount}
             </strong>{' '}
             makam di {TOTAL_PROVINCES_COUNT} provinsi
@@ -1042,7 +1106,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 setEmotionalFilter('all');
                 setVisibleCount(INITIAL_VISIBLE_SITES);
               }}
-              className="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4 cursor-pointer"
+              className="text-xs font-medium text-[#1E6B47] hover:text-[#175639] underline underline-offset-4 cursor-pointer"
             >
               Reset Filter
             </button>
@@ -1050,9 +1114,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         </div>
 
         {/* =====================================================================
-            3. CLEAN CARD GRID (Airbnb / Kinfolk Editorial Card Style)
+            3A. APPLE PROMO TILE SITE CARD GRID (`rounded-[24px]`)
             ===================================================================== */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
           {displayedSites.map((site, index) => {
             const siteUrl = getSitePath(site);
             const shortEra = extractShortEra(site.era);
@@ -1074,14 +1138,19 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             const { heading: cardHeading, subtitle: cardSubtitle } = getSiteDisplayHeading(site);
 
             return (
-              <article key={site.id} className={index >= 3 ? 'group content-auto' : 'group'}>
+              <article
+                key={site.id}
+                className={`${
+                  index >= 3 ? 'group content-auto' : 'group'
+                } bg-[#F5F5F7] hover:bg-white border border-black/[0.06] rounded-[24px] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] flex flex-col justify-between`}
+              >
                 <a
                   href={siteUrl}
                   onClick={(e) => handleOpenReaderModal(site, e)}
                   aria-label={`Baca kisah, karomah, dan panduan ${cardHeading} (${cardSubtitle}) di ${site.location.city}, ${site.location.province}`}
-                  className="block cursor-pointer space-y-3 focus:outline-none"
+                  className="block cursor-pointer focus:outline-none flex-1"
                 >
-                  {/* 1. Foto Rasio 4:3 dengan sudut membulat (rounded-2xl) & 1 Label Sudut */}
+                  {/* 1. Foto aspect-[16/10] dengan zoom mikro halus saat hover */}
                   <SiteCardThumbnail
                     site={site}
                     altText={`${cardHeading} (${cardSubtitle}) — ${site.location.city}, ${site.location.province}`}
@@ -1089,59 +1158,59 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                     isLcpCandidate={isLcpCandidate}
                   />
 
-                  {/* 2. Konten di Bawah Foto: Kota/Provinsi, Judul Serif, Kotak Ringkas Wasilah Hajat, Cuplikan */}
-                  <div className="space-y-1 px-0.5">
-                    <div className="flex items-center justify-between gap-2 text-xs text-slate-700 font-medium">
+                  {/* 2. Konten di Bawah Foto: Lokasi, Judul Apple-style, Haul, Kotak DOA & HARAPAN PEZIARAH */}
+                  <div className="p-5 space-y-2">
+                    <div className="flex items-center justify-between gap-2 text-xs text-[#6E6E73] font-medium">
                       <span className="truncate">
                         {site.location.city}, {site.location.province}
                       </span>
-                      <span className="shrink-0 text-[11px] text-slate-700 font-semibold truncate max-w-[140px]">
+                      <span className="shrink-0 text-[11px] text-[#6E6E73] font-semibold truncate max-w-[140px]">
                         {shortEra || practicalInfo}
                       </span>
                     </div>
 
-                    <h2 className="font-serif text-xl text-slate-900 group-hover:text-emerald-800 transition-colors line-clamp-2 leading-snug">
+                    <h2 className="text-xl text-[#1D1D1F] font-semibold tracking-tight group-hover:text-[#1E6B47] transition-colors line-clamp-2 leading-snug">
                       {cardHeading}
                     </h2>
 
                     {cardSubtitle && cardSubtitle !== cardHeading && (
-                      <p className="text-xs text-slate-600 font-medium line-clamp-1">
+                      <p className="text-xs text-[#6E6E73] font-medium line-clamp-1">
                         {cardSubtitle}
                       </p>
                     )}
 
-                    <div className="text-[11px] text-slate-700 font-medium whitespace-normal break-words leading-snug line-clamp-2">
+                    <div className="text-[11px] text-[#6E6E73] font-medium whitespace-normal break-words leading-snug line-clamp-2">
                       {practicalInfo}
                     </div>
 
                     {/* Kotak Ringkas Doa & Harapan Peziarah */}
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 my-2">
+                    <div className="bg-white border border-black/[0.06] text-[#1E6B47] rounded-2xl px-3.5 py-2.5 my-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-900">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E6B47]">
                           DOA &amp; HARAPAN PEZIARAH
                         </span>
-                        <span className="text-[10px] font-medium text-emerald-800">
+                        <span className="text-[10px] font-medium text-[#1E6B47]">
                           {karomahCount} Karomah · {doaCount} Doa
                         </span>
                       </div>
-                      <p className="text-xs text-stone-700 font-medium line-clamp-2 mt-0.5 leading-relaxed">
+                      <p className="text-xs text-[#1D1D1F] font-medium line-clamp-2 mt-1 leading-relaxed">
                         {coreHajatText}
                       </p>
                     </div>
 
-                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-[#6E6E73] line-clamp-2 leading-relaxed">
                       {snippetText}
                     </p>
                   </div>
                 </a>
 
                 {/* 3. Footer Aksi Terpisah */}
-                <div className="pt-2.5 mt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 px-0.5 text-xs text-slate-600">
+                <div className="px-5 py-3 border-t border-black/[0.06] flex flex-wrap items-center justify-between gap-2 text-xs text-[#6E6E73]">
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={() => onSelectSite(site)}
-                      className="py-2 pr-2 min-h-[36px] inline-flex items-center hover:text-slate-900 underline underline-offset-4 cursor-pointer"
+                      className="py-1.5 pr-2 min-h-[34px] inline-flex items-center hover:text-[#1D1D1F] underline underline-offset-4 cursor-pointer"
                     >
                       {copy.cardSecondaryMapCta}
                     </button>
@@ -1150,7 +1219,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                         href={getSiteGoogleMapsPhotosUrl(site)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="py-2 min-h-[36px] inline-flex items-center text-[11px] font-medium text-emerald-800 hover:text-emerald-950 underline underline-offset-4"
+                        className="py-1.5 min-h-[34px] inline-flex items-center text-[11px] font-medium text-[#1E6B47] hover:text-[#175639] underline underline-offset-4"
                       >
                         📷 Cek Foto Asli di Google Maps
                       </a>
@@ -1159,7 +1228,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                   <a
                     href={siteUrl}
                     onClick={(e) => handleOpenReaderModal(site, e)}
-                    className="py-2 pl-2 min-h-[36px] inline-flex items-center font-bold text-emerald-700 group-hover:text-emerald-800 group-hover:translate-x-0.5 transition-transform"
+                    className="py-1.5 pl-2 min-h-[34px] inline-flex items-center font-semibold text-[#1E6B47] group-hover:text-[#175639] group-hover:translate-x-0.5 transition-transform"
                   >
                     {copy.cardCtaLabel}
                   </a>
@@ -1169,12 +1238,12 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
           })}
 
           {filteredSites.length === 0 && (
-            <div className="col-span-full bg-white rounded-2xl p-8 sm:p-12 text-center border border-stone-200/70 shadow-2xs my-4">
-              <div className="inline-flex p-3.5 bg-stone-100 text-stone-600 rounded-2xl mb-3">
+            <div className="col-span-full bg-[#F5F5F7] rounded-[24px] p-8 sm:p-12 text-center border border-black/[0.06] my-4">
+              <div className="inline-flex p-3.5 bg-white text-[#6E6E73] rounded-2xl mb-3 border border-black/[0.06]">
                 <Compass className="w-6 h-6" strokeWidth={1.75} aria-hidden="true" />
               </div>
-              <h3 className="text-lg font-serif font-semibold text-stone-900 mb-1">Situs Tidak Ditemukan</h3>
-              <p className="text-xs sm:text-sm text-stone-600 max-w-sm mx-auto mb-5">
+              <h3 className="text-lg font-semibold text-[#1D1D1F] mb-1">Situs Tidak Ditemukan</h3>
+              <p className="text-xs sm:text-sm text-[#6E6E73] max-w-sm mx-auto mb-5">
                 Silakan gunakan kata kunci lain, atau sesuaikan filter kategori dan provinsi di atas.
               </p>
               <button
@@ -1186,7 +1255,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                   setEmotionalFilter('all');
                   setVisibleCount(INITIAL_VISIBLE_SITES);
                 }}
-                className="px-5 py-2.5 bg-stone-900 hover:bg-emerald-900 text-white rounded-xl text-xs font-medium transition cursor-pointer"
+                className="px-5 py-2.5 bg-[#1D1D1F] hover:bg-[#1E6B47] text-white rounded-full text-xs font-medium transition cursor-pointer"
               >
                 Tampilkan Semua Situs
               </button>
@@ -1196,14 +1265,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 
         {/* Progressive Load More Controls */}
         {!isFiltered && visibleCount < filteredSites.length && (
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               type="button"
               onClick={async () => {
                 const all = await ensureFullSitesLoaded();
                 setVisibleCount((prev) => Math.min(Math.max(all.length, filteredSites.length), prev + 12));
               }}
-              className="px-6 py-3 bg-stone-900 hover:bg-emerald-900 text-white rounded-xl text-xs font-medium tracking-tight inline-flex items-center gap-2 transition cursor-pointer shadow-2xs"
+              className="px-6 py-3 bg-[#1D1D1F] hover:bg-[#1E6B47] text-white rounded-full text-xs font-medium tracking-tight inline-flex items-center gap-2 transition cursor-pointer shadow-2xs"
             >
               <span>Tampilkan Lebih Banyak (+{Math.min(12, filteredSites.length - visibleCount)} Situs)</span>
               <ArrowDown className="w-3.5 h-3.5" strokeWidth={1.75} aria-hidden="true" />
@@ -1214,12 +1283,13 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 const all = await ensureFullSitesLoaded();
                 setVisibleCount(Math.max(all.length, filteredSites.length));
               }}
-              className="px-5 py-3 bg-white hover:border-stone-400 text-stone-700 border border-stone-200/80 rounded-xl text-xs font-medium tracking-tight transition cursor-pointer"
+              className="px-6 py-3 bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#1D1D1F] border border-black/[0.08] rounded-full text-xs font-medium tracking-tight transition cursor-pointer"
             >
               Buka Seluruh {filteredSites.length} Situs
             </button>
           </div>
         )}
+
       </div>
 
       {/* =====================================================================

@@ -1,46 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", "Lora", Georgia, serif;
   --font-arabic: "Amiri", "Scheherazade New", "Traditional Arabic", "Geeza Pro", "Arial", serif;
   
-  /* Deep Royal Emerald / Hijau Zamrud Klasik (Khidmat, Elegan, Bebas Neon/Mint) */
-  --color-emerald-50: #EFF5F2;
-  --color-emerald-100: #DCEAE3;
-  --color-emerald-200: #B9D4C8;
-  --color-emerald-300: #8BB5A3;
-  --color-emerald-400: #568E77;
-  --color-emerald-500: #2E6F56;
-  --color-emerald-600: #1D5B43;
-  --color-emerald-700: #134A35;
-  --color-emerald-800: #0C3B29;
-  --color-emerald-900: #072B1E;
-  --color-emerald-950: #041A12;
+  /* Deep Pine / Apple-Compatible Botanical Green (Calm, High-Contrast, Non-Neon) */
+  --color-emerald-50: #f2f7f4;
+  --color-emerald-100: #e1efe7;
+  --color-emerald-200: #c3dfd0;
+  --color-emerald-300: #95c5ad;
+  --color-emerald-400: #5ea383;
+  --color-emerald-500: #358360;
+  --color-emerald-600: #1e6b47;
+  --color-emerald-700: #175639;
+  --color-emerald-800: #14442f;
+  --color-emerald-900: #113827;
+  --color-emerald-950: #0a2016;
 
-  --color-brand-50: #EFF5F2;
-  --color-brand-100: #DCEAE3;
-  --color-brand-200: #B9D4C8;
-  --color-brand-300: #8BB5A3;
-  --color-brand-400: #568E77;
-  --color-brand-500: #2E6F56;
-  --color-brand-600: #1D5B43;
-  --color-brand-700: #134A35;
-  --color-brand-800: #0C3B29;
-  --color-brand-900: #072B1E;
-  --color-brand-950: #041A12;
+  --color-brand-50: #f2f7f4;
+  --color-brand-100: #e1efe7;
+  --color-brand-200: #c3dfd0;
+  --color-brand-300: #95c5ad;
+  --color-brand-400: #5ea383;
+  --color-brand-500: #358360;
+  --color-brand-600: #1e6b47;
+  --color-brand-700: #175639;
+  --color-brand-800: #14442f;
+  --color-brand-900: #113827;
+  --color-brand-950: #0a2016;
 
-  --color-teal-50: #EFF5F2;
-  --color-teal-100: #DCEAE3;
-  --color-teal-200: #B9D4C8;
-  --color-teal-300: #8BB5A3;
-  --color-teal-400: #568E77;
-  --color-teal-500: #2E6F56;
-  --color-teal-600: #1D5B43;
-  --color-teal-700: #134A35;
-  --color-teal-800: #0C3B29;
-  --color-teal-900: #072B1E;
-  --color-teal-950: #041A12;
+  --color-teal-50: #f2f7f4;
+  --color-teal-100: #e1efe7;
+  --color-teal-200: #c3dfd0;
+  --color-teal-300: #95c5ad;
+  --color-teal-400: #5ea383;
+  --color-teal-500: #358360;
+  --color-teal-600: #1e6b47;
+  --color-teal-700: #175639;
+  --color-teal-800: #14442f;
+  --color-teal-900: #113827;
+  --color-teal-950: #0a2016;
 
   /* Archival Bronze & Gold */
   --color-gold-50: #fbf8f1;
@@ -66,11 +66,34 @@ html {
 }
 
 body {
-  background-color: #FAF8F5;
-  color: #1C1917;
+  background-color: #FFFFFF;
+  color: #1D1D1F;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.apple-glass-nav {
+  background: rgba(251, 251, 253, 0.84);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+.apple-headline {
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+}
+
+.soft-paper-fade {
+  mask-image: linear-gradient(to bottom, black 38%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 38%, transparent 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Custom styles for leaflet */

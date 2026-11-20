@@ -32,7 +32,7 @@ import {
 } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
 import { useSiteCopy, ADMIN_WHATSAPP_NUMBER } from '../lib/siteCopy';
-import { renderPersonalMunajatCard } from '../lib/munajatCardCanvas';
+import { renderPersonalMunajatCard, type MunajatCardPaletteId } from '../lib/munajatCardCanvas';
 
 interface DonationRecord {
   id: string;
@@ -181,8 +181,21 @@ export const InfaqDigital: React.FC = () => {
     { id: 'kesembuhan', chip: 'Kesembuhan', label: "Kesembuhan (Syifa')" },
   ] as const;
 
+  const MUNAJAT_SWATCHES: Array<{
+    id: MunajatCardPaletteId;
+    label: string;
+    hex: string;
+    frameClass: string;
+    paperClass: string;
+  }> = [
+    { id: 'midnight', label: 'Midnight', hex: '#16181A', frameClass: 'bg-[#16181A]', paperClass: 'bg-[#FAF8F5]' },
+    { id: 'deep-pine', label: 'Deep Pine', hex: '#163326', frameClass: 'bg-[#163326]', paperClass: 'bg-[#FAF8F5]' },
+    { id: 'warm-stone', label: 'Warm Stone', hex: '#EDEBE6', frameClass: 'bg-[#EDEBE6]', paperClass: 'bg-white' },
+  ];
+
   const [personalRecipientName, setPersonalRecipientName] = useState<string>('');
   const [personalThemeId, setPersonalThemeId] = useState<string>('orang-tua');
+  const [personalCardPalette, setPersonalCardPalette] = useState<MunajatCardPaletteId>('deep-pine');
   const [personalPrayerText, setPersonalPrayerText] = useState<string>('');
   const [syncWithInfaqDoa, setSyncWithInfaqDoa] = useState<boolean>(true);
   const [isGeneratingCard, setIsGeneratingCard] = useState<boolean>(false);
@@ -203,6 +216,8 @@ export const InfaqDigital: React.FC = () => {
 
   const activeMunajatTheme =
     MUNAJAT_THEMES.find((t) => t.id === personalThemeId) || MUNAJAT_THEMES[0];
+  const activeSwatch =
+    MUNAJAT_SWATCHES.find((s) => s.id === personalCardPalette) || MUNAJAT_SWATCHES[1];
 
   const todayIndonesianLabel = new Date().toLocaleDateString('id-ID', {
     day: 'numeric',
@@ -229,6 +244,7 @@ export const InfaqDigital: React.FC = () => {
           'Ya Allah, ampunilah khilaf orang tua dan keluarga kami, lapangkanlah hati kami dalam ketaatan, dan mudahkanlah setiap ikhtiar yang halal dan berkah.',
         themeLabel: activeMunajatTheme.label,
         createdDateLabel: todayIndonesianLabel,
+        cardPalette: personalCardPalette,
       });
       const link = document.createElement('a');
       link.href = dataUrl;
@@ -504,31 +520,37 @@ export const InfaqDigital: React.FC = () => {
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-28">
-      {/* Header Banner */}
+      {/* Header Banner — Solid Dark Apple Contrast */}
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-emerald-950 via-brand-900 to-teal-950 rounded-3xl p-6 sm:p-10 text-white shadow-lg mb-8 relative overflow-hidden border border-emerald-900/40"
+        style={{ backgroundColor: '#111214', color: '#F5F5F7' }}
+        className="rounded-[28px] p-7 sm:p-11 border border-white/10 shadow-xl mb-8 relative overflow-hidden"
       >
-        <div className="absolute right-0 top-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-gold-300 text-xs font-semibold mb-4">
+            <div className="inline-flex items-center space-x-2 bg-white/10 border border-white/15 px-3.5 py-1.5 rounded-full text-[#6EE7B7] text-xs font-semibold mb-4">
               <HeartHandshake className="w-4 h-4" />
               <span>Infaq Operasional &amp; Pemeliharaan Digital</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-tight mb-3">
+            <h1
+              style={{ color: '#F5F5F7' }}
+              className="apple-headline text-2xl sm:text-4xl font-semibold tracking-tight mb-3"
+            >
               {copy.infaqTitle}
             </h1>
-            <p className="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed">
+            <p
+              style={{ color: '#D2D2D7' }}
+              className="text-xs sm:text-sm md:text-base leading-relaxed"
+            >
               {copy.infaqSubtitle}
             </p>
           </div>
           {recentDonations.length > 0 && (
             <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 shrink-0 min-w-[200px]">
-              <p className="text-[11px] uppercase tracking-wider text-emerald-300 font-bold mb-1">Total Infaq Tercatat</p>
-              <p className="text-xl sm:text-2xl font-serif font-black text-white">Rp {totalTerkumpul.toLocaleString('id-ID')}</p>
-              <p className="text-[11px] text-slate-300 mt-0.5">Dari {recentDonations.length} konfirmasi munfiq / peziarah</p>
+              <p className="text-[11px] uppercase tracking-wider text-[#6EE7B7] font-bold mb-1">Total Infaq Tercatat</p>
+              <p style={{ color: '#F5F5F7' }} className="text-xl sm:text-2xl font-serif font-black">Rp {totalTerkumpul.toLocaleString('id-ID')}</p>
+              <p style={{ color: '#D2D2D7' }} className="text-[11px] mt-0.5">Dari {recentDonations.length} konfirmasi munfiq / peziarah</p>
             </div>
           )}
         </div>
@@ -979,10 +1001,41 @@ export const InfaqDigital: React.FC = () => {
             </div>
           </div>
 
-          {/* Kartu Preview Lembar Munajat Pribadi (Rasio 4:5) */}
-          <div className="lg:col-span-5">
-            <div className="rounded-2xl bg-[#071A15] p-3.5 border border-[#C5A059]/60 shadow-sm">
-              <div className="rounded-xl bg-[#FAF8F5] border-2 border-[#C5A059] p-5 text-center space-y-3">
+          {/* Kartu Preview Lembar Munajat Pribadi (Rasio 4:5) + Apple Swatch Dots */}
+          <div className="lg:col-span-5 space-y-3">
+            <div className="flex items-center justify-between gap-2 px-1">
+              <span className="text-xs font-medium text-[#6E6E73]">
+                Warna Bingkai Kartu ({activeSwatch.label})
+              </span>
+              <div className="flex items-center gap-2" role="radiogroup" aria-label="Pilih warna bingkai Lembar Munajat">
+                {MUNAJAT_SWATCHES.map((swatch) => {
+                  const isSelected = personalCardPalette === swatch.id;
+                  return (
+                    <button
+                      key={swatch.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      aria-label={`Warna ${swatch.label}`}
+                      title={swatch.label}
+                      onClick={() => setPersonalCardPalette(swatch.id)}
+                      className={`w-6 h-6 rounded-full transition-all cursor-pointer flex items-center justify-center ${
+                        isSelected
+                          ? 'ring-2 ring-[#1D1D1F] ring-offset-2 scale-105'
+                          : 'ring-1 ring-black/15 hover:scale-105'
+                      }`}
+                    >
+                      <span
+                        className={`w-5 h-5 rounded-full ${swatch.frameClass} border border-black/10`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={`rounded-2xl ${activeSwatch.frameClass} p-3.5 border border-[#C5A059]/60 shadow-sm transition-colors`}>
+              <div className={`rounded-xl ${activeSwatch.paperClass} border-2 border-[#C5A059] p-5 text-center space-y-3 transition-colors`}>
                 <div className="text-[10px] font-bold uppercase tracking-widest text-[#8C6D2E]">
                   Ziarah Nusantara · Lembar Munajat Pribadi
                 </div>
@@ -1100,8 +1153,13 @@ export const InfaqDigital: React.FC = () => {
         </form>
 
         {displayedMunajatList.length === 0 && (
-          <div className="mb-4 rounded-2xl bg-[#FAF8F5] border border-stone-200/80 px-4 py-3 text-xs sm:text-sm text-stone-700 font-serif italic">
-            Belum ada munajat publik yang ditampilkan hari ini. Jadilah yang pertama menitipkan doa munajat di bawah ini.
+          <div className="mb-4 rounded-2xl bg-[#F5F5F7] border border-black/[0.08] px-4 py-3.5 space-y-1">
+            <div className="text-xs font-semibold uppercase tracking-wider text-[#1E6B47]">
+              Contoh Format Doa Peziarah — Jadilah yang pertama menitipkan doa hari ini
+            </div>
+            <p className="text-xs sm:text-sm text-[#515154] leading-relaxed">
+              Belum ada munajat publik yang tercatat hari ini. Tiga kartu di bawah ini adalah contoh format doa bersama — silakan kirimkan doa Anda pada formulir di atas untuk menampilkannya di Dinding Doa.
+            </p>
           </div>
         )}
 
