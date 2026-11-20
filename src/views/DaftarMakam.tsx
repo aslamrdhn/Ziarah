@@ -70,7 +70,7 @@ const SiteCardThumbnail: React.FC<{
   return (
     <div
       ref={containerRef}
-      className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-emerald-950"
+      className="relative aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden rounded-2xl bg-emerald-950"
     >
       <img
         src={optimizedThumb}
@@ -128,49 +128,62 @@ const EMOTIONAL_INTENTS: Array<{
   label: string;
   empathyTitle?: string;
   empathyMessage?: string;
+  practicalAnchor?: string;
 }> = [
   { id: 'all', label: 'Semua Riwayat' },
   {
     id: 'keteduhan',
     label: 'Hati Gelisah & Mencari Ketenangan Batin',
-    empathyTitle: 'Munajat Keteduhan Jiwa & Penawar Hati yang Penat',
+    empathyTitle: 'Cermin Pintu Ruhani — Saat Hati Terasa Penuh & Sulit Tenang',
     empathyMessage:
-      'Menampilkan maqbarah para Waliyullah dan mursyid tasawuf yang dikenal dengan kelembutan kasih sayang, dzikir penenang batin, serta wasilah melembutkan hati di saat diuji kegelisahan hidup.',
+      'Ketika pikiran terus berisik dan dada terasa sempit, para ulama mengajarkan untuk melambatkan langkah: melepaskan sejenak hal-hal di luar kendali kita, lalu menenangkan batin lewat dzikir dan meneladani kesabaran para wali.',
+    practicalAnchor:
+      'Mulai dari 1 langkah kecil: tarik napas pelan, ucapkan istighfar 3 kali, lalu pilih salah satu makam di bawah ini.',
   },
   {
     id: 'ikhtiar',
     label: 'Ikhtiar Rezeki, Usaha & Bebas Lilitan Hutang',
-    empathyTitle: 'Wasilah Kelapangan Rezeki Halal, Perniagaan & Jalan Keluar Kesempitan',
+    empathyTitle: 'Cermin Pintu Ruhani — Ketika Ikhtiar Lahir Terasa Sempit',
     empathyMessage:
-      'Menampilkan maqbarah para Waliyullah pelopor perniagaan jujur, pertanian, dan kedermawanan sosial yang menjadi rujukan peziarah saat memohon dibukakan pintu rezeki halal serta terbebas dari himpitan hutang.',
+      'Saat hitungan usaha terasa buntu dan rasa takut akan hari esok menekan pikiran, para ulama mengingatkan agar hati tidak ikut menyempit: rapikan niat, mohonkan ridha orang tua, jaga kejujuran usaha, dan tetap sisihkan kebaikan sekecil apa pun.',
+    practicalAnchor:
+      'Di bawah ini terhimpun makam para ulama pelopor kemandirian dan kedermawanan yang dahulu menuntun umat melewati masa sulit.',
   },
   {
     id: 'syifa',
     label: "Ikhtiar Kesembuhan & Syifa' Penyakit",
-    empathyTitle: 'Wasilah Ikhtiar Kesembuhan dari Penyakit, Ketabiban & Kesehatan Keluarga',
+    empathyTitle: 'Cermin Pintu Ruhani — Menguatkan Hati Mendampingi Ikhtiar Medis',
     empathyMessage:
-      "Menampilkan maqbarah para Waliyullah pelopor pengobatan tradisional Nusantara, mata air berkah, dan doa-doa syifa' tempat para peziarah bertawassul memohon kesembuhan lahir batin kepada Allah Asy-Syafi.",
+      'Menghadapi ujian sakit—baik untuk diri sendiri maupun orang tercinta—menguras tenaga lahir dan batin. Di samping terus berobat secara medis, memohon langsung kepada Allah Yang Maha Menyembuhkan membantu menjaga hati tetap lapang dan sabar.',
+    practicalAnchor:
+      'Baca doa-doa kesembuhan sesuai sunnah (lengkap tulisan Latin & artinya) serta kisah ketabahan para ulama di bawah ini.',
   },
   {
     id: 'ilmu',
     label: 'Memohon Ilmu Berkah & Keshalihan Keturunan',
-    empathyTitle: 'Sanad Keilmuan Pesantren, Futuhul Arifin & Doa Anak Cucu Shalih',
+    empathyTitle: 'Cermin Pintu Ruhani — Merawat Cahaya Ilmu & Doa untuk Anak Cucu',
     empathyMessage:
-      'Menampilkan maqbarah para mahaguru pesantren, pengarang kitab kuning, dan ulama penjaga Al-Qur’an tempat para orang tua dan santri bertawassul memohon keberkahan ilmu serta keturunan yang menjaga iman.',
+      'Tradisi pesantren mengajarkan bahwa doa tulus orang tua yang istiqamah dan kecintaan pada majelis ilmu adalah benteng terbaik bagi masa depan keturunan.',
+    practicalAnchor:
+      'Telusuri jejak para mahaguru pesantren di bawah ini untuk mengambil hikmah pendidikan dan mendoakan keluarga Anda.',
   },
   {
     id: 'keteguhan',
     label: 'Keteguhan Iman, Wibawa & Amanah Kepemimpinan',
-    empathyTitle: 'Keteguhan Prinsip, Keberanian Membela Kebenaran & Amanah Memimpin',
+    empathyTitle: 'Cermin Pintu Ruhani — Menjaga Prinsip di Tengah Ujian Berat',
     empathyMessage:
-      'Menampilkan maqbarah para Sultan adil, panglima jihad, dan ulama pejuang kemerdekaan yang teguh memegang amanah di tengah badai ujian besar.',
+      'Memikul amanah besar atau mencoba memperbaiki diri dari kesalahan masa lalu membutuhkan keteguhan hati. Para ulama dan pemimpin adil Nusantara dahulu pun melewati keterasingan dan tekanan sebelum menemukan jalan keluarnya.',
+    practicalAnchor:
+      'Resapi laku batin dan keteguhan para tokoh di bawah ini sebagai penguat langkah Anda.',
   },
   {
     id: 'keluarga',
     label: 'Keluarga Sakinah & Melembutkan Hati',
-    empathyTitle: 'Wasilah Kerukunan Rumah Tangga, Mahabbah & Keutuhan Keluarga',
+    empathyTitle: 'Cermin Pintu Ruhani — Melembutkan Hati & Menjaga Keutuhan Rumah Tangga',
     empathyMessage:
-      'Menampilkan maqbarah para Auliya dan Habaib penjaga silaturahmi umat yang menjadi tujuan peziarah dalam memohon keharmonisan keluarga sakinah mawaddah warahmah.',
+      'Banyak keretakan lahir bukan karena kurangnya cinta, melainkan karena hati yang sama-sama lelah dan keras. Meneladani kelembutan dakwah para ulama membantu kita kembali melihat keluarga dengan kasih sayang dan kesabaran.',
+    practicalAnchor:
+      'Pilih salah satu makam di bawah ini atau susun Lembar Munajat Pribadi untuk keluarga Anda.',
   },
 ];
 
@@ -506,6 +519,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         label: item.label,
         empathyTitle: item.empathyTitle,
         empathyMessage: item.empathyMessage,
+        practicalAnchor: item.practicalAnchor,
       })),
     []
   );
@@ -683,11 +697,11 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               onClick={() => setShowVisualShowcase(!showVisualShowcase)}
               className={`px-3.5 py-2 sm:py-2.5 rounded-xl text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer border ${
                 showVisualShowcase
-                  ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
+                  ? 'bg-[#F4F1EA] text-stone-900 border-stone-300'
                   : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
               }`}
             >
-              <Film className="w-3.5 h-3.5 text-emerald-800 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+              <Film className="w-3.5 h-3.5 text-stone-700 shrink-0" strokeWidth={1.75} aria-hidden="true" />
               <span>{showVisualShowcase ? 'Tutup Eksplorasi Visual' : 'Buka Eksplorasi Visual Nusantara'}</span>
             </button>
             <button
@@ -695,7 +709,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               onClick={() =>
                 document.getElementById('hikmah-ziarah-reel')?.scrollIntoView({ behavior: 'smooth' })
               }
-              className="px-3.5 py-2 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer"
+              className="px-3.5 py-2 sm:py-2.5 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE4D7] text-stone-800 border border-stone-300/80 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer"
             >
               <span>Hikmah Ziarah · 5 Slide</span>
             </button>
@@ -970,19 +984,32 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             const activeIntentObj = dynamicEmotionalIntents.find((i) => i.id === emotionalFilter);
             if (!activeIntentObj?.empathyMessage) return null;
             return (
-              <div className="mt-3 p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-start justify-between gap-3">
-                <div className="space-y-0.5">
-                  <div className="text-xs font-serif font-bold text-emerald-950">
+              <div className="mt-3 p-4 rounded-xl bg-[#F4F1EA] border border-stone-300/80 flex flex-col sm:flex-row items-start justify-between gap-3">
+                <div className="space-y-1.5">
+                  <div className="text-xs sm:text-sm font-serif font-bold text-stone-900">
                     {activeIntentObj.empathyTitle}
                   </div>
                   <p className="text-xs text-stone-700 leading-relaxed">
                     {activeIntentObj.empathyMessage}
                   </p>
+                  {activeIntentObj.practicalAnchor && (
+                    <p className="text-xs font-medium text-stone-800 leading-relaxed">
+                      {activeIntentObj.practicalAnchor}
+                    </p>
+                  )}
+                  <div className="pt-1 flex flex-wrap items-center gap-4 text-xs font-semibold text-stone-900">
+                    <Link to="/panduan" className="hover:text-emerald-950 underline underline-offset-4">
+                      Baca Panduan Doa Gratis →
+                    </Link>
+                    <Link to="/donasi" className="hover:text-emerald-950 underline underline-offset-4">
+                      Susun Lembar Munajat Pribadi →
+                    </Link>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setEmotionalFilter('all')}
-                  className="text-[11px] font-semibold text-emerald-900 hover:underline shrink-0 cursor-pointer"
+                  className="text-[11px] font-semibold text-stone-800 hover:underline shrink-0 cursor-pointer"
                 >
                   Tampilkan Semua
                 </button>
@@ -1083,21 +1110,21 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       </p>
                     )}
 
-                    <div className="text-[11px] text-slate-700 font-medium whitespace-normal break-words leading-snug">
+                    <div className="text-[11px] text-slate-700 font-medium whitespace-normal break-words leading-snug line-clamp-2">
                       {practicalInfo}
                     </div>
 
-                    {/* Kotak Ringkas Wasilah Hajat Spesifik */}
-                    <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-xl px-3 py-2 my-2">
+                    {/* Kotak Ringkas Doa & Harapan Peziarah */}
+                    <div className="bg-[#F4F1EA] border border-stone-300/70 rounded-xl px-3 py-2 my-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
-                          Wasilah Hajat Spesifik
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-800">
+                          DOA &amp; HARAPAN PEZIARAH
                         </span>
-                        <span className="text-[10px] font-medium text-emerald-800">
+                        <span className="text-[10px] font-medium text-stone-700">
                           {karomahCount} Karomah · {doaCount} Doa
                         </span>
                       </div>
-                      <p className="text-xs text-slate-700 font-medium line-clamp-2 mt-0.5 leading-relaxed">
+                      <p className="text-xs text-stone-700 font-medium line-clamp-2 mt-0.5 leading-relaxed">
                         {coreHajatText}
                       </p>
                     </div>

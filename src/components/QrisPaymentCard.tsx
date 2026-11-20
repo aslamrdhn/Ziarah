@@ -91,7 +91,7 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
       ctx.textAlign = 'center';
       ctx.fillText('QRIS STANDAR PEMBAYARAN NASIONAL', canvas.width / 2, 62);
       ctx.font = '18px sans-serif';
-      ctx.fillStyle = '#a7f3d0';
+      ctx.fillStyle = '#EAE4D7';
       ctx.fillText('Satu QR Code untuk Semua Aplikasi Pembayaran', canvas.width / 2, 98);
 
       // Merchant details

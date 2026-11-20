@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { ZiarahSite, getSourceClassificationLabel } from '../data/sites';
 import { X, MapPin, Navigation, Clock, Heart, BookOpen, Bookmark, BookmarkCheck, QrCode, Send, ScrollText, Trash2, Loader2, Calendar, ShieldCheck, Type, Map as MapIcon, Lock, Printer, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -1013,7 +1014,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           {/* Ringkasan Peta 5 Bagian Kitab Amalan yang Akan Terbuka */}
           <div className="mb-4 p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80 space-y-2.5">
             <div className="text-xs sm:text-sm text-slate-800 leading-relaxed">
-              <strong className="font-semibold text-emerald-900">Panduan Kaifiyah Hajat:</strong>{' '}
+              <strong className="font-semibold text-emerald-900">Cara Mengamalkan Doa:</strong>{' '}
               Awali dengan salam ahli kubur serta hadiah Al-Fatihah 4 simpul ke hadirat {safeSiteName}, hadirkan niat hajat pribadi Anda, lalu amalkan wirid warisan makam beserta 3 rangkaian doa Qur&apos;ani/Nabawi berikut...
             </div>
             <div className="pt-2 border-t border-emerald-200/70">
@@ -1049,7 +1050,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
               <strong className="font-semibold text-slate-900">{getSiteDisplayHeading(site).heading}</strong> dengan infaq{' '}
               <strong className="font-semibold text-emerald-800">Rp {barokahAmount.toLocaleString('id-ID')}</strong>.
             </p>
-            <div className="pt-1">
+            <div className="pt-1 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={() => setTransactionType('barokah_doa')}
@@ -1058,6 +1059,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 <Lock className="w-4 h-4" strokeWidth={1.75} />
                 <span>Buka Barokah &amp; Doa Khusus (Rp {barokahAmount.toLocaleString('id-ID')})</span>
               </button>
+              <Link
+                to="/panduan"
+                onClick={onClose}
+                className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline underline-offset-4 text-center sm:text-left"
+              >
+                Lanjut ke Panduan Yasin &amp; Doa Gratis →
+              </Link>
             </div>
           </div>
         </div>
@@ -1067,7 +1075,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
 
   const renderEpistemologicalNote = () => (
     <div className="mt-8 p-4 rounded-xl bg-stone-100/90 border border-stone-200/90 text-xs text-stone-600 leading-relaxed font-serif italic">
-      Catatan Epistemologis: Riwayat sejarah disarikan dari literatur historiografi dan arsip cagar budaya ({getSourceClassificationLabel(site.historySourceType)}), sedangkan kisah karomah dan fadhilah tawassul merupakan rekaman tradisi ({getSourceClassificationLabel(site.karomahSourceType)}) yang disajikan sebagai keteladanan spiritual. Status kurasi: {site.verifiedBy}.
+      Catatan Sumber Sejarah: Riwayat sejarah disarikan dari literatur historiografi dan arsip cagar budaya ({getSourceClassificationLabel(site.historySourceType)}), sedangkan kisah karomah dan fadhilah tawassul merupakan rekaman tradisi ({getSourceClassificationLabel(site.karomahSourceType)}) yang disajikan sebagai keteladanan spiritual. Status kurasi: {site.verifiedBy}.
     </div>
   );
 
@@ -1445,6 +1453,8 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                           </p>
                                         </div>
 
+                                        <div className="h-8 -mt-8 bg-gradient-to-b from-transparent to-slate-50 pointer-events-none" />
+
                                         <div className="p-6 rounded-2xl bg-white border border-slate-200 space-y-3">
                                           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold uppercase tracking-wider">
                                             <Lock className="w-3.5 h-3.5" strokeWidth={1.75} />
@@ -1470,7 +1480,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                             </ol>
                                           </div>
 
-                                          <div className="pt-1 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                                          <div className="pt-1 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 flex-wrap">
                                             <button
                                               type="button"
                                               onClick={() => setTransactionType('untold')}
@@ -1479,6 +1489,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                               <Lock className="w-4 h-4" strokeWidth={1.75} />
                                               <span>{copy.paywallButtonText} (Rp {rubrikAmount.toLocaleString('id-ID')})</span>
                                             </button>
+                                            <Link
+                                              to="/panduan"
+                                              onClick={onClose}
+                                              className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline underline-offset-4 text-center sm:text-left"
+                                            >
+                                              Lanjut ke Panduan Yasin &amp; Doa Gratis →
+                                            </Link>
                                             <a
                                               href={waShareUrl}
                                               target="_blank"
@@ -1557,6 +1574,8 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                 </p>
                               </div>
 
+                              <div className="h-8 -mt-8 bg-gradient-to-b from-transparent to-slate-50 pointer-events-none" />
+
                               {/* Kartu Pembuka Khazanah (In-Place Unlock Rp 10.000) */}
                               <div className="p-6 rounded-2xl bg-white border border-slate-200 space-y-3">
                                 <p className="font-serif italic text-sm sm:text-base text-slate-700 leading-relaxed border-l-2 border-emerald-700 pl-3">
@@ -1586,7 +1605,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                   </ol>
                                 </div>
 
-                                <div className="pt-1 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                                <div className="pt-1 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 flex-wrap">
                                   <button
                                     type="button"
                                     onClick={() => setTransactionType('untold')}
@@ -1595,6 +1614,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                     <Lock className="w-4 h-4" strokeWidth={1.75} />
                                     <span>{copy.paywallButtonText} (Rp {rubrikAmount.toLocaleString('id-ID')})</span>
                                   </button>
+                                  <Link
+                                    to="/panduan"
+                                    onClick={onClose}
+                                    className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline underline-offset-4 text-center sm:text-left"
+                                  >
+                                    Lanjut ke Panduan Yasin &amp; Doa Gratis →
+                                  </Link>
                                   <a
                                     href={untoldWaUrl}
                                     target="_blank"

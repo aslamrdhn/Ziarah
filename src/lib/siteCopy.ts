@@ -262,16 +262,16 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   karomahSectionTitle: 'Babak II — Kesaksian Karomah & Keajaiban Batin',
   barokahSectionTitle: 'Barokah Hajat & Doa Khusus Peziarah',
   barokahHookPrefix: 'Harapan & Wasilah Hajat Jamaah',
-  barokahPaywallTitle: 'Buka Lembar Amalan & Doa Khusus Maqbarah Ini',
+  barokahPaywallTitle: 'Buka Lembar Amalan & Doa Khusus Makam Ini',
   barokahPaywallDescription:
-    'Buka penuh 5 Bagian Kitab Amalan (Salam & Adab Maqbarah, Silsilah Al-Fatihah 4 Simpul Sanad, Wirid Makam + Tasbih Mini, 3 Ayat & Doa Nabawi Sahih, serta Cetak PDF Saku) melalui infaq pemeliharaan situs.',
+    'Buka penuh 5 Bagian Lembar Amalan (Salam & Adab Makam, Urutan Hadiah Al-Fatihah 4 Simpul Sanad, Wirid Makam + Tasbih Mini, 3 Ayat & Doa Sahih lengkap Latin-Arti, serta Cetak PDF Saku) melalui infaq dukungan perawatan situs.',
   barokahPaywallButtonText: 'Buka Barokah & Doa Khusus',
-  paywallBadge: 'Lanjutan Kisah & Wasiat Maqbarah',
-  paywallTitle: 'Teruskan Membaca Wasiat & Kesaksian Batin Beliau',
-  paywallDescription: `Bagian lanjutan naskah ini disimpan dalam Khazanah Khusus. Dengan niat infaq dukungan satu kali, Anda ikut menjaga kelangsungan arsip sejarah ulama Nusantara sekaligus membuka seluruh ${DYNAMIC_SITE_COUNT}+ kisah rahasia di perangkat ini.`,
-  paywallSubtitle: `Bagian lanjutan naskah ini disimpan dalam Khazanah Khusus. Dengan niat infaq dukungan satu kali, Anda ikut menjaga kelangsungan arsip sejarah ulama Nusantara sekaligus membuka seluruh ${DYNAMIC_SITE_COUNT}+ kisah rahasia di perangkat ini.`,
-  paywallButtonText: 'Buka Seluruh Kisah & Wasiat',
-  paywallPrimaryButton: 'Buka Seluruh Kisah & Wasiat',
+  paywallBadge: 'Lanjutan Laku Batin & Wasiat Makam',
+  paywallTitle: 'Lanjutkan Membaca Catatan Laku Batin & Wasiat Beliau',
+  paywallDescription: `Lanjutan catatan laku batin dan wasiat lengkap beliau—bersama seluruh ${DYNAMIC_SITE_COUNT}+ riwayat maqbarah—kami simpan di ruang khazanah khusus agar portal ini tetap bebas iklan dan terjaga perawatannya.`,
+  paywallSubtitle: `Lanjutan catatan laku batin dan wasiat lengkap beliau—bersama seluruh ${DYNAMIC_SITE_COUNT}+ riwayat maqbarah—kami simpan di ruang khazanah khusus agar portal ini tetap bebas iklan dan terjaga perawatannya.`,
+  paywallButtonText: 'Dukung & Buka Seluruh Laku Batin',
+  paywallPrimaryButton: 'Dukung & Buka Seluruh Laku Batin',
   whatsappSharePrefix: 'Hati ikut tenang membaca kisah keteladanan',
   rubrikTitle: 'Rubrik Ziarah Nusantara.',
   rubrikSubtitle:
@@ -288,15 +288,15 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
     'Infaq Anda menjaga portal ini tetap bebas iklan, membiayai perawatan server, serta merawat catatan sejarah dan panduan ziarah ulama Nusantara.',
   infaqTransparencyNote:
     '100% dikelola secara amanah sebagai Infaq Operasional & Pemeliharaan Digital untuk pelestarian literasi sejarah Islam Nusantara, pemeliharaan sistem direktori bebas iklan, dan dokumentasi lapangan.',
-  munajatTitle: 'Dinding Munajat & Doa Bersama Peziarah',
-  munajatHeaderTitle: 'Dinding Munajat & Doa Bersama Peziarah',
+  munajatTitle: 'Dinding Doa Bersama (Munajat) Peziarah',
+  munajatHeaderTitle: 'Dinding Doa Bersama (Munajat) Peziarah',
   munajatSubtitle:
     'Titipkan doa terbaik Anda bersama infaq dukungan, dan mari saling mengaminkan hajat sesama peziarah.',
   munajatHeaderSubtitle:
     'Titipkan doa terbaik Anda bersama infaq dukungan, dan mari saling mengaminkan hajat sesama peziarah.',
   doaHajatPlaceholder:
     'Contoh: Semoga almarhum ayahanda diampuni segala khilafnya dan keluarga kami diberi ketenangan batin serta kelapangan rezeki yang berkah...',
-  unlockSuccessMessage: `Alhamdulillah, terima kasih atas infaq dukungan Anda. Seluruh ${DYNAMIC_SITE_COUNT}+ kisah keteladanan, catatan karomah, dan lembar amalan kini telah terbuka penuh di perangkat Anda.`,
+  unlockSuccessMessage: `Alhamdulillah, terima kasih atas infaq dukungan Anda. Seluruh ${DYNAMIC_SITE_COUNT}+ kisah laku batin, catatan karomah, dan lembar amalan kini telah terbuka penuh di perangkat Anda.`,
   quickNominalPackages: [
     {
       amount: 10000,

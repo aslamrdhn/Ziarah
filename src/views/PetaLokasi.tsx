@@ -68,7 +68,7 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 pt-2 pb-10 flex-1 flex flex-col gap-4">
+    <div className="w-full max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 pt-2 pb-28 md:pb-12 flex-1 flex flex-col gap-4">
       <div className="relative w-full flex flex-col gap-6">
         <InteractiveMap
           sites={ziarahSites}

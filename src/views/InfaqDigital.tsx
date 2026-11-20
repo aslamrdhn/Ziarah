@@ -13,7 +13,8 @@ import {
   Database,
   Lock,
   AlertCircle,
-  Heart
+  Heart,
+  Download
 } from 'lucide-react';
 import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
 import { collection, doc, onSnapshot, query, where, limit } from 'firebase/firestore';
@@ -31,6 +32,7 @@ import {
 } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
 import { useSiteCopy, ADMIN_WHATSAPP_NUMBER } from '../lib/siteCopy';
+import { renderPersonalMunajatCard } from '../lib/munajatCardCanvas';
 
 interface DonationRecord {
   id: string;
@@ -169,6 +171,21 @@ export const InfaqDigital: React.FC = () => {
   const [infaqSettings, setInfaqSettings] = useState<InfaqSettings>(DEFAULT_INFAQ_SETTINGS);
   const [recentDonations, setRecentDonations] = useState<DonationRecord[]>([]);
   const [aamiinMap, setAamiinMap] = useState<Record<string, number>>(() => getStoredAamiinMap());
+  const [recentAamiinId, setRecentAamiinId] = useState<string | null>(null);
+
+  // Personal Munajat Card Generator State
+  const MUNAJAT_THEMES = [
+    { id: 'orang-tua', chip: 'Orang Tua / Ahli Kubur', label: 'Hadiah Al-Fatihah Orang Tua' },
+    { id: 'ketenangan', chip: 'Ketenangan Hati', label: 'Ketenangan Batin' },
+    { id: 'usaha', chip: 'Kelapangan Usaha', label: 'Kelapangan Rezeki' },
+    { id: 'kesembuhan', chip: 'Kesembuhan', label: "Kesembuhan (Syifa')" },
+  ] as const;
+
+  const [personalRecipientName, setPersonalRecipientName] = useState<string>('');
+  const [personalThemeId, setPersonalThemeId] = useState<string>('orang-tua');
+  const [personalPrayerText, setPersonalPrayerText] = useState<string>('');
+  const [syncWithInfaqDoa, setSyncWithInfaqDoa] = useState<boolean>(true);
+  const [isGeneratingCard, setIsGeneratingCard] = useState<boolean>(false);
 
   // Direct Dinding Munajat form state (allows visitors to post a prayer/hajat directly)
   const [munajatWallName, setMunajatWallName] = useState<string>('');
@@ -184,8 +201,68 @@ export const InfaqDigital: React.FC = () => {
     }
   });
 
+  const activeMunajatTheme =
+    MUNAJAT_THEMES.find((t) => t.id === personalThemeId) || MUNAJAT_THEMES[0];
+
+  const todayIndonesianLabel = new Date().toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  const handlePersonalPrayerChange = (val: string) => {
+    const clean = val.slice(0, 220);
+    setPersonalPrayerText(clean);
+    if (syncWithInfaqDoa) {
+      setDoaHajat(clean.slice(0, 200));
+    }
+  };
+
+  const handleDownloadMunajatCard = async () => {
+    if (isGeneratingCard) return;
+    setIsGeneratingCard(true);
+    try {
+      const dataUrl = await renderPersonalMunajatCard({
+        recipientName: personalRecipientName.trim() || 'Hamba Allah & Keluarga',
+        prayerText:
+          personalPrayerText.trim() ||
+          'Ya Allah, ampunilah khilaf orang tua dan keluarga kami, lapangkanlah hati kami dalam ketaatan, dan mudahkanlah setiap ikhtiar yang halal dan berkah.',
+        themeLabel: activeMunajatTheme.label,
+        createdDateLabel: todayIndonesianLabel,
+      });
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = 'lembar-munajat-ziarah-nusantara.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } finally {
+      setIsGeneratingCard(false);
+    }
+  };
+
+  const handleForwardToMunajatWallAndInfaq = () => {
+    const cleanPrayer = sanitizePlainText(
+      personalPrayerText.trim() ||
+        'Ya Allah, ampunilah khilaf orang tua dan keluarga kami, lapangkanlah hati kami dalam ketaatan, dan mudahkanlah setiap ikhtiar yang halal dan berkah.',
+      200
+    );
+    setDoaHajat(cleanPrayer);
+    setMunajatWallText(cleanPrayer);
+    if (!personalRecipientName.trim()) {
+      setIsAnonim(true);
+    } else if (!munajatWallName.trim()) {
+      setMunajatWallName(personalRecipientName.trim().slice(0, 80));
+    }
+    const infaqPanel = document.getElementById('panel-infaq-dukungan');
+    if (infaqPanel) {
+      infaqPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const handleAamiinClick = (itemId: string) => {
     setAamiinMap(incrementStoredAamiin(itemId));
+    setRecentAamiinId(itemId);
   };
 
   const handleDirectMunajatSubmit = (e: React.FormEvent) => {
@@ -457,7 +534,7 @@ export const InfaqDigital: React.FC = () => {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+      <div id="panel-infaq-dukungan" className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 scroll-mt-24">
         {/* Kolom Kiri: Form Pilihan */}
         <div className="lg:col-span-7 space-y-5 sm:space-y-6">
           {/* 1. Pilih Program Infaq */}
@@ -787,12 +864,171 @@ export const InfaqDigital: React.FC = () => {
         </div>
       </div>
 
+      {/* Generator Lembar Munajat & Hadiah Al-Fatihah Pribadi (100% Gratis & Tanpa Paksaan) */}
+      <div
+        id="lembar-munajat-pribadi"
+        className="mt-10 bg-white rounded-3xl p-5 sm:p-7 border border-stone-200/90 shadow-2xs space-y-5 scroll-mt-24"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-stone-200/70 pb-4">
+          <div>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800 block">
+              Layanan Pegangan Doa Peziarah · 100% Gratis
+            </span>
+            <h2 className="text-xl sm:text-2xl font-serif text-stone-900 mt-0.5">
+              Susun Lembar Munajat &amp; Hadiah Al-Fatihah Pribadi
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-600 mt-1">
+              Buat lembar pengingat hadiah Al-Fatihah untuk almarhum orang tua atau doa hajat keluarga yang dapat disimpan di HP Anda tanpa biaya.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Form Input Ringan */}
+          <div className="lg:col-span-7 space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                1. Nama Almarhum Orang Tua / Nama yang Didoakan
+              </label>
+              <input
+                type="text"
+                maxLength={80}
+                placeholder="Contoh: Alm. Bapak ... / Ibu ... atau Nama Anda"
+                value={personalRecipientName}
+                onChange={(e) => setPersonalRecipientName(e.target.value)}
+                className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-none focus:border-emerald-700"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                2. Pilihan Tema Doa
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {MUNAJAT_THEMES.map((theme) => {
+                  const isActive = personalThemeId === theme.id;
+                  return (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      onClick={() => setPersonalThemeId(theme.id)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-colors border cursor-pointer ${
+                        isActive
+                          ? 'bg-emerald-900 text-white border-emerald-900'
+                          : 'bg-[#FAF8F5] text-stone-700 border-stone-200 hover:border-stone-400'
+                      }`}
+                    >
+                      {theme.chip}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <label className="block text-xs font-semibold text-stone-700">
+                  3. Tulis 1 Doa Pribadi Anda <span className="text-stone-400 font-normal">(Maks. 220 karakter)</span>
+                </label>
+                <label className="inline-flex items-center text-[11px] text-stone-600 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={syncWithInfaqDoa}
+                    onChange={(e) => {
+                      const next = e.target.checked;
+                      setSyncWithInfaqDoa(next);
+                      if (next && personalPrayerText.trim()) {
+                        setDoaHajat(personalPrayerText.slice(0, 200));
+                      }
+                    }}
+                    className="rounded border-stone-300 text-emerald-700 focus:ring-emerald-600 mr-1.5"
+                  />
+                  Sinkronkan ke kolom doa infaq
+                </label>
+              </div>
+              <textarea
+                rows={3}
+                maxLength={220}
+                placeholder="Contoh: Ya Allah, terangilah kubur ayah dan ibu kami, ampunilah khilaf beliau, serta karuniakanlah ketenangan batin dan kelapangan rezeki yang halal bagi keluarga kami..."
+                value={personalPrayerText}
+                onChange={(e) => handlePersonalPrayerChange(e.target.value)}
+                className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-none focus:border-emerald-700 resize-none"
+              />
+            </div>
+
+            <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <button
+                type="button"
+                onClick={handleDownloadMunajatCard}
+                disabled={isGeneratingCard}
+                className="px-5 py-3 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Download className="w-4 h-4" strokeWidth={1.75} />
+                <span>
+                  {isGeneratingCard ? 'Menyiapkan Gambar...' : 'Unduh Lembar Munajat (.PNG)'}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={handleForwardToMunajatWallAndInfaq}
+                className="px-4 py-3 rounded-xl bg-[#FAF8F5] hover:bg-emerald-50 text-emerald-950 border border-stone-300 hover:border-emerald-300 text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <HeartHandshake className="w-4 h-4 text-emerald-800" strokeWidth={1.75} />
+                <span>Titipkan Doa Ini di Dinding Doa Bersama</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Kartu Preview Lembar Munajat Pribadi (Rasio 4:5) */}
+          <div className="lg:col-span-5">
+            <div className="rounded-2xl bg-[#071A15] p-3.5 border border-[#C5A059]/60 shadow-sm">
+              <div className="rounded-xl bg-[#FAF8F5] border-2 border-[#C5A059] p-5 text-center space-y-3">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#8C6D2E]">
+                  Ziarah Nusantara · Lembar Munajat Pribadi
+                </div>
+                <div className="text-[11px] font-semibold text-emerald-900">
+                  Tema: {activeMunajatTheme.label}
+                </div>
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-[#071A15]">
+                  Hadiah Al-Fatihah &amp; Doa Munajat
+                </h3>
+                <div className="p-3 rounded-xl bg-[#F3EFE6] border border-[#D8C7A0]">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+                    Teruntuk / Atas Nama:
+                  </div>
+                  <div className="font-serif text-sm sm:text-base font-bold text-emerald-950 mt-0.5 break-words">
+                    {personalRecipientName.trim() || 'Hamba Allah & Keluarga'}
+                  </div>
+                </div>
+                <p className="text-[11px] font-serif italic text-stone-800 leading-relaxed">
+                  &ldquo;Rabbighfir lii wa liwaalidayya warhamhumaa kamaa rabbayaanii shaghiiraa — Rabbanaa aatinaa fid-dunyaa hasanatan wa fil-aakhirati hasanatan wa qinaa &apos;adzaaban-naar.&rdquo;
+                </p>
+                <div className="p-3.5 rounded-xl bg-white border border-[#C5A059]/70">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#8C6D2E] mb-1">
+                    Munajat &amp; Harapan Pribadi
+                  </div>
+                  <p className="font-serif italic text-xs sm:text-sm text-stone-900 leading-relaxed break-words">
+                    &ldquo;
+                    {personalPrayerText.trim() ||
+                      'Ya Allah, ampunilah khilaf orang tua dan keluarga kami, lapangkanlah hati kami dalam ketaatan, dan mudahkanlah setiap ikhtiar yang halal dan berkah.'}
+                    &rdquo;
+                  </p>
+                </div>
+                <div className="pt-1 text-[10px] text-stone-500">
+                  ziarahnusantara.my.id · {todayIndonesianLabel}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Dinding Munajat & Infaq Peziarah Terkini (Real-time Firestore + Fallback Santun) */}
       <div id="dinding-munajat" className="mt-12 pt-8 border-t border-stone-200/80 scroll-mt-24">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-6">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800">
-              Dinding Munajat &amp; Doa Bersama Peziarah
+              Dinding Doa Bersama (Munajat) Peziarah
             </div>
             <h2 className="text-xl sm:text-2xl font-serif text-stone-900 mt-0.5">
               {copy.munajatTitle}
@@ -814,7 +1050,7 @@ export const InfaqDigital: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="text-sm sm:text-base font-serif font-semibold text-stone-900">
-                Titip Doa &amp; Hajat di Dinding Munajat Peziarah
+                Titip Doa &amp; Hajat di Dinding Doa Bersama
               </h3>
               <p className="text-xs text-stone-500">
                 Tuliskan doa atau hajat keluarga Anda agar diaminkan bersama oleh ribuan peziarah Nusantara.
@@ -903,20 +1139,27 @@ export const InfaqDigital: React.FC = () => {
                     </p>
                   )}
                 </div>
-                <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2 text-[11px] text-stone-400">
-                  <span className="truncate max-w-[130px]">{item.programTitle}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleAamiinClick(item.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border shrink-0 ${
-                      hasClickedAamiin
-                        ? 'bg-emerald-900 text-white border-emerald-900'
-                        : 'bg-[#FAF8F5] hover:bg-emerald-50 text-emerald-900 border-emerald-200/80'
-                    }`}
-                  >
-                    <Heart className={`w-3.5 h-3.5 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
-                    <span>Aamiinkan Doa Ini ({totalAamiin})</span>
-                  </button>
+                <div className="mt-4 pt-3 border-t border-stone-100 space-y-2">
+                  <div className="flex items-center justify-between gap-2 text-[11px] text-stone-400">
+                    <span className="truncate max-w-[130px]">{item.programTitle}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleAamiinClick(item.id)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border shrink-0 ${
+                        hasClickedAamiin
+                          ? 'bg-emerald-900 text-white border-emerald-900'
+                          : 'bg-[#FAF8F5] hover:bg-emerald-50 text-emerald-900 border-emerald-200/80'
+                      }`}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${hasClickedAamiin ? 'fill-white text-white' : 'text-emerald-800'}`} strokeWidth={1.75} />
+                      <span>Aamiin ({totalAamiin})</span>
+                    </button>
+                  </div>
+                  {(hasClickedAamiin || recentAamiinId === item.id) && (
+                    <p className="text-[11px] font-serif italic text-emerald-800 leading-snug">
+                      Aamiin… semoga doa ini dan hajat Anda juga diijabah Allah SWT.
+                    </p>
+                  )}
                 </div>
               </div>
             );

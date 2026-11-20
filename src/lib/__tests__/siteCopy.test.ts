@@ -4,6 +4,7 @@ import { getEmotionalCliffhanger } from '../../components/SiteDetails';
 import { mergeLocalAndCloudSites } from '../../context/SiteContext';
 import { ziarahSites, ZiarahSite } from '../../data/sites';
 import { matchesEmotionalIntent } from '../../views/DaftarMakam';
+import { sanitizeMunajatCardInput, wrapCanvasText, renderPersonalMunajatCard } from '../munajatCardCanvas';
 
 describe('siteCopy & cliffhanger utilities', () => {
   it('returns DEFAULT_SITE_COPY when input is null or undefined and enforces MIN_DONATION_AMOUNT >= 2000', () => {
@@ -65,14 +66,21 @@ describe('siteCopy & cliffhanger utilities', () => {
     expect(DEFAULT_SITE_COPY.adminWhatsappNumber.length).toBeGreaterThanOrEqual(10);
     expect(DEFAULT_SITE_COPY.heroBadge).toBe('Panduan Ziarah & Khazanah Ulama Nusantara');
     expect(DEFAULT_SITE_COPY.barokahPaywallTitle).toBe(
-      'Buka Lembar Amalan & Doa Khusus Maqbarah Ini'
+      'Buka Lembar Amalan & Doa Khusus Makam Ini'
     );
-    expect(DEFAULT_SITE_COPY.paywallBadge).toBe('Lanjutan Kisah & Wasiat Maqbarah');
+    expect(DEFAULT_SITE_COPY.paywallBadge).toBe('Lanjutan Laku Batin & Wasiat Makam');
+    expect(DEFAULT_SITE_COPY.paywallTitle).toBe(
+      'Lanjutkan Membaca Catatan Laku Batin & Wasiat Beliau'
+    );
+    expect(DEFAULT_SITE_COPY.paywallButtonText).toBe('Dukung & Buka Seluruh Laku Batin');
     expect(DEFAULT_SITE_COPY.whatsappSharePrefix).toBe(
       'Hati ikut tenang membaca kisah keteladanan'
     );
     expect(DEFAULT_SITE_COPY.infaqTitle).toBe(
       'Dukung Kelangsungan Ziarah Nusantara & Titipkan Doa Anda'
+    );
+    expect(DEFAULT_SITE_COPY.munajatTitle).toBe(
+      'Dinding Doa Bersama (Munajat) Peziarah'
     );
     expect(DEFAULT_SITE_COPY.infaqTransparencyNote).toContain(
       'Infaq Operasional & Pemeliharaan Digital'
@@ -84,6 +92,32 @@ describe('siteCopy & cliffhanger utilities', () => {
       expect(pkg.tag.toLowerCase()).not.toContain('wakaf');
       expect(pkg.desc.toLowerCase()).not.toContain('wakaf');
     }
+  });
+
+  it('sanitizes and wraps Personal Munajat Card text safely without throwing', async () => {
+    const sanitized = sanitizeMunajatCardInput({
+      recipientName: '  Alm. Bapak H. Ahmad   \n bin Fulan  ',
+      prayerText: '  Semoga Allah melapangkan kubur beliau dan memudahkan urusan keluarga kami. ',
+      themeLabel: 'Hadiah Al-Fatihah Orang Tua',
+      createdDateLabel: '20 November 2026',
+    });
+    expect(sanitized.recipientName).toBe('Alm. Bapak H. Ahmad bin Fulan');
+    expect(sanitized.prayerText).toContain('Semoga Allah melapangkan kubur beliau');
+
+    const longName = 'A'.repeat(120);
+    expect(sanitizeMunajatCardInput({ recipientName: longName }).recipientName).toHaveLength(80);
+
+    const wrapped = wrapCanvasText(
+      { measureText: (str: string) => ({ width: str.length * 10 }) },
+      'Ya Allah ampunilah segala khilaf orang tua kami dan karuniakanlah ketenangan hati serta rezeki halal yang berkah bagi keluarga kami semua',
+      350,
+      3
+    );
+    expect(wrapped.length).toBeGreaterThanOrEqual(2);
+    expect(wrapped.length).toBeLessThanOrEqual(3);
+
+    const dataUrl = await renderPersonalMunajatCard(sanitized);
+    expect(dataUrl.startsWith('data:image/png;base64,')).toBe(true);
   });
 
   it('splits story text cleanly at explicit <!--more--> marker in getEmotionalCliffhanger', () => {

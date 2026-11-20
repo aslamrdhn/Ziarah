@@ -351,7 +351,7 @@ export const BacaanZiarah: React.FC = () => {
 
   return (
     <section
-      className={`min-h-screen px-4 py-6 sm:py-10 md:px-8 transition-colors duration-200 ${
+      className={`min-h-screen px-4 pt-6 sm:pt-10 pb-28 md:pb-14 md:px-8 transition-colors duration-200 ${
         outdoorMode ? 'bg-white text-black' : 'bg-[#FAF8F5] text-stone-900'
       }`}
     >
@@ -483,6 +483,22 @@ export const BacaanZiarah: React.FC = () => {
             )}
           </div>
         </header>
+
+        {/* Kotak Ringkas Ramah Pemula */}
+        <div
+          className={`rounded-2xl p-4 sm:p-5 border space-y-1.5 ${
+            outdoorMode
+              ? 'bg-white border-2 border-black text-black'
+              : 'bg-emerald-50/70 border-emerald-200/80 text-stone-800'
+          }`}
+        >
+          <div className={`text-xs sm:text-sm font-serif font-bold ${outdoorMode ? 'text-black' : 'text-emerald-950'}`}>
+            Baru Pertama Kali Berziarah?
+          </div>
+          <p className={`text-xs sm:text-sm leading-relaxed ${outdoorMode ? 'text-stone-900' : 'text-stone-700'}`}>
+            Jangan khawatir bila belum hafal bacaan Arabnya. Seluruh urutan di halaman ini sudah dilengkapi <strong>tulisan Latin dan artinya</strong>. Ingatlah adab utamanya: kita hadir untuk mendoakan ahli kubur dan mengambil keteladanan hidup beliau, sedangkan <strong>seluruh permohonan maupun doa hajat tetap dipanjatkan murni langsung kepada Allah SWT</strong>.
+          </p>
+        </div>
 
         {/* =====================================================================
             2. READER TOOLBAR & TASBIH DIGITAL
