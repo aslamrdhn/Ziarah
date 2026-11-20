@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useDeferredValue, lazy, Suspense } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
   X,
@@ -455,9 +455,34 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   const [visibleCount, setVisibleCount] = useState<number>(INITIAL_VISIBLE_SITES);
   const [activeSiteModal, setActiveSiteModal] = useState<ZiarahSite | null>(null);
   const [originPathBeforeModal, setOriginPathBeforeModal] = useState<string>('/');
-  const { scrollY } = useScroll();
-  const heroImgScale = useTransform(scrollY, [0, 500], [1, 1.06]);
-  const heroImgY = useTransform(scrollY, [0, 500], [0, 18]);
+  const heroImgRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let rafId: number | null = null;
+    const onScroll = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        const img = heroImgRef.current;
+        if (!img) return;
+        const y = window.scrollY;
+        if (y <= 0) {
+          img.style.transform = 'translate3d(0, 0px, 0) scale(1)';
+          return;
+        }
+        const clamped = Math.min(y, 480);
+        img.style.transform = `translate3d(0, ${clamped * 0.04}px, 0) scale(${1 + clamped * 0.00014})`;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
 
   const handleOpenReaderModal = React.useCallback(
     (site: ZiarahSite, e?: React.MouseEvent) => {
@@ -737,15 +762,26 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         {/* Visual Arsitektur 21:9 + Parallax Halus Bergaya Apple Flagship */}
         <div className="relative max-w-[1160px] mx-auto px-0 sm:px-6 pt-6 pb-0">
           <div className="relative aspect-[16/9] sm:aspect-[21/9] overflow-hidden sm:rounded-t-[28px] bg-[#0A0B0D]">
-            <motion.img
-              src="/hero-fajar.jpg"
+            <img
+              ref={heroImgRef}
+              src="/hero-fajar.webp"
               onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = '/thumbs/wali-9.webp';
+                const img = e.currentTarget;
+                if (!img.dataset.fallbackStage) {
+                  img.dataset.fallbackStage = 'jpg';
+                  img.src = '/hero-fajar.jpg';
+                } else if (img.dataset.fallbackStage === 'jpg') {
+                  img.dataset.fallbackStage = 'thumb';
+                  img.src = '/thumbs/wali-9.webp';
+                }
               }}
               alt="Suasana pagi di pelataran masjid dan cagar budaya Nusantara"
-              style={{ scale: heroImgScale, y: heroImgY }}
-              className="w-full h-full object-cover object-center transition-transform duration-500 ease-out"
+              width={1200}
+              height={675}
+              fetchPriority="high"
+              loading="eager"
+              decoding="sync"
+              className="w-full h-full object-cover object-center will-change-transform"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75 pointer-events-none" />
           </div>

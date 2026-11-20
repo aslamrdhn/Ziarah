@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from './firebase';
 import {
   MIN_DONATION_AMOUNT,
   sanitizePlainText,
@@ -769,6 +767,10 @@ export async function fetchSiteCopyFromCloud(force = false): Promise<SiteCopyCon
 
   cloudFetchPromise = (async () => {
     try {
+      const [{ doc, getDoc }, { db }] = await Promise.all([
+        import('firebase/firestore'),
+        import('./firebase'),
+      ]);
       const snap = await getDoc(doc(db, 'settings', 'site_copy'));
       if (snap.exists()) {
         const merged = mergeWithDefaultSiteCopy(snap.data() as Partial<SiteCopyConfig>);
@@ -787,6 +789,8 @@ export async function fetchSiteCopyFromCloud(force = false): Promise<SiteCopyCon
 export async function saveSiteCopyToCloud(newCopy: SiteCopyConfig): Promise<SiteCopyConfig> {
   const merged = mergeWithDefaultSiteCopy(newCopy);
   setCachedSiteCopy(merged, true);
+  const [{ doc, setDoc, serverTimestamp }, { db, handleFirestoreError, OperationType }] =
+    await Promise.all([import('firebase/firestore'), import('./firebase')]);
   try {
     await setDoc(doc(db, 'settings', 'site_copy'), {
       ...merged,
@@ -843,12 +847,29 @@ export function useSiteCopy(): UseSiteCopyReturn {
     } catch {}
 
     const interactionEvents = ['pointerdown', 'scroll', 'keydown', 'touchstart'] as const;
+    let cancelIdle: (() => void) | null = null;
+
+    const scheduleIdleCopyFetch = () => {
+      if (typeof window === 'undefined') return;
+      if (cancelIdle) cancelIdle();
+      const w = window as Window & {
+        requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
+        cancelIdleCallback?: (id: number) => void;
+      };
+      if (typeof w.requestIdleCallback === 'function') {
+        const id = w.requestIdleCallback(() => void fetchLatestSiteCopy(false), { timeout: 2500 });
+        cancelIdle = () => w.cancelIdleCallback?.(id);
+      } else {
+        const timer = window.setTimeout(() => void fetchLatestSiteCopy(false), 1800);
+        cancelIdle = () => window.clearTimeout(timer);
+      }
+    };
 
     const handleFirstInteraction = () => {
       interactionEvents.forEach((evt) =>
         window.removeEventListener(evt, handleFirstInteraction)
       );
-      void fetchLatestSiteCopy(false);
+      scheduleIdleCopyFetch();
     };
 
     if (isAdminRoute || hasAdminDirtyFlag) {
@@ -892,6 +913,7 @@ export function useSiteCopy(): UseSiteCopyReturn {
     window.addEventListener('focus', handleFocus);
     return () => {
       mounted = false;
+      if (cancelIdle) cancelIdle();
       interactionEvents.forEach((evt) =>
         window.removeEventListener(evt, handleFirstInteraction)
       );

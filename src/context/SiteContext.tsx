@@ -2,8 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import type { ZiarahSite } from '../data/sites';
 import { INITIAL_FIRST_PAGE_SITES } from '../data/initialSites';
 import { getSiteSlug } from '../lib/siteSlugs';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 
 export { INITIAL_FIRST_PAGE_SITES };
 
@@ -357,6 +355,10 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
+        const [{ collection, getDocs, query, where }, { db }] = await Promise.all([
+          import('firebase/firestore'),
+          import('../lib/firebase'),
+        ]);
         const snapshot =
           isAdminRoute || forceRefresh
             ? await getDocs(collection(db, 'sites'))
@@ -395,6 +397,23 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
+    let cancelIdle: (() => void) | null = null;
+
+    const scheduleIdleSync = (cb: () => void) => {
+      if (typeof window === 'undefined') return;
+      if (cancelIdle) cancelIdle();
+      const w = window as Window & {
+        requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
+        cancelIdleCallback?: (id: number) => void;
+      };
+      if (typeof w.requestIdleCallback === 'function') {
+        const id = w.requestIdleCallback(cb, { timeout: 2500 });
+        cancelIdle = () => w.cancelIdleCallback?.(id);
+      } else {
+        const timer = window.setTimeout(cb, 1800);
+        cancelIdle = () => window.clearTimeout(timer);
+      }
+    };
 
     const triggerFullAndCloudSync = (force = false) => {
       if (!mounted) return;
@@ -404,9 +423,10 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
-    const needsImmediateCatalog =
+    const isAdminRoute =
       pathname.startsWith('/admin') ||
-      pathname.startsWith('/kurator') ||
+      pathname.startsWith('/kurator');
+    const needsCatalogRoute =
       pathname.startsWith('/peta') ||
       pathname.startsWith('/situs') ||
       pathname.startsWith('/makam') ||
@@ -424,11 +444,13 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       interactionEvents.forEach((evt) =>
         window.removeEventListener(evt, handleFirstInteraction)
       );
-      triggerFullAndCloudSync(false);
+      scheduleIdleSync(() => triggerFullAndCloudSync(false));
     };
 
-    if (needsImmediateCatalog || hasAdminDirtyFlag) {
+    if (isAdminRoute || hasAdminDirtyFlag) {
       triggerFullAndCloudSync(hasAdminDirtyFlag);
+    } else if (needsCatalogRoute) {
+      scheduleIdleSync(() => triggerFullAndCloudSync(false));
     } else if (typeof window !== 'undefined') {
       interactionEvents.forEach((evt) =>
         window.addEventListener(evt, handleFirstInteraction, { once: true, passive: true })
@@ -458,6 +480,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       mounted = false;
+      if (cancelIdle) cancelIdle();
       interactionEvents.forEach((evt) =>
         window.removeEventListener(evt, handleFirstInteraction)
       );

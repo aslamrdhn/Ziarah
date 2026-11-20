@@ -174,12 +174,12 @@ export default defineConfig(({ command }) => {
             },
           },
           {
-            urlPattern: /\/thumbs\/.*\.(?:webp|png|jpg|jpeg)$/i,
+            urlPattern: /\/(?:thumbs\/.*\.(?:webp|png|jpg|jpeg)|hero-fajar\.(?:webp|jpg))$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'ziarah-local-thumbs-v1',
               expiration: {
-                maxEntries: 40,
+                maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 Year
               },
               cacheableResponse: {

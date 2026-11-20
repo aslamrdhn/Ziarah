@@ -3,10 +3,10 @@ import { Navbar } from './components/Navbar';
 import { DaftarMakam } from './views/DaftarMakam';
 import { BacaanZiarah } from './views/BacaanZiarah';
 import { KebijakanKurasi } from './views/KebijakanKurasi';
-import { KumpulanDoa } from './views/KumpulanDoa';
-import { RubrikKisah } from './views/RubrikKisah';
-import { KontribusiModal } from './components/KontribusiModal';
 
+const KumpulanDoa = lazy(() => import('./views/KumpulanDoa').then((m) => ({ default: m.KumpulanDoa })));
+const RubrikKisah = lazy(() => import('./views/RubrikKisah').then((m) => ({ default: m.RubrikKisah })));
+const KontribusiModal = lazy(() => import('./components/KontribusiModal').then((m) => ({ default: m.KontribusiModal })));
 const PetaLokasi = lazy(() => import('./views/PetaLokasi').then((m) => ({ default: m.PetaLokasi })));
 const AdminKurator = lazy(() => import('./views/AdminKurator').then((m) => ({ default: m.AdminKurator })));
 const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })));
@@ -16,9 +16,7 @@ import type { ZiarahSite } from './data/sites';
 import { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from './data/initialSites';
 import { findArticleBySlug } from './data/articles';
 import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
-import { onAuthStateChanged, type User } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db, handleFirestoreError, OperationType } from './lib/firebase';
+import type { User } from 'firebase/auth';
 import { SiteProvider } from './context/SiteContext';
 import { findSiteByParam, getSitePath, formatMakamHeading } from './lib/siteSlugs';
 import { useSiteCopy } from './lib/siteCopy';
@@ -76,6 +74,10 @@ export default function App() {
       fetched = true;
       cleanup();
       try {
+        const [{ doc, getDoc }, { db }] = await Promise.all([
+          import('firebase/firestore'),
+          import('./lib/firebase'),
+        ]);
         const snap = await getDoc(doc(db, 'settings', 'infaq'));
         if (snap.exists()) {
           const data = snap.data();
@@ -475,6 +477,15 @@ export default function App() {
       if (initialized || cancelled) return;
       initialized = true;
       try {
+        const [
+          { onAuthStateChanged },
+          { doc, getDoc, setDoc, serverTimestamp },
+          { auth, db, handleFirestoreError, OperationType },
+        ] = await Promise.all([
+          import('firebase/auth'),
+          import('firebase/firestore'),
+          import('./lib/firebase'),
+        ]);
         if (cancelled) return;
         unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
           setUser(currentUser);
@@ -542,6 +553,8 @@ export default function App() {
     const saveToFirestore = async () => {
       if (user) {
         try {
+          const [{ doc, setDoc, serverTimestamp }, { db }] =
+            await Promise.all([import('firebase/firestore'), import('./lib/firebase')]);
           const userRef = doc(db, 'users', user.uid);
           await setDoc(
             userRef,
@@ -555,6 +568,7 @@ export default function App() {
             { merge: true }
           );
         } catch (error) {
+          const { handleFirestoreError, OperationType } = await import('./lib/firebase');
           handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
         }
       }
@@ -762,11 +776,15 @@ export default function App() {
         </footer>
 
         {/* Contribution Modal */}
-        <KontribusiModal
-          isOpen={isKontribusiOpen}
-          onClose={() => setIsKontribusiOpen(false)}
-          initialTab={kontribusiInitialTab}
-        />
+        {isKontribusiOpen && (
+          <Suspense fallback={null}>
+            <KontribusiModal
+              isOpen={isKontribusiOpen}
+              onClose={() => setIsKontribusiOpen(false)}
+              initialTab={kontribusiInitialTab}
+            />
+          </Suspense>
+        )}
       </div>
     </SiteProvider>
   );

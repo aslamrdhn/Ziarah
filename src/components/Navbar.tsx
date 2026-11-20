@@ -17,8 +17,7 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import { onAuthStateChanged, signOut, type User as FirebaseUser } from 'firebase/auth';
-import { auth, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
+import type { User as FirebaseUser } from 'firebase/auth';
 import { APP_BRAND } from '../config/brand';
 import { useSiteCopy } from '../lib/siteCopy';
 
@@ -55,6 +54,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
     let unsubscribe: (() => void) | null = null;
     let cancelled = false;
     let initialized = false;
+    let cancelIdle: (() => void) | null = null;
 
     const hasAdminSessionFlag = (): boolean => {
       try {
@@ -67,6 +67,8 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
       if (initialized || cancelled) return;
       initialized = true;
       try {
+        const [{ onAuthStateChanged }, { auth, isUserAdmin, ensureAdminUidRegistered }] =
+          await Promise.all([import('firebase/auth'), import('../lib/firebase')]);
         if (cancelled) return;
         unsubscribe = onAuthStateChanged(auth, (currentUser) => {
           setUser(currentUser);
@@ -80,16 +82,29 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
       } catch {}
     };
 
-    if (
+    const isAdminRoute =
       currentPath.startsWith('/admin') ||
-      currentPath.startsWith('/kurator') ||
-      hasAdminSessionFlag()
-    ) {
-      loadAuthSession();
+      currentPath.startsWith('/kurator');
+
+    if (isAdminRoute) {
+      void loadAuthSession();
+    } else if (hasAdminSessionFlag() && typeof window !== 'undefined') {
+      const w = window as Window & {
+        requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
+        cancelIdleCallback?: (id: number) => void;
+      };
+      if (typeof w.requestIdleCallback === 'function') {
+        const id = w.requestIdleCallback(() => void loadAuthSession(), { timeout: 2500 });
+        cancelIdle = () => w.cancelIdleCallback?.(id);
+      } else {
+        const timer = window.setTimeout(() => void loadAuthSession(), 1800);
+        cancelIdle = () => window.clearTimeout(timer);
+      }
     }
 
     return () => {
       cancelled = true;
+      if (cancelIdle) cancelIdle();
       if (unsubscribe) unsubscribe();
     };
   }, [currentPath]);
@@ -99,6 +114,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
       try {
         localStorage.removeItem('zn_has_admin_session');
       } catch {}
+      const [{ signOut }, { auth }] = await Promise.all([
+        import('firebase/auth'),
+        import('../lib/firebase'),
+      ]);
       await signOut(auth);
     } catch {
       // Ignore sign-out errors
