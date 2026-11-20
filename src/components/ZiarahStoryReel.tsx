@@ -118,7 +118,7 @@ export async function renderStorySlideCanvasBlob(
     ctx.fill();
   }
 
-  ctx.fillStyle = '#EAE4D7';
+  ctx.fillStyle = '#B9D4C8';
   ctx.font = '700 26px Inter, system-ui, sans-serif';
   ctx.fillText((slide.stepLabel || `BAGIAN ${slideIndex + 1}`).toUpperCase(), 540, 238);
 
@@ -138,7 +138,7 @@ export async function renderStorySlideCanvasBlob(
   ctx.closePath();
   ctx.fill();
 
-  ctx.fillStyle = 'rgba(62, 84, 70, 0.45)';
+  ctx.fillStyle = 'rgba(19, 74, 53, 0.55)';
   ctx.strokeStyle = 'rgba(212, 175, 55, 0.7)';
   ctx.lineWidth = 2.5;
 
@@ -212,7 +212,7 @@ export async function renderStorySlideCanvasBlob(
     }
 
     if (slide.arabicSource) {
-      ctx.fillStyle = '#EAE4D7';
+      ctx.fillStyle = '#DCEAE3';
       ctx.font = 'italic 25px Inter, system-ui, sans-serif';
       ctx.fillText(slide.arabicSource, 540, arabY + 10);
     }
@@ -221,7 +221,7 @@ export async function renderStorySlideCanvasBlob(
   }
 
   // Narrative Body Text
-  ctx.fillStyle = '#FAF8F5';
+  ctx.fillStyle = '#EFF5F2';
   ctx.font = '400 35px Inter, system-ui, sans-serif';
   const narrativeLines = wrapCanvasLines(ctx, slide.narrative, 850);
   for (const line of narrativeLines) {
@@ -230,7 +230,7 @@ export async function renderStorySlideCanvasBlob(
   }
 
   // 6. Bottom Footer Branding & Gold CTA Pill
-  ctx.fillStyle = '#D6CCBA';
+  ctx.fillStyle = '#B9D4C8';
   ctx.font = '500 25px Inter, system-ui, sans-serif';
   ctx.fillText(
     'Panduan Ziarah Kubur, Doa Tahlil & 183 Makam Wali di 34 Provinsi',
@@ -451,11 +451,11 @@ export const ZiarahStoryReel: React.FC = () => {
             {/* Subtle Silhouette Preview */}
             <div className="my-auto flex items-center justify-center opacity-60">
               <svg viewBox="0 0 160 80" className="w-36 h-20" aria-hidden="true">
-                <circle cx="80" cy="44" r="24" fill="#3E5446" fillOpacity="0.14" />
+                <circle cx="80" cy="44" r="24" fill="#134A35" fillOpacity="0.14" />
                 <path
                   d="M25 68 L52 44 L80 24 L108 44 L135 68 Z"
                   fill="#F8FAFC"
-                  stroke="#3E5446"
+                  stroke="#134A35"
                   strokeWidth="1.2"
                   strokeOpacity="0.5"
                 />
@@ -533,13 +533,13 @@ export const ZiarahStoryReel: React.FC = () => {
               role="img"
               aria-label="Ilustrasi siluet cungkup makam wali Nusantara"
             >
-              <circle cx="180" cy="68" r="46" fill="#3E5446" fillOpacity="0.1" />
+              <circle cx="180" cy="68" r="46" fill="#134A35" fillOpacity="0.1" />
               <path
                 d="M0 98 Q75 82 145 94 T280 90 T360 98 L360 120 L0 120 Z"
                 fill="#E2E8F0"
               />
               <g>
-                <path d="M180 18 L184 26 L176 26 Z" fill="#8C6D2E" />
+                <path d="M180 18 L184 26 L176 26 Z" fill="#134A35" />
                 <path
                   d="M152 40 L180 25 L208 40 Z"
                   fill="#0F172A"
@@ -558,7 +558,7 @@ export const ZiarahStoryReel: React.FC = () => {
                 <rect x="232" y="70" width="4" height="34" fill="#334155" />
                 <path
                   d="M175 104 L175 86 L180 80 L185 86 L185 104 Z"
-                  fill="#2C4034"
+                  fill="#134A35"
                 />
               </g>
               <rect x="82" y="104" width="196" height="5" rx="2" fill="#CBD5E1" />
@@ -751,11 +751,11 @@ export const ZiarahStoryReel: React.FC = () => {
             {/* Subtle Silhouette Preview */}
             <div className="my-auto flex items-center justify-center opacity-60">
               <svg viewBox="0 0 160 80" className="w-36 h-20" aria-hidden="true">
-                <circle cx="80" cy="44" r="24" fill="#3E5446" fillOpacity="0.14" />
+                <circle cx="80" cy="44" r="24" fill="#134A35" fillOpacity="0.14" />
                 <path
                   d="M25 68 L52 44 L80 24 L108 44 L135 68 Z"
                   fill="#F8FAFC"
-                  stroke="#3E5446"
+                  stroke="#134A35"
                   strokeWidth="1.2"
                   strokeOpacity="0.5"
                 />

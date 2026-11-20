@@ -638,8 +638,8 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
                 center={[userGps.lat, userGps.lng]}
                 radius={radiusKm * 1000}
                 pathOptions={{
-                  color: '#2C4034',
-                  fillColor: '#3E5446',
+                  color: '#134A35',
+                  fillColor: '#1D5B43',
                   fillOpacity: 0.1,
                   weight: 1.5,
                 }}

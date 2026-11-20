@@ -697,11 +697,11 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               onClick={() => setShowVisualShowcase(!showVisualShowcase)}
               className={`px-3.5 py-2 sm:py-2.5 rounded-xl text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer border ${
                 showVisualShowcase
-                  ? 'bg-[#F4F1EA] text-stone-900 border-stone-300'
+                  ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
                   : 'bg-white text-stone-700 border-stone-200/80 hover:border-stone-400'
               }`}
             >
-              <Film className="w-3.5 h-3.5 text-stone-700 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+              <Film className="w-3.5 h-3.5 text-emerald-800 shrink-0" strokeWidth={1.75} aria-hidden="true" />
               <span>{showVisualShowcase ? 'Tutup Eksplorasi Visual' : 'Buka Eksplorasi Visual Nusantara'}</span>
             </button>
             <button
@@ -709,7 +709,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               onClick={() =>
                 document.getElementById('hikmah-ziarah-reel')?.scrollIntoView({ behavior: 'smooth' })
               }
-              className="px-3.5 py-2 sm:py-2.5 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE4D7] text-stone-800 border border-stone-300/80 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer"
+              className="px-3.5 py-2 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-medium tracking-tight inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer"
             >
               <span>Hikmah Ziarah · 5 Slide</span>
             </button>
@@ -984,20 +984,20 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             const activeIntentObj = dynamicEmotionalIntents.find((i) => i.id === emotionalFilter);
             if (!activeIntentObj?.empathyMessage) return null;
             return (
-              <div className="mt-3 p-4 rounded-xl bg-[#F4F1EA] border border-stone-300/80 flex flex-col sm:flex-row items-start justify-between gap-3">
+              <div className="mt-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row items-start justify-between gap-3">
                 <div className="space-y-1.5">
-                  <div className="text-xs sm:text-sm font-serif font-bold text-stone-900">
+                  <div className="text-xs sm:text-sm font-serif font-bold text-emerald-950">
                     {activeIntentObj.empathyTitle}
                   </div>
                   <p className="text-xs text-stone-700 leading-relaxed">
                     {activeIntentObj.empathyMessage}
                   </p>
                   {activeIntentObj.practicalAnchor && (
-                    <p className="text-xs font-medium text-stone-800 leading-relaxed">
+                    <p className="text-xs font-medium text-emerald-900 leading-relaxed">
                       {activeIntentObj.practicalAnchor}
                     </p>
                   )}
-                  <div className="pt-1 flex flex-wrap items-center gap-4 text-xs font-semibold text-stone-900">
+                  <div className="pt-1 flex flex-wrap items-center gap-4 text-xs font-semibold text-emerald-900">
                     <Link to="/panduan" className="hover:text-emerald-950 underline underline-offset-4">
                       Baca Panduan Doa Gratis →
                     </Link>
@@ -1009,7 +1009,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                 <button
                   type="button"
                   onClick={() => setEmotionalFilter('all')}
-                  className="text-[11px] font-semibold text-stone-800 hover:underline shrink-0 cursor-pointer"
+                  className="text-[11px] font-semibold text-emerald-900 hover:underline shrink-0 cursor-pointer"
                 >
                   Tampilkan Semua
                 </button>
@@ -1115,12 +1115,12 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                     </div>
 
                     {/* Kotak Ringkas Doa & Harapan Peziarah */}
-                    <div className="bg-[#F4F1EA] border border-stone-300/70 rounded-xl px-3 py-2 my-2">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 my-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-800">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-900">
                           DOA &amp; HARAPAN PEZIARAH
                         </span>
-                        <span className="text-[10px] font-medium text-stone-700">
+                        <span className="text-[10px] font-medium text-emerald-800">
                           {karomahCount} Karomah · {doaCount} Doa
                         </span>
                       </div>

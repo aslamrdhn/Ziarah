@@ -490,9 +490,9 @@ export function createArchitecturalPlaceholderDataUri(
   <circle cx="320" cy="72" r="5" fill="#f3e5ab" fill-opacity="0.85"/>
   <line x1="70" y1="420" x2="570" y2="420" stroke="url(#gold)" stroke-width="1.5"/>
   <text x="320" y="150" text-anchor="middle" fill="#f3e5ab" font-family="Georgia, serif" font-size="22" opacity="0.9">مَقَامُ أَوْلِيَاءِ اللّٰهِ</text>
-  <text x="320" y="182" text-anchor="middle" fill="#EAE4D7" font-family="system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="3">${escapeSvgText(categoryLabel)}</text>
+  <text x="320" y="182" text-anchor="middle" fill="#B9D4C8" font-family="system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="3">${escapeSvgText(categoryLabel)}</text>
   <text x="320" y="315" text-anchor="middle" fill="#ffffff" font-family="Georgia, serif" font-size="21" font-weight="bold">${escapeSvgText(displayTitle)}</text>
-  <text x="320" y="348" text-anchor="middle" fill="#D6CCBA" font-family="system-ui, sans-serif" font-size="14" font-weight="500">${escapeSvgText(locationLine)}</text>
+  <text x="320" y="348" text-anchor="middle" fill="#DCEAE3" font-family="system-ui, sans-serif" font-size="14" font-weight="500">${escapeSvgText(locationLine)}</text>
   <text x="320" y="395" text-anchor="middle" fill="#f3e5ab" font-family="system-ui, sans-serif" font-size="11" opacity="0.75">Arsip Cagar Budaya &amp; Maqbarah Nusantara</text>
 </svg>`;
 

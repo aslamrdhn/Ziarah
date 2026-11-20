@@ -5,42 +5,42 @@
   --font-serif: "Playfair Display", "Lora", Georgia, serif;
   --font-arabic: "Amiri", "Scheherazade New", "Traditional Arabic", "Geeza Pro", "Arial", serif;
   
-  /* Warm Archival Sage & Deep Manuscript Emerald (Anti-Neon Palette) */
-  --color-emerald-50: #F4F1EA;
-  --color-emerald-100: #EAE4D7;
-  --color-emerald-200: #D6CCBA;
-  --color-emerald-300: #B5A892;
-  --color-emerald-400: #7B8B7F;
-  --color-emerald-500: #556B5D;
-  --color-emerald-600: #3E5446;
-  --color-emerald-700: #2C4034;
-  --color-emerald-800: #1F3026;
-  --color-emerald-900: #16241C;
-  --color-emerald-950: #0D1711;
+  /* Deep Royal Emerald / Hijau Zamrud Klasik (Khidmat, Elegan, Bebas Neon/Mint) */
+  --color-emerald-50: #EFF5F2;
+  --color-emerald-100: #DCEAE3;
+  --color-emerald-200: #B9D4C8;
+  --color-emerald-300: #8BB5A3;
+  --color-emerald-400: #568E77;
+  --color-emerald-500: #2E6F56;
+  --color-emerald-600: #1D5B43;
+  --color-emerald-700: #134A35;
+  --color-emerald-800: #0C3B29;
+  --color-emerald-900: #072B1E;
+  --color-emerald-950: #041A12;
 
-  --color-brand-50: #F4F1EA;
-  --color-brand-100: #EAE4D7;
-  --color-brand-200: #D6CCBA;
-  --color-brand-300: #B5A892;
-  --color-brand-400: #7B8B7F;
-  --color-brand-500: #556B5D;
-  --color-brand-600: #3E5446;
-  --color-brand-700: #2C4034;
-  --color-brand-800: #1F3026;
-  --color-brand-900: #16241C;
-  --color-brand-950: #0D1711;
+  --color-brand-50: #EFF5F2;
+  --color-brand-100: #DCEAE3;
+  --color-brand-200: #B9D4C8;
+  --color-brand-300: #8BB5A3;
+  --color-brand-400: #568E77;
+  --color-brand-500: #2E6F56;
+  --color-brand-600: #1D5B43;
+  --color-brand-700: #134A35;
+  --color-brand-800: #0C3B29;
+  --color-brand-900: #072B1E;
+  --color-brand-950: #041A12;
 
-  --color-teal-50: #F4F1EA;
-  --color-teal-100: #EAE4D7;
-  --color-teal-200: #D6CCBA;
-  --color-teal-300: #B5A892;
-  --color-teal-400: #7B8B7F;
-  --color-teal-500: #556B5D;
-  --color-teal-600: #3E5446;
-  --color-teal-700: #2C4034;
-  --color-teal-800: #1F3026;
-  --color-teal-900: #16241C;
-  --color-teal-950: #0D1711;
+  --color-teal-50: #EFF5F2;
+  --color-teal-100: #DCEAE3;
+  --color-teal-200: #B9D4C8;
+  --color-teal-300: #8BB5A3;
+  --color-teal-400: #568E77;
+  --color-teal-500: #2E6F56;
+  --color-teal-600: #1D5B43;
+  --color-teal-700: #134A35;
+  --color-teal-800: #0C3B29;
+  --color-teal-900: #072B1E;
+  --color-teal-950: #041A12;
 
   /* Archival Bronze & Gold */
   --color-gold-50: #fbf8f1;
