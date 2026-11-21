@@ -65,7 +65,10 @@ export function getSitePhotoAttribution(
     };
   }
 
-  const author = meta?.author || 'Dokumentasi Arsip Lokal Ziarah Nusantara';
+  const rawAuthor = meta?.author || 'Dokumentasi Arsip Lokal Ziarah Nusantara';
+  const author = /tropenmuseum|wikimedia/i.test(rawAuthor)
+    ? 'Dokumentasi Arsip Lokal Ziarah Nusantara'
+    : rawAuthor;
   const license = meta?.license || 'Domain Publik / CC BY-SA';
   return {
     kind: 'local_archive',

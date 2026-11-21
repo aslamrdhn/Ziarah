@@ -62,7 +62,7 @@ html {
 
 .content-auto {
   content-visibility: auto;
-  contain-intrinsic-size: 0 340px;
+  contain-intrinsic-size: 0 520px;
 }
 
 body {

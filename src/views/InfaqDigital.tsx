@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   HeartHandshake, 
@@ -149,7 +150,22 @@ const LOCAL_MUNAJAT_STORAGE_KEY = 'zn_local_munajat_items';
 
 export const InfaqDigital: React.FC = () => {
   const { copy } = useSiteCopy();
+  const location = useLocation();
   const [selectedProgram, setSelectedProgram] = useState<string>('riset-web');
+
+  useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      (location.hash === '#lembar-munajat' || location.hash === '#lembar-munajat-pribadi')
+    ) {
+      const scrollTimer = window.setTimeout(() => {
+        document
+          .getElementById('lembar-munajat')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+      return () => window.clearTimeout(scrollTimer);
+    }
+  }, [location.hash]);
   const [selectedSiteId, setSelectedSiteId] = useState<string>('web-riset');
   const [nominal, setNominal] = useState<number>(25000);
   const [customNominal, setCustomNominal] = useState<string>('');
@@ -888,9 +904,10 @@ export const InfaqDigital: React.FC = () => {
 
       {/* Generator Lembar Munajat & Hadiah Al-Fatihah Pribadi (100% Gratis & Tanpa Paksaan) */}
       <div
-        id="lembar-munajat-pribadi"
-        className="mt-10 bg-white rounded-3xl p-5 sm:p-7 border border-stone-200/90 shadow-2xs space-y-5 scroll-mt-24"
+        id="lembar-munajat"
+        className="mt-10 bg-white rounded-3xl p-5 sm:p-7 border border-stone-200/90 shadow-2xs space-y-5 scroll-mt-20"
       >
+        <div id="lembar-munajat-pribadi" className="sr-only" aria-hidden="true" />
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-stone-200/70 pb-4">
           <div>
             <span className="text-[11px] font-semibold uppercase tracking-widest text-emerald-800 block">

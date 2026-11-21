@@ -16,7 +16,7 @@ describe('siteCopy & cliffhanger utilities', () => {
       'Merawat Sanad Ulama, Menemukan Ketenangan Batin.'
     );
     expect(DEFAULT_SITE_COPY.heroSubtitle).toBe(
-      'Menghimpun riwayat 183 maqbarah di 34 provinsi agar setiap langkah ziarah menjadi pengingat akhirat, penguat iman, dan bakti doa bagi ahli kubur.'
+      'Saat hidup terasa berat dan hati butuh jeda—temukan ruang tenang, doa bertulisan Latin yang mudah diikuti, dan jejak ketabahan 183 maqbarah di 34 provinsi Nusantara.'
     );
     const pkg100k = DEFAULT_SITE_COPY.quickNominalPackages.find((p) => p.amount === 100000);
     expect(pkg100k?.tag).toBe('Infaq Literasi Utama');

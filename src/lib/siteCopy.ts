@@ -20,7 +20,7 @@ export function formatDynamicHeroSubtitle(
   const safeSiteCount = siteCount > 0 ? siteCount : DYNAMIC_SITE_COUNT;
   const safeProvinceCount = provinceCount > 0 ? provinceCount : DYNAMIC_PROVINCE_COUNT;
   if (!rawSubtitle) {
-    return `Menghimpun riwayat ${safeSiteCount} maqbarah di ${safeProvinceCount} provinsi agar setiap langkah ziarah menjadi pengingat akhirat, penguat iman, dan bakti doa bagi ahli kubur.`;
+    return `Saat hidup terasa berat dan hati butuh jeda—temukan ruang tenang, doa bertulisan Latin yang mudah diikuti, dan jejak ketabahan ${safeSiteCount} maqbarah di ${safeProvinceCount} provinsi Nusantara.`;
   }
   return rawSubtitle.replace(
     /\b\d+\s+maqbarah\s+di\s+\d+\s+provinsi\b/i,
@@ -170,7 +170,7 @@ export const DEFAULT_SITE_COPY: SiteCopyConfig = {
   // 1. Beranda & Filter
   heroBadge: 'Panduan Ziarah & Khazanah Ulama Nusantara',
   heroTitle: 'Merawat Sanad Ulama, Menemukan Ketenangan Batin.',
-  heroSubtitle: `Menghimpun riwayat ${DYNAMIC_SITE_COUNT} maqbarah di ${DYNAMIC_PROVINCE_COUNT} provinsi agar setiap langkah ziarah menjadi pengingat akhirat, penguat iman, dan bakti doa bagi ahli kubur.`,
+  heroSubtitle: `Saat hidup terasa berat dan hati butuh jeda—temukan ruang tenang, doa bertulisan Latin yang mudah diikuti, dan jejak ketabahan ${DYNAMIC_SITE_COUNT} maqbarah di ${DYNAMIC_PROVINCE_COUNT} provinsi Nusantara.`,
   jumatBannerTitle: 'Malam & Hari Jumat Penuh Keberkahan',
   jumatBannerSubtitle:
     'Mari hadiahkan Al-Fatihah bagi ahli kubur dan resapi kembali kisah keteladanan para ulama yang menenangkan hati.',
@@ -591,7 +591,7 @@ export function mergeWithDefaultSiteCopy(raw?: Partial<SiteCopyConfig> | null): 
     })(),
     heroSubtitle: (() => {
       const candidate = pickStr(raw.heroSubtitle, DEFAULT_SITE_COPY.heroSubtitle, 500, true);
-      return /^sebuah ruang hening.*penjaga negeri/i.test(candidate)
+      return /^(?:sebuah ruang hening.*penjaga negeri|menghimpun riwayat.*ahli kubur\.?)$/i.test(candidate)
         ? DEFAULT_SITE_COPY.heroSubtitle
         : candidate;
     })(),

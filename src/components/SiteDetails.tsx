@@ -1190,11 +1190,11 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
               </div>
 
               {/* Caption Kredit & Lisensi Foto Sampul */}
-              <div className="shrink-0 px-3 sm:px-8 py-1.5 bg-slate-100/90 border-b border-slate-200/80 text-[11px] text-[#6E6E73] flex items-center justify-between gap-2">
+              <div className="shrink-0 px-6 sm:px-10 pt-2 pb-1.5 bg-slate-100/90 border-b border-slate-200/80 text-[11px] text-[#6E6E73] flex items-center justify-between gap-2">
                 <span className="truncate">
                   {photoAttribution.isDomeSvg
                     ? 'Ilustrasi arsitektur generatif — Ziarah Nusantara'
-                    : `Kredit Foto: ${photoAttribution.author} · Lisensi: ${photoAttribution.license}`}
+                    : `Foto: ${photoAttribution.author} (${photoAttribution.license})`}
                 </span>
                 {photoAttribution.isWikimediaPhoto && photoAttribution.url && (
                   <a
@@ -1203,7 +1203,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     rel="noopener noreferrer"
                     className="shrink-0 underline hover:text-slate-900"
                   >
-                    Sumber
+                    Sumber Wikimedia
                   </a>
                 )}
               </div>
@@ -1996,17 +1996,21 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                             ) : (
                               <>
                                 <div className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-                                  Atribusi Dokumentasi Foto: Wikimedia Commons
+                                  {photoAttribution.isWikimediaPhoto
+                                    ? 'Atribusi Dokumentasi Foto: Wikimedia Commons'
+                                    : 'Atribusi Dokumentasi Foto: Dokumentasi Arsip Lokal Ziarah Nusantara'}
                                 </div>
                                 <p className="text-xs sm:text-sm text-stone-700 font-medium leading-relaxed">
                                   {photoAttribution.formattedAttribution}
                                 </p>
-                                {site.imageSource && (
-                                  <p className="text-xs sm:text-sm text-stone-600 font-serif italic leading-relaxed">
-                                    {site.imageSource}
-                                  </p>
-                                )}
-                                {photoAttribution.url && (
+                                {photoAttribution.isWikimediaPhoto &&
+                                  site.imageSource &&
+                                  !/tropenmuseum/i.test(site.imageSource) && (
+                                    <p className="text-xs sm:text-sm text-stone-600 font-serif italic leading-relaxed">
+                                      {site.imageSource}
+                                    </p>
+                                  )}
+                                {photoAttribution.isWikimediaPhoto && photoAttribution.url && (
                                   <a
                                     href={photoAttribution.url}
                                     target="_blank"

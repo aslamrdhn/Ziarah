@@ -22,7 +22,7 @@ import {
   isFirst12OwnerSite,
   hasVerifiedSitePhoto,
 } from '../lib/authenticSiteImages';
-import { getSitePath, getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
+import { getSitePath, getSiteSlug, getSiteDisplayHeading } from '../lib/siteSlugs';
 import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from '../lib/siteLogistics';
 import { useSiteCopy, formatDynamicHeroSubtitle } from '../lib/siteCopy';
 import { TasbihRingWidget } from '../components/TasbihRingWidget';
@@ -435,6 +435,27 @@ const FULL_CATALOG_INTENT_COUNTS: Record<EmotionalIntentId, number> = {
   keluarga: 77,
 };
 
+function formatCompactHaulSummary(site: ZiarahSite): { shortName: string; shortSchedule: string } {
+  const rawTitle = (site.title || site.name || 'Waliyullah Nusantara')
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/^makam\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const shortName = rawTitle || 'Waliyullah Nusantara';
+
+  const rawSchedule = (site.haulSchedule || '')
+    .replace(/\([^)]*\)/g, ' ')
+    .split(/[—–;]|,\s*(?:puncak|mengikuti|setiap)/i)[0]
+    .replace(/\s+/g, ' ')
+    .trim();
+  const shortSchedule =
+    rawSchedule.length > 45
+      ? `${rawSchedule.slice(0, 42).trim()}...`
+      : rawSchedule || 'Takwim Hijriah Tahunan';
+
+  return { shortName, shortSchedule };
+}
+
 export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   onSelectSite,
   savedSiteIds = [],
@@ -758,8 +779,45 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             </Link>
           </div>
 
+          {/* 3 Tombol Mikro Emosi 6 Detik Pertama ("Lagi berat hari ini?") */}
+          <div className="pt-1.5 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-xs text-[#A1A1A6] mr-0.5">Lagi berat hari ini?</span>
+            <button
+              type="button"
+              onClick={() => {
+                ensureFullSitesLoaded();
+                setEmotionalFilter('keteduhan');
+                document
+                  .getElementById('cermin-pintu-ruhani')
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="rounded-full bg-white/10 hover:bg-white/20 border border-white/15 px-3 py-1 text-xs text-[#F5F5F7] transition-colors cursor-pointer"
+            >
+              Hati Gelisah
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                ensureFullSitesLoaded();
+                setEmotionalFilter('ikhtiar');
+                document
+                  .getElementById('cermin-pintu-ruhani')
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="rounded-full bg-white/10 hover:bg-white/20 border border-white/15 px-3 py-1 text-xs text-[#F5F5F7] transition-colors cursor-pointer"
+            >
+              Ikhtiar Rezeki
+            </button>
+            <Link
+              to="/donasi#lembar-munajat"
+              className="rounded-full bg-white/10 hover:bg-white/20 border border-white/15 px-3 py-1 text-xs text-[#F5F5F7] transition-colors"
+            >
+              Buat Lembar Munajat Gratis →
+            </Link>
+          </div>
+
           {/* Tautan fitur sekunder di bawah CTA sebagai baris tautan teks bersih */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[#A1A1A6]">
+          <div className="pt-1.5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[#A1A1A6]">
             <Link to="/peta" className="hover:text-white transition-colors inline-flex items-center gap-1.5">
               <MapIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
               <span>Peta &amp; Jalur Wali Songo</span>
@@ -787,14 +845,24 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <button
               type="button"
               onClick={() => {
-                suppressAutoLoadUntilRef.current = Date.now() + 1800;
-                const scrollToReel = () => {
-                  document
-                    .getElementById('hikmah-ziarah-reel')
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                suppressAutoLoadUntilRef.current = Date.now() + 3500;
+                void import('../components/ZiarahStoryReel');
+                const alignToReel = (behavior: ScrollBehavior = 'smooth') => {
+                  const target = document.getElementById('hikmah-ziarah-reel');
+                  if (!target) return;
+                  const rect = target.getBoundingClientRect();
+                  const desiredTopOffset = 76;
+                  if (Math.abs(rect.top - desiredTopOffset) > 16) {
+                    window.scrollTo({
+                      top: Math.max(0, window.scrollY + rect.top - desiredTopOffset),
+                      behavior,
+                    });
+                  }
                 };
-                scrollToReel();
-                window.setTimeout(scrollToReel, 380);
+                alignToReel('smooth');
+                window.setTimeout(() => alignToReel('smooth'), 260);
+                window.setTimeout(() => alignToReel('smooth'), 550);
+                window.setTimeout(() => alignToReel('auto'), 850);
               }}
               className="hover:text-white transition-colors inline-flex items-center gap-1.5 cursor-pointer"
             >
@@ -846,7 +914,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       {/* =====================================================================
           2. PITA CERMIN PINTU RUHANI `#F5F5F7` YANG LAPANG & PILLS PENDEK
           ===================================================================== */}
-      <div className="bg-[#F5F5F7] border-b border-black/[0.06] py-12 sm:py-16 px-4 sm:px-6">
+      <div
+        id="cermin-pintu-ruhani"
+        className="scroll-mt-16 bg-[#F5F5F7] border-b border-black/[0.06] py-12 sm:py-16 px-4 sm:px-6"
+      >
         <div className="max-w-5xl mx-auto">
           {/* Optional Collapsible Documentary / Constellation Showcase */}
           {showVisualShowcase && (
@@ -978,7 +1049,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       <Link to="/panduan" className="hover:text-[#175639] underline underline-offset-4">
                         Baca Panduan Doa Gratis →
                       </Link>
-                      <Link to="/donasi" className="hover:text-[#175639] underline underline-offset-4">
+                      <Link to="/donasi#lembar-munajat" className="hover:text-[#175639] underline underline-offset-4">
                         Susun Lembar Munajat Pribadi →
                       </Link>
                     </div>
@@ -1009,38 +1080,41 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                   Buka kisah pengobat hati
                 </Link>
                 <Link
-                  to="/infaq#dinding-munajat"
+                  to="/donasi#lembar-munajat"
                   className="py-1 min-h-[28px] inline-flex items-center text-xs font-medium text-[#6E6E73] hover:text-[#1D1D1F] underline underline-offset-4"
                 >
-                  Titip doa
+                  Buat Lembar Munajat Gratis
                 </Link>
               </div>
             </div>
-          ) : featuredHaulSite ? (
-            <div className="max-w-4xl mx-auto mt-6 pt-4 border-t border-black/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#6E6E73]">
-              <p className="leading-relaxed">
-                <strong className="font-semibold text-[#1D1D1F]">
-                  Jejak Haul &amp; Wasiat {formatMakamHeading(featuredHaulSite.title)}
-                </strong>{' '}
-                ({featuredHaulSite.haulSchedule || 'Waliyullah Nusantara'}) — Menyelami rahasia keteguhan batin beliau saat menghadapi ujian zaman.
-              </p>
-              <div className="flex items-center gap-4 shrink-0">
-                <button
-                  type="button"
-                  onClick={(e) => handleOpenReaderModal(featuredHaulSite, e)}
-                  className="py-1 min-h-[28px] inline-flex items-center text-xs font-medium text-[#1E6B47] hover:text-[#175639] underline underline-offset-4 cursor-pointer"
-                >
-                  Baca wasiat beliau
-                </button>
-                <Link
-                  to="/infaq#dinding-munajat"
-                  className="py-1 min-h-[28px] inline-flex items-center text-xs font-medium text-[#6E6E73] hover:text-[#1D1D1F] underline underline-offset-4"
-                >
-                  Dinding munajat
-                </Link>
+          ) : featuredHaulSite ? (() => {
+            const compactHaul = formatCompactHaulSummary(featuredHaulSite);
+            return (
+              <div className="max-w-4xl mx-auto mt-6 pt-4 border-t border-black/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#6E6E73]">
+                <p className="leading-relaxed">
+                  <strong className="font-semibold text-[#1D1D1F]">
+                    Haul {compactHaul.shortName} · {compactHaul.shortSchedule}
+                  </strong>{' '}
+                  — Menyelami keteguhan batin beliau saat menghadapi ujian zaman.
+                </p>
+                <div className="flex items-center gap-4 shrink-0">
+                  <button
+                    type="button"
+                    onClick={(e) => handleOpenReaderModal(featuredHaulSite, e)}
+                    className="py-1 min-h-[28px] inline-flex items-center text-xs font-medium text-[#1E6B47] hover:text-[#175639] underline underline-offset-4 cursor-pointer"
+                  >
+                    Baca wasiat beliau
+                  </button>
+                  <Link
+                    to="/donasi#lembar-munajat"
+                    className="py-1 min-h-[28px] inline-flex items-center text-xs font-medium text-[#6E6E73] hover:text-[#1D1D1F] underline underline-offset-4"
+                  >
+                    Buat Lembar Munajat Gratis
+                  </Link>
+                </div>
               </div>
-            </div>
-          ) : null}
+            );
+          })() : null}
         </div>
       </div>
 
@@ -1169,7 +1243,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 
         {/* Kolom Kanan (lg:col-span-5): TasbihRingWidget Gelap #0A0B0D — di mode ponsel hanya terbuka saat Hati Gelisah, Ikhtiar Rezeki, atau Kesembuhan diklik */}
         <div
-          className={`lg:col-span-5 ${
+          id="tasbih-interaktif"
+          className={`scroll-mt-20 lg:col-span-5 ${
             emotionalFilter === 'keteduhan' || emotionalFilter === 'ikhtiar' || emotionalFilter === 'syifa'
               ? 'flex'
               : 'hidden lg:flex'
