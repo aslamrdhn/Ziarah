@@ -53,7 +53,7 @@ export const ZIARAH_ARTICLES: ZiarahArticle[] = [
       {
         heading: 'Prinsip Menyusun Rute Ziarah Wali Songo dari Barat ke Timur',
         paragraphs: [
-          'Perjalanan ziarah ke sembilan makam Wali Songo membentang sejauh lebih dari 800 kilometer dari Cirebon di Jawa Barat hingga Surabaya di ujung timur jalur Pantura. Tanpa urutan koridor yang rapi, rombongan sering kehabisan waktu di jalan akibat bolak-balik melintasi kabupaten yang berdekatan seperti Demak, Kudus, Tuban, Lamongan, dan Gresik.',
+          'Perjalanan ziarah ke sembilan makam Wali Songo membentang sekitar 570 hingga 650 kilometer dari Cirebon di Jawa Barat hingga Surabaya di ujung timur jalur Pantura (tergantung jalur singgah tiap makam). Tanpa urutan koridor yang rapi, rombongan sering kehabisan waktu di jalan akibat bolak-balik melintasi kabupaten yang berdekatan seperti Demak, Kudus, Tuban, Lamongan, dan Gresik.',
           'Kunci utama efisiensi perjalanan 3 hari 2 malam (3H2M) dari Jakarta atau Jabodetabek adalah menggunakan pola sapuan searah dari barat ke timur melalui Tol Trans-Jawa pada keberangkatan, lalu memanfaatkan jalur tol penuh saat kepulangan dari Surabaya menuju Jakarta.',
         ],
         bulletPoints: [
@@ -129,7 +129,6 @@ export const ZIARAH_ARTICLES: ZiarahArticle[] = [
     references: [
       'Sunyoto, Agus (2016). Atlas Wali Songo: Buku Pertama yang Mengungkap Wali Songo Sebagai Fakta Sejarah. Depok: Pustaka IIMaN.',
       'De Graaf, H.J. & Pigeaud, Th.G.Th. (1985). Kerajaan-Kerajaan Islam di Jawa: Peralihan dari Majapahit ke Mataram. Jakarta: Grafiti Pers.',
-      'Kementerian Pariwisata RI (2019). Panduan Destinasi Wisata Ziarah Wali Songo Koridor Jawa. Jakarta: Kemenpar.',
     ],
   },
   {
@@ -204,7 +203,6 @@ export const ZIARAH_ARTICLES: ZiarahArticle[] = [
     references: [
       'Azra, Azyumardi (2004). Jaringan Ulama Timur Tengah dan Kepulauan Nusantara Abad XVII & XVIII. Jakarta: Kencana.',
       'Alatas, Ismail Fajrie (2021). What Is Religious Authority? Cultivating Islamic Communities in Indonesia. Princeton: Princeton University Press.',
-      'Yayasan Masjid Luar Batang & Majelis Taklim Al-Riyadh Kwitang — Arsip Riwayat Manaqib Ulama Betawi.',
     ],
   },
   {
@@ -500,6 +498,7 @@ export const ZIARAH_ARTICLES: ZiarahArticle[] = [
       {
         heading: 'Makna Peringatan Haul dalam Tradisi Islam Nusantara',
         paragraphs: [
+          'Jadwal haul dan buka luwur mengikuti penanggalan Hijriah dan dapat bergeser sesuai penetapan resmi panitia atau pengurus makam setempat setiap tahunnya.',
           'Kata haul berasal dari bahasa Arab al-haul yang berarti genap satu tahun. Dalam tradisi umat Islam di Nusantara, peringatan haul seorang ulama atau waliyullah diselenggarakan setahun sekali berdasarkan penanggalan Hijriah untuk mengenang wafatnya tokoh tersebut, membacakan manaqib (sejarah hidup dan keteladanan akhlaknya), melantunkan dzikir tahlil bersama, serta menyambung silaturahmi antar-murid dan jamaah.',
           'Karena penanggalan Hijriah lebih pendek sekitar 10–11 hari dibandingkan kalender Masehi, tanggal Masehi pelaksanaan haul selalu bergeser maju setiap tahunnya. Selain itu, tanggal puncak acara haul di setiap maqbarah senantiasa mengikuti ketetapan resmi keluarga dzurriyah, pengasuh pesantren, atau yayasan pengurus makam setempat.',
         ],
@@ -513,8 +512,9 @@ export const ZIARAH_ARTICLES: ZiarahArticle[] = [
         bulletPoints: [
           '10 Muharram: Puncak Buka Luwur Makam Sunan Kudus, Kabupaten Kudus, Jawa Tengah.',
           '12 Rabiul Awal: Haul Syekh Maulana Malik Ibrahim (Sunan Gresik), Kabupaten Gresik, Jawa Timur.',
-          '15–17 Muharram: Haul Sunan Muria (Raden Umar Said), Colo, Kabupaten Kudus, Jawa Tengah.',
-          '20 Rabiul Akhir: Haul Akbar Solo (Habib Ali bin Muhammad Al-Habsyi & Habib Anis Al-Habsyi), Pasar Kliwon, Surakarta.',
+          '1–15 Muharram (Puncak 15 Muharram): Rangkaian Buka Luwur & Haul Sunan Muria (Raden Umar Said), Colo, Kabupaten Kudus, Jawa Tengah (tanggal puncak mengikuti penetapan resmi panitia setempat).',
+          '20 Rabiul Akhir: Peringatan Haul Habib Ali bin Muhammad Al-Habsyi, Masjid Riyadh, Pasar Kliwon, Surakarta (tanggal puncak mengikuti pengumuman resmi panitia Masjid Riyadh).',
+          'Haul Habib Anis bin Alwi Al-Habsyi, Masjid Riyadh, Pasar Kliwon, Surakarta: Mengikuti pengumuman resmi panitia Masjid Riyadh Solo.',
         ],
       },
       {
@@ -560,8 +560,7 @@ export const ZIARAH_ARTICLES: ZiarahArticle[] = [
     },
     references: [
       'Alatas, Ismail Fajrie (2014). Pilgrimage and Network Formation in Two Contemporary Ba \'Alawi Haul in Central Java. Journal of Islamic Studies.',
-      'Tim Kurator Arsip Ziarah Nusantara (2026). Dokumentasi Takwim Haul Pesantren dan Maqbarah Waliyullah 34 Provinsi.',
-      'Kementerian Agama RI — Direktori Tradisi Keagamaan dan Hari Besar Islam Nusantara.',
+      'Dinas Kepemudaan, Olahraga dan Pariwisata Provinsi Jawa Tengah — Event Buka Luwur Sunan Muria (https://visitjawatengah.jatengprov.go.id/id/event/buka-luwur-sunan-muria).',
     ],
   },
   {
@@ -693,7 +692,6 @@ export const ZIARAH_ARTICLES: ZiarahArticle[] = [
     references: [
       'Imam An-Nawawi (wafat 676 H). At-Tibyan fi Adabi Hamalatil Qur\'an (Penjelasan Lima Obat Hati dari Ibrahim bin Adham).',
       'Schrieke, B.J.O. (1916). Het Boek van Bonang (Kajian Filologi Naskah Suluk Sunan Bonang). Utrecht: P. den Boer.',
-      'Drewes, G.W.J. (1969). The Admonitions of Seh Bari: A 16th Century Javanese Muslim Text Attributed to the Saint of Bonang. The Hague: Martinus Nijhoff.',
     ],
   },
   {

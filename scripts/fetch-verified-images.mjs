@@ -1219,7 +1219,7 @@ async function resolveStrictVerifiedPhoto(site) {
     const thumbUrl = FIRST_12_THUMB_BY_ID[id] || FIRST_12_THUMB_BY_ID[legacyId];
     return {
       url: thumbUrl,
-      author: 'Arsip Dokumentasi Wikimedia Commons / Tropenmuseum',
+      author: 'Dokumentasi Arsip Lokal Ziarah Nusantara',
       license: 'Domain Publik / CC BY-SA',
     };
   }

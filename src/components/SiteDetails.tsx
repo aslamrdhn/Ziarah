@@ -360,6 +360,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
   if (!site) return null;
 
   const safeSiteName = sanitizeHistoricalLogisticsText(site.name);
+  const photoAttribution = getSitePhotoAttribution(site, resolvedSiteImageUrl);
   const hasKaromah = site.karomah && site.karomah.length > 0;
   const completeBarokahGuide = getSiteCompleteBarokahGuide(site);
   const effectiveDoaKhusus = completeBarokahGuide.doaItems;
@@ -1031,9 +1032,14 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
             </div>
           </div>
 
-          {/* Afirmasi Jujur Bacaan Gratis vs Dukungan Operasional */}
-          <div className="mb-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed">
-            Bacaan Yasin, Tahlil &amp; Salam Ahli Kubur tetap 100% gratis di menu Panduan. Infaq Rp 2.000 adalah dukungan operasional penyusunan lembar amalan khusus per maqbarah &amp; fitur cetak PDF.
+          {/* Afirmasi Jujur Bacaan Gratis vs Dukungan Operasional: Bacaan Yasin, Tahlil &amp; Salam Ahli Kubur tetap 100% gratis di menu Panduan. Infaq Rp 2.000 adalah dukungan operasional penyusunan lembar amalan khusus per maqbarah &amp; fitur cetak PDF. */}
+          <div className="mb-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed space-y-1.5">
+            <p>
+              Bacaan Yasin, Tahlil &amp; Salam Ahli Kubur tetap 100% gratis di menu Panduan. Infaq Rp {barokahAmount.toLocaleString('id-ID')} adalah dukungan operasional penyusunan lembar amalan khusus per maqbarah &amp; fitur cetak PDF.
+            </p>
+            <p className="text-[11px] text-slate-500">
+              Sistem Saling Percaya (Honor System): Akses lembar amalan terbuka seketika di perangkat Anda setelah mengunggah bukti transfer agar doa dapat langsung dibaca di maqbarah, sementara bukti transaksi ditinjau berkala oleh kurator.
+            </p>
           </div>
 
           {/* Overlay Kartu Gembok Bersih */}
@@ -1181,6 +1187,25 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     <span>Rute Google Maps</span>
                   </a>
                 </div>
+              </div>
+
+              {/* Caption Kredit & Lisensi Foto Sampul */}
+              <div className="shrink-0 px-3 sm:px-8 py-1.5 bg-slate-100/90 border-b border-slate-200/80 text-[11px] text-[#6E6E73] flex items-center justify-between gap-2">
+                <span className="truncate">
+                  {photoAttribution.isDomeSvg
+                    ? 'Ilustrasi arsitektur generatif — Ziarah Nusantara'
+                    : `Kredit Foto: ${photoAttribution.author} · Lisensi: ${photoAttribution.license}`}
+                </span>
+                {photoAttribution.isWikimediaPhoto && photoAttribution.url && (
+                  <a
+                    href={photoAttribution.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 underline hover:text-slate-900"
+                  >
+                    Sumber
+                  </a>
+                )}
               </div>
 
               {/* 3 Internal Reader Tabs (Grid 3 Kolom Presisi di Layar HP 360px) */}

@@ -65,7 +65,7 @@ export function getSitePhotoAttribution(
     };
   }
 
-  const author = meta?.author || 'Arsip Dokumentasi Wikimedia Commons / Tropenmuseum';
+  const author = meta?.author || 'Dokumentasi Arsip Lokal Ziarah Nusantara';
   const license = meta?.license || 'Domain Publik / CC BY-SA';
   return {
     kind: 'local_archive',
@@ -74,7 +74,7 @@ export function getSitePhotoAttribution(
     url: effectiveUrl,
     author,
     license,
-    formattedAttribution: `Foto: ${author} (${license}) via Wikimedia Commons`,
+    formattedAttribution: `Foto: ${author} (${license})`,
   };
 }
 

@@ -462,6 +462,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   const [originPathBeforeModal, setOriginPathBeforeModal] = useState<string>('/');
   const heroImgRef = useRef<HTMLImageElement | null>(null);
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
+  const suppressAutoLoadUntilRef = useRef<number>(0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -684,8 +685,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
 
     const observer = new IntersectionObserver(
       (entries) => {
+        if (Date.now() < suppressAutoLoadUntilRef.current) return;
         if (entries.some((entry) => entry.isIntersecting)) {
           ensureFullSitesLoaded().then((all) => {
+            if (Date.now() < suppressAutoLoadUntilRef.current) return;
             setVisibleCount((prev) =>
               Math.min(Math.max(all.length, filteredSites.length, totalCatalogCount), prev + PROGRESSIVE_BATCH_SIZE)
             );
@@ -764,7 +767,17 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <span className="text-white/20" aria-hidden="true">·</span>
             <button
               type="button"
-              onClick={() => setShowVisualShowcase(!showVisualShowcase)}
+              onClick={() => {
+                const nextState = !showVisualShowcase;
+                setShowVisualShowcase(nextState);
+                if (nextState) {
+                  window.setTimeout(() => {
+                    document
+                      .getElementById('eksplorasi-visual-nusantara')
+                      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 60);
+                }
+              }}
               className="hover:text-white transition-colors inline-flex items-center gap-1.5 cursor-pointer"
             >
               <Film className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
@@ -773,9 +786,16 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <span className="text-white/20" aria-hidden="true">·</span>
             <button
               type="button"
-              onClick={() =>
-                document.getElementById('hikmah-ziarah-reel')?.scrollIntoView({ behavior: 'smooth' })
-              }
+              onClick={() => {
+                suppressAutoLoadUntilRef.current = Date.now() + 1800;
+                const scrollToReel = () => {
+                  document
+                    .getElementById('hikmah-ziarah-reel')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                };
+                scrollToReel();
+                window.setTimeout(scrollToReel, 380);
+              }}
               className="hover:text-white transition-colors inline-flex items-center gap-1.5 cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
@@ -830,7 +850,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         <div className="max-w-5xl mx-auto">
           {/* Optional Collapsible Documentary / Constellation Showcase */}
           {showVisualShowcase && (
-            <div className="mb-8 bg-white rounded-[24px] p-4 sm:p-6 border border-black/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-4">
+            <div
+              id="eksplorasi-visual-nusantara"
+              className="scroll-mt-20 mb-8 bg-white rounded-[24px] p-4 sm:p-6 border border-black/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-4"
+            >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-xs font-medium text-[#6E6E73] tracking-tight">
                   Eksplorasi Visual Jaringan Dakwah Nusantara
@@ -1028,8 +1051,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
         id="katalog-direktori"
         className="max-w-6xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-3"
       >
-        {/* Kolom Kiri (lg:col-span-7): Kartu Terang #F5F5F7 — Bilah Pencarian + Provinsi + Tab Kategori */}
-        <div className="lg:col-span-7 bg-[#F5F5F7] rounded-[28px] p-5 sm:p-7 border border-black/[0.06] flex flex-col justify-between gap-5">
+        {/* Kolom Kiri: Kartu Terang #F5F5F7 — Bilah Pencarian + Provinsi + Tab Kategori */}
+        <div
+          className={`${
+            emotionalFilter === 'keteduhan' || emotionalFilter === 'ikhtiar' || emotionalFilter === 'syifa'
+              ? 'lg:col-span-7'
+              : 'lg:col-span-7'
+          } bg-[#F5F5F7] rounded-[28px] p-5 sm:p-7 border border-black/[0.06] flex flex-col justify-between gap-5`}
+        >
           <div className="space-y-1">
             <span className="block text-[11px] font-semibold uppercase tracking-widest text-[#1E6B47]">
               Direktori &amp; Pencarian Cepat
@@ -1138,8 +1167,14 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
           </div>
         </div>
 
-        {/* Kolom Kanan (lg:col-span-5): TasbihRingWidget Gelap #0A0B0D */}
-        <div className="lg:col-span-5 flex">
+        {/* Kolom Kanan (lg:col-span-5): TasbihRingWidget Gelap #0A0B0D — di mode ponsel hanya terbuka saat Hati Gelisah, Ikhtiar Rezeki, atau Kesembuhan diklik */}
+        <div
+          className={`lg:col-span-5 ${
+            emotionalFilter === 'keteduhan' || emotionalFilter === 'ikhtiar' || emotionalFilter === 'syifa'
+              ? 'flex'
+              : 'hidden lg:flex'
+          }`}
+        >
           <div className="w-full">
             <TasbihRingWidget />
           </div>
@@ -1389,8 +1424,8 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
       {/* =====================================================================
           3.8. STORY REEL & AUDIO-VISUAL CAROUSEL (OPSI 2: 5 SLIDE HIKMAH ZIARAH)
           ===================================================================== */}
-      <div id="hikmah-ziarah-reel" className="max-w-6xl mx-auto mt-12 mb-6">
-        <Suspense fallback={null}>
+      <div id="hikmah-ziarah-reel" className="scroll-mt-20 max-w-6xl mx-auto mt-12 mb-6">
+        <Suspense fallback={<div className="min-h-[320px]" />}>
           <ZiarahStoryReel />
         </Suspense>
       </div>

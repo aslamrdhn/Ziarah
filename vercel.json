@@ -604,6 +604,11 @@
       "source": "/situs/agh-muhammad-as-wajo",
       "destination": "/situs/agh-muhammad-as-ad-wajo",
       "permanent": true
+    },
+    {
+      "source": "/situs/syekh-ja-garut",
+      "destination": "/situs/syekh-ja-far-shadiq-garut",
+      "permanent": true
     }
   ],
   "rewrites": [

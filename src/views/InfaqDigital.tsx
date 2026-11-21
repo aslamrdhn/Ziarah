@@ -548,7 +548,7 @@ export const InfaqDigital: React.FC = () => {
           </div>
           {recentDonations.length > 0 && (
             <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 shrink-0 min-w-[200px]">
-              <p className="text-[11px] uppercase tracking-wider text-[#6EE7B7] font-bold mb-1">Total Infaq Tercatat</p>
+              <p className="text-[11px] uppercase tracking-wider text-[#6EE7B7] font-bold mb-1">Total Infaq (50 Konfirmasi Terakhir)</p>
               <p style={{ color: '#F5F5F7' }} className="text-xl sm:text-2xl font-serif font-black">Rp {totalTerkumpul.toLocaleString('id-ID')}</p>
               <p style={{ color: '#D2D2D7' }} className="text-[11px] mt-0.5">Dari {recentDonations.length} konfirmasi munfiq / peziarah</p>
             </div>
@@ -1150,6 +1150,17 @@ export const InfaqDigital: React.FC = () => {
               Titipkan Doa Munajat
             </button>
           </div>
+          <label className="flex items-start gap-2 pt-0.5 text-[11px] text-stone-500 leading-relaxed cursor-pointer">
+            <input
+              type="checkbox"
+              required
+              defaultChecked
+              className="mt-0.5 rounded border-stone-300 text-emerald-800 focus:ring-emerald-700"
+            />
+            <span>
+              Persetujuan Publikasi (UU PDP): Saya menyetujui nama yang saya isi (atau kosongkan agar tampil sebagai <strong>Hamba Allah</strong>) beserta isi doa ditampilkan secara publik di Dinding Doa Bersama.
+            </span>
+          </label>
         </form>
 
         {displayedMunajatList.length === 0 && (

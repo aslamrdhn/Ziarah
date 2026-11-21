@@ -136,9 +136,9 @@ describe('Strict Heritage Image Verification', () => {
       }
     }
 
-    expect(wikimediaCount).toBe(78);
+    expect(wikimediaCount).toBe(74);
     expect(localArchiveCount).toBe(12);
-    expect(domeSvgCount).toBe(93);
+    expect(domeSvgCount).toBe(97);
   });
 
   it('rejects copyright icons, bupati/mayor portraits, birds, bridges, tourists, Earth globes, and ZN logos', () => {

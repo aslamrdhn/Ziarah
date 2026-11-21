@@ -400,6 +400,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const scheduleIdleSync = (cb: () => void) => {
       if (typeof window === 'undefined') return;
+      const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+      if (conn?.saveData) return;
       if (cancelIdle) cancelIdle();
       const w = window as Window & {
         requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
