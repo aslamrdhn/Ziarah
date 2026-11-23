@@ -1,184 +1,4 @@
 {
-  "syekh-maulana-malik-ibrahim": {
-    "url": "/thumbs/wali-1.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-gresik": {
-    "url": "/thumbs/wali-1.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "wali-1": {
-    "url": "/thumbs/wali-1.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-ampel": {
-    "url": "/thumbs/wali-2.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-ampel-surabaya": {
-    "url": "/thumbs/wali-2.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "wali-2": {
-    "url": "/thumbs/wali-2.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-bonang": {
-    "url": "/thumbs/wali-3.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-bonang-tuban": {
-    "url": "/thumbs/wali-3.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "wali-3": {
-    "url": "/thumbs/wali-3.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-drajat": {
-    "url": "/thumbs/wali-4.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-drajat-lamongan": {
-    "url": "/thumbs/wali-4.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "wali-4": {
-    "url": "/thumbs/wali-4.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-kudus": {
-    "url": "/thumbs/wali-5.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "makam-sunan-kudus": {
-    "url": "/thumbs/wali-5.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "wali-5": {
-    "url": "/thumbs/wali-5.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-giri": {
-    "url": "/thumbs/wali-6.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-giri-gresik": {
-    "url": "/thumbs/wali-6.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "wali-6": {
-    "url": "/thumbs/wali-6.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-kalijaga": {
-    "url": "/thumbs/wali-7.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "makam-sunan-kalijaga-demak": {
-    "url": "/thumbs/wali-7.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "wali-7": {
-    "url": "/thumbs/wali-7.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-muria": {
-    "url": "/thumbs/wali-8.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-muria-kudus": {
-    "url": "/thumbs/wali-8.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "wali-8": {
-    "url": "/thumbs/wali-8.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-gunung-jati": {
-    "url": "/thumbs/wali-9.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "sunan-gunung-jati-cirebon": {
-    "url": "/thumbs/wali-9.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "wali-9": {
-    "url": "/thumbs/wali-9.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "habib-ali-kwitang": {
-    "url": "/thumbs/wali-10.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "habib-ali-bin-abdurrahman-al-habsyi-jakarta-pusat": {
-    "url": "/thumbs/wali-10.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "habib-1": {
-    "url": "/thumbs/wali-10.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "habib-husein-luar-batang": {
-    "url": "/thumbs/wali-11.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "habib-husein-bin-abubakar-alaydrus-jakarta-utara": {
-    "url": "/thumbs/wali-11.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "habib-2": {
-    "url": "/thumbs/wali-11.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "mbah-priok": {
-    "url": "/thumbs/wali-12.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "habib-hasan-bin-muhammad-al-haddad-jakarta-utara": {
-    "url": "/thumbs/wali-12.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
-  "habib-3": {
-    "url": "/thumbs/wali-12.webp",
-    "author": "Dokumentasi Arsip Lokal Ziarah Nusantara",
-    "license": "Domain Publik / CC BY-SA"
-  },
   "pangeran-jayakarta": {
     "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Makam_Pangeran_Jayakarta_-_panoramio.jpg/960px-Makam_Pangeran_Jayakarta_-_panoramio.jpg",
     "author": "Akhmad Fauzi",
@@ -435,17 +255,17 @@
     "license": "CC BY 2.0"
   },
   "habib-umar-bedugul-tabanan": {
-    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg/960px-Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Masjid_Besar_Al-Hidayah_di_daerah_Danau_Beratan_Bedugul.jpg/960px-Masjid_Besar_Al-Hidayah_di_daerah_Danau_Beratan_Bedugul.jpg",
     "author": "Astari28",
     "license": "CC BY 4.0"
   },
   "syekh-habib-umar-bukit-bedugul-tabanan": {
-    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg/960px-Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Masjid_Besar_Al-Hidayah_di_daerah_Danau_Beratan_Bedugul.jpg/960px-Masjid_Besar_Al-Hidayah_di_daerah_Danau_Beratan_Bedugul.jpg",
     "author": "Astari28",
     "license": "CC BY 4.0"
   },
   "auliya-14": {
-    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg/960px-Pemandangan_dari_Masjid_Kawasan_Bedugul_Bali_25112024.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Masjid_Besar_Al-Hidayah_di_daerah_Danau_Beratan_Bedugul.jpg/960px-Masjid_Besar_Al-Hidayah_di_daerah_Danau_Beratan_Bedugul.jpg",
     "author": "Astari28",
     "license": "CC BY 4.0"
   },

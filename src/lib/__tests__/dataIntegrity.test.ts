@@ -643,7 +643,11 @@ describe('Audit Integritas Data Makam & Navigasi Peta (dataIntegrity)', () => {
       const fallbackPhoto = getRegionalArchitecturalPhoto(site);
       if (isFirst12OwnerSite(site)) {
         ownerCount++;
-        expect(fallbackPhoto).toMatch(/^\/thumbs\/wali-(?:[1-9]|1[0-2])\.webp$/);
+        // Fail-safe: while localPhotoProvenance.json status is "belum_diverifikasi", falls back to architectural SVG
+        expect(
+          /^\/thumbs\/wali-(?:[1-9]|1[0-2])\.webp$/.test(fallbackPhoto) ||
+            fallbackPhoto.startsWith('data:image/svg+xml;utf8,')
+        ).toBe(true);
       } else {
         // Situs di luar 12 pemilik asli DILARANG memakai foto makam wali lain (/thumbs/wali-4.webp dll.)
         expect(site.imageUrl, `Foreign thumb on ${site.id}`).not.toMatch(

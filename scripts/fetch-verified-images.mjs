@@ -1217,11 +1217,31 @@ async function resolveStrictVerifiedPhoto(site) {
   const legacyId = site.legacyId;
   if (FIRST_12_THUMB_BY_ID[id] || (legacyId && FIRST_12_THUMB_BY_ID[legacyId])) {
     const thumbUrl = FIRST_12_THUMB_BY_ID[id] || FIRST_12_THUMB_BY_ID[legacyId];
-    return {
-      url: thumbUrl,
-      author: 'Dokumentasi Arsip Lokal Ziarah Nusantara',
-      license: 'Domain Publik / CC BY-SA',
-    };
+    const fileKey = thumbUrl.replace(/^\/thumbs\//, '');
+    try {
+      const provPath = path.join(rootDir, 'src/data/localPhotoProvenance.json');
+      const provMap = JSON.parse(fs.readFileSync(provPath, 'utf8'));
+      const entry = provMap[fileKey];
+      if (
+        entry &&
+        entry.status === 'terverifikasi' &&
+        typeof entry.author === 'string' &&
+        entry.author.trim().length > 0 &&
+        typeof entry.license === 'string' &&
+        entry.license.trim().length > 0 &&
+        !entry.license.includes(' / ')
+      ) {
+        return {
+          url: thumbUrl,
+          author: entry.author.trim(),
+          license: entry.license.trim(),
+          ...(entry.sourceUrl ? { sourceUrl: String(entry.sourceUrl).trim() } : {}),
+        };
+      }
+    } catch {
+      // Fail-safe: fall back to null so Dome SVG placeholder is used
+    }
+    return null;
   }
 
   // Stage A: Curated Whitelist (specific articles & specific heritage Commons queries — NO plain city names!)

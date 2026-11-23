@@ -27,6 +27,7 @@ import { extractShortEra, getSiteBarokahHajat, getEffectiveSiteDoaKhusus } from 
 import { useSiteCopy, formatDynamicHeroSubtitle } from '../lib/siteCopy';
 import { TasbihRingWidget } from '../components/TasbihRingWidget';
 import { stripMarkdownAsterisks } from '../lib/formatText';
+import { getHaulDisplay } from '../data/haulVerification';
 
 const ZiarahStoryReel = lazy(() =>
   import('../components/ZiarahStoryReel').then((m) => ({ default: m.ZiarahStoryReel }))
@@ -435,22 +436,33 @@ const FULL_CATALOG_INTENT_COUNTS: Record<EmotionalIntentId, number> = {
   keluarga: 77,
 };
 
-function formatCompactHaulSummary(site: ZiarahSite): { shortName: string; shortSchedule: string } {
+export function selectFeaturedHaulSite(sites: ZiarahSite[]): ZiarahSite | null {
+  return (
+    sites.find((s) => getHaulDisplay(s).verified && Boolean(s.untoldStory || s.karomah)) ||
+    sites.find((s) => getHaulDisplay(s).verified) ||
+    null
+  );
+}
+
+export function formatCompactHaulSummary(site: ZiarahSite): { shortName: string; shortSchedule: string } {
   const rawTitle = (site.title || site.name || 'Waliyullah Nusantara')
     .replace(/\([^)]*\)/g, ' ')
     .replace(/^makam\s+/i, '')
+    .replace(/[.,;:\s]+$/g, '')
     .replace(/\s+/g, ' ')
     .trim();
   const shortName = rawTitle || 'Waliyullah Nusantara';
 
-  const rawSchedule = (site.haulSchedule || '')
+  const haulDisplay = getHaulDisplay(site);
+  const rawSchedule = (haulDisplay.text || '')
     .replace(/\([^)]*\)/g, ' ')
     .split(/[—–;]|,\s*(?:puncak|mengikuti|setiap)/i)[0]
     .replace(/\s+/g, ' ')
+    .replace(/[.,;:\s]+$/g, '')
     .trim();
   const shortSchedule =
     rawSchedule.length > 45
-      ? `${rawSchedule.slice(0, 42).trim()}...`
+      ? `${rawSchedule.slice(0, 42).replace(/[.,;:\s]+$/g, '').trim()}...`
       : rawSchedule || 'Takwim Hijriah Tahunan';
 
   return { shortName, shortSchedule };
@@ -552,8 +564,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
     [activeSiteModal, ziarahSites]
   );
   const isJumatMomentum = [4, 5].includes(new Date().getDay());
-  const featuredHaulSite =
-    sites.find((s) => Boolean(s.haulSchedule && (s.untoldStory || s.karomah))) || sites[0];
+  const featuredHaulSite = selectFeaturedHaulSite(sites);
 
   const categories = useMemo(
     () => [
@@ -1089,6 +1100,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             </div>
           ) : featuredHaulSite ? (() => {
             const compactHaul = formatCompactHaulSummary(featuredHaulSite);
+            const haulInfo = getHaulDisplay(featuredHaulSite);
             return (
               <div className="max-w-4xl mx-auto mt-6 pt-4 border-t border-black/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#6E6E73]">
                 <p className="leading-relaxed">
@@ -1096,6 +1108,19 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                     Haul {compactHaul.shortName} · {compactHaul.shortSchedule}
                   </strong>{' '}
                   — Menyelami keteguhan batin beliau saat menghadapi ujian zaman.
+                  {haulInfo.verified && (
+                    <>
+                      {' · '}
+                      <a
+                        href={haulInfo.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#1E6B47] hover:underline underline-offset-4 font-medium"
+                      >
+                        Sumber: {haulInfo.sourceName}
+                      </a>
+                    </>
+                  )}
                 </p>
                 <div className="flex items-center gap-4 shrink-0">
                   <button
@@ -1312,11 +1337,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             const coreHajatText = stripMarkdownAsterisks(extractCoreWasilahHajat(getSiteBarokahHajat(site)));
             const karomahCount = Array.isArray(site.karomah) && site.karomah.length > 0 ? site.karomah.length : 1;
             const doaCount = getEffectiveSiteDoaKhusus(site).length;
-            const practicalInfo = site.haulSchedule
-              ? `Haul: ${site.haulSchedule}`
-              : site.openingHours
-                ? `Buka: ${site.openingHours}`
-                : 'Buka Setiap Hari';
+            const haulInfo = getHaulDisplay(site);
+            const practicalInfo = haulInfo.verified
+              ? `Haul: ${haulInfo.text} (Sumber: ${haulInfo.sourceName})`
+              : `Haul: ${haulInfo.text}`;
             const { heading: cardHeading, subtitle: cardSubtitle } = getSiteDisplayHeading(site);
 
             return (

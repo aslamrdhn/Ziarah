@@ -17,10 +17,8 @@ export const PRE_RESOLVED_AUTHENTIC_IMAGE_META: Record<string, VerifiedSiteImage
         key,
         {
           url: entry,
-          author: entry.startsWith('/thumbs/')
-            ? 'Dokumentasi Arsip Lokal Ziarah Nusantara'
-            : 'Kontributor Wikimedia Commons',
-          license: entry.startsWith('/thumbs/') ? 'Domain Publik / CC BY-SA' : 'CC BY-SA 4.0',
+          author: 'Kontributor Wikimedia Commons',
+          license: 'CC BY-SA 4.0',
         },
       ];
     }

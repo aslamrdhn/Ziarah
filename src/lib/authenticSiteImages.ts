@@ -4,6 +4,43 @@ import {
   PRE_RESOLVED_AUTHENTIC_IMAGES,
   PRE_RESOLVED_AUTHENTIC_IMAGE_META,
 } from '../data/authenticImageUrls';
+import localPhotoProvenance from '../data/localPhotoProvenance.json';
+
+export interface LocalPhotoProvenanceEntry {
+  status: string;
+  author: string;
+  license: string;
+  sourceUrl: string;
+  note: string;
+}
+
+const LOCAL_PHOTO_PROVENANCE = localPhotoProvenance as Record<string, LocalPhotoProvenanceEntry>;
+
+export function getVerifiedLocalPhotoProvenance(
+  thumbPathOrFile?: string | null
+): LocalPhotoProvenanceEntry | null {
+  if (!thumbPathOrFile) return null;
+  const cleaned = thumbPathOrFile.trim().replace(/^\/thumbs\//, '');
+  const entry = LOCAL_PHOTO_PROVENANCE[cleaned];
+  if (!entry) return null;
+  const author = typeof entry.author === 'string' ? entry.author.trim() : '';
+  const license = typeof entry.license === 'string' ? entry.license.trim() : '';
+  if (
+    entry.status === 'terverifikasi' &&
+    author.length > 0 &&
+    license.length > 0 &&
+    !license.includes(' / ')
+  ) {
+    return {
+      status: 'terverifikasi',
+      author,
+      license,
+      sourceUrl: typeof entry.sourceUrl === 'string' ? entry.sourceUrl.trim() : '',
+      note: typeof entry.note === 'string' ? entry.note.trim() : '',
+    };
+  }
+  return null;
+}
 
 export interface SitePhotoAttribution {
   kind: 'wikimedia' | 'local_archive' | 'dome_svg';
@@ -12,14 +49,15 @@ export interface SitePhotoAttribution {
   url: string | null;
   author: string | null;
   license: string | null;
+  sourceUrl?: string | null;
   formattedAttribution: string;
 }
 
 /**
  * Resolves exact photo attribution metadata for a site and its currently rendered image URL.
- * - For 93 sites using Golden Dome SVG (`data:image/svg` or no external photo): returns kind === 'dome_svg'
+ * - For sites using Golden Dome SVG (`data:image/svg` or no verified external/local photo): returns kind === 'dome_svg'
  *   with honest note and hides Wikimedia Commons attribution / file link.
- * - For 78 Wikimedia photo sites and 12 local WebP sites: returns author and license metadata.
+ * - For Wikimedia photo sites and verified local WebP sites: returns author and license metadata.
  */
 export function getSitePhotoAttribution(
   site: Pick<ZiarahSite, 'id' | 'imageUrl' | 'imageSource'> & { legacyId?: string },
@@ -31,17 +69,20 @@ export function getSitePhotoAttribution(
     effectiveUrl.startsWith('data:image/svg') ||
     effectiveUrl.includes('svg+xml');
 
+  const domeSvgResult: SitePhotoAttribution = {
+    kind: 'dome_svg',
+    isDomeSvg: true,
+    isWikimediaPhoto: false,
+    url: null,
+    author: null,
+    license: null,
+    sourceUrl: null,
+    formattedAttribution:
+      "Ilustrasi Arsitektur Maqbarah Ziarah Nusantara — gunakan tombol 'Lihat Foto Asli Lokasi di Google Maps' untuk dokumentasi lokasi terkini.",
+  };
+
   if (isSvgOrEmpty) {
-    return {
-      kind: 'dome_svg',
-      isDomeSvg: true,
-      isWikimediaPhoto: false,
-      url: null,
-      author: null,
-      license: null,
-      formattedAttribution:
-        "Ilustrasi Arsitektur Maqbarah Ziarah Nusantara — gunakan tombol 'Lihat Foto Asli Lokasi di Google Maps' untuk dokumentasi lokasi terkini.",
-    };
+    return domeSvgResult;
   }
 
   const meta =
@@ -52,8 +93,11 @@ export function getSitePhotoAttribution(
     effectiveUrl.startsWith('https://thumb.wikimedia.org/');
 
   if (isWikimediaUrl) {
-    const author = meta?.author || 'Kontributor Wikimedia Commons';
-    const license = meta?.license || 'CC BY-SA 4.0';
+    const author = (meta?.author || '').trim();
+    const license = (meta?.license || '').trim();
+    if (!author || !license) {
+      return domeSvgResult;
+    }
     return {
       kind: 'wikimedia',
       isDomeSvg: false,
@@ -61,23 +105,25 @@ export function getSitePhotoAttribution(
       url: effectiveUrl,
       author,
       license,
+      sourceUrl: effectiveUrl,
       formattedAttribution: `Foto: ${author} (${license}) via Wikimedia Commons`,
     };
   }
 
-  const rawAuthor = meta?.author || 'Dokumentasi Arsip Lokal Ziarah Nusantara';
-  const author = /tropenmuseum|wikimedia/i.test(rawAuthor)
-    ? 'Dokumentasi Arsip Lokal Ziarah Nusantara'
-    : rawAuthor;
-  const license = meta?.license || 'Domain Publik / CC BY-SA';
+  const localProv = getVerifiedLocalPhotoProvenance(effectiveUrl);
+  if (!localProv) {
+    return domeSvgResult;
+  }
+
   return {
     kind: 'local_archive',
     isDomeSvg: false,
     isWikimediaPhoto: false,
     url: effectiveUrl,
-    author,
-    license,
-    formattedAttribution: `Foto: ${author} (${license})`,
+    author: localProv.author,
+    license: localProv.license,
+    sourceUrl: localProv.sourceUrl || null,
+    formattedAttribution: `Foto: ${localProv.author} (${localProv.license})`,
   };
 }
 
@@ -500,8 +546,10 @@ export function getRegionalArchitecturalPhoto(
 
   const idKey = String(site.id || '').trim();
   const legacyKey = String(site.legacyId || '').trim();
-  if (idKey && FIRST_12_THUMB_BY_ID[idKey]) return FIRST_12_THUMB_BY_ID[idKey];
-  if (legacyKey && FIRST_12_THUMB_BY_ID[legacyKey]) return FIRST_12_THUMB_BY_ID[legacyKey];
+  const thumb = (idKey && FIRST_12_THUMB_BY_ID[idKey]) || (legacyKey && FIRST_12_THUMB_BY_ID[legacyKey]);
+  if (thumb && getVerifiedLocalPhotoProvenance(thumb)) {
+    return thumb;
+  }
 
   return createArchitecturalPlaceholderDataUri(site);
 }
@@ -513,15 +561,16 @@ export function getVerifiedStaticSitePhoto(site?: Partial<ZiarahSite> | null): s
 
   // 1. Edited by curator with a valid photo URL
   if ((site as any).editedByCurator === true && isValidPhotoUrl(site.imageUrl)) {
-    return String(site.imageUrl).trim();
+    const curatorUrl = String(site.imageUrl).trim();
+    if (!curatorUrl.startsWith('/thumbs/') || getVerifiedLocalPhotoProvenance(curatorUrl)) {
+      return curatorUrl;
+    }
   }
 
-  // 2. First 12 canonical owner sites -> /thumbs/wali-1..12.webp
-  if (idKey && FIRST_12_THUMB_BY_ID[idKey]) {
-    return FIRST_12_THUMB_BY_ID[idKey];
-  }
-  if (legacyKey && FIRST_12_THUMB_BY_ID[legacyKey]) {
-    return FIRST_12_THUMB_BY_ID[legacyKey];
+  // 2. First 12 canonical owner sites -> /thumbs/wali-1..12.webp ONLY if verified in localPhotoProvenance.json
+  const thumb = (idKey && FIRST_12_THUMB_BY_ID[idKey]) || (legacyKey && FIRST_12_THUMB_BY_ID[legacyKey]);
+  if (thumb && getVerifiedLocalPhotoProvenance(thumb)) {
+    return thumb;
   }
 
   // 3. Pre-verified static map from src/data/verifiedSiteImages.json

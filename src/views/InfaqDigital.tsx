@@ -177,7 +177,7 @@ export const InfaqDigital: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>('QRIS');
   const [senderAccount, setSenderAccount] = useState<string>('');
   const [receipt, setReceipt] = useState<CompressedReceiptResult | null>(null);
-  const [agreedToAkad, setAgreedToAkad] = useState<boolean>(true);
+  const [agreedToAkad, setAgreedToAkad] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [lastSubmittedReceipt, setLastSubmittedReceipt] = useState<CompressedReceiptResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -496,7 +496,7 @@ export const InfaqDigital: React.FC = () => {
       setIsSuccessModal(true);
       setDoaHajat('');
       setReceipt(null);
-      setAgreedToAkad(true);
+      setAgreedToAkad(false);
     } catch (error) {
       console.error('Error recording infaq in Firestore:', error);
       setSubmitError('Gagal mengunggah bukti transfer ke database. Periksa koneksi internet Anda dan coba kembali.');
@@ -1167,17 +1167,9 @@ export const InfaqDigital: React.FC = () => {
               Titipkan Doa Munajat
             </button>
           </div>
-          <label className="flex items-start gap-2 pt-0.5 text-[11px] text-stone-500 leading-relaxed cursor-pointer">
-            <input
-              type="checkbox"
-              required
-              defaultChecked
-              className="mt-0.5 rounded border-stone-300 text-emerald-800 focus:ring-emerald-700"
-            />
-            <span>
-              Persetujuan Publikasi (UU PDP): Saya menyetujui nama yang saya isi (atau kosongkan agar tampil sebagai <strong>Hamba Allah</strong>) beserta isi doa ditampilkan secara publik di Dinding Doa Bersama.
-            </span>
-          </label>
+          <p className="pt-0.5 text-[11px] text-stone-500 leading-relaxed">
+            Doa ini hanya tersimpan di perangkat Anda dan tidak dikirim ke server.
+          </p>
         </form>
 
         {displayedMunajatList.length === 0 && (

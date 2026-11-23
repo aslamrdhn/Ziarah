@@ -16,6 +16,7 @@ import { sanitizePlainText, sanitizeMultilineText } from '../lib/sanitize';
 import { getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/siteSlugs';
 import { useSiteCopy } from '../lib/siteCopy';
 import { renderFormattedText, stripMarkdownAsterisks } from '../lib/formatText';
+import { getHaulDisplay } from '../data/haulVerification';
 
 function splitIntoReadableParagraphs(rawText: string): string[] {
   const cleaned = (rawText || '').replace(/<!--more-->/g, '\n\n').trim();
@@ -1196,7 +1197,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                     ? 'Ilustrasi arsitektur generatif — Ziarah Nusantara'
                     : `Foto: ${photoAttribution.author} (${photoAttribution.license})`}
                 </span>
-                {photoAttribution.isWikimediaPhoto && photoAttribution.url && (
+                {photoAttribution.isWikimediaPhoto && photoAttribution.url ? (
                   <a
                     href={photoAttribution.url}
                     target="_blank"
@@ -1205,7 +1206,16 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                   >
                     Sumber Wikimedia
                   </a>
-                )}
+                ) : !photoAttribution.isDomeSvg && photoAttribution.sourceUrl ? (
+                  <a
+                    href={photoAttribution.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 underline hover:text-slate-900"
+                  >
+                    Sumber
+                  </a>
+                ) : null}
               </div>
 
               {/* 3 Internal Reader Tabs (Grid 3 Kolom Presisi di Layar HP 360px) */}
@@ -1689,7 +1699,27 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                               </div>
                               <div>
                                 <span className="font-semibold text-slate-900">Jadwal Haul:</span>{' '}
-                                {deepTadabburContext.factualDetails.haulSchedule}
+                                {(() => {
+                                  const haulInfo = getHaulDisplay(site);
+                                  return (
+                                    <>
+                                      <span>{haulInfo.text}</span>
+                                      {haulInfo.verified && (
+                                        <>
+                                          {' · '}
+                                          <a
+                                            href={haulInfo.sourceUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-emerald-800 hover:underline underline-offset-2 font-medium"
+                                          >
+                                            Sumber: {haulInfo.sourceName}
+                                          </a>
+                                        </>
+                                      )}
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </div>
                           </div>
@@ -1813,14 +1843,33 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                             <div className="text-xs font-semibold uppercase tracking-wider text-stone-900">
                               Jadwal Haul Tahunan
                             </div>
-                            <p className="text-sm sm:text-[15px] text-stone-700 mt-1 leading-[1.8]">
-                              {renderFormattedText(logistics.haulSchedule)}
-                            </p>
-                            {estimateHaulGregorian2026(logistics.haulSchedule, site.id) && (
-                              <span className="inline-block mt-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-medium">
-                                {estimateHaulGregorian2026(logistics.haulSchedule, site.id)}
-                              </span>
-                            )}
+                            {(() => {
+                              const haulInfo = getHaulDisplay(site);
+                              return (
+                                <>
+                                  <p className="text-sm sm:text-[15px] text-stone-700 mt-1 leading-[1.8]">
+                                    {renderFormattedText(haulInfo.text)}
+                                  </p>
+                                  {haulInfo.verified && (
+                                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                                      <a
+                                        href={haulInfo.sourceUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs font-medium text-emerald-800 hover:underline underline-offset-4"
+                                      >
+                                        Sumber: {haulInfo.sourceName} ↗
+                                      </a>
+                                      {estimateHaulGregorian2026(haulInfo.text, site.id) && (
+                                        <span className="inline-block px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-medium">
+                                          {estimateHaulGregorian2026(haulInfo.text, site.id)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                         <div className="flex items-start gap-3 pt-1">
@@ -1998,19 +2047,18 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                 <div className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">
                                   {photoAttribution.isWikimediaPhoto
                                     ? 'Atribusi Dokumentasi Foto: Wikimedia Commons'
-                                    : 'Atribusi Dokumentasi Foto: Dokumentasi Arsip Lokal Ziarah Nusantara'}
+                                    : 'Atribusi Dokumentasi Foto'}
                                 </div>
                                 <p className="text-xs sm:text-sm text-stone-700 font-medium leading-relaxed">
                                   {photoAttribution.formattedAttribution}
                                 </p>
                                 {photoAttribution.isWikimediaPhoto &&
-                                  site.imageSource &&
-                                  !/tropenmuseum/i.test(site.imageSource) && (
+                                  site.imageSource && (
                                     <p className="text-xs sm:text-sm text-stone-600 font-serif italic leading-relaxed">
                                       {site.imageSource}
                                     </p>
                                   )}
-                                {photoAttribution.isWikimediaPhoto && photoAttribution.url && (
+                                {photoAttribution.isWikimediaPhoto && photoAttribution.url ? (
                                   <a
                                     href={photoAttribution.url}
                                     target="_blank"
@@ -2019,7 +2067,16 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                   >
                                     Lihat Berkas Foto Asli (Wikimedia / Wikipedia) ↗
                                   </a>
-                                )}
+                                ) : photoAttribution.sourceUrl ? (
+                                  <a
+                                    href={photoAttribution.sourceUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block text-xs font-medium text-emerald-800 hover:underline underline-offset-4 pt-0.5"
+                                  >
+                                    Sumber ↗
+                                  </a>
+                                ) : null}
                               </>
                             )}
                           </div>

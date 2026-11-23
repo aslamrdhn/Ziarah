@@ -229,7 +229,7 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
             className="mt-0.5 rounded border-stone-300 text-emerald-800 focus:ring-emerald-700 cursor-pointer"
           />
           <span className="text-[11px] text-stone-600 leading-relaxed">
-            <strong className="font-semibold text-stone-800">Persetujuan Privasi (UU PDP) &amp; Akad Infaq:</strong> Saya menyetujui bahwa dana ini adalah <strong>Infaq Operasional &amp; Pemeliharaan Digital</strong> (bukan penghimpunan dana pokok wakaf sesuai UU No. 41 Tahun 2004), serta menyetujui pemrosesan data bukti transfer untuk verifikasi kurator sesuai UU Perlindungan Data Pribadi (UU No. 27 Tahun 2022).
+            <strong className="font-semibold text-stone-800">Persetujuan &amp; Akad Infaq:</strong> Saya menyetujui bahwa dana ini adalah infaq operasional dan pemeliharaan digital, serta menyetujui pengiriman data nama, nominal, bukti transfer, dan pesan/doa untuk keperluan verifikasi infaq oleh kurator. Nama serta doa akan ditampilkan secara publik hanya setelah donasi dikonfirmasi oleh kurator, kecuali saya memilih tampil anonim sebagai <strong>&quot;Hamba Allah&quot;</strong>.
           </span>
         </label>
       </div>

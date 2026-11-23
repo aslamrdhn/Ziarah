@@ -31,11 +31,11 @@ import {
   CURATED_ZIARAH_ROUTES,
   CuratedZiarahRoute,
   calculateDistanceKm,
-  getSiteLogistics,
 } from '../lib/siteLogistics';
 import { getSiteGoogleMapsNavigationUrl } from './SiteDetails';
 import { stripMarkdownAsterisks } from '../lib/formatText';
 import { getSiteDisplayHeading } from '../lib/siteSlugs';
+import { getHaulDisplay } from '../data/haulVerification';
 
 const MapRouteThumbImage: React.FC<{ site: ZiarahSite; className?: string; width?: number }> = React.memo(
   ({ site, className = 'w-full h-full object-cover', width = 160 }) => {
@@ -434,11 +434,6 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
     );
   }, [previewSite, userGps]);
 
-  const previewLogistics = useMemo(
-    () => (previewSite ? getSiteLogistics(previewSite) : null),
-    [previewSite]
-  );
-
   const routePillsRef = React.useRef<HTMLDivElement | null>(null);
   const dragStateRef = React.useRef<{ isDown: boolean; startX: number; scrollLeft: number; moved: boolean }>({
     isDown: false,
@@ -750,15 +745,33 @@ export const InteractiveMap: React.FC<MapProps> = React.memo(({ sites, selectedS
           </div>
 
           {/* Haul Schedule Summary inside Bottom Sheet */}
-          {previewLogistics && (
-            <div className="mt-3 p-2.5 rounded-2xl bg-[#FAF8F5] border border-stone-200/70 text-[11px] text-stone-600 flex items-start gap-2">
-              <Calendar className="w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" />
-              <div className="min-w-0">
-                <strong className="text-stone-900 font-semibold">Jadwal Haul:</strong>{' '}
-                <span className="whitespace-normal break-words leading-snug">{stripMarkdownAsterisks(previewLogistics.haulSchedule)}</span>
+          {previewSite && (() => {
+            const haulInfo = getHaulDisplay(previewSite);
+            return (
+              <div className="mt-3 p-2.5 rounded-2xl bg-[#FAF8F5] border border-stone-200/70 text-[11px] text-stone-600 flex items-start gap-2">
+                <Calendar className="w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" />
+                <div className="min-w-0">
+                  <strong className="text-stone-900 font-semibold">Jadwal Haul:</strong>{' '}
+                  <span className="whitespace-normal break-words leading-snug">
+                    {stripMarkdownAsterisks(haulInfo.text)}
+                  </span>
+                  {haulInfo.verified && (
+                    <>
+                      {' · '}
+                      <a
+                        href={haulInfo.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-800 hover:underline underline-offset-2 font-medium"
+                      >
+                        Sumber: {haulInfo.sourceName}
+                      </a>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Single-Line Italic Serif Quote (Tahap Desain 2) */}
           <p className="font-serif italic text-xs text-stone-600 line-clamp-1 mt-2">

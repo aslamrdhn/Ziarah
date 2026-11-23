@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import verifiedSiteImages from '../../data/verifiedSiteImages.json';
+import localPhotoProvenance from '../../data/localPhotoProvenance.json';
 import { SITES } from '../../data/sites';
 import {
   FIRST_12_THUMB_BY_ID,
@@ -10,10 +11,11 @@ import {
   isValidPhotoUrl,
   getInitialAuthenticSiteImage,
   getSitePhotoAttribution,
+  getVerifiedLocalPhotoProvenance,
 } from '../authenticSiteImages';
 
 describe('Strict Heritage Image Verification', () => {
-  it('verifies all entries in verifiedSiteImages.json pass strict heritage & anti-junk rules and include author/license metadata', () => {
+  it('verifies all entries in verifiedSiteImages.json pass strict heritage & anti-junk rules and include non-Unknown, non-fair-use author/license metadata', () => {
     const entries = Object.entries(
       verifiedSiteImages as Record<string, string | { url: string; author: string; license: string }>
     );
@@ -24,11 +26,21 @@ describe('Strict Heritage Image Verification', () => {
       expect(typeof url).toBe('string');
       expect(url.length).toBeGreaterThan(0);
 
+      expect(typeof rawEntry).toBe('object');
       if (typeof rawEntry === 'object' && rawEntry !== null) {
         expect(typeof rawEntry.author).toBe('string');
-        expect(rawEntry.author.length).toBeGreaterThan(1);
+        expect(rawEntry.author.trim().length).toBeGreaterThan(1);
+        expect(
+          /unknown/i.test(rawEntry.author),
+          `Entry "${key}" must not have "Unknown" author ("${rawEntry.author}")`
+        ).toBe(false);
+
         expect(typeof rawEntry.license).toBe('string');
-        expect(rawEntry.license.length).toBeGreaterThan(1);
+        expect(rawEntry.license.trim().length).toBeGreaterThan(1);
+        expect(
+          /fair[\s_-]*use|penggunaan\s+wajar/i.test(rawEntry.license),
+          `Entry "${key}" must not use fair-use license ("${rawEntry.license}")`
+        ).toBe(false);
       }
 
       let decodedLower = url.toLowerCase();
@@ -70,8 +82,13 @@ describe('Strict Heritage Image Verification', () => {
     }
   });
 
-  it('keeps /thumbs/wali-1..12.webp exclusive to the first 12 owner sites', () => {
+  it('enforces fail-safe on /thumbs/wali-1..12.webp based on localPhotoProvenance.json and keeps them exclusive to the first 12 owner sites', () => {
     expect(SITES.length).toBe(183);
+
+    const provMap = localPhotoProvenance as Record<
+      string,
+      { status: string; author: string; license: string; sourceUrl: string; note: string }
+    >;
 
     for (let i = 0; i < SITES.length; i++) {
       const site = SITES[i];
@@ -80,13 +97,65 @@ describe('Strict Heritage Image Verification', () => {
 
       if (i < 12) {
         expect(isFirst12OwnerSite(site)).toBe(true);
-        expect(img).toBe(`/thumbs/wali-${i + 1}.webp`);
+        const thumbFile = `wali-${i + 1}.webp`;
+        const verifiedLocal = getVerifiedLocalPhotoProvenance(thumbFile);
+        if (verifiedLocal) {
+          expect(img).toBe(`/thumbs/${thumbFile}`);
+        } else {
+          expect(img.startsWith('data:image/svg+xml')).toBe(true);
+        }
       } else {
         expect(isFirst12OwnerSite(site)).toBe(false);
         expect(img.startsWith('/thumbs/wali-')).toBe(false);
         expect(img.includes('pwa-512x512.png')).toBe(false);
         expect(img.includes('logo-zn.svg')).toBe(false);
       }
+    }
+
+    // Verify local attribution never fabricates project name unless explicitly set in localPhotoProvenance.json
+    for (let i = 0; i < 12; i++) {
+      const site = SITES[i];
+      const thumbFile = `wali-${i + 1}.webp`;
+      const provEntry = provMap[thumbFile];
+      const attr = getSitePhotoAttribution(site, `/thumbs/${thumbFile}`);
+
+      if (getVerifiedLocalPhotoProvenance(thumbFile)) {
+        expect(attr.kind).toBe('local_archive');
+        expect(attr.isDomeSvg).toBe(false);
+        expect(attr.author).toBe(provEntry.author);
+        expect(attr.license).toBe(provEntry.license);
+      } else {
+        expect(attr.kind).toBe('dome_svg');
+        expect(attr.isDomeSvg).toBe(true);
+        expect(attr.author).toBeNull();
+        expect(attr.license).toBeNull();
+      }
+    }
+
+    // Verify temporarily marking one entry as "terverifikasi" with a single license enables the photo and exact credit
+    const originalWali1 = { ...provMap['wali-1.webp'] };
+    try {
+      provMap['wali-1.webp'].status = 'terverifikasi';
+      provMap['wali-1.webp'].author = 'Fotografer Uji Coba';
+      provMap['wali-1.webp'].license = 'CC BY-SA 4.0';
+      provMap['wali-1.webp'].sourceUrl = 'https://commons.wikimedia.org/wiki/File:Test.jpg';
+
+      const restoredUrl = getInitialAuthenticSiteImage(SITES[0]);
+      expect(restoredUrl).toBe('/thumbs/wali-1.webp');
+      const restoredAttr = getSitePhotoAttribution(SITES[0], restoredUrl);
+      expect(restoredAttr.kind).toBe('local_archive');
+      expect(restoredAttr.isDomeSvg).toBe(false);
+      expect(restoredAttr.author).toBe('Fotografer Uji Coba');
+      expect(restoredAttr.license).toBe('CC BY-SA 4.0');
+      expect(restoredAttr.sourceUrl).toBe('https://commons.wikimedia.org/wiki/File:Test.jpg');
+      expect(restoredAttr.formattedAttribution).toBe('Foto: Fotografer Uji Coba (CC BY-SA 4.0)');
+
+      // Reject dual/alternative license containing " / "
+      provMap['wali-1.webp'].license = 'Domain Publik / CC BY-SA';
+      expect(getVerifiedLocalPhotoProvenance('wali-1.webp')).toBeNull();
+      expect(getInitialAuthenticSiteImage(SITES[0]).startsWith('data:image/svg+xml')).toBe(true);
+    } finally {
+      Object.assign(provMap['wali-1.webp'], originalWali1);
     }
 
     // Also verify verifiedSiteImages.json never assigns /thumbs/wali-* to non-owner keys
@@ -103,14 +172,24 @@ describe('Strict Heritage Image Verification', () => {
     }
   });
 
-  it('stores author and license attribution metadata for all 78 Wikimedia photo sites and hides Wikimedia link for 93 Golden Dome SVG sites', () => {
+  it('stores non-empty author and license attribution metadata for all non-placeholder photos and falls back to Golden Dome SVG when unverified', () => {
     let wikimediaCount = 0;
     let localArchiveCount = 0;
     let domeSvgCount = 0;
 
+    const provMap = localPhotoProvenance as Record<
+      string,
+      { status: string; author: string; license: string }
+    >;
+
     for (const site of SITES) {
       const resolvedUrl = getInitialAuthenticSiteImage(site);
       const attr = getSitePhotoAttribution(site, resolvedUrl);
+
+      if (!attr.isDomeSvg) {
+        expect(Boolean(attr.author && attr.author.trim().length > 0)).toBe(true);
+        expect(Boolean(attr.license && attr.license.trim().length > 0)).toBe(true);
+      }
 
       if (attr.kind === 'dome_svg') {
         domeSvgCount++;
@@ -131,14 +210,18 @@ describe('Strict Heritage Image Verification', () => {
       } else if (attr.kind === 'local_archive') {
         localArchiveCount++;
         expect(attr.isDomeSvg).toBe(false);
-        expect(Boolean(attr.author && attr.author.length > 1)).toBe(true);
-        expect(Boolean(attr.license && attr.license.length > 1)).toBe(true);
+        const fileKey = (attr.url || '').replace(/^\/thumbs\//, '');
+        expect(attr.author).toBe(provMap[fileKey]?.author);
+        expect(attr.license).toBe(provMap[fileKey]?.license);
+        if (!provMap[fileKey]?.author.includes('Ziarah Nusantara')) {
+          expect(attr.author).not.toContain('Ziarah Nusantara');
+        }
       }
     }
 
     expect(wikimediaCount).toBe(74);
-    expect(localArchiveCount).toBe(12);
-    expect(domeSvgCount).toBe(97);
+    expect(localArchiveCount).toBe(10);
+    expect(domeSvgCount).toBe(99);
   });
 
   it('rejects copyright icons, bupati/mayor portraits, birds, bridges, tourists, Earth globes, and ZN logos', () => {
@@ -171,3 +254,4 @@ describe('Strict Heritage Image Verification', () => {
     ).toBe(true);
   });
 });
+
