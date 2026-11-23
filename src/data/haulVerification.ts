@@ -44,8 +44,26 @@ export type HaulDisplayResult =
     };
 
 export function getHaulDisplay(
-  site?: { id?: string | null; legacyId?: string | null } | null
+  site?: {
+    id?: string | null;
+    legacyId?: string | null;
+    haulSchedule?: string | null;
+    editedByCurator?: boolean | null;
+  } | null
 ): HaulDisplayResult {
+  if (
+    site?.editedByCurator === true &&
+    typeof site?.haulSchedule === 'string' &&
+    site.haulSchedule.trim().length > 0
+  ) {
+    return {
+      verified: true,
+      text: site.haulSchedule.trim(),
+      sourceUrl: '',
+      sourceName: 'Kurasi Dewan Kurator Ziarah Nusantara',
+    };
+  }
+
   const idKey = String(site?.id || '').trim();
   const legacyKey = String(site?.legacyId || '').trim();
   const entry =

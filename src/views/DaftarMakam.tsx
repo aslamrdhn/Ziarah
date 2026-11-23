@@ -1111,14 +1111,20 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                   {haulInfo.verified && (
                     <>
                       {' · '}
-                      <a
-                        href={haulInfo.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#1E6B47] hover:underline underline-offset-4 font-medium"
-                      >
-                        Sumber: {haulInfo.sourceName}
-                      </a>
+                      {haulInfo.sourceUrl ? (
+                        <a
+                          href={haulInfo.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#1E6B47] hover:underline underline-offset-4 font-medium"
+                        >
+                          Sumber: {haulInfo.sourceName}
+                        </a>
+                      ) : (
+                        <span className="text-[#1E6B47] font-medium">
+                          Sumber: {haulInfo.sourceName}
+                        </span>
+                      )}
                     </>
                   )}
                 </p>

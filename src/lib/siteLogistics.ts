@@ -165,8 +165,11 @@ function normalizeStringOrArray(value?: string | string[]): string[] {
       .map((item) => sanitizeHistoricalLogisticsText(String(item || '')))
       .filter(Boolean);
   }
-  const trimmed = sanitizeHistoricalLogisticsText(String(value));
-  return trimmed ? [trimmed] : [];
+  const lines = String(value)
+    .split(/\n+/)
+    .map((line) => sanitizeHistoricalLogisticsText(line))
+    .filter(Boolean);
+  return lines;
 }
 
 /**
@@ -213,10 +216,17 @@ export function getSiteBarokahHajat(
   site: Pick<ZiarahSite, 'id' | 'name' | 'title' | 'category' | 'location' | 'city' | 'province' | 'barokahHajat'>
 ): string {
   if (typeof site.barokahHajat === 'string' && site.barokahHajat.trim()) {
-    return sanitizeHistoricalLogisticsText(site.barokahHajat);
+    const lines = site.barokahHajat
+      .split(/\n+/)
+      .map((l) => sanitizeHistoricalLogisticsText(l))
+      .filter(Boolean);
+    return lines.join(' • ');
   }
   if (Array.isArray(site.barokahHajat) && site.barokahHajat.length > 0 && site.barokahHajat[0]?.trim()) {
-    return sanitizeHistoricalLogisticsText(site.barokahHajat[0]);
+    const items = site.barokahHajat
+      .map((l) => sanitizeHistoricalLogisticsText(String(l || '')))
+      .filter(Boolean);
+    return items.join(' • ');
   }
   return buildRoleBasedBarokahHajat(site);
 }

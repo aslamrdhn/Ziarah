@@ -75,6 +75,7 @@ export const DEFAULT_RUBRIK_GATE_SETTINGS: RubrikGateSettings = {
   bannerDescription:
     'Sebagai contoh kurasi sejarah & sanad, 2 tulisan pilihan dibuka secara gratis untuk Anda baca penuh. Seluruh naskah lainnya dikunci dalam Khazanah Khusus dan dapat dibuka dengan Infaq Operasional & Pemeliharaan Digital untuk Penjagaan Arsip Digital & Penyebaran Riwayat Auliya Nusantara.',
   pinnedFreeArticleIds: [
+    'rubrik-guru-sekumpul-martapura-untold',
     'rubrik-ulama-3-untold',
     'rubrik-sekumpul-adab',
     'rubrik-wali-songo-strategy',
@@ -122,7 +123,6 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   useEffect(() => {
     void ensureFullSitesLoaded();
   }, [ensureFullSitesLoaded]);
-  const rubrikMinAmount = copy.rubrikLockAmount || 10000;
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
@@ -156,6 +156,12 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
   // Gate & Donation state
   const [gateSettings, setGateSettings] = useState<RubrikGateSettings>(DEFAULT_RUBRIK_GATE_SETTINGS);
+  const rubrikMinAmount = Math.max(
+    2000,
+    gateSettings.minDonationAmount !== 10000
+      ? gateSettings.minDonationAmount
+      : copy.rubrikLockAmount || 10000
+  );
   const [bankDetails, setBankDetails] = useState({
     bankName: 'Bank BCA',
     accountNumber: '5470-0856-08',
@@ -509,7 +515,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
 
     try {
       const donationId = await submitDonationWithPrivateProof({
-        programId: 'riset-web',
+        programId: 'rubrik-manuskrip',
         programTitle: 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
         siteId: sanitizePlainText(unlockModalArticle?.siteId, 80) || 'web-riset',
         siteName: sanitizePlainText(unlockModalArticle?.siteName, 160) || 'Infaq Operasional & Pemeliharaan Digital Arsip Auliya Nusantara',
@@ -523,7 +529,12 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         showPublicly: !isAnonymous,
       });
 
-      saveVerifiedDonationRecord(donationId, unlockModalArticle?.siteId);
+      saveVerifiedDonationRecord({
+        donationId,
+        siteId: unlockModalArticle?.siteId,
+        programId: 'rubrik-manuskrip',
+        amount: cleanAmount,
+      });
       setIsSubmittingDonation(false);
       setUnlockSuccessState(true);
     } catch (error) {

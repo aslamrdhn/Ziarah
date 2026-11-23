@@ -95,36 +95,68 @@ export function getSitePhotoAttribution(
   if (isWikimediaUrl) {
     const author = (meta?.author || '').trim();
     const license = (meta?.license || '').trim();
-    if (!author || !license) {
-      return domeSvgResult;
+    if (author && license) {
+      return {
+        kind: 'wikimedia',
+        isDomeSvg: false,
+        isWikimediaPhoto: true,
+        url: effectiveUrl,
+        author,
+        license,
+        sourceUrl: effectiveUrl,
+        formattedAttribution: `Foto: ${author} (${license}) via Wikimedia Commons`,
+      };
     }
-    return {
-      kind: 'wikimedia',
-      isDomeSvg: false,
-      isWikimediaPhoto: true,
-      url: effectiveUrl,
-      author,
-      license,
-      sourceUrl: effectiveUrl,
-      formattedAttribution: `Foto: ${author} (${license}) via Wikimedia Commons`,
-    };
-  }
-
-  const localProv = getVerifiedLocalPhotoProvenance(effectiveUrl);
-  if (!localProv) {
+    if ((site as any).editedByCurator === true && site.imageSource && site.imageSource.trim()) {
+      const customSource = site.imageSource.trim();
+      return {
+        kind: 'wikimedia',
+        isDomeSvg: false,
+        isWikimediaPhoto: true,
+        url: effectiveUrl,
+        author: customSource,
+        license: 'Kurasi Dewan Kurator',
+        sourceUrl: effectiveUrl,
+        formattedAttribution: `Foto: ${customSource} via Wikimedia Commons`,
+      };
+    }
     return domeSvgResult;
   }
 
-  return {
-    kind: 'local_archive',
-    isDomeSvg: false,
-    isWikimediaPhoto: false,
-    url: effectiveUrl,
-    author: localProv.author,
-    license: localProv.license,
-    sourceUrl: localProv.sourceUrl || null,
-    formattedAttribution: `Foto: ${localProv.author} (${localProv.license})`,
-  };
+  const localProv = getVerifiedLocalPhotoProvenance(effectiveUrl);
+  if (localProv) {
+    return {
+      kind: 'local_archive',
+      isDomeSvg: false,
+      isWikimediaPhoto: false,
+      url: effectiveUrl,
+      author: localProv.author,
+      license: localProv.license,
+      sourceUrl: localProv.sourceUrl || null,
+      formattedAttribution: `Foto: ${localProv.author} (${localProv.license})`,
+    };
+  }
+
+  if (
+    (site as any).editedByCurator === true &&
+    effectiveUrl.startsWith('https://') &&
+    site.imageSource &&
+    site.imageSource.trim()
+  ) {
+    const customSource = site.imageSource.trim();
+    return {
+      kind: 'local_archive',
+      isDomeSvg: false,
+      isWikimediaPhoto: false,
+      url: effectiveUrl,
+      author: customSource,
+      license: 'Kurasi Dewan Kurator',
+      sourceUrl: effectiveUrl,
+      formattedAttribution: `Foto: ${customSource} (Kurasi Dewan Kurator)`,
+    };
+  }
+
+  return domeSvgResult;
 }
 
 export const AUTHENTIC_IMAGES_STORAGE_KEY = 'ziarah_verified_images_v4_strict';
@@ -554,17 +586,40 @@ export function getRegionalArchitecturalPhoto(
   return createArchitecturalPlaceholderDataUri(site);
 }
 
+export function isCuratorEditedPhotoUrlValid(url?: string | null): boolean {
+  if (!url) return false;
+  const trimmed = url.trim();
+  if (!trimmed || trimmed.startsWith('data:image/svg+xml')) return false;
+  if (trimmed.includes('images.unsplash.com/photo-1584551246679-0daf3d275d0f')) return false;
+  const lower = trimmed.toLowerCase();
+  let decoded = lower;
+  try {
+    decoded = decodeURIComponent(lower);
+  } catch {
+    decoded = lower;
+  }
+  for (const banned of BANNED_PHOTO_SUBSTRINGS) {
+    if (decoded.includes(banned)) return false;
+  }
+  if (trimmed.startsWith('/thumbs/')) {
+    return Boolean(getVerifiedLocalPhotoProvenance(trimmed));
+  }
+  if (!trimmed.startsWith('https://')) return false;
+  return (
+    /\.(jpe?g|png|webp)(\?|$)/i.test(decoded) ||
+    trimmed.includes('lh3.googleusercontent.com') ||
+    trimmed.includes('maps.googleapis.com')
+  );
+}
+
 export function getVerifiedStaticSitePhoto(site?: Partial<ZiarahSite> | null): string | null {
   if (!site) return null;
   const idKey = String(site.id || '').trim();
   const legacyKey = String(site.legacyId || '').trim();
 
   // 1. Edited by curator with a valid photo URL
-  if ((site as any).editedByCurator === true && isValidPhotoUrl(site.imageUrl)) {
-    const curatorUrl = String(site.imageUrl).trim();
-    if (!curatorUrl.startsWith('/thumbs/') || getVerifiedLocalPhotoProvenance(curatorUrl)) {
-      return curatorUrl;
-    }
+  if ((site as any).editedByCurator === true && isCuratorEditedPhotoUrlValid(site.imageUrl)) {
+    return String(site.imageUrl).trim();
   }
 
   // 2. First 12 canonical owner sites -> /thumbs/wali-1..12.webp ONLY if verified in localPhotoProvenance.json

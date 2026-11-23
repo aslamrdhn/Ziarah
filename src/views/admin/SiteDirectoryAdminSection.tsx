@@ -17,6 +17,7 @@ import {
 import type { ZiarahSite } from '../../data/sites';
 import { ALL_PROVINCES } from '../../data/initialSites';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../../lib/imageOptimizer';
+import { getInitialAuthenticSiteImage, getRegionalArchitecturalPhoto } from '../../lib/authenticSiteImages';
 import { extractCoordinatesFromMapsUrl } from '../AdminKurator';
 
 export interface SiteDirectoryAdminSectionProps {
@@ -1013,16 +1014,21 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
             className="p-4 hover:bg-stone-50/80 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
           >
             <div className="flex items-start space-x-3.5">
-              <img
-                src={optimizeSiteImageUrl(site.imageUrl, 120, 70)}
-                alt={site.title}
-                width={48}
-                height={48}
-                loading="lazy"
-                decoding="async"
-                className="w-12 h-12 rounded-xl object-cover border border-stone-200 shrink-0 bg-stone-100"
-                onError={(e) => handleOptimizedImageError(e, site.imageUrl)}
-              />
+              {(() => {
+                const resolvedThumbUrl = getInitialAuthenticSiteImage(site);
+                return (
+                  <img
+                    src={optimizeSiteImageUrl(resolvedThumbUrl, 120, 70)}
+                    alt={site.title}
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-12 h-12 rounded-xl object-cover border border-stone-200 shrink-0 bg-stone-100"
+                    onError={(e) => handleOptimizedImageError(e, resolvedThumbUrl, getRegionalArchitecturalPhoto(site))}
+                  />
+                );
+              })()}
               <div>
                 <div className="flex items-center flex-wrap gap-2">
                   <h4 className="font-serif font-bold text-stone-800 text-sm">{site.title}</h4>

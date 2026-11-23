@@ -114,7 +114,7 @@ export const AdminKurator: React.FC = () => {
     history: '',
     untoldStory: '',
     karomah: [],
-    imageUrl: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80',
+    imageUrl: '',
     openingHours: 'Buka 24 Jam',
     facilities: ['Masjid / Musholla', 'Area Parkir', 'Tempat Wudhu'],
     location: {
@@ -545,12 +545,17 @@ export const AdminKurator: React.FC = () => {
           title: item.targetName.startsWith('Makam') ? item.targetName : `Makam ${item.targetName}`,
           category: (item.category as any) || 'Ulama Nusantara',
           description: item.content.slice(0, 220),
+          summary: item.content.slice(0, 220),
           history: item.content,
           historySourceType: 'tradisi_lisan',
           karomahSourceType: 'tradisi_lisan',
-          imageUrl: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80',
+          imageUrl: '',
           openingHours: 'Buka 24 Jam',
           facilities: ['Masjid / Musholla', 'Tempat Wudhu', 'Area Parkir'],
+          address: item.mapsUrl || `${item.city || 'Nusantara'}`,
+          city: item.city || 'Nusantara',
+          province: item.province || 'Indonesia',
+          ...(item.mapsUrl ? { googleMapsUrl: item.mapsUrl } : {}),
           location: {
             lat: extractedCoords ? extractedCoords.lat : 0,
             lng: extractedCoords ? extractedCoords.lng : 0,
@@ -560,6 +565,8 @@ export const AdminKurator: React.FC = () => {
           },
           karomah: [],
           doaKhusus: [],
+          verifiedBy: 'Kurasi Dewan Kurator Ziarah Nusantara',
+          lastVerified: new Date().toISOString().slice(0, 10),
         });
         setPendingContributionIdToApprove(item.id);
         setActiveTab('makam');
@@ -673,9 +680,10 @@ export const AdminKurator: React.FC = () => {
         .replace(/^-|-$/g, '') ||
       `site-${Date.now()}`
     ).slice(0, 80);
-    const cleanImageUrl =
-      sanitizeHttpUrl(editingSite.imageUrl, 1000) ||
-      'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80';
+    const rawCleanImageUrl = sanitizeHttpUrl(editingSite.imageUrl, 1000) || '';
+    const cleanImageUrl = rawCleanImageUrl.includes('images.unsplash.com/photo-1584551246679-0daf3d275d0f')
+      ? ''
+      : rawCleanImageUrl;
     const cleanDesc = sanitizeMultilineText(
       editingSite.description || editingSite.summary,
       1500
@@ -750,7 +758,7 @@ export const AdminKurator: React.FC = () => {
         editingSite.karomahSourceType || 'Tradisi Lisan & Kesaksian Jamaah Maqbarah',
       barokahHajat: sanitizeMultilineText(
         Array.isArray(editingSite.barokahHajat)
-          ? editingSite.barokahHajat.join(' • ')
+          ? editingSite.barokahHajat.join('\n')
           : editingSite.barokahHajat,
         2000
       ),
@@ -759,7 +767,7 @@ export const AdminKurator: React.FC = () => {
       haulSchedule: sanitizePlainText(editingSite.haulSchedule, 240),
       localAdab: sanitizeMultilineText(
         Array.isArray(editingSite.localAdab)
-          ? editingSite.localAdab.join(' • ')
+          ? editingSite.localAdab.join('\n')
           : editingSite.localAdab,
         2000
       ),
@@ -1590,7 +1598,7 @@ export const AdminKurator: React.FC = () => {
                     localAdab: '',
                     karomah: [],
                     doaKhusus: [],
-                    imageUrl: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=900&q=80',
+                    imageUrl: '',
                     openingHours: 'Buka 24 Jam',
                     facilities: ['Masjid / Musholla', 'Area Parkir', 'Tempat Wudhu'],
                     location: { lat: -6.9, lng: 110.4, address: '', city: '', province: '' },
@@ -1612,12 +1620,12 @@ export const AdminKurator: React.FC = () => {
                     era: s.era || '',
                     sanad: s.sanad || '',
                     barokahHajat: Array.isArray(s.barokahHajat)
-                      ? s.barokahHajat.join(' • ')
+                      ? s.barokahHajat.join('\n')
                       : s.barokahHajat || '',
                     untoldStory: s.untoldStory || '',
                     haulSchedule: s.haulSchedule || '',
                     localAdab: Array.isArray(s.localAdab)
-                      ? s.localAdab.join(' • ')
+                      ? s.localAdab.join('\n')
                       : s.localAdab || '',
                     imageSource: s.imageSource || '',
                     karomah: Array.isArray(s.karomah) ? [...s.karomah] : [],

@@ -1707,14 +1707,20 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                       {haulInfo.verified && (
                                         <>
                                           {' · '}
-                                          <a
-                                            href={haulInfo.sourceUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-emerald-800 hover:underline underline-offset-2 font-medium"
-                                          >
-                                            Sumber: {haulInfo.sourceName}
-                                          </a>
+                                          {haulInfo.sourceUrl ? (
+                                            <a
+                                              href={haulInfo.sourceUrl}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-emerald-800 hover:underline underline-offset-2 font-medium"
+                                            >
+                                              Sumber: {haulInfo.sourceName}
+                                            </a>
+                                          ) : (
+                                            <span className="text-emerald-800 font-medium">
+                                              Sumber: {haulInfo.sourceName}
+                                            </span>
+                                          )}
                                         </>
                                       )}
                                     </>
@@ -1852,14 +1858,20 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                   </p>
                                   {haulInfo.verified && (
                                     <div className="mt-1 flex flex-wrap items-center gap-2">
-                                      <a
-                                        href={haulInfo.sourceUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-xs font-medium text-emerald-800 hover:underline underline-offset-4"
-                                      >
-                                        Sumber: {haulInfo.sourceName} ↗
-                                      </a>
+                                      {haulInfo.sourceUrl ? (
+                                        <a
+                                          href={haulInfo.sourceUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-xs font-medium text-emerald-800 hover:underline underline-offset-4"
+                                        >
+                                          Sumber: {haulInfo.sourceName} ↗
+                                        </a>
+                                      ) : (
+                                        <span className="text-xs font-medium text-emerald-800">
+                                          Sumber: {haulInfo.sourceName}
+                                        </span>
+                                      )}
                                       {estimateHaulGregorian2026(haulInfo.text, site.id) && (
                                         <span className="inline-block px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-medium">
                                           {estimateHaulGregorian2026(haulInfo.text, site.id)}
