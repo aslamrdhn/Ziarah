@@ -110,9 +110,9 @@ export const KebijakanKurasi: React.FC = () => {
           <div className="w-12 h-12 bg-sky-50 rounded-2xl border border-sky-200 flex items-center justify-center mb-5">
             <Globe className="w-6 h-6 text-sky-700" />
           </div>
-          <h2 className="text-lg font-serif font-black text-slate-900 mb-3 tracking-tight">4. Standar Spasial PostGIS</h2>
+          <h2 className="text-lg font-serif font-black text-slate-900 mb-3 tracking-tight">4. Standar Koordinat Geospasial</h2>
           <p className="text-xs sm:text-sm text-slate-500 mb-5 flex-1 leading-relaxed">
-            Semua koordinat makam disimpan menggunakan standar GeoJSON dan indeks spasial <strong className="text-sky-800">GiST PostGIS (EPSG:4326)</strong> dengan urutan bujur/lintang <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[11px] text-slate-800">[longitude, latitude]</code> untuk memastikan integrasi akurat dengan peta rute Google Maps navigasi lapangan.
+            Seluruh titik lokasi makam disimpan menggunakan sistem koordinat geografis standar <strong className="text-sky-800">WGS84 (EPSG:4326)</strong> dengan pasangan lintang dan bujur (<code className="bg-slate-100 px-1.5 py-0.5 rounded text-[11px] text-slate-800">lat, lng</code>) yang terhubung langsung ke peta interaktif Leaflet dan navigasi rute Google Maps lapangan.
           </p>
         </motion.div>
 

@@ -309,6 +309,10 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
+    const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+    if (conn?.saveData) {
+      return;
+    }
     void ensureFullSitesLoaded();
   }, [ensureFullSitesLoaded]);
 

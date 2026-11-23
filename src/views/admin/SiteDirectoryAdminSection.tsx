@@ -522,7 +522,7 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                     className="w-full px-3.5 py-2 bg-white border border-stone-300 rounded-xl text-sm"
                   />
                 </div>
-                <div>
+                <div className="space-y-2">
                   <label className="block text-xs font-bold text-stone-700 mb-1">
                     Jadwal Haul Tahunan (`haulSchedule`)
                   </label>
@@ -530,9 +530,57 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
                     type="text"
                     value={editingSite.haulSchedule || ''}
                     onChange={(e) => setEditing({ ...editingSite, haulSchedule: e.target.value })}
-                    placeholder="Contoh: Setiap 15 Muharram di Kompleks Masjid Colo Kudus"
+                    placeholder="Contoh: Setiap 10 Muharram (puncak tradisi Buka Luwur)"
                     className="w-full px-3.5 py-2 bg-white border border-stone-300 rounded-xl text-sm"
                   />
+                  <label className="inline-flex items-center gap-2 text-xs font-bold text-emerald-900 cursor-pointer select-none pt-1">
+                    <input
+                      type="checkbox"
+                      checked={editingSite.haulVerified === true}
+                      onChange={(e) =>
+                        setEditing({
+                          ...editingSite,
+                          haulVerified: e.target.checked,
+                        })
+                      }
+                      className="rounded border-stone-300 text-emerald-800 focus:ring-emerald-700 cursor-pointer"
+                    />
+                    <span>Jadwal Haul Terverifikasi (`haulVerified`)</span>
+                  </label>
+                  {editingSite.haulVerified && (
+                    <div className="space-y-2 pt-1">
+                      <div>
+                        <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                          Tautan Sumber Resmi Haul (`https://...`) <span className="text-rose-600">*</span>
+                        </label>
+                        <input
+                          type="url"
+                          required={editingSite.haulVerified === true}
+                          pattern="https://.*"
+                          value={editingSite.haulSourceUrl || ''}
+                          onChange={(e) =>
+                            setEditing({ ...editingSite, haulSourceUrl: e.target.value })
+                          }
+                          placeholder="https://visitjawatengah.jatengprov.go.id/..."
+                          className="w-full px-3 py-1.5 bg-white border border-stone-300 rounded-xl text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                          Nama Media / Instansi Sumber Haul (`haulSourceLabel` - Opsional)
+                        </label>
+                        <input
+                          type="text"
+                          value={editingSite.haulSourceLabel || ''}
+                          onChange={(e) =>
+                            setEditing({ ...editingSite, haulSourceLabel: e.target.value })
+                          }
+                          placeholder="Contoh: Visit Jawa Tengah / Detik Jateng"
+                          className="w-full px-3 py-1.5 bg-white border border-stone-300 rounded-xl text-xs"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

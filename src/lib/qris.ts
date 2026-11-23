@@ -168,3 +168,35 @@ export function buildQrisPayload(
   return injectQrisAmountTag54(clean, options.amount);
 }
 
+/**
+ * Menghasilkan payload QRIS nominal pasti (terkunci minimal MIN_DONATION_AMOUNT = Rp 2.000)
+ * dengan mendukung customTierPayload opsional per tier yang tervalidasi EMVCo & CRC-16.
+ */
+export function resolveLockedTierQrisPayload(
+  basePayload: string,
+  amount: number,
+  customTierPayload?: string
+): string {
+  const lockedAmount = Math.max(MIN_DONATION_AMOUNT, Math.round(Number(amount) || MIN_DONATION_AMOUNT));
+  const trimmedCustom = (customTierPayload || '').trim();
+
+  if (trimmedCustom && trimmedCustom.startsWith('000201') && !LEGACY_QRIS_PAYLOADS.has(trimmedCustom)) {
+    const crcTagIndex = trimmedCustom.lastIndexOf('6304');
+    if (trimmedCustom.length >= 24 && crcTagIndex !== -1 && crcTagIndex === trimmedCustom.length - 8) {
+      const payloadWithoutCrcValue = trimmedCustom.slice(0, -4);
+      const providedCrc = trimmedCustom.slice(-4).toUpperCase();
+      if (computeQrisCrc16(payloadWithoutCrcValue) === providedCrc) {
+        const tags = parseEmvTags(trimmedCustom);
+        const tag54Amt = Number(tags.get('54'));
+        if (Number.isFinite(tag54Amt) && Math.round(tag54Amt) >= MIN_DONATION_AMOUNT) {
+          return trimmedCustom;
+        }
+        return injectQrisAmountTag54(trimmedCustom, lockedAmount);
+      }
+    }
+  }
+
+  return injectQrisAmountTag54(resolveOfficialQrisPayload(basePayload), lockedAmount);
+}
+
+

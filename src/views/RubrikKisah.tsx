@@ -183,7 +183,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>('QRIS');
   const [senderAccount, setSenderAccount] = useState<string>('');
   const [receipt, setReceipt] = useState<CompressedReceiptResult | null>(null);
-  const [agreedToAkad, setAgreedToAkad] = useState<boolean>(true);
+  const [agreedToAkad, setAgreedToAkad] = useState<boolean>(false);
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [unlockSuccessState, setUnlockSuccessState] = useState<boolean>(false);
@@ -450,7 +450,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
     setSubmitError(null);
     setUnlockSuccessState(false);
     setReceipt(null);
-    setAgreedToAkad(true);
+    setAgreedToAkad(false);
     setIsAnonymous(false);
     if (auth.currentUser?.displayName && !senderAccount) {
       setSenderAccount(auth.currentUser.displayName);
@@ -527,6 +527,9 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         doaHajat: finalDoaHajat,
         isAnonymous,
         showPublicly: !isAnonymous,
+        consentAkad: true,
+        consentVersion: '2026-11-23',
+        consentAt: new Date().toISOString(),
       });
 
       saveVerifiedDonationRecord({

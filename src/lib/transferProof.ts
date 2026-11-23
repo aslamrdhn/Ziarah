@@ -55,6 +55,10 @@ export interface SubmitDonationPayload {
   doaHajat: string;
   isAnonymous?: boolean;
   showPublicly?: boolean;
+  agreedToAkad?: boolean;
+  consentAkad?: boolean;
+  consentVersion?: string;
+  consentAt?: string;
 }
 
 export interface PrivateProofData {
@@ -279,6 +283,10 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
     throw new Error('Bukti transfer belum terlampir dengan lengkap. Silakan pilih foto struk transfer.');
   }
 
+  if (payload.agreedToAkad === false || payload.consentAkad === false) {
+    throw new Error('Mohon centang persetujuan akad Infaq Operasional & kebijakan privasi (UU PDP).');
+  }
+
   const donationRef = doc(collection(db, 'donations'));
   const donationId = donationRef.id;
   const authorUid = auth.currentUser?.uid || 'guest';
@@ -321,6 +329,9 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
     doaHajat: String(payload.doaHajat || '').slice(0, 200),
     authorUid,
     status: 'pending',
+    consentAkad: true,
+    consentVersion: String(payload.consentVersion || '2026-11-23').slice(0, 40),
+    consentAt: String(payload.consentAt || new Date().toISOString()).slice(0, 64),
     createdAt: serverTimestamp(),
   });
 

@@ -92,6 +92,9 @@ export interface ZiarahSite {
   karomahSourceType?: SourceClassification;
   untoldStory?: string;
   haulSchedule?: string;
+  haulVerified?: boolean;
+  haulSourceUrl?: string;
+  haulSourceLabel?: string;
   localAdab?: string | string[];
   barokahHajat?: string | string[];
   doaKhusus?: DoaKhususEntry[];

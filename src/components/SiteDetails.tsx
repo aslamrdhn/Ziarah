@@ -2038,11 +2038,69 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                             Sumber Literatur &amp; Ensiklopedia
                           </h4>
                           <ol className="space-y-1.5 list-decimal list-inside">
-                            {site.references.map((ref, idx) => (
-                              <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
-                                {ref}
-                              </li>
-                            ))}
+                            {site.references.map((ref, idx) => {
+                              const mdLinkMatch = ref.match(/^(.*?)\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)(.*)$/);
+                              if (mdLinkMatch) {
+                                const [, prefix, label, url, suffix] = mdLinkMatch;
+                                return (
+                                  <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
+                                    {prefix}
+                                    <a
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-emerald-800 hover:text-emerald-950 underline underline-offset-4 break-words"
+                                    >
+                                      {label} ↗
+                                    </a>
+                                    {suffix}
+                                  </li>
+                                );
+                              }
+                              const parenUrlMatch = ref.match(/^(.*?)\s*\((https?:\/\/[^\s)]+)\)\s*$/);
+                              if (parenUrlMatch) {
+                                const [, textPart, url] = parenUrlMatch;
+                                return (
+                                  <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
+                                    <span>{textPart} — </span>
+                                    <a
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-emerald-800 hover:text-emerald-950 underline underline-offset-4 break-all"
+                                    >
+                                      {url} ↗
+                                    </a>
+                                  </li>
+                                );
+                              }
+                              const bareUrlMatch = ref.match(/^(.*?)(https?:\/\/\S+)(.*)$/);
+                              if (bareUrlMatch) {
+                                const [, before, rawUrl, after] = bareUrlMatch;
+                                const cleanUrl = rawUrl.replace(/[),.]+$/, '');
+                                const trailingPunct = rawUrl.slice(cleanUrl.length);
+                                return (
+                                  <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
+                                    {before}
+                                    <a
+                                      href={cleanUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-emerald-800 hover:text-emerald-950 underline underline-offset-4 break-all"
+                                    >
+                                      {cleanUrl} ↗
+                                    </a>
+                                    {trailingPunct}
+                                    {after}
+                                  </li>
+                                );
+                              }
+                              return (
+                                <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
+                                  {ref}
+                                </li>
+                              );
+                            })}
                           </ol>
                         </div>
                       )}

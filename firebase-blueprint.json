@@ -145,13 +145,20 @@
     },
     "AppSettings": {
       "title": "Application Settings",
-      "description": "Configurable settings for self-hosting such as bank account details, official QRIS image, and customizable Infaq programs.",
+      "description": "Configurable settings for self-hosting such as bank account details, official QRIS image, customizable Infaq programs, ordered donation tiers, and WhatsApp confirmation template.",
       "type": "object",
       "properties": {
         "bankName": { "type": "string", "maxLength": 100 },
         "accountNumber": { "type": "string", "maxLength": 60 },
         "accountHolder": { "type": "string", "maxLength": 120 },
         "qrisImageUrl": { "type": "string", "maxLength": 1000 },
+        "qrisPayload": { "type": "string", "maxLength": 1000 },
+        "donationTiers": {
+          "type": "array",
+          "description": "Ordered fixed QRIS donation nominal tiers with labels and optional per-tier QRIS overrides."
+        },
+        "whatsappConfirmNumber": { "type": "string", "maxLength": 32 },
+        "whatsappMessageTemplate": { "type": "string", "maxLength": 1000 },
         "customDomain": { "type": "string", "maxLength": 120 },
         "programs": {
           "type": "array",

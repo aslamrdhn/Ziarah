@@ -65,13 +65,17 @@ service cloud.firestore {
       return data.keys().hasOnly([
           'id', 'programId', 'programTitle', 'siteId', 'siteName', 'amount',
           'donorName', 'isAnonymous', 'paymentMethod', 'hasProof', 'referenceCode',
-          'doaHajat', 'authorUid', 'status', 'createdAt', 'aamiinCount', 'updatedAt'
+          'doaHajat', 'authorUid', 'status', 'createdAt', 'aamiinCount', 'updatedAt',
+          'consentAkad', 'consentVersion', 'consentAt'
         ]) &&
         data.programId is string && data.programId.size() >= 1 && data.programId.size() <= 100 &&
         data.amount is number && data.amount >= 2000 && data.amount <= 1000000000 &&
         data.donorName is string && data.donorName.size() >= 1 && data.donorName.size() <= 100 &&
         data.hasProof == true &&
         !('proofImageUrl' in data) &&
+        (!('consentAkad' in data) || data.consentAkad == true) &&
+        (!('consentVersion' in data) || (data.consentVersion is string && data.consentVersion.size() <= 40)) &&
+        (!('consentAt' in data) || (data.consentAt is string && data.consentAt.size() <= 64)) &&
         data.status in ['pending', 'confirmed', 'verified', 'rejected'];
     }
 

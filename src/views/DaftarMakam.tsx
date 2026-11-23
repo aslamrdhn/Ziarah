@@ -480,6 +480,10 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
   const { copy } = useSiteCopy();
 
   useEffect(() => {
+    const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+    if (conn?.saveData) {
+      return;
+    }
     void ensureFullSitesLoaded();
   }, [ensureFullSitesLoaded]);
 

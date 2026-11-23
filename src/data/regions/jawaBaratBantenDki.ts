@@ -39,25 +39,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Pepatah falsafah sosial: "Ingsun titip tajug lan fakir miskin" (Aku titipkan langgar/masjid dan kaum fakir miskin)',
     ],
     history:
-      'Syarif Hidayatullah atau Kanjeng Sunan Gunung Jati lahir sekitar tahun 1448 M dari pernikahan penguasa Mesir Syarif Abdullah Umdatuddin (keturunan Bani Hasyim jalur Sayyid Abdul Malik Azmatkhan) dengan Nyai Rara Santang (Syarifah Mudaim), putri Sri Baduga Maharaja Prabu Siliwangi dari Kerajaan Pajajaran. Sejak remaja beliau menuntut ilmu agama di Makkah, Madinah, Baghdad, dan Mesir sebelum memutuskan kembali ke tanah leluhur ibundanya di Nusantara untuk mengemban amanat dakwah.\n\nSetibanya di pesisir Caruban (Cirebon) sekitar tahun 1470-an, beliau berguru kepada Syekh Datuk Kahfi di Bukit Amparan Jati dan membantu pamannya, Pangeran Cakrabuana (Mbah Kuwu Sangkan), membina masyarakat dukuh Caruban. Pada tahun 1479 M, Pangeran Cakrabuana menyerahkan tampuk kepemimpinan Nagari Caruban kepada Syarif Hidayatullah yang kemudian dinobatkan sebagai Tumenggung Syarif Hidayatullah bin Maulana Sultan Muhammad Syarifuddin dan didukung oleh Dewan Wali Songo.\n\nSebagai satu-satunya anggota Wali Songo yang sekaligus memimpin kesultanan secara langsung, Sunan Gunung Jati membangun jaringan pelabuhan Muara Jati, memperluas dakwah ke pedalaman Pasundan serta pesisir Banten, dan menggalang koalisi bersama Kesultanan Demak untuk membebaskan Sunda Kelapa dari pendudukan Portugis pada tahun 1527 M. Beliau wafat pada tahun 1568 M dalam usia lanjut dan dimakamkan di puncak Bukit Gunung Sembung, Cirebon.',
+      'Syarif Hidayatullah atau Sunan Gunung Jati merupakan satu-satunya anggota Wali Songo yang secara langsung memimpin dakwah Islam di tanah Pasundan (Jawa Barat dan Banten) sekaligus meletakkan fondasi Kesultanan Cirebon dan Kesultanan Banten (melalui putranya, Sultan Maulana Hasanuddin).\n\nBeliau memadukan peran sebagai ulama besar dan negarawan yang menata pemerintahan, perdagangan pelabuhan, serta jaringan dakwah hingga ke wilayah pedalaman Sunda dan Pakuan Bogor—sebagaimana tercatat dalam liputan NU Online mengenai utusan-utusan dakwah beliau di wilayah selatan Cirebon hingga Bogor.\n\nKompleks pemakaman beliau di Astana Gunung Jati, Cirebon, hingga kini dijaga oleh juru kunci dan keluarga keraton dengan sembilan pintu gerbang bertingkat yang mencerminkan akulturasi arsitektur Islam, Jawa, Sunda, dan Tiongkok.',
     karomah: [
       'Dalam riwayat manaqib dan tradisi tutur masyarakat Cirebon serta Babad Tanah Sunda, dikisahkan bahwa ketika Sunan Gunung Jati membangun jaringan pengobatan dan pertanian bagi warga Caruban, banyak penduduk yang sembuh dari wabah penyakit hanya melalui perantara doa dan air wudhu di langgar (tajug) yang beliau dirikan. Kelembutan akhlak beliau membuat para adipati dan resi Pajajaran memeluk Islam tanpa paksaan pedang.<!--more-->\n\nTradisi lisan keraton juga mengisahkan peristiwa musyawarah para wali di Masjid Agung Sang Cipta Rasa, di mana pancaran kewibawaan batin Sunan Gunung Jati membuat para utusan yang semula datang untuk menguji kesaktian beliau justru bersimpuh menyatakan syahadat dan mengabdi sebagai santri penjaga pesisir Cirebon.',
     ],
     untoldStory:
-      'Di balik kemegahan arsitektur sembilan pintu bertingkat di Astana Gunung Sembung yang dihiasi porselen Dinasti Ming, tersimpan pesan konstitusional Sunan Gunung Jati yang melampaui zamannya, yakni wasiat singkat namun menggetarkan: "Ingsun titip tajug lan fakir miskin" (Aku titipkan langgar tempat pendidikan ibadah dan kaum fakir miskin).<!--more-->\n\nWasiat ini bukan sekadar nasihat moral, melainkan fondasi kebijakan fiskal Kesultanan Cirebon di mana hasil pajak pelabuhan Muara Jati dan tanah perdikan dialokasikan untuk menghidupi masjid-masjid desa serta menjamin tidak ada warga miskin yang terlantar. Hingga kini, falsafah tersebut menjadi pedoman hidup masyarakat Cirebon dalam memuliakan tamu peziarah dan menyantuni kaum dhuafa di sekitar maqbarah.',
+      '**Fakta Sejarah & Ajaran Inti:** Wasiat Sunan Gunung Jati yang paling masyhur dan dijadikan pegangan etis lintas generasi di Cirebon adalah: ***"Ingsun titip tajug lan fakir miskin"*** (*"Aku titip masjid/tempat ibadah dan fakir miskin"*). Dalam kajian akademik *Jurnal At-Taghyir* (UIN Syahada), wasiat ringkas ini merangkum dua poros utama ajaran Islam: merawat hubungan vertikal kepada Allah SWT (*tajug*/masjid) sekaligus menunaikan tanggung jawab sosial horizontal (*fakir miskin*). Jika salah satunya pincang—rajin beribadah namun abai pada penderitaan sekitar, atau sibuk urusan sosial namun lupa kepada Allah—maka keseimbangan hidup ikut goyah.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Dalam tradisi tutur masyarakat Cirebon dan Banten, Sunan Gunung Jati dikenang sebagai pemimpin yang sangat disiplin menjaga kebersihan niat dan keberanian membela rakyat kecil. Peziarah yang duduk berdoa di serambi depan pintu Astana Gunung Jati (karena area inti makam khusus keluarga keraton) diajak merenungkan bahwa kedekatan doa tidak diukur dari seberapa dekat jarak fisik ke batu nisan, melainkan dari seberapa tulus hati menghadap kepada Allah SWT.',
     barokahHajat:
       'Peziarah yang berwasilah di Astana Gunung Sembung lazimnya memohon keberkahan kepemimpinan yang adil, kemakmuran usaha perniagaan, serta keteguhan menjaga amanah keluarga dan kepedulian sosial terhadap sesama sebagaimana wasiat "Ingsun titip tajug lan fakir miskin".',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Sunan Gunung Jati (Syekh Syarif Hidayatullah)',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ سُلْطَانِ الْأَوْلِيَاءِ الشَّيْخِ الشَّرِيفِ هِدَايَةِ اللهِ سُونَانْ غُونُونْج جَاتِي شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ انْفَعْنَا بِكَرَامَتِهِ وَأَسْرَارِهِ وَعُلُومِهِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ سُلْطَانِ الْأَوْلِيَاءِ الشَّيْخِ الشَّرِيفِ هِدَايَةِ اللهِ سُونَانْ غُونُونْج جَاتِي شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ انْفَعْنَا بِكَرَامَتِهِ وَأَسْرَارِهِ وَعُلُومِهِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ.',
+        title: 'Doa Amanah Kepemimpinan, Kemakmuran & Kepedulian Sesama',
+        arab: 'اللَّهُمَّ أَعِنَّا عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ، وَارْزُقْنَا حُبَّ الْمَسَاكِينِ وَالْعَمَلَ الصَّالِحَ',
+        text: 'اللَّهُمَّ أَعِنَّا عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ، وَارْزُقْنَا حُبَّ الْمَسَاكِينِ وَالْعَمَلَ الصَّالِحَ',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhi Sulthaanil-Auliyaa-i Asy-Syaikh Asy-Syariif Hidaayatullaah Suunaan Gunuung Jaatii syai-un lillaahi lahumul-Faatihah. Allaahummanfa'naa bi karaamatihii wa asraarihii wa 'uluumihii fid-diini wad-dun-yaa wal-aakhirah.",
+          'Allāhumma a‘innā ‘alā dzikrika wa syukrika wa ḥusni ‘ibādatik, warzuqnā ḥubbal-masākīni wal-‘amalaṣ-ṣāliḥ.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh Sulthanul Auliya Syekh Syarif Hidayatullah Sunan Gunung Jati, Al-Fatihah. Ya Allah, limpahkanlah kepada kami kemanfaatan melalui kemuliaan, rahasia ketakwaan, dan ilmu beliau di dalam urusan agama, dunia, dan akhirat.',
+          'Ya Allah, tolonglah kami untuk senantiasa mengingat-Mu, bersyukur kepada-Mu, dan memperbaiki ibadah kepada-Mu; serta karuniakanlah kepada kami kecintaan kepada orang-orang miskin dan kekuatan untuk beramal saleh.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh Sulthanul Auliya Syekh Syarif Hidayatullah Sunan Gunung Jati, Al-Fatihah. Ya Allah, limpahkanlah kepada kami kemanfaatan melalui kemuliaan, rahasia ketakwaan, dan ilmu beliau di dalam urusan agama, dunia, dan akhirat.',
+          'Ya Allah, tolonglah kami untuk senantiasa mengingat-Mu, bersyukur kepada-Mu, dan memperbaiki ibadah kepada-Mu; serta karuniakanlah kepada kami kecintaan kepada orang-orang miskin dan kekuatan untuk beramal saleh.',
       },
     ],
     haulSchedule:
@@ -67,9 +67,9 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Dog Jumeneng', 'Serambi Pasujudan Astana Gunung Sembung', 'Tempat Wudhu & Toilet', 'Area Parkir Bus Ziarah'],
     openingHours: 'Buka 24 Jam (Area Pintu Pasujudan)',
     references: [
-      'Sunyoto, Agus (2016). Atlas Wali Songo: Buku Pertama yang Mengungkap Wali Songo Sebagai Fakta Sejarah. Pustaka IIMaN.',
-      'Djajadiningrat, Hoesein (1983). Tinjauan Kritis Tentang Sejarah Banten. Djambatan.',
-      'Balai Pelestarian Cagar Budaya (BPCB) Banten — Data Cagar Budaya Kompleks Makam Sunan Gunung Jati Cirebon.',
+      'Jurnal At-Taghyir UIN Syahada — Dakwah Kultural & Wasiat "Ingsun Titip Tajug lan Fakir Miskin" (https://jurnal.uinsyahada.ac.id/index.php/taghyir/article/download/14895/6570)',
+      'NU Online — Jejak Utusan Dakwah Sunan Gunung Jati di Wilayah Pakuan Bogor (https://mail.nu.or.id/daerah/menjejak-makam-bersejarah-syekh-abdul-rosyid-tokoh-babad-alas-islam-di-bogor-Qzwch)',
+      'Indonesia Travel — Ziarah Wali Songo: Sejarah, Lokasi Makam, Tata Cara, dan Makna (https://www.indonesia.travel/id/id/travel-ideas/culture/ziarah-wali-songo)',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -939,25 +939,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Perluasan syiar Islam dan jaringan perdagangan lada dari Banten hingga Lampung dan Bengkulu',
     ],
     history:
-      'Sultan Maulana Hasanuddin yang lahir dengan nama Pangeran Sabakingkin adalah putra Kanjeng Sunan Gunung Jati (Syarif Hidayatullah) dari pernikahannya dengan Nyai Kawunganten, putri penguasa lokal Banten. Sejak usia muda sekitar tahun 1520-an, beliau mendampingi ayahandanya berdakwah secara damai kepada masyarakat Sunda di lereng Gunung Pulosari dan pesisir Banten Girang.\n\nSetelah berhasil mengislamkan para pucuk umum dan masyarakat pedalaman Banten serta menunaikan ibadah haji ke Makkah bersama Sunan Gunung Jati, Pangeran Sabakingkin memindahkan pusat pemerintahan dari pedalaman Banten Girang ke pesisir utara di Surosowan atas petunjuk sang ayah. Pada tahun 1552 M, beliau resmi dinobatkan sebagai Sultan pertama Kesultanan Banten dengan gelar Sultan Maulana Hasanuddin Panembahan Surosowan.\n\nDi bawah kepemimpinannya (1552–1570 M), Kesultanan Banten tumbuh pesat menjadi pelabuhan niaga internasional yang menghubungkan pedagang Nusantara, Gujarat, Arab, Persia, dan Tiongkok, serta memperluas dakwah Islam ke wilayah Lampung (Tulang Bawang dan Selebar). Beliau wafat pada tahun 1570 M dan dimakamkan di serambi utara Masjid Agung Banten Lama, Kecamatan Kasemen, Kota Serang.',
+      'Sultan Maulana Hasanuddin (memerintah 1552–1570 M) adalah putra Sunan Gunung Jati sekaligus Sultan pertama Kesultanan Banten. Di bawah kepemimpinan beliau, Banten tumbuh dari pelabuhan pesisir menjadi pusat perdagangan lada internasional dan pusat dakwah Islam terkemuka di ujung barat Pulau Jawa hingga meluas ke Lampung dan Bengkulu.\n\nPada masa pemerintahan beliau pula dibangun Keraton Surosowan dan Masjid Agung Banten (sekitar 1566 M / 966 H) yang atapnya bertingkat lima dengan perpaduan arsitektur Jawa, Tiongkok, dan Eropa.\n\nKawasan bersejarah ini kini dilindungi sebagai kawasan cagar budaya nasional Banten Lama, dan beliau dimakamkan di serambi utara kompleks Masjid Agung Banten.',
     karomah: [
       'Dalam riwayat manaqib dan tradisi tutur masyarakat Banten (Sejarah Banten / Babad Banten), dikisahkan bahwa ketika Maulana Hasanuddin berdakwah di lereng Gunung Pulosari, beliau beruzlah dan bermunajat selama bertahun-tahun hingga ketulusan ibadah dan kesantunan akhlaknya meluluhkan hati delapan ratus ajar (pendeta Sunda kuno) di bawah pimpinan Pucuk Umun untuk memeluk agama Islam.<!--more-->\n\n karena beliau wafat dan dimakamkan di samping Masjid Agung yang dibangunnya sendiri, masyarakat Banten menganugerahkan gelar kehormatan anumerta "Pangeran Suwargi" (Pangeran yang Bersemayam di Surga).',
     ],
     untoldStory:
-      'Keputusan strategis Sultan Maulana Hasanuddin memindahkan ibu kota Banten dari pedalaman Banten Girang ke muara sungai di pesisir Surosowan berdasarkan wasiat Sunan Gunung Jati mengandung tata ruang geopolitik Islam yang brilian: memadukan Masjid Agung di sebelah barat alun-alun, Keraton Surosowan di selatan, dan Pelabuhan Karangantu di timur.<!--more-->\n\nHingga hari ini, Kompleks Masjid Agung Banten Lama dan maqbarah Sultan Maulana Hasanuddin menjadi pusat ziarah paling ramai di Provinsi Banten, yang menyatukan warisan arsitektur Jawa-Sunda, Islam Timur Tengah, dan pengaruh Eropa kuno pada menara masjidnya.',
+      '**Fakta Sejarah & Ajaran Inti:** Sultan Maulana Hasanuddin memadukan dua hal yang jarang bertemu dalam satu figur: kecerdasan membangun ekonomi-pemerintahan dan kedalaman dakwah Islam. Pembangunan Masjid Agung Banten bersebelahan dengan pusat pemerintahan Surosowan dan pelabuhan perdagangan menunjukkan bahwa kemajuan ekonomi masyarakat harus berjalan seiring dengan keadilan dan nilai ibadah.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Dalam tradisi tutur masyarakat Banten, kawasan Banten Lama dan Masjid Agung Banten menjadi tempat berkumpulnya keluarga dari seluruh Jabodetabek dan Sumatera setiap malam Jumat maupun menjelang Ramadhan. Peziarah mengambil teladan dari keteguhan beliau dalam menata kemakmuran yang berpijak pada amanah dan tawakal.',
     barokahHajat:
       'Peziarah yang berziarah ke maqbarah Sultan Maulana Hasanuddin di Banten Lama lazimnya bertawassul memohon kepada Allah SWT agar dikaruniai kewibawaan dalam kepemimpinan, kelancaran rezeki usaha perniagaan, serta keberkahan keturunan yang teguh memegang agama.',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Sultan Maulana Hasanuddin Banten',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ السُّلْطَانِ الْعَادِلِ وَالْوَلِيِّ الصَّالِحِ السُّلْطَانِ مَوْلَانَا حَسَنِ الدِّينِ بِنْ الشَّيْخِ الشَّرِيفِ هِدَايَةِ اللهِ بَانْتِينْ شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ انْفَعْنَا بِبَرَكَتِهِ وَأَسْرَارِهِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ السُّلْطَانِ الْعَادِلِ وَالْوَلِيِّ الصَّالِحِ السُّلْطَانِ مَوْلَانَا حَسَنِ الدِّينِ بِنْ الشَّيْخِ الشَّرِيفِ هِدَايَةِ اللهِ بَانْتِينْ شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ انْفَعْنَا بِبَرَكَتِهِ وَأَسْرَارِهِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ.',
+        title: 'Doa Kemakmuran Keluarga & Amanah dalam Bekerja',
+        arab: 'رَبِّ اجْعَلْ هَذَا الْبَلَدَ آمِنًا وَارْزُقْ أَهْلَهُ مِنَ الثَّمَرَاتِ، وَأَصْلِحْ لَنَا شَأْنَنَا كُلَّهُ',
+        text: 'رَبِّ اجْعَلْ هَذَا الْبَلَدَ آمِنًا وَارْزُقْ أَهْلَهُ مِنَ الثَّمَرَاتِ، وَأَصْلِحْ لَنَا شَأْنَنَا كُلَّهُ',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhis-Sulthaanil-'Aadil wal-Waliyyish-Shaalih As-Sulthaan Maulaanaa Hasaniddiin bin Asy-Syaikh Asy-Syariif Hidaayatillaah Banten syai-un lillaahi lahumul-Faatihah. Allaahummanfa'naa bi barakatihii wa asraarihii fid-diini wad-dun-yaa wal-aakhirah.",
+          'Rabbij‘al hādzal-balada āminan warzuq ahlahu minaṡ-ṡamarāt, wa aṣliḥ lanā sya’nanā kullah.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh sultan yang adil dan wali yang shalih Sultan Maulana Hasanuddin bin Syekh Syarif Hidayatullah Banten, Al-Fatihah. Ya Allah, limpahkanlah kepada kami kemanfaatan melalui keberkahan dan rahasia keshalihan beliau di dalam agama, dunia, dan akhirat.',
+          'Ya Tuhanku, jadikanlah negeri ini negeri yang aman, karuniakanlah rezeki yang melimpah bagi penduduknya, dan perbaikilah seluruh urusan kami.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh sultan yang adil dan wali yang shalih Sultan Maulana Hasanuddin bin Syekh Syarif Hidayatullah Banten, Al-Fatihah. Ya Allah, limpahkanlah kepada kami kemanfaatan melalui keberkahan dan rahasia keshalihan beliau di dalam agama, dunia, dan akhirat.',
+          'Ya Tuhanku, jadikanlah negeri ini negeri yang aman, karuniakanlah rezeki yang melimpah bagi penduduknya, dan perbaikilah seluruh urusan kami.',
       },
     ],
     haulSchedule:
@@ -967,9 +967,9 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Agung Banten Lama', 'Menara Banten & Museum Kepurbakalaan', 'Plaza Peziarah Terpadu', 'Terminal Bus Wisata Ziarah'],
     openingHours: 'Buka 24 Jam',
     references: [
-      'Djajadiningrat, Hoesein (1983). Tinjauan Kritis Tentang Sejarah Banten. Djambatan.',
-      'Guillot, Claude (2008). Banten: Sejarah dan Peradaban Abad X–XVII. Kepustakaan Populer Gramedia.',
-      'Balai Pelestarian Cagar Budaya (BPCB) Banten — Data Cagar Budaya Nasional Kawasan Banten Lama.',
+      'Pemerintah Provinsi Banten — [Sejarah Masjid Agung Banten](https://satpolpp.bantenprov.go.id/berita/Sejarah-Masjid-Agung-Banten)',
+      'Historia.ID — [Situs Cagar Budaya di Banten Lama](https://www.historia.id/article/situs-cagar-budaya-di-banten-lama-pylb4)',
+      'Indonesia Kaya — [Perpaduan Arsitektur Budaya di Masjid Agung Banten](https://indonesiakaya.com/pustaka-indonesia/perpaduan-arsitektur-budaya-di-masjid-agung-banten/)',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1068,25 +1068,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Modernisasi armada maritim dan diplomasi internasional Kesultanan Banten ke Inggris, Prancis, Denmark, Turki Utsmani, dan Makkah',
     ],
     history:
-      'Sultan Ageng Tirtayasa yang bernama resmi Sultan Abu al-Fath Abdul Fattah lahir pada tahun 1631 M dan naik tahta sebagai Sultan Banten ke-6 pada tahun 1651 M menggantikan kakeknya, Sultan Abu al-Mafakhir Mahmud Abdul Qadir. Di bawah kepemimpinan beliau selama lebih dari tiga dekade, Kesultanan Banten mencapai puncak keemasan sebagai kekuatan maritim, pusat perdagangan bebas internasional, dan mercusuar keilmuan Islam di Asia Tenggara.\n\nDalam bidang keagamaan, Sultan Ageng Tirtayasa mengangkat ulama sufi dan pejuang besar asal Gowa, Syekh Yusuf Al-Makassari, sebagai Mufti Agung Kesultanan Banten sekaligus menantunya. Bersama Syekh Yusuf Al-Makassari, beliau mendidik para pangeran dan rakyat Banten dalam semangat jihad melawan monopoli kolonial VOC Belanda di Batavia, serta membangun kanal pertanian megah di wilayah Tirtayasa (Serang Utara) yang mampu mengairi ribuan hektar sawah sekaligus menjadi jalur transportasi kapal.\n\nAkibat politik adu domba (*devide et impera*) VOC yang memanfaatkan putranya, Sultan Haji, terjadi perang saudara hebat pada tahun 1682–1683 M. Sultan Ageng Tirtayasa memilih bergerilya di pedalaman sebelum akhirnya ditawan secara licik oleh Belanda di Batavia hingga wafat sebagai syahid bangsa pada tahun 1692 M. Jenazah beliau dipulangkan dengan penuh kehormatan dan dimakamkan di serambi utara Masjid Agung Banten Lama di samping leluhurnya, Sultan Maulana Hasanuddin. Pemerintah RI menganugerahkan gelar Pahlawan Nasional kepada beliau melalui SK Presiden Nomor 045/TK/Tahun 1970.',
+      'Sultan Ageng Tirtayasa—bernama asli Pangeran Surya atau Sultan Abu al-Fath Abdul Fattah—adalah Sultan Banten ke-6 (putra Sultan Abul Ma\'ali Ahmad dan Ratu Martakusuma) yang membawa Kesultanan Banten ke puncak kejayaan maritim, perdagangan internasional, serta pembangunan sistem irigasi pertanian (tirtayasa).\n\nBeliau dikenal karena kegigihannya menentang monopoli perdagangan VOC di Batavia dan menjalin hubungan diplomatik hingga ke Inggris, Denmark, dan Makkah.\n\nAtas perjuangannya mempertahankan kedaulatan dari kolonialisme hingga akhir hayatnya, Pemerintah Republik Indonesia menetapkan Sultan Ageng Tirtayasa sebagai Pahlawan Nasional pada tahun 1970.',
     karomah: [
       'Dalam riwayat manaqib dan tradisi tutur masyarakat Banten, dikisahkan bahwa keteguhan hati Sultan Ageng Tirtayasa selama ditawan oleh VOC di Batavia tidak pernah goyah sedikit pun; beliau menghabiskan masa pengasingannya dengan puasa, shalat malam, dan mengkhatamkan Al-Qur’an sebagaimana amalan Tarekat Khalwatiyah yang diijazahkan oleh menantunya, Syekh Yusuf Al-Makassari.<!--more-->\n\nMasyarakat Tirtayasa di Kabupaten Serang juga mewarisi kisah turun-temurun tentang keberkahan saluran air ("Kali Sultan") yang digali atas titah beliau pada abad ke-17; aliran sungai buatan tersebut tetap menghidupi sawah dan tambak masyarakat pesisir Serang selama lebih dari tiga ratus tahun.',
     ],
     untoldStory:
-      'Surat-menyurat diplomatik Sultan Ageng Tirtayasa dengan Raja Inggris Charles II dan Raja Denmark Christian V yang tersimpan di arsip Eropa membuktikan bahwa Kesultanan Banten pada abad ke-17 telah memiliki armada kapal laut modern yang dinakhodai pelaut Nusantara dan dilengkapi meriam buatan sendiri.<!--more-->\n\nNama besar beliau kini diabadikan menjadi nama perguruan tinggi negeri kebanggaan masyarakat Banten, Universitas Sultan Ageng Tirtayasa (Untirta), sebagai pengingat akan perpaduan antara ilmu pengetahuan teknologi pengairan (*Tirtayasa*) dan keberanian menjaga kedaulatan bangsa.',
+      '**Fakta Sejarah & Ajaran Inti:** Sisi paling menyentuh dari riwayat Sultan Ageng Tirtayasa adalah ujian berat dari dalam keluarga sendiri ketika konflik politik dengan putranya (Sultan Haji) dimanfaatkan oleh VOC pada Perang Banten 1682–1683. Meski akhirnya ditawan hingga wafat di Batavia dan kemudian dimakamkan di kompleks Masjid Agung Banten, beliau tidak pernah menggadaikan prinsip kedaulatan dan keberpihakannya kepada rakyat.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Bagi masyarakat Banten, nama Tirtayasa (air yang membawa kemakmuran) selalu dikenang sebagai simbol pemimpin yang memikirkan sawah dan pangan rakyat kecil sebelum memikirkan kemewahan istana. Ziarah ke makam beliau menguatkan hati siapa saja yang sedang menghadapi pengkhianatan atau ujian berat dalam menjaga amanah.',
     barokahHajat:
       'Peziarah yang berziarah ke makam dan situs perjuangan Sultan Ageng Tirtayasa lazimnya bertawassul memohon keberanian dalam membela kebenaran dan keadilan, kesuksesan studi di perguruan tinggi, serta keteguhan prinsip pemimpin agar tidak mudah diadu domba.',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Pahlawan Nasional Sultan Ageng Tirtayasa',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ السُّلْطَانِ الْمُجَاهِدِ أَبِي الْفَتْحِ عَبْدِ الْفَتَّاحِ (سُلْطَانْ أَغِينْج تِيرْتَايَاسَا بَانْتِينْ) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ انْصُرِ الْإِسْلَامَ وَالْمُسْلِمِينَ وَاحْفَظْ بِلَادَنَا بِبَرَكَةِ جِهَادِهِ وَإِخْلَاصِهِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ السُّلْطَانِ الْمُجَاهِدِ أَبِي الْفَتْحِ عَبْدِ الْفَتَّاحِ (سُلْطَانْ أَغِينْج تِيرْتَايَاسَا بَانْتِينْ) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ انْصُرِ الْإِسْلَامَ وَالْمُسْلِمِينَ وَاحْفَظْ بِلَادَنَا بِبَرَكَةِ جِهَادِهِ وَإِخْلَاصِهِ.',
+        title: 'Doa Kesabaran Menghadapi Ujian Berat & Keteguhan Amanah',
+        arab: 'حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ، نِعْمَ الْمَوْلَى وَنِعْمَ النَّصِيرُ، اللَّهُمَّ ثَبِّتْنَا عَلَى الْحَقِّ',
+        text: 'حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ، نِعْمَ الْمَوْلَى وَنِعْمَ النَّصِيرُ، اللَّهُمَّ ثَبِّتْنَا عَلَى الْحَقِّ',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhis-Sulthaanil-Mujaahid Abil-Fath 'Abdil-Fattaah (Sulthaan Ageng Tirtayasa Banten) syai-un lillaahi lahumul-Faatihah. Allaahummanshuril-Islaama wal-muslimiina wahfazh bilaadanaa bi barakati jihaadihii wa ikhlaashih.",
+          'Ḥasbunallāhu wa ni‘mal-wakīl, ni‘mal-maulā wa ni‘man-naṣīr. Allāhumma tsabbitnā ‘alal-ḥaqq.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh sultan pejuang Sultan Abu al-Fath Abdul Fattah (Sultan Ageng Tirtayasa Banten), Al-Fatihah. Ya Allah, tolonglah Islam dan kaum muslimin serta lindungilah negeri kami dengan keberkahan perjuangan dan keikhlasan beliau.',
+          'Cukuplah Allah menjadi Penolong kami dan Allah adalah sebaik-baik Pelindung. Ya Allah, teguhkanlah kami di atas kebenaran.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh sultan pejuang Sultan Abu al-Fath Abdul Fattah (Sultan Ageng Tirtayasa Banten), Al-Fatihah. Ya Allah, tolonglah Islam dan kaum muslimin serta lindungilah negeri kami dengan keberkahan perjuangan dan keikhlasan beliau.',
+          'Cukuplah Allah menjadi Penolong kami dan Allah adalah sebaik-baik Pelindung. Ya Allah, teguhkanlah kami di atas kebenaran.',
       },
     ],
     haulSchedule:
@@ -1096,9 +1096,8 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Kompleks Makam Masjid Agung Banten Lama', 'Situs Keraton Tirtayasa Serang', 'Musholla & Tempat Wudhu', 'Area Parkir'],
     openingHours: 'Buka 24 Jam',
     references: [
-      'Tjandrasasmita, Uka (1967). Sultan Ageng Tirtayasa: Musuh Besar Kompeni Belanda. Yayasan Kebudayaan Nusalarang.',
-      'Djajadiningrat, Hoesein (1983). Tinjauan Kritis Tentang Sejarah Banten. Djambatan.',
-      'Keputusan Presiden RI Nomor 045/TK/Tahun 1970 tentang Pahlawan Nasional Sultan Ageng Tirtayasa.',
+      'Kompas.com Stori — [Perjuangan Sultan Ageng Tirtayasa](https://www.kompas.com/stori/read/2023/01/11/160000679/perjuangan-sultan-ageng-tirtayasa)',
+      'Ensiklopedia Sejarah — [Sultan Ageng Tirtayasa (Wikipedia ID)](https://id.wikipedia.org/wiki/Tirtayasa_dari_Banten)',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1262,25 +1261,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Lebih dari 100 kitab standar pesantren dunia: Nashaihul Ibad, Nihayatuz Zain, Kasyifatus Saja, Qathrul Ghaits, Qami’uth Thughyan, Uqudul Lujjain, dan Nuruz Zhalam',
     ],
     history:
-      'Syekh Abu Abdul Mu’thi Muhammad Nawawi bin Umar Al-Tanari Al-Bantani Al-Jawi lahir di Kampung Tanara, Serang, Banten pada tahun 1230 H (1813 M). Setelah mempelajari ilmu dasar agama dari ayahnya KH. Umar bin Arabi serta berguru kepada Kyai Sahal Banten dan Kyai Yusuf Purwakarta, beliau berangkat ke Makkah pada usia 15 tahun dan memilih bermukim di Tanah Suci untuk menuntut ilmu sekaligus mengajar di serambi Masjidil Haram.\n\nKedalaman ilmu Syekh Nawawi Al-Bantani dalam bidang tafsir, fikih Syafi’iyah, ushuluddin, tasawuf, dan gramatika Arab diakui oleh para ulama Timur Tengah, terutama setelah beliau menerbitkan *Tafsir Marah Labid* di Kairo (Mesir) yang membuat para ulama Al-Azhar menganugerahkan gelar kehormatan *Sayyidul Ulama Al-Hijaz* (Pemimpin Ulama Hijaz) kepada beliau. Hampir seluruh tokoh pendiri organisasi Islam dan pesantren besar di Indonesia pada abad ke-20—mulai dari KH. Hasyim Asy’ari (NU), KH. Ahmad Dahlan (Muhammadiyah), hingga KH. Abdul Halim (PUI)—bersambung sanad keilmuannya kepada beliau.\n\nSyekh Nawawi Al-Bantani wafat di Syi’ib Ali, Makkah pada tanggal 25 Syawal 1314 H (1897 M) dan dimakamkan di Pemakaman Ma’la Makkah berdekatan dengan makam Siti Khadijah RA. Di tanah kelahirannya di Desa Tanara, Kabupaten Serang, berdiri Masjid Jami’ peninggalan ayahandanya, situs petilasan keluarga, dan Pondok Pesantren An-Nawawi Tanara yang setiap tahun menjadi pusat Haul Akbar Nasional untuk mengenang warisan keilmuan beliau.',
+      'Syekh Muhammad Nawawi bin Umar Al-Jawi Al-Bantani (lahir di Tanara, Serang, Banten pada 1813 M dan wafat di Makkah pada akhir abad ke-19) adalah ulama Nusantara berkaliber internasional yang mengajar di Masjidil Haram dan melahirkan generasi pendiri pesantren besar di Indonesia (termasuk KH. Hasyim Asy\'ari dan Syaikhona Kholil Bangkalan).\n\nKarya beliau yang paling monumental adalah kitab tafsir Al-Qur\'an 30 juz berbahasa Arab berjudul Tafsir Marah Labid (At-Tafsir Al-Munir), di samping puluhan kitab fikih, akhlak, dan tasawuf (Safinatun Najah syarah Kasyifatus Saja, Nashaihul Ibad, Uqudul Lujain) yang hingga kini tetap menjadi kurikulum utama pesantren di seluruh Nusantara.\n\nSecara faktual sejarah, beliau wafat dan dimakamkan di Pemakaman Ma\'la, Makkah, sedangkan kawasan Tanara, Serang merupakan situs sejarah kelahiran, pesantren, dan pusat peringatan haul akbar beliau di Indonesia.',
     karomah: [
       'Dalam riwayat manaqib dan kesaksian murid-murid beliau di Makkah maupun Nusantara, dikisahkan bahwa Syekh Nawawi Al-Bantani memiliki keberkahan waktu dan cahaya ilmu yang luar biasa; di tengah kesibukannya mengajar ratusan murid dari berbagai penjuru dunia di Masjidil Haram dengan hidup yang sangat sederhana, beliau mampu menulis lebih dari seratus kitab tebal hanya dengan penerangan lampu minyak.<!--more-->\n\nDiriwayatkan pula dalam literatur pesantren bahwa ketika masa sewa makam di Pemakaman Ma’la Makkah hendak digilir oleh petugas setempat beberapa tahun setelah wafatnya, jasad Syekh Nawawi Al-Bantani ditemukan masih utuh sempurna beserta kain kafannya, sehingga pemerintah setempat membiarkan pusara beliau tetap utuh.',
     ],
     untoldStory:
-      'Meskipun Syekh Nawawi Al-Bantani menghabiskan sebagian besar usianya di Makkah, orientasi perjuangan beliau tidak pernah lepas dari tanah airnya di Nusantara. Snouck Hurgronje yang meneliti komunitas Jawi di Makkah pada tahun 1885 mencatat bagaimana Syekh Nawawi dengan tegas menolak segala bentuk kerja sama dengan pemerintah kolonial Hindia Belanda.<!--more-->\n\nSitus Tanara di tepi Sungai Cidurian, Kabupaten Serang kini tidak hanya menjadi monumen sejarah masa kecil sang Imam Nawawi kedua (An-Nawawi Ats-Tsani), tetapi juga pusat pengkajian kitab *Tafsir Al-Munir* dan *Nihayatuz Zain* yang menghidupkan kembali tradisi penulisan kitab berbahasa Arab di kalangan santri Indonesia.',
+      '**Fakta Sejarah & Ajaran Inti:** Kejujuran informasi bahwa makam fisik Syekh Nawawi berada di Makkah justru memperkuat wibawa situs Tanara sebagai titik awal perjalanan ilmu seorang anak desa Banten yang mendunia. Melalui kitab-kitab beliau seperti Nashaihul Ibad dan Marah Labid, Syekh Nawawi mengajarkan bahwa ketenangan hidup tidak lahir dari jalan pintas, melainkan dari disiplin ilmu, adab kepada orang tua dan guru, serta kesungguhan memperbaiki akhlak sehari-hari.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Di lingkungan pesantren Nusantara, Syekh Nawawi dikenang sebagai ulama yang sangat sederhana dan tekun menulis di waktu malam dengan penerangan seadanya demi mewariskan ilmu yang mudah dipahami santri-santri Jawi (Nusantara). Peziarah yang berkunjung ke Tanara datang untuk mengirimkan Al-Fatihah, menyambung semangat menuntut ilmu, dan mendoakan anak-anak agar diberi kecerdasan serta akhlak mulia.',
     barokahHajat:
       'Peziarah dan penuntut ilmu yang mengunjungi Situs Tanara Serang (maupun berziarah ke Ma’la Makkah) lazimnya bertawassul memohon kepada Allah SWT agar dianugerahi ilmu yang bermanfaat luas sepanjang zaman, kemudahan memahami kitab-kitab turats, serta keikhlasan hati dalam berkarya.',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Syekh Muhammad Nawawi Al-Bantani (Sayyidul Ulama Al-Hijaz)',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ سَيِّدِ عُلَمَاءِ الْحِجَازِ الشَّيْخِ أَبِي عَبْدِ الْمُعْطِي مُحَمَّدٍ نَوَوِي بْنِ عُمَرَ الْجَاوِي الْبَنْتَنِي التَّنَارِي شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ انْفَعْنَا بِعُلُومِهِ وَمُصَنَّفَاتِهِ وَأَسْرَارِهِ فِي الدَّارَيْنِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ سَيِّدِ عُلَمَاءِ الْحِجَازِ الشَّيْخِ أَبِي عَبْدِ الْمُعْطِي مُحَمَّدٍ نَوَوِي بْنِ عُمَرَ الْجَاوِي الْبَنْتَنِي التَّنَارِي شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ انْفَعْنَا بِعُلُومِهِ وَمُصَنَّفَاتِهِ وَأَسْرَارِهِ فِي الدَّارَيْنِ.',
+        title: 'Doa Kemudahan Belajar, Kecerdasan Anak & Keberkahan Ilmu',
+        arab: 'اللَّهُمَّ فَقِّهْنَا فِي الدِّينِ وَعَلِّمْنَا التَّأْوِيلَ، وَافْتَحْ لَنَا فُتُوحَ الْعَارِفِينَ',
+        text: 'اللَّهُمَّ فَقِّهْنَا فِي الدِّينِ وَعَلِّمْنَا التَّأْوِيلَ، وَافْتَحْ لَنَا فُتُوحَ الْعَارِفِينَ',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhi Sayyidi 'Ulamaa-il-Hijaaz Asy-Syaikh Abii 'Abdil-Mu'thii Muhammad Nawawii bin 'Umar Al-Jaawii Al-Bantanii At-Tanaarii syai-un lillaahi lahumul-Faatihah. Allaahummanfa'naa bi 'uluumihii wa mushannafaatihii wa asraarihii fid-daarain.",
+          'Allāhumma faqqihnā fid-dīni wa ‘allimnat-ta’wīl, waftaḥ lanā futūḥal-‘ārifīn.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh Pemimpin Ulama Hijaz Syekh Abu Abdul Mu’thi Muhammad Nawawi bin Umar Al-Jawi Al-Bantani At-Tanari, Al-Fatihah. Ya Allah, limpahkanlah kepada kami kemanfaatan ilmu, karya kitab, dan rahasia keshalihan beliau di dunia dan akhirat.',
+          'Ya Allah, pahamkanlah kami dalam urusan agama, ajarkanlah kami pemahaman yang mendalam, dan bukakanlah bagi kami pintu ilmu sebagaimana Engkau bukakan bagi orang-orang yang mengenal-Mu.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh Pemimpin Ulama Hijaz Syekh Abu Abdul Mu’thi Muhammad Nawawi bin Umar Al-Jawi Al-Bantani At-Tanari, Al-Fatihah. Ya Allah, limpahkanlah kepada kami kemanfaatan ilmu, karya kitab, dan rahasia keshalihan beliau di dunia dan akhirat.',
+          'Ya Allah, pahamkanlah kami dalam urusan agama, ajarkanlah kami pemahaman yang mendalam, dan bukakanlah bagi kami pintu ilmu sebagaimana Engkau bukakan bagi orang-orang yang mengenal-Mu.',
       },
     ],
     haulSchedule:
@@ -1290,9 +1289,8 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Jami’ Kuno Tanara', 'Makam KH. Umar bin Arabi (Ayahanda Syekh Nawawi)', 'Kampus Pesantren An-Nawawi Tanara', 'Area Parkir Bus'],
     openingHours: '07:00 - 21:00 WIB',
     references: [
-      'Snouck Hurgronje, C. (1931). Mekka in the Latter Part of the 19th Century. Brill.',
-      'Chaidar (1978). Sejarah Pujangga Islam Syech Nawawi Al-Banteni Indonesia. Sarana Utama.',
-      'Bruinessen, Martin van (1995). Kitab Kuning, Pesantren dan Tarekat. Mizan.',
+      'Riset Akademik — [Pemikiran Syekh Nawawi Al-Bantani dalam Kitab Tafsir Marah Labid (ResearchGate)](https://www.researchgate.net/publication/364678201_PEMIKIRAN_SYEKH_NAWAWI_AL-BANTANI_TENTANG_PENDIDIKAN_DALAM_KITAB_TAFSIR_MARAH_LABID)',
+      'Pustaka Pesantren Al-Munawwir — [Syekh Nawawi al-Bantani: Ulama Nusantara Penulis Kitab Tafsir Marah Labid](https://almunawwirkomplekq.com/syekh-nawawi-al-bantani-ulama-nusantara-penulis-kitab-tafsir-marah-labid/)',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1327,25 +1325,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Pembinaan komunitas muslim maritim dan perlindungan kemanusiaan di pelabuhan Batavia abad ke-18',
     ],
     history:
-      'Al-Habib Husein bin Abubakar bin Abdillah Alaydrus lahir di Migrab, dekat Hazm, Hadramaut (Yaman) pada awal abad ke-18 M dari keluarga ulama sufi keturunan Rasulullah SAW. Setelah riyadhoh dan menuntut ilmu di tanah kelahirannya serta singgah berdakwah di Gujarat (India), beliau berlayar menuju kepulauan Nusantara dan mendarat di Pelabuhan Sunda Kelapa (Batavia) sekitar tahun 1736 M sebagai ulama muda asal Hadramaut yang penuh wibawa keilmuan.\n\nDi kawasan pesisir utara Batavia yang kala itu diawasi ketat oleh pemerintah kolonial VOC, Habib Husein bin Abubakar Alaydrus membuka sebuah surau tempat ibadah dan pengajaran Islam di daratan baru di luar pos pemeriksaan kapal (*Luar Batang*), yang kini dikenal sebagai Kampung Luar Batang, Penjaringan, Jakarta Utara. Beliau pernah ditahan di penjara Glodok oleh VOC karena kecurigaan kolonial terhadap pesatnya jamaah pengajian beliau, namun sipir penjara melihat beliau tetap shalat berjamaah di luar sel dengan tenang.\n\nKemuliaan akhlak, kedermawanan, dan kedalaman tasawuf beliau menarik simpati penduduk pribumi, pedagang Arab, hingga masyarakat keturunan Tionghoa seperti Haji Abdul Kadir yang memeluk Islam dan menjadi murid setianya. Habib Husein bin Abubakar Alaydrus wafat pada usia kurang dari 30 tahun (sekitar akhir 20-an tahun) pada hari Kamis, 17 Ramadhan 1169 H (24 Juni 1756 M), dan dimakamkan berdampingan dengan Haji Abdul Kadir di dalam ruang utama Masjid Jami’ Keramat Luar Batang.',
+      'Al-Habib Husein bin Abubakar Alaydrus adalah ulama perintis dakwah Islam asal Hadramaut yang bermukim di kawasan pelabuhan Sunda Kelapa / Kampung Luar Batang, Jakarta Utara, pada abad ke-18.\n\nMenurut catatan sejarah Budaya Betawi Institut Kesenian Jakarta (IKJ), kawasan Kampung Luar Batang berawal dari persinggahan pelaut dan awak kapal di tepi muara sebelum berkembang menjadi permukiman dan pusat dakwah berkat kehadiran beliau.\n\nMasjid Jami\' Keramat Luar Batang beserta kompleks makam Habib Husein kini menjadi salah satu situs cagar budaya dan destinasi ziarah paling bersejarah di pesisir utara Jakarta, dikunjungi peziarah dari seluruh penjuru Nusantara setiap hari.',
     karomah: [
       'Dalam riwayat manaqib yang ditulis oleh Mufti Betawi Habib Utsman bin Yahya serta tradisi tutur masyarakat Jakarta, dikisahkan bahwa ketika Habib Husein dan para muridnya ditahan di penjara Glodok oleh VOC, setiap malam para sipir melihat Habib Husein justru sedang mengimami shalat berjamaah di luar sel sementara pintu penjara tetap terkunci rapat.<!--more-->\n\nKaromah beliau yang juga sangat masyhur adalah menyelamatkan seorang pedagang Tionghoa (yang kemudian memeluk Islam dengan nama Haji Abdul Kadir / Lie Khoon Seng) yang kapalnya nyaris tenggelam di Teluk Batavia serta menyembunyikannya dari kejaran pasukan kolonial di surau Luar Batang hingga aman.',
     ],
     untoldStory:
-      'Di dalam cungkup keramat Masjid Luar Batang, tepat di sebelah pusara Habib Husein bin Abubakar Alaydrus, terdapat makam seorang Tionghoa muslim bernama Haji Abdul Kadir (Lie Khoon Seng) yang diselamatkan beliau di Teluk Batavia. Penempatan makam sang murid Tionghoa berdampingan langsung dengan sang Habib adalah wasiat Habib Husein sendiri semasa hidup.<!--more-->\n\nFakta sejarah ini menjadi bukti abadi tentang persaudaraan Islam yang melampaui sekat etnis di pesisir Jakarta sejak abad ke-18, di mana seorang dzurriyah Nabi SAW memuliakan muridnya semata-mata karena ketakwaan dan kesetiaannya dalam membela dakwah.',
+      '**Fakta Sejarah & Ajaran Inti:** Kehadiran Habib Husein di tepi pelabuhan Batavia pada masa VOC menunjukkan strategi dakwah yang membumi: membangun keteduhan rohani di tengah kawasan pelabuhan yang keras, multietnis, dan penuh tekanan kolonial. Masjid yang dirintis beliau menjadi ruang singgah bagi para pelaut, pedagang, dan rakyat kecil untuk belajar agama dan saling menguatkan.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Dalam tutur lisan warga Kampung Luar Batang, Habib Husein dikenang karena keberaniannya membela rakyat kecil yang terzalimi serta persahabatannya dengan murid setianya asal Tionghoa yang makamnya berdampingan di dalam ruangan makam (sebagai simbol dakwah yang merangkul semua latar belakang). Bagi peziarah modern, ziarah ke Luar Batang mengingatkan pentingnya keberanian moral dan kelapangan hati dalam menghadapi tekanan hidup.',
     barokahHajat:
       'Wasilah keteguhan iman di tengah ujian, keberkahan dakwah dan perniagaan yang jujur, serta keselamatan dalam perjalanan.',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Al-Habib Husein bin Abubakar Alaydrus Luar Batang',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْقُطْبِ الرَّبَّانِيِّ وَالْعَارِفِ الصَّمَدَانِيِّ الْحَبِيبِ حُسَيْنِ بْنِ أَبِي بَكْرٍ الْعَيْدَرُوسْ صَاحِبِ لُوَارْ بَاتَانْج شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ انْفَعْنَا بِكَرَامَتِهِ وَأَسْرَارِهِ وَأَنْوَارِهِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْقُطْبِ الرَّبَّانِيِّ وَالْعَارِفِ الصَّمَدَانِيِّ الْحَبِيبِ حُسَيْنِ بْنِ أَبِي بَكْرٍ الْعَيْدَرُوسْ صَاحِبِ لُوَارْ بَاتَانْج شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ انْفَعْنَا بِكَرَامَتِهِ وَأَسْرَارِهِ وَأَنْوَارِهِ فِي الدِّينِ وَالدُّنْيَا وَالْآخِرَةِ.',
+        title: 'Doa Perlindungan, Keselamatan Perjalanan & Kelapangan Urusan',
+        arab: 'اللَّهُمَّ احْفَظْنَا مِنْ بَيْنِ أَيْدِينَا وَمِنْ خَلْفِنَا، وَيَسِّرْ لَنَا أُمُورَنَا وَفَرِّجْ هُمُومَنَا يَا أَرْحَمَ الرَّاحِمِينَ',
+        text: 'اللَّهُمَّ احْفَظْنَا مِنْ بَيْنِ أَيْدِينَا وَمِنْ خَلْفِنَا، وَيَسِّرْ لَنَا أُمُورَنَا وَفَرِّجْ هُمُومَنَا يَا أَرْحَمَ الرَّاحِمِينَ',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhil-Quthbir-Rabbaanii wal-'Aarifish-Shamadaanii Al-Habiib Husain bin Abii Bakrin Al-'Aidaruus shaahibi Luar Batang syai-un lillaahi lahumul-Faatihah. Allaahummanfa'naa bi karaamatihii wa asraarihii wa anwaarihii fid-diini wad-dun-yaa wal-aakhirah.",
+          'Allāhummaḥfaẓnā min baini aidīnā wa min khalfinā, wa yassir lanā umūranā wa farrij humūmanā yā Arḥamar-rāḥimīn.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh waliyullah quthb rabbani Al-Habib Husein bin Abubakar Alaydrus Luar Batang, Al-Fatihah. Ya Allah, limpahkanlah kepada kami kemanfaatan melalui kemuliaan, rahasia ketakwaan, dan cahaya ilmu beliau di dalam agama, dunia, dan akhirat.',
+          'Ya Allah, lindungilah kami dari arah depan dan belakang kami, mudahkanlah segala urusan kami, dan lapangkanlah kegelisahan kami wahai Dzat Yang Maha Penyayang.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh waliyullah quthb rabbani Al-Habib Husein bin Abubakar Alaydrus Luar Batang, Al-Fatihah. Ya Allah, limpahkanlah kepada kami kemanfaatan melalui kemuliaan, rahasia ketakwaan, dan cahaya ilmu beliau di dalam agama, dunia, dan akhirat.',
+          'Ya Allah, lindungilah kami dari arah depan dan belakang kami, mudahkanlah segala urusan kami, dan lapangkanlah kegelisahan kami wahai Dzat Yang Maha Penyayang.',
       },
     ],
     haulSchedule:
@@ -1355,9 +1353,8 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Jami’ Keramat Luar Batang', 'Ruang Maqbarah Terpisah Pria & Wanita', 'Tempat Wudhu & Toilet Bersih', 'Area Parkir Peziarah'],
     openingHours: 'Buka 24 Jam',
     references: [
-      'Sejarah Masjid Keramat Luar Batang — Mutawalli Masjid Jami’ Keramat Luar Batang.',
+      'Institut Kesenian Jakarta (Budaya Betawi) — [Sejarah Kampung Luar Batang dan Habib Husein](https://budayabetawi.ikj.ac.id/kampung-luar-batang/)',
       'Heuken, Adolf (2003). Mesjid-Mesjid Tua di Jakarta. Yayasan Cipta Loka Caraka.',
-      'Rabithah Alawiyah — Dokumentasi Manaqib Al-Habib Husein bin Abubakar Alaydrus Luar Batang.',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1392,25 +1389,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Asal-usul penamaan kawasan tanjung pelabuhan terbesar Indonesia: "Tanjung Priok" dari periuk nasi bekal pelayaran beliau',
     ],
     history:
-      'Al-Habib Hasan bin Muhammad Al-Haddad, yang sangat masyhur di kalangan masyarakat Betawi dan para pelaut Nusantara dengan sebutan Mbah Priok atau Gubah Al-Haddad, lahir di Ulu Palembang, Sumatera Selatan pada tahun 1727 M. Setelah mendalami ilmu agama di tanah leluhurnya di Hadramaut (Yaman), beliau kembali ke Palembang dan pada tahun 1756 M memutuskan berlayar menuju Pulau Jawa bersama adiknya, Al-Habib Ali bin Muhammad Al-Haddad, untuk menyebarkan dakwah Islam.\n\nDalam pelayaran melintasi Laut Jawa menuju pantai utara Batavia tersebut, perahu yang ditumpangi Habib Hasan dan rombongannya dihadang badai besar serta gangguan armada patroli laut. Di tengah ganasnya gelombang laut di lepas pantai utara Jakarta, Habib Hasan bin Muhammad Al-Haddad wafat sebagai syahid fi sabilillah dalam usia sekitar 29 tahun pada tahun 1756 M.\n\nJenazah beliau kemudian terdampar di sebuah tanjung pesisir utara Jakarta dan dimakamkan dengan penuh takzim oleh para pelaut serta penduduk setempat. Ketika pemerintah Hindia Belanda membangun pelabuhan samudera modern di kawasan tersebut pada akhir abad ke-19 dan memindahkan makam beliau ke lokasi Gubah Al-Haddad di Koja, kawasan pelabuhan itu tetap menyandang nama "Tanjung Priok" yang berakar dari kisah sejarah makam beliau. Kini Kompleks Maqom Mbah Priok telah ditetapkan oleh Pemerintah Provinsi DKI Jakarta sebagai kawasan Cagar Budaya Religi.',
+      'Al-Habib Hasan bin Muhammad Al-Haddad—dikenal luas masyarakat Jakarta dengan sebutan Mbah Priok—merupakan ulama penyebar Islam pada abad ke-18 yang riwayatnya sangat lekat dengan asal-usul nama kawasan Tanjung Priok, Jakarta Utara.\n\nSebagaimana didokumentasikan Kompas dan Detik Travel, beliau berasal dari Palembang dan melakukan pelayaran dakwah menuju Pulau Jawa (Batavia) bersama saudaranya sebelum wafat dalam perjalanan laut dan dimakamkan di pesisir Tanjung Priok.\n\nKompleks makam beliau telah ditetapkan sebagai situs cagar budaya oleh Pemerintah Provinsi DKI Jakarta dan menjadi salah satu titik ziarah utama di pesisir Jakarta Utara.',
     karomah: [
       'Dalam riwayat manaqib Gubah Al-Haddad dan tradisi tutur masyarakat Tanjung Priok, dikisahkan bahwa ketika perahu Habib Hasan kehabisan bahan makanan akibat dihantam badai di tengah laut, beliau berdoa kepada Allah SWT sambil menanak sisa beras sedikit di dalam sebuah periuk (priuk) tanah liat hingga cukup untuk memberi makan seluruh awak kapal.<!--more-->\n\nKetika jenazah beliau ditemukan mengapung di tepi tanjung pantai utara Jakarta, di dekat jasadnya yang utuh dan harum ditemukan periuk penanak nasi tersebut serta sebatang dayung kayu yang ditancapkan sebagai nisan dan kemudian tumbuh menjadi pohon tanjung yang rindang; dari dua tanda inilah lahir nama "Tanjung Priok".',
     ],
     untoldStory:
-      'Pada masa pembangunan kanal dan dermaga Pelabuhan Tanjung Priok oleh pemerintah kolonial Belanda tahun 1877–1886, makam asli Habib Hasan di tepi dermaga dipindahkan ke lahan perkebunan Dobo di Koja dengan disaksikan para habaib dan ulama Betawi.<!--more-->\n\nDi Kompleks Gubah Al-Haddad Tanjung Priok saat ini berdiri masjid megah berserta pendopo maqbarah yang setiap pekannya menjadi pusat majelis dzikir Ratib Al-Haddad, shalawat, dan santunan bagi ribuan jamaah serta pekerja pelabuhan.',
+      '**Fakta Sejarah & Ajaran Inti:** Perjalanan dakwah Habib Hasan bin Muhammad Al-Haddad lintas pulau dari Sumatera ke Jawa menggambarkan betapa eratnya jaringan ulama maritim Nusantara pada abad ke-18. Bahkan sebelum sempat menetap lama di tujuan, niat dan langkah perjalanan dakwah beliau meninggalkan jejak sejarah yang bertahan ratusan tahun di pelabuhan terbesar Indonesia.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Dalam riwayat tutur yang populer di Tanjung Priok, sebutan Mbah Priok dikaitkan dengan periuk nasi yang dibawa selama pelayaran dan kemudian ditemukan di sekitar makam beliau. Peziarah yang datang ke Koja umumnya memetik hikmah tentang keikhlasan niat dalam merantau dan mencari nafkah—bahwa setiap perjalanan yang diniatkan karena Allah SWT tetap bernilai ibadah meski penuh rintangan.',
     barokahHajat:
       'Wasilah kesabaran menghadapi badai ujian hidup, pengorbanan di jalan dakwah, dan perlindungan dalam perjalanan laut/rantau.',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Al-Habib Hasan bin Muhammad Al-Haddad (Mbah Priok)',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْوَلِيِّ الشَّهِيدِ الْحَبِيبِ حَسَنِ بْنِ مُحَمَّدٍ الْحَدَّادْ (مْبَاهْ فَرِيُوكْ تَانْجُونْج فَرِيُوكْ) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ سَلِّمْنَا فِي الْبَرِّ وَالْبَحْرِ وَارْزُقْنَا رِزْقًا حَلَالًا مُبَارَكًا بِبَرَكَتِهِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْوَلِيِّ الشَّهِيدِ الْحَبِيبِ حَسَنِ بْنِ مُحَمَّدٍ الْحَدَّادْ (مْبَاهْ فَرِيُوكْ تَانْجُونْج فَرِيُوكْ) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ سَلِّمْنَا فِي الْبَرِّ وَالْبَحْرِ وَارْزُقْنَا رِزْقًا حَلَالًا مُبَارَكًا بِبَرَكَتِهِ.',
+        title: 'Doa Keikhlasan Merantau & Keselamatan Mencari Nafkah',
+        arab: 'اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا وَسَعْيِنَا هَذَا الْبِرَّ وَالتَّقْوَى، وَمِنَ الْعَمَلِ مَا تَرْضَى',
+        text: 'اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا وَسَعْيِنَا هَذَا الْبِرَّ وَالتَّقْوَى، وَمِنَ الْعَمَلِ مَا تَرْضَى',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhil-Waliyyisy-Syahiid Al-Habiib Hasan bin Muhammad Al-Haddaad (Mbah Priok Tanjung Priok) syai-un lillaahi lahumul-Faatihah. Allaahumma sallimnaa fil-barri wal-bahri warzuqnaa rizqan halaalan mubaarakan bi barakatih.",
+          'Allāhumma innā nas’aluka fī safarinā wa sa‘yinā hādzal-birra wat-taqwā, wa minal-‘amali mā tarḍā.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh wali syahid Al-Habib Hasan bin Muhammad Al-Haddad (Mbah Priok Tanjung Priok), Al-Fatihah. Ya Allah, selamatkanlah kami di daratan maupun di lautan dan karuniakanlah kepada kami rezeki yang halal lagi berkah dengan wasilah kemuliaan beliau.',
+          'Ya Allah, kami memohon kepada-Mu dalam perjalanan dan ikhtiar kami ini kebaikan, ketakwaan, serta amal perbuatan yang Engkau ridhai.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh wali syahid Al-Habib Hasan bin Muhammad Al-Haddad (Mbah Priok Tanjung Priok), Al-Fatihah. Ya Allah, selamatkanlah kami di daratan maupun di lautan dan karuniakanlah kepada kami rezeki yang halal lagi berkah dengan wasilah kemuliaan beliau.',
+          'Ya Allah, kami memohon kepada-Mu dalam perjalanan dan ikhtiar kami ini kebaikan, ketakwaan, serta amal perbuatan yang Engkau ridhai.',
       },
     ],
     haulSchedule:
@@ -1420,9 +1417,8 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid & Pendopo Agung Gubah Al-Haddad', 'Kubah Maqom Mbah Priok', 'Sumber Air & Tempat Wudhu', 'Area Parkir Bus di Kawasan Cagar Budaya'],
     openingHours: 'Buka 24 Jam',
     references: [
-      'Riwayat Manaqib Al-Imam Al-Arif Billah Habib Hasan bin Muhammad Al-Haddad (Gubah Al-Haddad Tanjung Priok).',
-      'Shahab, Alwi (2004). Saudagar Baghdad dari Betawi. Republika.',
-      'Keputusan Gubernur Provinsi DKI Jakarta Tahun 2017 tentang Penetapan Situs Makam Mbah Priok sebagai Cagar Budaya.',
+      'Kompas.com Stori — [Biografi Habib Hasan bin Muhammad Al Haddad atau Mbah Priok](https://www.kompas.com/stori/read/2021/12/21/090000979/biografi-habib-hasan-bin-muhammad-al-haddad-atau-mbah-priok)',
+      'Detik Travel — [Mengenal Mbah Priok, Sosok di Balik Nama Tanjung Priok](https://travel.detik.com/domestic-destination/d-6675403/mengenal-mbah-priok-sosok-di-balik-nama-tanjung-priok)',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1457,25 +1453,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Pembentukan komunitas pejuang muslim Jatinegara Kaum ("Negara Sejati" / *Jatina Nagara*) pasca-jatuhnya Sunda Kelapa ke tangan JP Coen (1619 M)',
     ],
     history:
-      'Pangeran Jayakarta, yang dikenal dalam arsip sejarah Banten dan Betawi sebagai Pangeran Achmad Jaketra (putra Pangeran Sungerasa Jayawikarta dari Kesultanan Banten), adalah penguasa dan pejuang Kadipaten Jayakarta pada awal abad ke-17 M. Beliau merupakan keturunan langsung Sultan Maulana Hasanuddin Banten dan Kanjeng Sunan Gunung Jati.\n\nKetika Gubernur Jenderal VOC Jan Pieterszoon Coen secara sepihak membangun benteng militer di muara Sungai Ciliwung dan menyerang keraton Jayakarta pada tanggal 30 Mei 1619 M, Pangeran Achmad Jaketra beserta para ulama, prajurit, dan pengikut setianya mempertahankan Jayakarta dengan gagah berani dan menolak menyerah. Beliau kemudian melakukan hijrah strategis ke arah tenggara di tepian Sungai Sunter yang masih berupa hutan pohon jati, lalu membangun basis pertahanan baru yang dinamakan *Jatinegara Kaum* (dari kata *Jatina Nagara*, artinya "Pemerintahan yang Sejati").\n\nDi Jatinegara Kaum, pada tahun 1620 M Pangeran Jayakarta mendirikan sebuah surau kayu sederhana yang kini berdiri megah sebagai Masjid Jami’ Assalafiyah. Dari masjid inilah beliau menyusun perlawanan gerilya terhadap VOC dan membina keislaman masyarakat Betawi serta Sunda hingga wafat sekitar tahun 1640 M. Makam beliau beserta keluarganya terletak di halaman Masjid Jami’ Assalafiyah, Kelurahan Jatinegara Kaum, Kecamatan Pulo Gadung, Jakarta Timur.',
+      'Pangeran Achmad Jaketra—dikenal luas sebagai Pangeran Jayakarta—adalah tokoh penguasa lokal Jayakarta (wilayah di bawah Kesultanan Banten) pada awal abad ke-17 yang memimpin perlawanan terhadap monopoli VOC sebelum mundur dan mendirikan basis permukiman serta pusat ibadah di Jatinegara Kaum, Jakarta Timur.\n\nDi kompleks Masjid Assalafiyah (Masjid Pangeran Jayakarta), Jatinegara Kaum, terdapat makam beliau beserta keluarga dan pengikut setianya.\n\nSitus ini menjadi salah satu penanda sejarah tertua perlawanan dan perkembangan Islam di wilayah Jakarta Timur.',
     karomah: [
       'Dalam riwayat manaqib dan tradisi tutur masyarakat Jatinegara Kaum, dikisahkan bahwa Pangeran Jayakarta memilih bersembunyi dan menyamarkan identitas kebangsawanannya di tengah hutan jati Pulogadung sebagai seorang guru ngaji biasa bernama "Syekh Achmad", sehingga mata-mata VOC Belanda selama puluhan tahun tidak pernah berhasil melacak markas perlawanan beliau.<!--more-->\n\nEmpat tiang soko guru kayu jati asli di dalam ruang utama Masjid Jami’ Assalafiyah Jatinegara Kaum yang ditegakkan oleh Pangeran Jayakarta dan para pengikutnya pada tahun 1620 M hingga kini masih berdiri kokoh menopang atap masjid setelah berusia lebih dari empat abad.',
     ],
     untoldStory:
-      'Nama wilayah "Jatinegara" di Jakarta Timur bukanlah sekadar nama geografis karena banyaknya pohon jati, melainkan pernyataan politik dan kedaulatan batin Pangeran Jayakarta bahwa meskipun VOC merampas pelabuhan dan mengganti nama Jayakarta menjadi Batavia pada tahun 1619, kedaulatan "Negara Sejati" (*Jatina Nagara*) tetap hidup di hati kaum beriman yang berjuang di Jatinegara Kaum.<!--more-->\n\nHingga hari ini, warga asli di sekitar Masjid Assalafiyah Jatinegara Kaum masih menjaga kekerabatan keturunan pengikut Pangeran Jayakarta dan melestarikan tradisi ziarah akbar menjelang bulan suci Ramadhan serta peringatan Hari Ulang Tahun Kota Jakarta.',
+      '**Fakta Sejarah & Ajaran Inti:** Pangeran Jayakarta adalah teladan keteguhan prinsip saat menghadapi kekuasaan yang lebih besar. Ketika pusat pelabuhan Jayakarta direbut VOC pada 1619, beliau tidak menyerahkan martabat maupun imannya—melainkan memilih mundur menata kekuatan spiritual dan membangun komunitas baru di Jatinegara Kaum dengan masjid sebagai pusatnya.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Dalam tradisi tutur keluarga dan warga Jatinegara Kaum, pembangunan Masjid Assalafiyah di tengah hutan jati (Jatinegara) melambangkan pesan bahwa selama masjid dan persaudaraan umat tetap hidup, harapan tidak pernah benar-benar padam meski menghadapi kekalahan sementara.',
     barokahHajat:
       'Wasilah keberanian mempertahankan kedaulatan dan kehormatan umat, amanah kepemimpinan, dan keteguhan prinsip.',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Pangeran Achmad Jaketra (Pangeran Jayakarta)',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْأَمِيرِ الْمُجَاهِدِ الْوَلِيِّ الصَّالِحِ الشَّيْخِ أَحْمَدَ جَاكِتْرَا (فَانْجِيرَانْ جَايَاكَارْتَا) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ ثَبِّتْ أَقْدَامَنَا عَلَى الْحَقِّ وَانْفَعْنَا بِبَرَكَةِ جِهَادِهِ وَإِخْلَاصِهِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْأَمِيرِ الْمُجَاهِدِ الْوَلِيِّ الصَّالِحِ الشَّيْخِ أَحْمَدَ جَاكِتْرَا (فَانْجِيرَانْ جَايَاكَارْتَا) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ ثَبِّتْ أَقْدَامَنَا عَلَى الْحَقِّ وَانْفَعْنَا بِبَرَكَةِ جِهَادِهِ وَإِخْلَاصِهِ.',
+        title: 'Doa Keteguhan Prinsip & Kekuatan Bangkit dari Ujian',
+        arab: 'رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا وَثَبِّتْ أَقْدَامَنَا وَانْصُرْنَا عَلَى الْقَوْمِ الظَّالِمِينَ',
+        text: 'رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا وَثَبِّتْ أَقْدَامَنَا وَانْصُرْنَا عَلَى الْقَوْمِ الظَّالِمِينَ',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhil-Amiiril-Mujaahid Al-Waliyyish-Shaalih Asy-Syaikh Ahmad Jaketra (Pangeran Jayakarta) syai-un lillaahi lahumul-Faatihah. Allaahumma tsabbit aqdaamanaa 'alal-haqqi wanfa'naa bi barakati jihaadihii wa ikhlaashih.",
+          'Rabbanā afrigh ‘alainā ṣabran wa tsabbit aqdāmanā wanṣurnā ‘alal-qaumiẓ-ẓālimīn.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh pemimpin pejuang dan wali yang shalih Syekh Achmad Jaketra (Pangeran Jayakarta), Al-Fatihah. Ya Allah, teguhkanlah pijakan kami di atas kebenaran dan limpahkanlah kemanfaatan melalui keberkahan perjuangan serta keikhlasan beliau.',
+          'Ya Tuhan kami, limpahkanlah kesabaran kepada kami, kokohkanlah pendirian kami, dan tolonglah kami menghadapi kezaliman.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh pemimpin pejuang dan wali yang shalih Syekh Achmad Jaketra (Pangeran Jayakarta), Al-Fatihah. Ya Allah, teguhkanlah pijakan kami di atas kebenaran dan limpahkanlah kemanfaatan melalui keberkahan perjuangan serta keikhlasan beliau.',
+          'Ya Tuhan kami, limpahkanlah kesabaran kepada kami, kokohkanlah pendirian kami, dan tolonglah kami menghadapi kezaliman.',
       },
     ],
     haulSchedule:
@@ -1485,9 +1481,8 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Cagar Budaya Assalafiyah (1620 M)', 'Cungkup Makam Pangeran Jayakarta & Keluarga', 'Tempat Wudhu & Toilet', 'Area Parkir'],
     openingHours: '07:00 - 21:00 WIB',
     references: [
-      'SK Cagar Budaya DKI Jakarta (Kompleks Masjid Jami Assalafiyah & Makam Pangeran Jayakarta).',
+      'Dokumentasi Sejarah Lokal Jatinegara Kaum — [Pangeran Jayakarta: Jejak, Keturunan, dan Warisan di Jatinegara Kaum](https://aukti.wordpress.com/2025/08/16/pangeran-jayakarta-jejak-keturunan-dan-warisan-di-jatinegara-kaumkisah-dari-penjaga-garis-darah-jakarta-lama/)',
       'Sejarah Jakarta karya Mona Lohanda (Lohanda, Mona).',
-      'Heuken, Adolf (2003). Mesjid-mesjid Tua di Jakarta. Yayasan Cipta Loka Caraka.',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1522,25 +1517,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Jejaring silaturahmi habaib Nusantara dari Timor, Singapura, Bugis, hingga Batavia dan Bogor',
     ],
     history:
-      'Al-Habib Ahmad bin Alwi bin Ahmad Al-Haddad lahir di Kota Qaidun, lembah Hadramaut (Yaman) pada tanggal 26 Sya’ban 1254 H (1838 M). Sejak belia beliau menimba ilmu syariat dan hakikat langsung kepada ayahandanya serta para ulama besar Hadramaut, termasuk penyusun Maulid Simthud Durar Al-Habib Ali bin Muhammad Al-Habsyi di Sewun. Dalam pengembaraan dakwah dan perniagaannya ke Nusantara, beliau sempat singgah di Pulau Timor, Singapura, dan Sulawesi sebelum menetap di Batavia (Jakarta).\n\nDi Jakarta, Habib Ahmad bin Alwi Al-Haddad dikenal sebagai seorang waliyullah yang menempuh jalan *majdzub* dan *khumul* (menutupi derajat kewaliannya dengan penampilan sederhana). Masyarakat Betawi memanggil beliau dengan penuh kasih sayang sebagai "Habib Kuncung" karena kebiasaan beliau mengenakan kopiah/peci panjang berbentuk kerucut ke atas (*kuncung*) dari tradisi Hadramaut dan Bugis.\n\nBeliau sangat akrab dengan kaum dhuafa, pedagang pasar, dan anak-anak yatim di kawasan Kalibata, Tanah Abang, hingga Empang Bogor, serta bersahabat dekat dengan Al-Habib Abdullah bin Mukhsin Al-Attas (Keramat Empang Bogor) dan Al-Habib Muhammad bin Ahmad Al-Muhdhor (Bondowoso). Habib Ahmad bin Alwi Al-Haddad wafat pada tanggal 29 Sya’ban 1345 H (1926 M) dalam usia sekitar 91 tahun Hijriah dan dimakamkan di kompleks Masjid At-Taubah, Rawajati Timur, Kalibata, Kecamatan Pancoran, Jakarta Selatan.',
+      'Al-Habib Ahmad bin Alwi Al-Haddad—populer dengan panggilan Habib Kuncung—adalah ulama dan tokoh sufi yang dimakamkan di kawasan Rawajati, Kalibata, Jakarta Selatan.\n\nSumber tertulis akademik tentang riwayat hidup beliau relatif terbatas dan sebagian besar terdokumentasi melalui catatan manaqib keluarga serta tradisi tutur masyarakat Betawi.\n\nKompleks makam beliau di Rawajati, Kalibata, hingga kini menjadi salah satu ruang ziarah paling tenang dan ramai di Jakarta Selatan, terutama pada malam Jumat dan hari besar Islam.',
     karomah: [
       'Dalam riwayat manaqib yang dihimpun keluarga besar Al-Haddad dan tradisi tutur masyarakat Jakarta, dikisahkan bahwa meskipun Habib Kuncung sering tampil berpakaian sangat bersahaja dengan kopiah kerucut (kuncung), para waliyullah besar zamannya seperti Habib Abdullah bin Mukhsin Al-Attas Empang Bogor selalu berdiri menyambut dan mencium tangan beliau karena mengetahui kedudukan rohani Habib Kuncung yang tinggi di sisi Allah SWT.<!--more-->\n\nBanyak kesaksian warga Betawi masa lampau yang menceritakan bagaimana kehadiran Habib Kuncung di sebuah warung milik warga dhuafa atau saat menyantuni anak-anak yatim selalu membawa keberkahan kelapangan rezeki yang melimpah melalui doa singkat beliau.',
     ],
     untoldStory:
-      'Di dalam kompleks kubah maqbarah Masjid At-Taubah Rawajati Kalibata, selain pusara utama Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung), bersemayam pula ulama besar Al-Habib Munzir bin Fuad Al-Musawa (Pendiri Majelis Rasulullah SAW, wafat 2013 M) yang semasa hidupnya sangat mencintai dan rutin berziarah ke makam Habib Kuncung.<!--more-->\n\nKeberadaan dua pusara ulama kecintaan umat lintas generasi di kompleks yang sama menjadikan Masjid At-Taubah Kalibata sebagai salah satu magnet ziarah dan majelis shalawat terbesar di Jakarta Selatan yang tak pernah sepi siang maupun malam.',
+      '**Fakta Sejarah & Ajaran Inti:** Dalam tradisi ulama Jakarta, sosok Habib Ahmad bin Alwi Al-Haddad mencerminkan corak kesalehan yang jauh dari gemerlap dunia (zuhud)—lebih mengutamakan kebersihan hati, kerendahan diri, dan doa lirih daripada popularitas lahiriah.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Panggilan akrab Habib Kuncung berasal dari tutur masyarakat mengenai bentuk kopiah khas yang sering beliau kenakan. Dalam riwayat tutur warga Kalibata, beliau dikenal sederhana dan kerap mengingatkan pengunjung agar tidak terjebak kesombongan status sosial serta senantiasa menjaga shalat dan kebaikan terhadap tetangga.',
     barokahHajat:
       'Wasilah kelembutan hati, kepedulian terhadap anak yatim dan dhuafa, serta kelapangan rezeki yang berkah.',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung)',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْوَلِيِّ الصَّالِحِ الْعَارِفِ بِاللهِ الْحَبِيبِ أَحْمَدَ بْنِ عَلَوِي الْحَدَّادْ (حَبِيبْ كُونْشُونْج كَالِيبَاتَا) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ وَسِّعْ أَرْزَاقَنَا وَارْحَمِ الْيَتَامَى وَالْمَسَاكِينَ وَانْفَعْنَا بِكَرَامَتِهِ وَأَسْرَارِهِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الْوَلِيِّ الصَّالِحِ الْعَارِفِ بِاللهِ الْحَبِيبِ أَحْمَدَ بْنِ عَلَوِي الْحَدَّادْ (حَبِيبْ كُونْشُونْج كَالِيبَاتَا) شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ وَسِّعْ أَرْزَاقَنَا وَارْحَمِ الْيَتَامَى وَالْمَسَاكِينَ وَانْفَعْنَا بِكَرَامَتِهِ وَأَسْرَارِهِ.',
+        title: 'Doa Ketenangan Jiwa & Kerendahan Hati',
+        arab: 'اللَّهُمَّ آتِ نَفْسِي تَقْوَاهَا، وَزَكِّهَا أَنْتَ خَيْرُ مَنْ زَكَّاهَا، أَنْتَ وَلِيُّهَا وَمَوْلَاهَا',
+        text: 'اللَّهُمَّ آتِ نَفْسِي تَقْوَاهَا، وَزَكِّهَا أَنْتَ خَيْرُ مَنْ زَكَّاهَا، أَنْتَ وَلِيُّهَا وَمَوْلَاهَا',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhil-Waliyyish-Shaalih Al-'Aarifi billaah Al-Habiib Ahmad bin 'Alawii Al-Haddaad (Habib Kuncung Kalibata) syai-un lillaahi lahumul-Faatihah. Allaahumma wassi' arzaaqanaa warhamil-yataamaa wal-masaakiina wanfa'naa bi karaamatihii wa asraarih.",
+          'Allāhumma āti nafsī taqwāhā, wa zakkihā anta khairu man zakkāhā, anta waliyyuhā wa maulāhā.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh wali yang shalih arif billah Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung Kalibata), Al-Fatihah. Ya Allah, lapangkanlah rezeki kami, sayangilah anak-anak yatim dan fakir miskin, serta limpahkanlah kemanfaatan melalui kemuliaan dan rahasia keshalihan beliau.',
+          'Ya Allah, berikanlah ketakwaan kepada jiwaku dan sucikanlah ia; Engkaulah sebaik-baik Dzat yang menyucikannya, Engkaulah pelindung dan penolongnya.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh wali yang shalih arif billah Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung Kalibata), Al-Fatihah. Ya Allah, lapangkanlah rezeki kami, sayangilah anak-anak yatim dan fakir miskin, serta limpahkanlah kemanfaatan melalui kemuliaan dan rahasia keshalihan beliau.',
+          'Ya Allah, berikanlah ketakwaan kepada jiwaku dan sucikanlah ia; Engkaulah sebaik-baik Dzat yang menyucikannya, Engkaulah pelindung dan penolongnya.',
       },
     ],
     haulSchedule:
@@ -1550,9 +1545,8 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Jami’ At-Taubah Rawajati', 'Kubah Maqbarah Habib Kuncung & Habib Munzir Al-Musawa', 'Tempat Wudhu & Toilet', 'Akses Dekat Stasiun KRL Duren Kalibata'],
     openingHours: 'Buka 24 Jam',
     references: [
+      'Catatan Manaqib Tradisi Betawi — [Biografi Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung)](https://bloghabaib.blogspot.com/2016/07/biografi-al-habib-ahmad-bin-alwy-al.html) (catatan: sumber primer akademik masih terbatas; riwayat dirangkum dari tradisi tutur setempat)',
       'Manaqib Al-Arif Billah Al-Habib Ahmad bin Alwi Al-Haddad (Habib Kuncung) — Yayasan Masjid At-Taubah Rawajati Kalibata.',
-      'Shahab, Alwi (2004). Saudagar Baghdad dari Betawi. Republika.',
-      'Rabithah Alawiyah — Dokumentasi Sejarah Ulama dan Habaib Betawi Abad ke-19–20.',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1587,25 +1581,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Pembangunan Masjid Jami’ Al-Riyadh Kwitang (1930-an), Madrasah Unwanul Falah, serta kitab Al-Azharul Wardiyyah fi Ash-Shalati ‘ala Khairil Bariyyah',
     ],
     history:
-      'Al-Habib Ali bin Abdurrahman bin Abdullah Al-Habsyi lahir di Kwitang, Batavia (Jakarta Pusat) pada tanggal 20 Jumadil Awal 1286 H (20 April 1870 M) dari pasangan Al-Habib Abdurrahman bin Abdullah Al-Habsyi dan Nyai Hj. Salmah binti Wakidin, seorang perempuan Betawi yang shalihah asal Jatinegara. Pada usia sekitar 11 tahun setelah ayahandanya wafat, ibundanya menjual gelang emas warisan demi memberangkatkan Habib Ali muda menuntut ilmu ke Hadramaut dan Haramain.\n\nSelama menimba ilmu di Hadramaut dan Makkah, beliau berguru langsung kepada para kutub keilmuan zamannya, terutama Al-Habib Ali bin Muhammad Al-Habsyi (pengarang *Maulid Simthud Durar* di Sewun) dan para masyaikh Masjidil Haram. Sekembalinya ke tanah air pada tahun 1889 M, beliau merintis pengajian rutin setiap hari Ahad pagi di Kwitang yang kelak berkembang menjadi Islamic Center Indonesia (ICI) Majelis Taklim Kwitang serta membangun Masjid Jami’ Al-Riyadh.\n\nDari mimbar Majelis Kwitang inilah lahir generasi ulama besar Betawi seperti KH. Abdullah Syafi’i (Assyafi’iyah), KH. Thahir Rohili (At-Thahiriyah), dan KH. Noer Ali (Bekasi). Presiden Pertama RI Ir. Soekarno tercatat menemui Habib Ali Kwitang untuk memohon doa restu menjelang Proklamasi Kemerdekaan 17 Agustus 1945. Habib Ali Kwitang wafat pada hari Ahad, 20 Rajab 1388 H (13 Oktober 1968 M) dalam usia hampir satu abad dan kepergiannya disiarkan secara nasional melalui RRI.',
+      'Al-Habib Ali bin Abdurrahman Al-Habsyi—akrab dikenal sebagai Habib Ali Kwitang—merupakan salah satu tokoh ulama paling berpengaruh di Tanah Betawi dan Indonesia pada abad ke-20. Beliau menuntut ilmu keagamaan hingga ke Hadramaut dan Hijaz sebelum kembali membangun pusat dakwah Islam di Kwitang, Jakarta Pusat.\n\nWarisan kelembagaan beliau yang paling monumental adalah Majelis Taklim Kwitang (berpusat di Masjid Al-Riyadh) yang rutin digelar setiap Ahad pagi.\n\nMajelis ini tidak hanya menjadi pusat pengajian kitab kuning dan maulid bagi masyarakat Betawi lintas generasi, melainkan juga melahirkan banyak ulama besar Jakarta dan Jawa Barat serta menjadi simpul silaturahmi para ulama nasional pada masa perjuangan kemerdekaan hingga era pascakemerdekaan.',
     karomah: [
       'Dalam riwayat manaqib dan kesaksian para ulama sezamannya, karomah terbesar Habib Ali Kwitang adalah pancaran mahabbah (cinta kasih) dan keberkahan dakwah lisannya; siapapun yang memandang wajah beliau yang teduh dan mendengar nasihat singkatnya akan tergerak hatinya untuk bertaubat dan mencintai Rasulullah SAW.<!--more-->\n\nMajelis Ahad Pagi yang beliau rintis di Kwitang sejak lebih dari satu abad silam tidak pernah terputus meskipun melewati masa kolonial Belanda, pendudukan Jepang, hingga gejolak kemerdekaan, dan menjadi teladan bagi berdirinya puluhan ribu majelis taklim di seluruh Asia Tenggara.',
     ],
     untoldStory:
-      'Pertemuan batin dan kebangsaan antara Al-Habib Ali bin Abdurrahman Al-Habsyi dengan Bung Karno serta para tokoh pergerakan nasional di serambi rumah Kwitang memiliki arti sejarah yang krusial dalam penentuan waktu Proklamasi Kemerdekaan Indonesia pada bulan suci Ramadhan 1364 H (Agustus 1945).<!--more-->\n\nSelain itu, Habib Ali Kwitang adalah ulama pelopor yang pertama kali menyebarluaskan pembacaan *Maulid Simthud Durar* karya gurunya (Habib Ali bin Muhammad Al-Habsyi Sewun) di tanah Jawa dan Betawi, yang kini menjadi bacaan maulid paling populer di majelis-majelis Indonesia.',
+      '**Fakta Sejarah & Ajaran Inti:** Keteladanan utama Habib Ali Kwitang adalah istiqamah merawat majelis ilmu lintas zaman—bahkan pada masa sulit pendudukan Jepang sekalipun, pengajian di Kwitang tetap diupayakan berjalan dengan penuh kebijaksanaan. Beliau menekankan pentingnya menyatukan kecintaan kepada Rasulullah SAW dengan kerendahan hati, persatuan umat, dan penghormatan kepada sesama ulama tanpa sekat golongan.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Di kalangan masyarakat Betawi dan para santri Jakarta, Habib Ali Kwitang dikenang karena kelembutan tutur katanya yang meneduhkan siapa saja yang datang membawa beban hidup. Banyak peziarah yang datang ke Masjid Al-Riyadh Kwitang di tengah hiruk-pikuk ibu kota untuk sejenak berhenti, membaca shalawat, dan mengambil pelajaran tentang kesetiaan menjaga ibadah rutin di tengah kesibukan kerja.',
     barokahHajat:
       'Wasilah keberkahan ilmu agama, kecintaan (mahabbah) kepada Rasulullah SAW dan Ahlul Bait, tempat peziarah memohon kepada Allah SWT kecintaan tulus kepada Nabi Muhammad SAW, keberkahan majelis ilmu dan dakwah, serta keteguhan iman keluarga.',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Al-Habib Ali bin Abdurrahman Al-Habsyi Kwitang',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الدَّاعِي إِلَى اللهِ الْعَالِمِ الْعَامِلِ الْحَبِيبِ عَلِيِّ بْنِ عَبْدِ الرَّحْمٰنِ الْحَبْشِي صَاحِبِ كْوِيتَانْج شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ ارْزُقْنَا كَمَالَ الْمَحَبَّةِ لِنَبِيِّكَ وَانْفَعْنَا بِعُلُومِهِ وَبَرَكَاتِهِ فِي الدَّارَيْنِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ الدَّاعِي إِلَى اللهِ الْعَالِمِ الْعَامِلِ الْحَبِيبِ عَلِيِّ بْنِ عَبْدِ الرَّحْمٰنِ الْحَبْشِي صَاحِبِ كْوِيتَانْج شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ ارْزُقْنَا كَمَالَ الْمَحَبَّةِ لِنَبِيِّكَ وَانْفَعْنَا بِعُلُومِهِ وَبَرَكَاتِهِ فِي الدَّارَيْنِ.',
+        title: 'Doa Kecintaan kepada Rasulullah SAW & Istiqamah Majelis Ilmu',
+        arab: 'اللَّهُمَّ ارْزُقْنَا حُبَّكَ وَحُبَّ نَبِيِّكَ مُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ، وَثَبِّتْنَا عَلَى طَاعَتِكَ وَمَجَالِسِ الْعِلْمِ وَالْخَيْرِ',
+        text: 'اللَّهُمَّ ارْزُقْنَا حُبَّكَ وَحُبَّ نَبِيِّكَ مُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ، وَثَبِّتْنَا عَلَى طَاعَتِكَ وَمَجَالِسِ الْعِلْمِ وَالْخَيْرِ',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhid-Daa'ii ilallaah Al-'Aalimil-'Aamil Al-Habiib 'Alii bin 'Abdirrahmaan Al-Habsyii shaahibi Kwitang syai-un lillaahi lahumul-Faatihah. Allaahummarzuqnaa kamaalal-mahabbati li Nabiyyika wanfa'naa bi 'uluumihii wa barakaatihii fid-daarain.",
+          'Allāhummarzuqnā ḥubbaka wa ḥubba nabiyyika Muḥammadin ṣallallāhu ‘alaihi wa sallam, wa tsabbitnā ‘alā ṭā‘atika wa majālisil-‘ilmi wal-khair.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh da’i ilallah yang alim lagi mengamalkan ilmunya Al-Habib Ali bin Abdurrahman Al-Habsyi Kwitang, Al-Fatihah. Ya Allah, karuniakanlah kepada kami kesempurnaan cinta kepada Nabi-Mu serta limpahkanlah kemanfaatan ilmu dan keberkahan beliau di dunia dan akhirat.',
+          'Ya Allah, karuniakanlah kepada kami kecintaan kepada-Mu dan kepada Nabi-Mu Muhammad SAW, serta teguhkanlah kami di atas ketaatan-Mu dan dalam majelis-majelis ilmu serta kebaikan.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh da’i ilallah yang alim lagi mengamalkan ilmunya Al-Habib Ali bin Abdurrahman Al-Habsyi Kwitang, Al-Fatihah. Ya Allah, karuniakanlah kepada kami kesempurnaan cinta kepada Nabi-Mu serta limpahkanlah kemanfaatan ilmu dan keberkahan beliau di dunia dan akhirat.',
+          'Ya Allah, karuniakanlah kepada kami kecintaan kepada-Mu dan kepada Nabi-Mu Muhammad SAW, serta teguhkanlah kami di atas ketaatan-Mu dan dalam majelis-majelis ilmu serta kebaikan.',
       },
     ],
     haulSchedule:
@@ -1615,9 +1609,8 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Jami’ Al-Riyadh Kwitang', 'Kubah Maqbarah Keluarga Besar Al-Habsyi Kwitang', 'Gedung Islamic Center Indonesia (ICI)', 'Tempat Wudhu & Toilet'],
     openingHours: '05:00 - 22:00 WIB',
     references: [
-      'Jaringan Ulama Betawi — Kiki, Rakhmad Zailani dkk. (2011). Jakarta Islamic Centre.',
-      'Arsip Majelis Taklim Al-Riyadh Kwitang — Biografi dan Manaqib Al-Habib Ali bin Abdurrahman Al-Habsyi.',
-      'Dokumentasi Rabithah Alawiyah — Sejarah Dakwah Habaib di Batavia.',
+      'Ensiklopedia & Referensi Sejarah — [Ali bin Abdurrahman Alhabsyi (Wikipedia ID)](https://id.wikipedia.org/wiki/Ali_bin_Abdurrahman_Alhabsyi)',
+      'Ringkasan Biografi — [Habib Ali Kwitang: Kisah Pendiri Majelis Taklim Kwitang (Majelis Info)](https://majelis.info/habib-ali-kwitang-kisah-pendiri-majelis-taklim-kwitang/)',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1652,25 +1645,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Perintisan percetakan litografi Islam pribumi di Batavia pada abad ke-19 dan pembakuan pedoman peradilan agama (Raad Agama)',
     ],
     history:
-      'Al-Habib Utsman bin Abdullah bin Aqil bin Umar bin Yahya lahir di Pekojan, Batavia (Jakarta Barat) pada tanggal 17 Rabiul Awal 1238 H (Desember 1822 M). Sejak usia tiga tahun hingga remaja, beliau dididik langsung oleh kakek dari pihak ibunya, Syekh Abdurrahman bin Ahmad Al-Mishri, seorang ulama besar dan ahli astronomi (ilmu falak) asal Mesir yang bermukim di Batavia. Pada tahun 1841 M, Habib Utsman berangkat ke Makkah untuk berguru kepada Mufti Syafi’iyah Sayyid Ahmad Zaini Dahlan, kemudian melanjutkan pengembaraan ilmu selama lebih dari dua dekade ke Madinah, Hadramaut, Mesir, Tunisia, Aljazair, Turki (Istanbul), dan Syam.\n\nSekembalinya ke Batavia pada tahun 1862 M, Habib Utsman bin Yahya diangkat sebagai Mufti Betawi dan membuka majelis pengajaran serta mesin cetak batu (*litografi*) sendiri di kediamannya di Petamburan. Melalui percetakan mandiri tersebut, beliau menerbitkan lebih dari seratus judul kitab berbahasa Arab dan Melayu beraksara Jawi (Arab-Melayu) yang menyebar luas ke seluruh surau dan langgar di Jakarta, Jawa Barat, Sumatera, hingga Semenanjung Malaya.\n\nDi antara karya beliau yang paling melegenda dan masih dikaji oleh masyarakat Betawi hingga hari ini adalah *Kitab Sifat Dua Puluh* (akidah Ahlussunnah wal Jamaah) dan *Al-Qawanin Asy-Syar’iyyah* (pedoman hukum kewarisan dan peradilan agama). Habib Utsman bin Yahya wafat pada tanggal 21 Muharram 1331 H (1913 M). Makam beliau yang semula berada di Karet kemudian dipindahkan ke kompleks Masjid Al-Abidin, Pondok Bambu, Duren Sawit, Jakarta Timur.',
+      'Sayyid Utsman bin Abdullah bin Aqil bin Yahya (1822–1914 M) adalah ulama besar, penulis kitab paling produktif di Batavia abad ke-19, sekaligus Mufti Betawi. Lahir di Pekojan, Batavia, beliau menimba ilmu selama lebih dari dua dekade di Makkah, Hadramaut, Mesir, hingga Tunisia sebelum pulang membangun tradisi literasi Islam berbahasa Melayu-Arab (Arab Pegon) di Betawi.\n\nBeliau tercatat menulis lebih dari seratus risalah dan kitab—mencakup fikih ibadah sehari-hari, tauhid (Sifat Dua Puluh), tata cara keluarga, hingga ilmu falak—yang dicetak secara mandiri melalui percetakan litografi miliknya sendiri agar mudah dibaca masyarakat awam.\n\nDalam sejarah kolonial, posisi beliau sebagai penasihat kehormatan (Adviseur Honorair) juga sering menjadi bahan kajian akademik sejarah Islam Indonesia (antara lain dibahas dalam forum ilmiah AICIS).',
     karomah: [
       'Dalam riwayat manaqib keluarga besar Bin Yahya dan kesaksian murid-murid beliau seperti Guru Marzuki Cipinang dan Habib Ali Kwitang, produktivitas penulisan Habib Utsman bin Yahya merupakan karomah keilmuan yang langka; beliau menulis sendiri di atas pelat batu litografi dengan kaligrafi yang sangat indah dan presisi lebih dari seratus kitab tanpa bantuan mesin modern.<!--more-->\n\nKetika makam beliau dipindahkan dari kawasan Karet ke kompleks Masjid Al-Abidin Pondok Bambu puluhan tahun setelah wafatnya, para saksi mata dari kalangan ulama dan dzurriyah menuturkan bahwa kain kafan dan jasad sang Mufti Betawi masih dalam keadaan utuh.',
     ],
     untoldStory:
-      'Koleksi lengkap kitab-kitab cetak batu karya Habib Utsman bin Yahya kini tersimpan sebagai naskah langka bernilai tinggi di Perpustakaan Nasional RI dan Perpustakaan Universitas Leiden (Belanda), menjadi bukti otentik bahwa masyarakat Muslim Betawi abad ke-19 memiliki tradisi literasi cetak yang sangat maju.<!--more-->\n\nHampir seluruh guru ngaji di kampung-kampung Betawi pada awal abad ke-20 mengajarkan rukun iman, rukun Islam, dan tajwid kepada anak-anak menggunakan kitab tipis berbahasa Melayu karya Habib Utsman bin Yahya yang mudah dipahami oleh masyarakat awam.',
+      '**Fakta Sejarah & Ajaran Inti:** Sisi paling menginspirasi dari Habib Utsman bin Yahya adalah dedikasinya mencerdaskan orang awam lewat tulisan yang sederhana. Beliau menyadari banyak umat Islam saat itu tidak bisa membaca kitab tebal berbahasa Arab, sehingga beliau menulis panduan praktis shalat, akidah, dan adab dalam bahasa Melayu yang mudah dipahami rakyat biasa. Ini adalah keteladanan literasi yang sangat relevan dengan semangat belajar agama secara jernih dan berilmu.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Di kalangan ulama Betawi, Habib Utsman dikenang sangat disiplin menjaga waktu untuk menulis dan mengajar, serta tegas meluruskan praktik-praktik keagamaan yang menyimpang dari syariat agar masyarakat tidak mudah tertipu takhayul.',
     barokahHajat:
       'Peziarah dan akademisi yang berziarah ke maqbarah Mufti Betawi Habib Utsman bin Yahya di Pondok Bambu umumnya bertawassul memohon ketajaman ilmu fikih dan falak, keberkahan dalam menulis buku atau karya ilmiah, serta keteguhan akidah keluarga.',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Mufti Betawi Al-Habib Utsman bin Abdullah bin Yahya',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ مُفْتِي بَتَاوِي الْعَالِمِ الْعَلَّامَةِ الْحَبِيبِ عُثْمَانَ بْنِ عَبْدِ اللهِ بْنِ عَقِيلٍ بْنِ يَحْيَى شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ فَقِّهْنَا فِي الدِّينِ وَانْفَعْنَا بِعُلُومِهِ وَمُصَنَّفَاتِهِ فِي الدَّارَيْنِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ مُفْتِي بَتَاوِي الْعَالِمِ الْعَلَّامَةِ الْحَبِيبِ عُثْمَانَ بْنِ عَبْدِ اللهِ بْنِ عَقِيلٍ بْنِ يَحْيَى شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ فَقِّهْنَا فِي الدِّينِ وَانْفَعْنَا بِعُلُومِهِ وَمُصَنَّفَاتِهِ فِي الدَّارَيْنِ.',
+        title: 'Doa Kejernihan Akidah & Keluasan Ilmu yang Bermanfaat',
+        arab: 'اللَّهُمَّ أَرِنَا الْحَقَّ حَقًّا وَارْزُقْنَا اتِّبَاعَهُ، وَأَرِنَا الْبَاطِلَ بَاطِلًا وَارْزُقْنَا اجْتِنَابَهُ',
+        text: 'اللَّهُمَّ أَرِنَا الْحَقَّ حَقًّا وَارْزُقْنَا اتِّبَاعَهُ، وَأَرِنَا الْبَاطِلَ بَاطِلًا وَارْزُقْنَا اجْتِنَابَهُ',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhi Muftii Bataawii Al-'Aalimil-'Allaamah Al-Habiib 'Utsmaan bin 'Abdillaah bin 'Aqiil bin Yahyaa syai-un lillaahi lahumul-Faatihah. Allaahumma faqqihnaa fid-diini wanfa'naa bi 'uluumihii wa mushannafaatihii fid-daarain.",
+          'Allāhumma arinal-ḥaqqa ḥaqqan warzuqnattibā‘ah, wa arinal-bāṭila bāṭilan warzuqnajtinābah.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh Mufti Betawi al-allamah Al-Habib Utsman bin Abdullah bin Aqil bin Yahya, Al-Fatihah. Ya Allah, pahamkanlah kami dalam urusan agama dan limpahkanlah kemanfaatan ilmu serta karya-karya kitab beliau di dunia dan akhirat.',
+          'Ya Allah, tampakkanlah kepada kami kebenaran sebagai kebenaran dan karuniakanlah kami kekuatan untuk mengikutinya; dan tampakkanlah kebatilan sebagai kebatilan serta karuniakanlah kami kekuatan untuk menjauhinya.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh Mufti Betawi al-allamah Al-Habib Utsman bin Abdullah bin Aqil bin Yahya, Al-Fatihah. Ya Allah, pahamkanlah kami dalam urusan agama dan limpahkanlah kemanfaatan ilmu serta karya-karya kitab beliau di dunia dan akhirat.',
+          'Ya Allah, tampakkanlah kepada kami kebenaran sebagai kebenaran dan karuniakanlah kami kekuatan untuk mengikutinya; dan tampakkanlah kebatilan sebagai kebatilan serta karuniakanlah kami kekuatan untuk menjauhinya.',
       },
     ],
     haulSchedule:
@@ -1680,9 +1673,8 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Jami’ Al-Abidin Pondok Bambu', 'Maqbarah Habib Utsman bin Yahya', 'Tempat Wudhu & Toilet', 'Area Parkir'],
     openingHours: '07:00 - 21:00 WIB',
     references: [
+      'Ensiklopedia & Referensi Akademik (AICIS XII) — [Usman bin Yahya — Mufti Betawi (Wikipedia ID)](https://id.wikipedia.org/wiki/Usman_bin_Yahya)',
       'Kaptein, Nico J.G. (2014). Islam, Colonialism and the Modern Age in the Netherlands East Indies: A Biography of Sayyid Usman (1822–1914). Brill.',
-      'Azra, Azyumardi (1995). Hadhrami Scholars in the Malay-Indonesian Diaspora: A Preliminary Study of Sayyid Uthman. Studia Islamika.',
-      'Kiki, Rakhmad Zailani dkk. (2011). Genealogi Intelektual Ulama Betawi. Jakarta Islamic Centre.',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',
@@ -1717,25 +1709,25 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
       'Pendirian Pondok Pesantren Cipinang Muara (1913 M) yang melahirkan hampir seluruh kiai besar Jakarta, Bekasi, dan Tangerang abad ke-20',
     ],
     history:
-      'Syekh KH. Ahmad Marzuki bin Ahmad Mirshod, yang sangat dimuliakan masyarakat Jakarta dengan sebutan Guru Marzuki Cipinang Muara, lahir di Rawabangke (Rawa Bunga), Jatinegara, Batavia pada malam Ahad, 16 Ramadhan 1293 H (1877 M). Sejak usia sembilan tahun ketika ayahnya wafat, beliau dididik dengan disiplin oleh ibundanya, Hj. Fatimah, lalu diserahkan untuk belajar menghafal Al-Qur’an dan dasar-dasar ilmu agama kepada KH. Anwarudin Kriyani Al-Malebari di Pekojan serta Mufti Betawi Al-Habib Utsman bin Yahya.\n\nPada usia sekitar 16 tahun, Ahmad Marzuki muda berangkat ke Tanah Suci Makkah dan bermukim selama tujuh tahun untuk menimba ilmu kepada para ulama terkemuka Masjidil Haram, di antaranya Syekh Ahmad Khatib Al-Minangkabawi, Syekh Mahfudz At-Tarmasi, Syekh Mukhtar Atharid Al-Bogori, dan Syekh Umar Bajunaid. Sekembalinya ke Betawi pada tahun 1913 M atas permintaan gurunya Habib Utsman bin Yahya, beliau membuka pondok pesantren di Kampung Cipinang Muara, Jatinegara.\n\nDari pesantren Cipinang Muara inilah lahir mata rantai emas ulama Betawi abad ke-20 (dikenal sebagai salah satu dari "Enam Guru Besar Betawi"): Pahlawan Nasional KH. Noer Ali (Bekasi), KH. Abdullah Syafi’i (Pendiri Assyafi’iyah), KH. Thahir Rohili (Pendiri At-Thahiriyah), KH. Fathullah Harun, hingga KH. Zayadi Muhajir. Guru Marzuki wafat pada hari Jumat pagi, 25 Rajab 1352 H (2 November 1934 M) dan dimakamkan di kompleks Masjid Jami’ Al-Marzuqiyah, Cipinang Muara, Jakarta Timur.',
+      'Syekh KH. Ahmad Marzuki bin Mirshod—dikenal sebagai Guru Marzuki Cipinang Muara—adalah salah satu dari enam mahaguru ulama Betawi paling berpengaruh pada akhir abad ke-19 hingga paruh pertama abad ke-20.\n\nMenurut kajian jurnal Universitas Negeri Jakarta (Kitab-kitab Karya Enam Ulama Betawi 1869–2006), pada tahun 1921 Guru Marzuki pindah ke Kampung Muara (Cipinang Muara, timur Jatinegara) dan merintis pesantren yang mencetak ratusan kiai serta penggerak dakwah Betawi, termasuk tokoh-tokoh perintis Nahdlatul Ulama di Jakarta dan sekitarnya (seperti KH. Noer Ali Bekasi dan KH. Abdullah Syafi\'ie).\n\nBeliau juga mewariskan karya-karya kitab keagamaan yang diajarkan lintas generasi di pesantren dan majelis taklim Betawi.',
     karomah: [
       'Dalam riwayat manaqib dan kesaksian murid-murid utama beliau seperti KH. Noer Ali dan KH. Abdullah Syafi’i, Guru Marzuki dikenal memiliki keikhlasan dan kewibawaan mengajar yang luar biasa; setiap kalimat ilmu yang keluar dari lisan beliau langsung meresap ke dalam sanubari para santri sehingga hampir seluruh murid angkatan pertamanya berhasil menjadi ulama besar yang mendirikan pesantren.<!--more-->\n\nDi tengah kesibukan mendidik ratusan santri mukim tanpa memungut biaya sepeser pun, Guru Marzuki juga berhasil menyusun tujuh risalah kitab berbahasa Arab yang naskahnya dikirim dan dicetak langsung di percetakan Musthafa Al-Babi Al-Halabi, Kairo, Mesir.',
     ],
     untoldStory:
-      'Jejaring genealogi intelektual Islam di DKI Jakarta, Bekasi, Depok, dan Tangerang hampir seluruhnya bermuara pada kamar pengajian Guru Marzuki di Cipinang Muara. Apabila seorang santri Betawi merunut sanad gurunya dua atau tiga lapis ke atas, niscaya ia akan bertemu dengan nama Syekh Ahmad Marzuki bin Mirshod.<!--more-->\n\nHingga hari ini, keturunan dan murid-murid beliau di Yayasan Al-Marzuqiyah Cipinang Muara tetap merawat tradisi pengajian kitab kuning serta menyelenggarakan Haul Akbar setiap bulan Rajab yang dihadiri oleh para kiai, habaib, dan pimpinan daerah se-Jabodetabek.',
+      '**Fakta Sejarah & Ajaran Inti:** Guru Marzuki adalah contoh nyata kaderisasi ulama yang sabar dan membumi. Beliau tidak sekadar mengajar santri membaca kitab, tetapi menanamkan kemandirian, kecintaan kepada tanah air, dan keberanian menjaga akhlak masyarakat di tengah zaman penjajahan. Hampir seluruh silsilah keilmuan ulama besar Betawi abad ke-20 bertemu pada sanad pendidikan beliau di Cipinang Muara.<!--more-->\n\n**Riwayat Tutur & Manaqib Masyarakat:** Dalam tutur para murid dan keturunan beliau, Guru Marzuki dikenal sangat teliti dalam mengajar ilmu alat dan fikih, namun sangat lembut kepada santri yang bersungguh-sungguh menuntut ilmu. Ziarah ke Cipinang Muara menjadi pengingat akan jasa para guru yang diam-diam membangun generasi melalui pendidikan.',
     barokahHajat:
       'Peziarah dan para santri yang berziarah ke maqbarah Guru Marzuki Cipinang Muara lazimnya bertawassul memohon keberkahan ilmu yang melahirkan murid-murid shalih, kemudahan dalam menghafal dan memahami kitab turats, serta keteguhan menjaga tradisi pesantren di tengah kota metropolitan.',
     doaKhusus: [
       {
-        title: 'Tawassul & Hadiah Fatihah Khusus Syekh KH. Ahmad Marzuki bin Mirshod (Guru Marzuki Cipinang)',
-        arab: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ شَيْخِ مَشَايِخِ بَتَاوِي الْعَالِمِ الْعَلَّامَةِ الشَّيْخِ أَحْمَدَ مَرْزُوقِي بْنِ أَحْمَدَ مِرْصَادْ شِيفِينَانْج شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ ارْزُقْنَا عِلْمًا نَافِعًا وَعَمَلًا مُتَقَبَّلًا بِبَرَكَةِ عُلُومِهِ وَإِخْلَاصِهِ.',
-        text: 'إِلَى حَضْرَةِ النَّبِيِّ الْمُصْطَفَى مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، ثُمَّ إِلَى رُوحِ شَيْخِ مَشَايِخِ بَتَاوِي الْعَالِمِ الْعَلَّامَةِ الشَّيْخِ أَحْمَدَ مَرْزُوقِي بْنِ أَحْمَدَ مِرْصَادْ شِيفِينَانْج شَيْءٌ لِلّٰهِ لَهُمُ الْفَاتِحَةُ. اللّٰهُمَّ ارْزُقْنَا عِلْمًا نَافِعًا وَعَمَلًا مُتَقَبَّلًا بِبَرَكَةِ عُلُومِهِ وَإِخْلَاصِهِ.',
+        title: 'Doa Keberkahan Guru, Ilmu & Kesungguhan Belajar',
+        arab: 'اللَّهُمَّ اغْفِرْ لِمَشَايِخِنَا وَلِمَنْ عَلَّمَنَا، وَانْفَعْنَا بِمَا عَلَّمْتَنَا وَعَلِّمْنَا مَا يَنْفَعُنَا',
+        text: 'اللَّهُمَّ اغْفِرْ لِمَشَايِخِنَا وَلِمَنْ عَلَّمَنَا، وَانْفَعْنَا بِمَا عَلَّمْتَنَا وَعَلِّمْنَا مَا يَنْفَعُنَا',
         latin:
-          "Ilaa hadhratin-Nabiyyil-Mushthafaa Muhammadin shallallaahu 'alaihi wa sallama, tsumma ilaa ruuhi Syaikhi Masyaayikhi Bataawii Al-'Aalimil-'Allaamah Asy-Syaikh Ahmad Marzuuqii bin Ahmad Mirshaad Cipinang syai-un lillaahi lahumul-Faatihah. Allaahummarzuqnaa 'ilman naafi'an wa 'amalan mutaqabbalan bi barakati 'uluumihii wa ikhlaashih.",
+          'Allāhummaghfir limasyāyikhinā wa liman ‘allamanā, wanfa‘nā bimā ‘allamtanā wa ‘allimnā mā yanfa‘unā.',
         terjemahan:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh Mahaguru Ulama Betawi al-allamah Syekh KH. Ahmad Marzuki bin Ahmad Mirshod Cipinang, Al-Fatihah. Ya Allah, karuniakanlah kepada kami ilmu yang bermanfaat dan amal yang diterima dengan keberkahan ilmu serta keikhlasan beliau.',
+          'Ya Allah, ampunilah guru-guru kami dan orang-orang yang telah mengajari kami; jadikanlah ilmu yang Engkau ajarkan bermanfaat bagi kami, dan ajarkanlah kepada kami apa yang membawa manfaat.',
         translation:
-          'Kepada kehadirat Nabi Agung Muhammad SAW, kemudian khusus kepada ruh Mahaguru Ulama Betawi al-allamah Syekh KH. Ahmad Marzuki bin Ahmad Mirshod Cipinang, Al-Fatihah. Ya Allah, karuniakanlah kepada kami ilmu yang bermanfaat dan amal yang diterima dengan keberkahan ilmu serta keikhlasan beliau.',
+          'Ya Allah, ampunilah guru-guru kami dan orang-orang yang telah mengajari kami; jadikanlah ilmu yang Engkau ajarkan bermanfaat bagi kami, dan ajarkanlah kepada kami apa yang membawa manfaat.',
       },
     ],
     haulSchedule:
@@ -1745,9 +1737,8 @@ export const JAWA_BARAT_BANTEN_DKI_SITES: Site[] = [
     facilities: ['Masjid Jami’ Al-Marzuqiyah', 'Cungkup Maqbarah Guru Marzuki & Keluarga', 'Madrasah Al-Marzuqiyah', 'Tempat Wudhu & Toilet'],
     openingHours: '06:00 - 21:00 WIB',
     references: [
-      'Kiki, Rakhmad Zailani dkk. (2011). Genealogi Intelektual Ulama Betawi. Jakarta Islamic Centre.',
-      'Aziz, Abdul (2002). Islam dan Masyarakat Betawi. Logos Wacana Ilmu.',
-      'Yayasan Al-Marzuqiyah Cipinang Muara — Manaqib Syaikhul Masyayikh KH. Ahmad Marzuki bin Mirshod.',
+      'Jurnal Universitas Negeri Jakarta (UNJ) — [Kitab-kitab Karya Enam Ulama Betawi (1869–2006)](https://journal.unj.ac.id/unj/index.php/jps/article/download/32515/15248/100357)',
+      'Laduni.id — [Biografi KH. Ahmad Marzuqi, Cipinang Muara Jakarta](https://www.laduni.id/post/read/68099/biografi-kh-ahmad-marzuqi-cipinang-muara-jakarta)',
     ],
     verifiedBy: 'Kurasi Literatur Sejarah & Tradisi Lisan Ziarah Nusantara',
     lastVerified: '2026-11-11',

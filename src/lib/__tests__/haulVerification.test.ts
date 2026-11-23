@@ -13,7 +13,7 @@ import {
 describe('Haul Verification & Display Rules', () => {
   it('ensures every HAUL_VERIFICATION entry has https:// sourceUrl and non-empty displaySchedule', () => {
     const entries = Object.entries(HAUL_VERIFICATION);
-    expect(entries).toHaveLength(3);
+    expect(entries).toHaveLength(4);
 
     for (const [key, entry] of entries) {
       expect(entry.status).toBe('terverifikasi');
@@ -54,8 +54,8 @@ describe('Haul Verification & Display Rules', () => {
       }
     }
 
-    expect(verifiedCount).toBe(3);
-    expect(unverifiedCount).toBe(180);
+    expect(verifiedCount).toBe(4);
+    expect(unverifiedCount).toBe(179);
   });
 
   it('selects featuredHaulSite strictly from verified sites and formats compact haul summary without stray periods', () => {
@@ -74,4 +74,48 @@ describe('Haul Verification & Display Rules', () => {
       expect(/[,;:\s]\.$/.test(summary.shortSchedule)).toBe(false);
     }
   });
+
+  it('closes the editedByCurator loophole: editedByCurator: true without haulVerified and https:// haulSourceUrl must return verified: false', () => {
+    const sunanGiri = SITES.find((s) => s.id === 'sunan-giri')!;
+    expect(sunanGiri).toBeDefined();
+
+    // Inject editedByCurator: true (e.g. curator only edited a photo or typo) WITHOUT haulVerified & haulSourceUrl
+    const editedWithoutHaulVerification = {
+      ...sunanGiri,
+      editedByCurator: true,
+    };
+
+    const unverifiedDisplay = getHaulDisplay(editedWithoutHaulVerification);
+    expect(unverifiedDisplay.verified).toBe(false);
+    expect(unverifiedDisplay.text).toBe(UNVERIFIED_HAUL_DISPLAY_TEXT);
+    expect(unverifiedDisplay.text).not.toContain('24–25 Rabiul Awal');
+
+    // Also test when haulVerified is true but haulSourceUrl is missing or not https://
+    const missingSourceDisplay = getHaulDisplay({
+      ...sunanGiri,
+      editedByCurator: true,
+      haulVerified: true,
+      haulSourceUrl: '',
+    });
+    expect(missingSourceDisplay.verified).toBe(false);
+
+    // Only when haulVerified === true AND haulSourceUrl starts with https:// should it be verified
+    const verifiedByCurator = getHaulDisplay({
+      ...sunanGiri,
+      editedByCurator: true,
+      haulVerified: true,
+      haulSourceUrl: 'https://gresikkab.go.id/haul-sunan-giri',
+      haulSourceLabel: 'Pemkab Gresik',
+      haulSchedule: '24–25 Rabiul Awal (Penetapan Resmi Yayasan Makam Sunan Giri)',
+    });
+    expect(verifiedByCurator.verified).toBe(true);
+    if (verifiedByCurator.verified) {
+      expect(verifiedByCurator.text).toBe(
+        '24–25 Rabiul Awal (Penetapan Resmi Yayasan Makam Sunan Giri)'
+      );
+      expect(verifiedByCurator.sourceUrl).toBe('https://gresikkab.go.id/haul-sunan-giri');
+      expect(verifiedByCurator.sourceName).toBe('Pemkab Gresik');
+    }
+  });
 });
+

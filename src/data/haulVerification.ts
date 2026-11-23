@@ -6,6 +6,13 @@ export type HaulVerification = {
 };
 
 export const HAUL_VERIFICATION: Record<string, HaulVerification> = {
+  'syekh-maulana-malik-ibrahim': {
+    status: 'terverifikasi',
+    displaySchedule:
+      '12 Rabiul Awal / 12 Maulid (jadwal pelaksanaan mengikuti penetapan Yayasan Makam Syeikh Maulana Malik Ibrahim)',
+    sourceName: 'Disparekrafbudpora Kab. Gresik',
+    sourceUrl: 'https://disparekrafbudpora.gresikkab.go.id/detailpost/makam-maulana-malik-ibrahim',
+  },
   'sunan-kudus': {
     status: 'terverifikasi',
     displaySchedule: '10 Muharram (puncak tradisi Buka Luwur)',
@@ -48,27 +55,37 @@ export function getHaulDisplay(
     id?: string | null;
     legacyId?: string | null;
     haulSchedule?: string | null;
+    haulVerified?: boolean | null;
+    haulSourceUrl?: string | null;
+    haulSourceLabel?: string | null;
     editedByCurator?: boolean | null;
   } | null
 ): HaulDisplayResult {
-  if (
-    site?.editedByCurator === true &&
-    typeof site?.haulSchedule === 'string' &&
-    site.haulSchedule.trim().length > 0
-  ) {
-    return {
-      verified: true,
-      text: site.haulSchedule.trim(),
-      sourceUrl: '',
-      sourceName: 'Kurasi Dewan Kurator Ziarah Nusantara',
-    };
-  }
-
   const idKey = String(site?.id || '').trim();
   const legacyKey = String(site?.legacyId || '').trim();
   const entry =
     (idKey ? HAUL_VERIFICATION[idKey] : undefined) ||
     (legacyKey ? HAUL_VERIFICATION[legacyKey] : undefined);
+
+  if (
+    site?.haulVerified === true &&
+    typeof site?.haulSourceUrl === 'string' &&
+    /^https:\/\/.+/i.test(site.haulSourceUrl.trim()) &&
+    typeof site?.haulSchedule === 'string' &&
+    site.haulSchedule.trim().length > 0
+  ) {
+    const cleanSourceUrl = site.haulSourceUrl.trim();
+    const cleanSourceLabel =
+      typeof site?.haulSourceLabel === 'string' && site.haulSourceLabel.trim().length > 0
+        ? site.haulSourceLabel.trim()
+        : entry?.sourceName || 'Sumber Resmi Haul Terverifikasi';
+    return {
+      verified: true,
+      text: site.haulSchedule.trim(),
+      sourceUrl: cleanSourceUrl,
+      sourceName: cleanSourceLabel,
+    };
+  }
 
   if (entry && entry.status === 'terverifikasi') {
     return {

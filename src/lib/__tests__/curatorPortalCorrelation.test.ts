@@ -50,6 +50,9 @@ describe('Portal Kurator & Cross-Module Correlation Suite', () => {
       ],
       references: ['Babad Demak Pupuh Sinom', 'Arsip Yayasan Kadilangu 2026'],
       facilities: ['Masjid Agung Kadilangu', 'Area Parkir Peziarah', 'Tempat Wudhu'],
+      haulVerified: true,
+      haulSourceUrl: 'https://visitjawatengah.jatengprov.go.id/id/regency/demak',
+      haulSourceLabel: 'Kurasi Dewan Kurator Ziarah Nusantara',
       editedByCurator: true,
     };
 
@@ -62,13 +65,23 @@ describe('Portal Kurator & Cross-Module Correlation Suite', () => {
     expect(updated.untoldStory).toBe('Wasiat rahasia hasil suntingan Dewan Kurator.');
     expect(updated.references).toEqual(['Babad Demak Pupuh Sinom', 'Arsip Yayasan Kadilangu 2026']);
 
-    // Verify correlation with haulVerification.ts
-    const haulDisplay = getHaulDisplay(updated as any);
+    // Verify correlation with haulVerification.ts when haulVerified + https:// haulSourceUrl are provided
+    const haulDisplay = getHaulDisplay(updated);
     expect(haulDisplay.verified).toBe(true);
     expect(haulDisplay.text).toBe('10 Dzulhijjah (Penetapan Resmi Yayasan Sunan Kalijaga Kadilangu)');
     if (haulDisplay.verified) {
       expect(haulDisplay.sourceName).toBe('Kurasi Dewan Kurator Ziarah Nusantara');
+      expect(haulDisplay.sourceUrl).toBe('https://visitjawatengah.jatengprov.go.id/id/regency/demak');
     }
+
+    // Without haulVerified: true & https:// haulSourceUrl, editedByCurator alone MUST NOT mark haul verified
+    const unverifiedEdit = getHaulDisplay({
+      ...updated,
+      haulVerified: false,
+      haulSourceUrl: '',
+    });
+    expect(unverifiedEdit.verified).toBe(false);
+    expect(unverifiedEdit.text).toBe(UNVERIFIED_HAUL_DISPLAY_TEXT);
 
     // Verify correlation with siteLogistics.ts
     const logistics = getSiteLogistics(updated);

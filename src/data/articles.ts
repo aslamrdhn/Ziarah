@@ -507,12 +507,12 @@ export const ZIARAH_ARTICLES: ZiarahArticle[] = [
         heading: 'Muharram hingga Rabiul Akhir: Haul Sunan Kudus, Sunan Gresik & Habib Sholeh Tanggul',
         paragraphs: [
           'Memasuki awal tahun baru Hijriah di bulan Muharram, ribuan peziarah memadati Kota Kudus untuk menghadiri peringatan Buka Luwur (penggantian kain kelambu pusara) Makam Sunan Kudus yang puncaknya berlangsung setiap tanggal 10 Muharram (Hari Asyura) dengan pembagian ribuan bungkus nasi Jangkrik kepada masyarakat.',
-          'Pada bulan Rabiul Awal (bulan Maulid Nabi SAW) dan Rabiul Akhir, peringatan haul berlanjut di berbagai penjuru Jawa Timur: mulai dari Haul Akbar Syekh Maulana Malik Ibrahim (Sunan Gresik) setiap tanggal 12 Rabiul Awal, Haul Sunan Giri di Kebomas Gresik pada bulan Rabiul Awal, hingga Haul Akbar Habib Sholeh bin Muhsin Al-Hamid di Tanggul, Jember, yang rutin digelar pada pekan kedua bulan Syawal, serta Haul Habib Ali bin Muhammad Al-Habsyi (pengarang Maulid Simthuddurar) di Masjid Riyadh Solo setiap tanggal 20 Rabiul Akhir.',
+          'Pada bulan Rabiul Awal (bulan Maulid Nabi SAW) dan Rabiul Akhir, peringatan haul berlanjut di berbagai penjuru Jawa Timur dan Jawa Tengah: mulai dari Haul Akbar Syekh Maulana Malik Ibrahim (Sunan Gresik) serta Haul Sunan Giri di Kabupaten Gresik yang jadwal tahunannya mengikuti penetapan resmi panitia/pengurus makam setempat, Haul Akbar Habib Sholeh bin Muhsin Al-Hamid di Tanggul, Jember, yang rutin digelar pada pekan kedua bulan Syawal, hingga Haul Habib Ali bin Muhammad Al-Habsyi (pengarang Maulid Simthuddurar) di Masjid Riyadh Solo setiap tanggal 20 Rabiul Akhir.',
         ],
         bulletPoints: [
           '10 Muharram: Puncak Buka Luwur Makam Sunan Kudus, Kabupaten Kudus, Jawa Tengah.',
-          '12 Rabiul Awal: Haul Syekh Maulana Malik Ibrahim (Sunan Gresik), Kabupaten Gresik, Jawa Timur.',
-          '1–15 Muharram (Puncak 15 Muharram): Rangkaian Buka Luwur & Haul Sunan Muria (Raden Umar Said), Colo, Kabupaten Kudus, Jawa Tengah (tanggal puncak mengikuti penetapan resmi panitia setempat).',
+          'Haul Syekh Maulana Malik Ibrahim (Sunan Gresik), Kabupaten Gresik, Jawa Timur — jadwal tahunan mengikuti penetapan resmi panitia/pengurus makam setempat.',
+          '1–15 Muharram: Rangkaian Buka Luwur & Haul Sunan Muria (Raden Umar Said), Colo, Kabupaten Kudus, Jawa Tengah (dimulai 1 Muharram; jadwal puncak mengikuti penetapan resmi panitia setempat).',
           '20 Rabiul Akhir: Peringatan Haul Habib Ali bin Muhammad Al-Habsyi, Masjid Riyadh, Pasar Kliwon, Surakarta (tanggal puncak mengikuti pengumuman resmi panitia Masjid Riyadh).',
           'Haul Habib Anis bin Alwi Al-Habsyi, Masjid Riyadh, Pasar Kliwon, Surakarta: Mengikuti pengumuman resmi panitia Masjid Riyadh Solo.',
         ],

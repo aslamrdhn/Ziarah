@@ -32,8 +32,16 @@ import {
   submitDonationWithPrivateProof,
 } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
-import { useSiteCopy, ADMIN_WHATSAPP_NUMBER } from '../lib/siteCopy';
+import { useSiteCopy } from '../lib/siteCopy';
 import { renderPersonalMunajatCard, type MunajatCardPaletteId } from '../lib/munajatCardCanvas';
+import {
+  DEFAULT_DONATION_TIERS,
+  DEFAULT_WHATSAPP_TEMPLATE,
+  type DonationTier,
+  normalizeDonationTiers,
+  normalizeWhatsappNumber,
+  buildWhatsappConfirmUrl,
+} from '../lib/infaqConfig';
 
 interface DonationRecord {
   id: string;
@@ -126,6 +134,9 @@ interface InfaqSettings {
   qrisImageUrl: string;
   qrisPayload: string;
   programs: InfaqProgramItem[];
+  donationTiers: DonationTier[];
+  whatsappConfirmNumber: string;
+  whatsappMessageTemplate: string;
 }
 
 const DEFAULT_INFAQ_SETTINGS: InfaqSettings = {
@@ -135,6 +146,9 @@ const DEFAULT_INFAQ_SETTINGS: InfaqSettings = {
   qrisImageUrl: '',
   qrisPayload: OFFICIAL_QRIS_STATIC_PAYLOAD,
   programs: DEFAULT_INFAQ_PROGRAMS,
+  donationTiers: DEFAULT_DONATION_TIERS,
+  whatsappConfirmNumber: '',
+  whatsappMessageTemplate: DEFAULT_WHATSAPP_TEMPLATE,
 };
 
 const ICON_MAP = {
@@ -167,7 +181,8 @@ export const InfaqDigital: React.FC = () => {
     }
   }, [location.hash]);
   const [selectedSiteId, setSelectedSiteId] = useState<string>('web-riset');
-  const [nominal, setNominal] = useState<number>(25000);
+  const [nominal, setNominal] = useState<number>(DEFAULT_DONATION_TIERS[0].amount);
+  const [isCustomBankMode, setIsCustomBankMode] = useState<boolean>(false);
   const [customNominal, setCustomNominal] = useState<string>('');
   const [minAmountWarning, setMinAmountWarning] = useState<boolean>(false);
   const [donorName, setDonorName] = useState<string>('');
@@ -341,6 +356,13 @@ export const InfaqDigital: React.FC = () => {
         if (snap.exists()) {
           const data = snap.data();
           const loadedPrograms = sanitizeInfaqPrograms(data.programs);
+          const loadedTiers = normalizeDonationTiers(data.donationTiers);
+          const loadedWaNumber = normalizeWhatsappNumber(data.whatsappConfirmNumber);
+          const loadedWaTemplate =
+            typeof data.whatsappMessageTemplate === 'string' && data.whatsappMessageTemplate.trim()
+              ? data.whatsappMessageTemplate.trim()
+              : DEFAULT_WHATSAPP_TEMPLATE;
+
           setInfaqSettings({
             bankName: data.bankName || DEFAULT_INFAQ_SETTINGS.bankName,
             accountNumber: data.accountNumber || DEFAULT_INFAQ_SETTINGS.accountNumber,
@@ -348,6 +370,13 @@ export const InfaqDigital: React.FC = () => {
             qrisImageUrl: data.qrisImageUrl || '',
             qrisPayload: data.qrisPayload || OFFICIAL_QRIS_STATIC_PAYLOAD,
             programs: loadedPrograms,
+            donationTiers: loadedTiers,
+            whatsappConfirmNumber: loadedWaNumber,
+            whatsappMessageTemplate: loadedWaTemplate,
+          });
+          setNominal((prev) => {
+            if (loadedTiers.some((t) => t.amount === prev)) return prev;
+            return loadedTiers[0].amount;
           });
           setSelectedProgram((prev) =>
             loadedPrograms.some((p: InfaqProgramItem) => p.id === prev)
@@ -400,8 +429,11 @@ export const InfaqDigital: React.FC = () => {
   }, []);
 
   const programs = infaqSettings.programs;
-
-  const quickNominalPackages = copy.quickNominalPackages;
+  const donationTiers = infaqSettings.donationTiers;
+  const selectedTier =
+    donationTiers.find((t) => t.amount === nominal) ||
+    donationTiers[0] ||
+    DEFAULT_DONATION_TIERS[0];
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text.replace(/[^0-9]/g, '') || text);
@@ -409,10 +441,13 @@ export const InfaqDigital: React.FC = () => {
     setTimeout(() => setCopiedAccount(null), 2500);
   };
 
-  const currentAmount = Math.max(
-    MIN_DONATION_AMOUNT,
-    sanitizeDonationAmount(customNominal ? customNominal : nominal, MIN_DONATION_AMOUNT, 1000000000) || MIN_DONATION_AMOUNT
-  );
+  const parsedCustomBankAmount = customNominal
+    ? sanitizeDonationAmount(customNominal, MIN_DONATION_AMOUNT, 1000000000)
+    : null;
+
+  const currentAmount = isCustomBankMode
+    ? Math.max(MIN_DONATION_AMOUNT, parsedCustomBankAmount || selectedTier.amount)
+    : selectedTier.amount;
 
   const handleCustomNominalChange = (rawVal: string) => {
     const digits = rawVal.replace(/[^0-9]/g, '');
@@ -490,6 +525,9 @@ export const InfaqDigital: React.FC = () => {
         doaHajat: cleanDoaHajat,
         isAnonymous: isAnonim,
         showPublicly: !isAnonim,
+        consentAkad: true,
+        consentVersion: '2026-11-23',
+        consentAt: new Date().toISOString(),
       });
       saveVerifiedDonationRecord(donationId, selectedSiteId);
       setLastSubmittedReceipt(receipt);
@@ -522,17 +560,31 @@ export const InfaqDigital: React.FC = () => {
 
   const finalDonorDisplay = isAnonim ? 'Hamba Allah' : (donorName.trim() || senderAccount.trim() || 'Hamba Allah');
   const activeRefCode = lastSubmittedReceipt?.referenceCode || receipt?.referenceCode || '-';
-  const waMessage = `Assalamu'alaikum Admin Ziarah Nusantara, saya telah mengunggah Bukti Transfer Infaq Operasional & Pemeliharaan Digital di sistem:\n\n` +
-    `• *Kode Referensi Bukti:* ${activeRefCode}\n` +
-    `• *Nama Munfiq / Pengirim:* ${finalDonorDisplay} (${senderAccount.trim() || '-'})\n` +
-    `• *Metode Pembayaran:* ${paymentMethod}\n` +
-    `• *Program:* ${activeProgramTitle}\n` +
-    `• *Tujuan Alokasi:* ${targetSiteName}\n` +
-    `• *Nominal Infaq:* Rp ${currentAmount.toLocaleString('id-ID')}` +
-    (doaHajat.trim() ? `\n• *Titip Doa / Hajat:* "${sanitizePlainText(doaHajat, 200)}"` : '') +
-    `\n\nScreenshot bukti transfer telah terunggah di sistem Admin Kurator. Terima kasih.`;
-  const cleanAdminWa = (copy.adminWhatsappNumber || ADMIN_WHATSAPP_NUMBER).replace(/[^0-9]/g, '');
-  const waConfirmUrl = `https://wa.me/${cleanAdminWa}?text=${encodeURIComponent(waMessage)}`;
+  const waConfirmUrl = buildWhatsappConfirmUrl({
+    whatsappNumber: infaqSettings.whatsappConfirmNumber,
+    donorName: finalDonorDisplay,
+    amount: isCustomBankMode
+      ? parsedCustomBankAmount || undefined
+      : currentAmount,
+    programTitle: activeProgramTitle,
+    siteName: targetSiteName,
+    bankName: infaqSettings.bankName,
+    accountNumber: infaqSettings.accountNumber,
+    template: infaqSettings.whatsappMessageTemplate,
+  });
+
+  const waSuccessModalUrl = infaqSettings.whatsappConfirmNumber
+    ? buildWhatsappConfirmUrl({
+        whatsappNumber: infaqSettings.whatsappConfirmNumber,
+        donorName: `${finalDonorDisplay} (Ref #${activeRefCode})`,
+        amount: currentAmount,
+        programTitle: activeProgramTitle,
+        siteName: targetSiteName,
+        bankName: infaqSettings.bankName,
+        accountNumber: infaqSettings.accountNumber,
+        template: infaqSettings.whatsappMessageTemplate,
+      })
+    : null;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-28">
@@ -658,23 +710,21 @@ export const InfaqDigital: React.FC = () => {
           <div className="bg-white rounded-2xl p-5 sm:p-6 border border-stone-200/70 shadow-2xs">
             <h2 className="text-sm sm:text-base font-serif text-stone-900 mb-3.5 flex items-center">
               <span className="w-6 h-6 rounded-lg bg-stone-100 text-stone-800 text-xs font-semibold flex items-center justify-center mr-2.5">3</span>
-              Pilih Nominal Infaq
+              Pilih Nominal Pasti Infaq QRIS
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-3">
-              {quickNominalPackages.map((pkg, idx) => {
-                const isSelected = !customNominal && nominal === pkg.amount;
-                const displayTag =
-                  pkg.amount === 100000
-                    ? 'Infaq Literasi Utama'
-                    : (pkg.tag || pkg.label).replace(/wakaf\s*literasi/gi, 'Infaq Literasi Utama');
+              {donationTiers.map((tier, idx) => {
+                const isSelected = !isCustomBankMode && selectedTier.amount === tier.amount;
                 return (
                   <button
-                    key={`${pkg.amount}-${idx}`}
+                    key={`${tier.amount}-${idx}`}
                     type="button"
                     onClick={() => {
-                      setNominal(pkg.amount);
+                      setNominal(tier.amount);
+                      setIsCustomBankMode(false);
                       setCustomNominal('');
                       setMinAmountWarning(false);
+                      setPaymentMethod('QRIS');
                     }}
                     className={`py-3 px-3 rounded-xl text-left transition-colors border cursor-pointer ${
                       isSelected 
@@ -683,33 +733,70 @@ export const InfaqDigital: React.FC = () => {
                     }`}
                   >
                     <div className="font-semibold text-xs sm:text-sm tabular-nums">
-                      Rp {pkg.amount.toLocaleString('id-ID')}
+                      Rp {tier.amount.toLocaleString('id-ID')}
                     </div>
                     <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-emerald-100' : 'text-stone-500'}`}>
-                      {displayTag}
+                      {tier.label}
                     </div>
                   </button>
                 );
               })}
             </div>
 
-            <div className="relative mt-3">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-stone-400">Rp</span>
-              <input
-                type="number"
-                min={2000}
-                step={1000}
-                inputMode="numeric"
-                placeholder="Nominal lainnya (minimal Rp 2.000)"
-                value={customNominal}
-                onChange={(e) => handleCustomNominalChange(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-[#FAF8F5] border border-stone-200 rounded-xl text-stone-900 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-700"
-              />
-            </div>
-            {minAmountWarning && (
-              <p className="mt-2 text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5">
-                Nominal infaq terkunci minimal Rp 2.000 untuk menghindari transaksi tidak valid (Rp 1).
-              </p>
+            {/* Pilihan tersendiri: Nominal Lainnya (Transfer Rekening Bank + Konfirmasi WA) */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsCustomBankMode(true);
+                setPaymentMethod('Transfer Bank');
+              }}
+              className={`w-full py-3 px-4 rounded-xl text-left transition-colors border cursor-pointer flex items-center justify-between gap-3 ${
+                isCustomBankMode
+                  ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
+                  : 'bg-[#FAF8F5] text-stone-800 border-stone-200/80 hover:border-stone-400'
+              }`}
+            >
+              <div>
+                <div className="font-semibold text-xs sm:text-sm">
+                  Nominal Lainnya (Transfer Rekening Bank + Konfirmasi WA)
+                </div>
+                <div className={`text-[11px] mt-0.5 ${isCustomBankMode ? 'text-stone-300' : 'text-stone-500'}`}>
+                  Untuk nominal bebas di luar 6 pilihan QRIS pasti di atas (transfer langsung ke rekening resmi)
+                </div>
+              </div>
+              <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg shrink-0 ${
+                isCustomBankMode
+                  ? 'bg-emerald-700 text-white'
+                  : 'bg-stone-200/80 text-stone-700'
+              }`}>
+                Transfer Bank
+              </span>
+            </button>
+
+            {isCustomBankMode && (
+              <div className="mt-3 pt-3 border-t border-stone-200/70 space-y-2">
+                <label className="block text-xs font-semibold text-stone-700">
+                  Nominal Rencana Transfer Bank (Opsional · Minimal Rp 2.000):
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-stone-400">Rp</span>
+                  <input
+                    type="number"
+                    min={2000}
+                    step={1000}
+                    inputMode="numeric"
+                    placeholder="Contoh: 50000 (untuk memudahkan ringkasan & isi pesan WA)"
+                    value={customNominal}
+                    onChange={(e) => handleCustomNominalChange(e.target.value)}
+                    className="w-full pl-11 pr-4 py-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl text-stone-900 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-700"
+                  />
+                </div>
+                {minAmountWarning && (
+                  <p className="text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5">
+                    Nominal infaq terkunci minimal Rp 2.000 untuk menghindari transaksi tidak valid (Rp 1).
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
@@ -803,19 +890,36 @@ export const InfaqDigital: React.FC = () => {
               </span>
             </div>
 
-            {/* Metode QRIS Resmi Ziarah Nusantara */}
-            <div className="mb-5">
-              <QrisPaymentCard
-                qrisPayload={infaqSettings.qrisPayload}
-                qrisImageUrl={infaqSettings.qrisImageUrl}
-                selectedAmount={currentAmount}
-              />
-            </div>
+            {/* Metode QRIS Resmi Ziarah Nusantara atau Mode Transfer Rekening Bank */}
+            {!isCustomBankMode ? (
+              <div className="mb-5">
+                <QrisPaymentCard
+                  qrisPayload={infaqSettings.qrisPayload}
+                  qrisImageUrl={infaqSettings.qrisImageUrl}
+                  selectedAmount={selectedTier.amount}
+                  tierLabel={selectedTier.label}
+                  customTierQrisPayload={selectedTier.customQrisPayload}
+                  customTierQrisImageUrl={selectedTier.customQrisImageUrl}
+                />
+              </div>
+            ) : (
+              <div className="mb-4 p-3.5 rounded-2xl bg-[#FAF8F5] border border-stone-200/90 text-xs text-stone-800 leading-relaxed">
+                Untuk nominal di luar pilihan QRIS pasti, silakan transfer langsung ke rekening resmi di bawah ini lalu konfirmasi via WhatsApp agar tercatat oleh tim kurator.
+              </div>
+            )}
 
             {/* Transfer Manual Rekening Bank */}
             <div className="mb-5 text-xs">
-              <p className="font-semibold text-slate-700 mb-2">Transfer Manual Rekening Bank:</p>
-              <div className="p-3.5 bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-200">
+              <p className="font-semibold text-slate-700 mb-2">
+                {isCustomBankMode ? 'Rekening Resmi Transfer Infaq:' : 'Transfer Manual Rekening Bank:'}
+              </p>
+              <div
+                className={`p-3.5 rounded-2xl flex items-center justify-between border ${
+                  isCustomBankMode
+                    ? 'bg-emerald-50/80 border-emerald-400 ring-2 ring-emerald-500/15'
+                    : 'bg-slate-50 border-slate-200'
+                }`}
+              >
                 <div>
                   <p className="font-bold text-slate-900 text-sm">{infaqSettings.bankName}</p>
                   <p className="text-slate-600 text-xs font-mono font-semibold mt-0.5">{infaqSettings.accountNumber}</p>
@@ -840,6 +944,26 @@ export const InfaqDigital: React.FC = () => {
                   )}
                 </button>
               </div>
+
+              {isCustomBankMode && (
+                <div className="mt-3">
+                  {waConfirmUrl ? (
+                    <a
+                      href={waConfirmUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3 px-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-2xl text-xs sm:text-sm transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <MessageSquareHeart className="w-4 h-4" />
+                      <span>Konfirmasi Transfer via WhatsApp</span>
+                    </a>
+                  ) : (
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
+                      Silakan kirim transfer ke rekening resmi di atas, lalu unggah bukti transfer Anda pada formulir di bawah ini untuk verifikasi tim kurator.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Wajib Unggah Bukti Transfer */}
@@ -1120,10 +1244,10 @@ export const InfaqDigital: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="text-sm sm:text-base font-serif font-semibold text-stone-900">
-                Titip Doa &amp; Hajat di Dinding Doa Bersama
+                Catat Munajat &amp; Hajat Pribadi di Perangkat Ini
               </h3>
               <p className="text-xs text-stone-500">
-                Tuliskan doa atau hajat keluarga Anda agar diaminkan bersama oleh ribuan peziarah Nusantara.
+                Catat doa atau hajat keluarga Anda sebagai pengingat munajat pribadi di perangkat ini (tersimpan lokal di browser Anda, tidak dikirim ke server).
               </p>
             </div>
             {munajatWallSubmitted && (
@@ -1298,15 +1422,17 @@ export const InfaqDigital: React.FC = () => {
               </div>
 
               <div className="space-y-2.5">
-                <a
-                  href={waConfirmUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-2xl text-xs sm:text-sm transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <MessageSquareHeart className="w-4 h-4" />
-                  <span>Kirim Bukti Transfer ke WhatsApp</span>
-                </a>
+                {waSuccessModalUrl && (
+                  <a
+                    href={waSuccessModalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-2xl text-xs sm:text-sm transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <MessageSquareHeart className="w-4 h-4" />
+                    <span>Kirim Bukti Transfer ke WhatsApp</span>
+                  </a>
+                )}
                 <button
                   onClick={() => setIsSuccessModal(false)}
                   className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs sm:text-sm transition-colors cursor-pointer"
