@@ -8,6 +8,8 @@ import {
   injectQrisAmountTag54,
   buildQrisPayload,
   resolveOfficialQrisPayload,
+  resolveLockedTierQrisPayload,
+  getCustomQrisPayloadTag54Mismatch,
 } from '../qris';
 
 describe('QRIS EMVCo Dynamic Payload & CRC-16/CCITT-FALSE', () => {
@@ -71,6 +73,21 @@ describe('QRIS EMVCo Dynamic Payload & CRC-16/CCITT-FALSE', () => {
     const tampered = OFFICIAL_QRIS_STATIC_PAYLOAD.slice(0, -4) + 'FFFF';
     expect(resolveOfficialQrisPayload(tampered)).toBe(OFFICIAL_QRIS_STATIC_PAYLOAD);
     expect(resolveOfficialQrisPayload(OFFICIAL_QRIS_STATIC_PAYLOAD)).toBe(OFFICIAL_QRIS_STATIC_PAYLOAD);
+  });
+
+  it('enforces Tag 54 matching lockedAmount when customTierPayload has a different Tag 54 or static payload', () => {
+    const custom75k = injectQrisAmountTag54(OFFICIAL_QRIS_STATIC_PAYLOAD, 75000);
+    expect(getCustomQrisPayloadTag54Mismatch(custom75k, 15000)).toBe(75000);
+    expect(getCustomQrisPayloadTag54Mismatch(custom75k, 75000)).toBeNull();
+
+    const locked15k = resolveLockedTierQrisPayload(
+      OFFICIAL_QRIS_STATIC_PAYLOAD,
+      15000,
+      custom75k
+    );
+    const tags = parseEmvTags(locked15k);
+    expect(tags.get('54')).toBe('15000');
+    expect(parseQrisMerchantInfo(locked15k).isValidCrc).toBe(true);
   });
 
   it('compresses transfer proof image to valid base64 dataUrl <= 350,000 characters via compressProofImage', async () => {

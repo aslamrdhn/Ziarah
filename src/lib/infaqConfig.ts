@@ -9,11 +9,11 @@ export interface DonationTier {
 
 export const DEFAULT_DONATION_TIERS: DonationTier[] = [
   { amount: 2000, label: 'Infaq Harian' },
-  { amount: 5000, label: 'Dukungan Doa & Naskah' },
-  { amount: 10000, label: 'Pemeliharaan Arsip' },
-  { amount: 15000, label: 'Riset Sanad & Sejarah' },
-  { amount: 20000, label: 'Server & Peta Digital' },
-  { amount: 30000, label: 'Sahabat Ziarah Utama' },
+  { amount: 5000, label: 'Doa & Naskah' },
+  { amount: 10000, label: 'Rawat Arsip' },
+  { amount: 15000, label: 'Riset Sanad' },
+  { amount: 20000, label: 'Server & Peta' },
+  { amount: 30000, label: 'Sahabat Ziarah' },
 ];
 
 export const DEFAULT_WHATSAPP_TEMPLATE =

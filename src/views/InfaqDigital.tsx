@@ -17,7 +17,7 @@ import {
   Heart,
   Download
 } from 'lucide-react';
-import { auth, db, handleFirestoreError, OperationType, checkAndRecordSubmissionCooldown } from '../lib/firebase';
+import { auth, db, handleFirestoreError, OperationType, getRemainingSubmissionCooldown, recordSubmissionCooldown } from '../lib/firebase';
 import { collection, doc, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { MIN_DONATION_AMOUNT, OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
@@ -445,8 +445,13 @@ export const InfaqDigital: React.FC = () => {
     ? sanitizeDonationAmount(customNominal, MIN_DONATION_AMOUNT, 1000000000)
     : null;
 
+  const hasCustomNominalText = isCustomBankMode && customNominal.trim() !== '';
+  const isCustomNominalInvalid = hasCustomNominalText && parsedCustomBankAmount === null;
+
   const currentAmount = isCustomBankMode
-    ? Math.max(MIN_DONATION_AMOUNT, parsedCustomBankAmount || selectedTier.amount)
+    ? hasCustomNominalText
+      ? parsedCustomBankAmount ?? Number(customNominal.replace(/[^0-9]/g, '') || 0)
+      : selectedTier.amount
     : selectedTier.amount;
 
   const handleCustomNominalChange = (rawVal: string) => {
@@ -457,13 +462,9 @@ export const InfaqDigital: React.FC = () => {
       return;
     }
     const parsed = parseInt(digits, 10);
-    if (parsed < MIN_DONATION_AMOUNT) {
-      setMinAmountWarning(true);
-      setCustomNominal(String(MIN_DONATION_AMOUNT));
-    } else {
-      setMinAmountWarning(false);
-      setCustomNominal(String(Math.min(parsed, 1000000000)));
-    }
+    const clamped = Math.min(parsed, 1000000000);
+    setCustomNominal(String(clamped));
+    setMinAmountWarning(clamped < MIN_DONATION_AMOUNT);
   };
 
   const targetSiteName = selectedSiteId === 'web-riset'
@@ -486,8 +487,14 @@ export const InfaqDigital: React.FC = () => {
 
   const handleBayar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentAmount < MIN_DONATION_AMOUNT || isSubmitting) return;
+    if (isSubmitting) return;
     setSubmitError(null);
+
+    if (isCustomNominalInvalid || currentAmount < MIN_DONATION_AMOUNT) {
+      setMinAmountWarning(true);
+      setSubmitError('Nominal transfer bank minimal Rp 2.000. Silakan periksa kembali nominal yang Anda ketik.');
+      return;
+    }
 
     if (!receipt || !receipt.dataUrl) {
       setSubmitError('Wajib mengunggah screenshot / foto bukti transfer terlebih dahulu.');
@@ -498,7 +505,7 @@ export const InfaqDigital: React.FC = () => {
       return;
     }
 
-    const cooldown = checkAndRecordSubmissionCooldown('donation', 15);
+    const cooldown = getRemainingSubmissionCooldown('donation', 15);
     if (!cooldown.allowed) {
       setSubmitError(`Mohon tunggu ${cooldown.remainingSeconds} detik sebelum mengirim konfirmasi donasi berikutnya.`);
       return;
@@ -529,6 +536,7 @@ export const InfaqDigital: React.FC = () => {
         consentVersion: '2026-11-23',
         consentAt: new Date().toISOString(),
       });
+      recordSubmissionCooldown('donation');
       saveVerifiedDonationRecord(donationId, selectedSiteId);
       setLastSubmittedReceipt(receipt);
       setIsSuccessModal(true);
@@ -735,7 +743,7 @@ export const InfaqDigital: React.FC = () => {
                     <div className="font-semibold text-xs sm:text-sm tabular-nums">
                       Rp {tier.amount.toLocaleString('id-ID')}
                     </div>
-                    <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-emerald-100' : 'text-stone-500'}`}>
+                    <div className={`text-[10px] sm:text-[11px] mt-0.5 whitespace-normal leading-snug ${isSelected ? 'text-emerald-100' : 'text-stone-500'}`}>
                       {tier.label}
                     </div>
                   </button>
@@ -814,7 +822,7 @@ export const InfaqDigital: React.FC = () => {
                 type="text"
                 maxLength={100}
                 disabled={isAnonim}
-                placeholder={isAnonim ? "Hamba Allah" : "Masukkan nama lengkap atau keluarga"}
+                placeholder={isAnonim ? "Hamba Allah" : "Nama Anda (opsional)"}
                 value={donorName}
                 onChange={(e) => setDonorName(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:opacity-50"
@@ -895,7 +903,6 @@ export const InfaqDigital: React.FC = () => {
               <div className="mb-5">
                 <QrisPaymentCard
                   qrisPayload={infaqSettings.qrisPayload}
-                  qrisImageUrl={infaqSettings.qrisImageUrl}
                   selectedAmount={selectedTier.amount}
                   tierLabel={selectedTier.label}
                   customTierQrisPayload={selectedTier.customQrisPayload}

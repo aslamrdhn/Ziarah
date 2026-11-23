@@ -27,10 +27,20 @@ function splitIntoReadableParagraphs(rawText: string): string[] {
     .filter(Boolean);
   if (existingBlocks.length > 1) return existingBlocks;
 
-  // Split long single-paragraph text into 2-sentence paragraphs for comfortable reading
-  const sentences = cleaned.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g);
-  if (!sentences || sentences.length <= 2) return [cleaned];
+  // Protect dots inside Markdown links [Label](url) and common titles (KH., Dr., H., M., dkk., etc.)
+  const DOT_SENTINEL = '\uE000';
+  const protectedText = cleaned
+    .replace(/\[[^\]]+\]\([^)\s]+\)/g, (m) => m.replace(/\./g, DOT_SENTINEL))
+    .replace(
+      /\b(KH|K\.H|K|H|Hj|Dr|Prof|Ir|Ny|R|R\.A|M|HR|QS|dkk|hlm|cet|vol|no)\./gi,
+      (m) => m.replace(/\./g, DOT_SENTINEL)
+    );
 
+  // Split long single-paragraph text into 2-sentence paragraphs for comfortable reading
+  const rawSentences = protectedText.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g);
+  if (!rawSentences || rawSentences.length <= 2) return [cleaned];
+
+  const sentences = rawSentences.map((s) => s.split(DOT_SENTINEL).join('.'));
   const paragraphs: string[] = [];
   let buffer = '';
   for (let i = 0; i < sentences.length; i++) {
@@ -1349,6 +1359,20 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-medium">
                           Klasifikasi Sumber: {getSourceClassificationLabel(site.historySourceType, 'catatan_sejarah')}
                         </span>
+                        {(() => {
+                          const activeRefUrlCount = Array.isArray(site.references)
+                            ? site.references.filter(
+                                (r) => typeof r === 'string' && /https?:\/\/[^\s)]+/i.test(r)
+                              ).length
+                            : 0;
+                          if (activeRefUrlCount <= 0) return null;
+                          return (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold">
+                              <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-700" strokeWidth={1.75} />
+                              <span>Naskah Terverifikasi · {activeRefUrlCount} Rujukan</span>
+                            </span>
+                          );
+                        })()}
                         <span className="text-[11px] text-slate-500 italic">
                           Disusun dari rujukan sejarah &amp; hikmah tradisi tutur pesantren Nusantara
                         </span>
@@ -2041,19 +2065,9 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                             {site.references.map((ref, idx) => {
                               const mdLinkMatch = ref.match(/^(.*?)\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)(.*)$/);
                               if (mdLinkMatch) {
-                                const [, prefix, label, url, suffix] = mdLinkMatch;
                                 return (
                                   <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
-                                    {prefix}
-                                    <a
-                                      href={url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-emerald-800 hover:text-emerald-950 underline underline-offset-4 break-words"
-                                    >
-                                      {label} ↗
-                                    </a>
-                                    {suffix}
+                                    {renderFormattedText(ref)}
                                   </li>
                                 );
                               }
@@ -2062,7 +2076,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                 const [, textPart, url] = parenUrlMatch;
                                 return (
                                   <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
-                                    <span>{textPart} — </span>
+                                    <span>{renderFormattedText(textPart)} — </span>
                                     <a
                                       href={url}
                                       target="_blank"
@@ -2081,7 +2095,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                 const trailingPunct = rawUrl.slice(cleanUrl.length);
                                 return (
                                   <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
-                                    {before}
+                                    {renderFormattedText(before)}
                                     <a
                                       href={cleanUrl}
                                       target="_blank"
@@ -2091,13 +2105,13 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                                       {cleanUrl} ↗
                                     </a>
                                     {trailingPunct}
-                                    {after}
+                                    {renderFormattedText(after)}
                                   </li>
                                 );
                               }
                               return (
                                 <li key={idx} className="text-xs sm:text-sm text-stone-600 leading-[1.8] font-serif">
-                                  {ref}
+                                  {renderFormattedText(ref)}
                                 </li>
                               );
                             })}

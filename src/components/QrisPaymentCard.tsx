@@ -11,7 +11,6 @@ import {
 
 interface QrisPaymentCardProps {
   qrisPayload?: string;
-  qrisImageUrl?: string;
   selectedAmount?: number;
   tierLabel?: string;
   customTierQrisPayload?: string;
@@ -81,90 +80,112 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
   const handleDownloadQrCard = async () => {
     try {
       const dynamicMerchantInfo = parseQrisMerchantInfo(activePayload);
-      const canvas = document.createElement('canvas');
-      canvas.width = 800;
-      canvas.height = 1040;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
 
-      // White card background
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const renderCardToDataUrl = async (qrSrc: string): Promise<string> => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 1040;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Canvas 2D context unavailable');
 
-      // Top emerald QRIS header accent
-      ctx.fillStyle = '#064e3b';
-      ctx.fillRect(0, 0, canvas.width, 130);
+        // White card background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 30px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('QRIS STANDAR PEMBAYARAN NASIONAL', canvas.width / 2, 62);
-      ctx.font = '18px sans-serif';
-      ctx.fillStyle = '#EAE4D7';
-      ctx.fillText('Satu QR Code untuk Semua Aplikasi Pembayaran', canvas.width / 2, 98);
+        // Top emerald QRIS header accent
+        ctx.fillStyle = '#064e3b';
+        ctx.fillRect(0, 0, canvas.width, 130);
 
-      // Merchant details
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 32px serif';
-      ctx.fillText(dynamicMerchantInfo.merchantName.toUpperCase(), canvas.width / 2, 195);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 30px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('QRIS STANDAR PEMBAYARAN NASIONAL', canvas.width / 2, 62);
+        ctx.font = '18px sans-serif';
+        ctx.fillStyle = '#EAE4D7';
+        ctx.fillText('Satu QR Code untuk Semua Aplikasi Pembayaran', canvas.width / 2, 98);
 
-      ctx.fillStyle = '#475569';
-      ctx.font = 'bold 20px monospace';
-      ctx.fillText(`NMID: ${dynamicMerchantInfo.nmid}`, canvas.width / 2, 232);
+        // Merchant details
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 32px serif';
+        ctx.fillText(dynamicMerchantInfo.merchantName.toUpperCase(), canvas.width / 2, 195);
 
-      ctx.fillStyle = '#64748b';
-      ctx.font = '18px sans-serif';
-      ctx.fillText(
-        `${dynamicMerchantInfo.merchantCity} (${dynamicMerchantInfo.postalCode}) • Acquirer: ${dynamicMerchantInfo.acquirer}`,
-        canvas.width / 2,
-        262
-      );
+        ctx.fillStyle = '#475569';
+        ctx.font = 'bold 20px monospace';
+        ctx.fillText(`NMID: ${dynamicMerchantInfo.nmid}`, canvas.width / 2, 232);
 
-      // Draw QR image
-      const qrImg = new Image();
-      qrImg.crossOrigin = 'anonymous';
-      await new Promise<void>((resolve, reject) => {
-        qrImg.onload = () => resolve();
-        qrImg.onerror = reject;
-        qrImg.src = displayImageSrc || generatedQrDataUrl;
-      });
+        ctx.fillStyle = '#64748b';
+        ctx.font = '18px sans-serif';
+        ctx.fillText(
+          `${dynamicMerchantInfo.merchantCity} (${dynamicMerchantInfo.postalCode}) • Acquirer: ${dynamicMerchantInfo.acquirer}`,
+          canvas.width / 2,
+          262
+        );
 
-      const qrSize = 540;
-      const qrX = (canvas.width - qrSize) / 2;
-      const qrY = 290;
+        // Draw QR image
+        const qrImg = new Image();
+        qrImg.crossOrigin = 'anonymous';
+        await new Promise<void>((resolve, reject) => {
+          qrImg.onload = () => resolve();
+          qrImg.onerror = reject;
+          qrImg.src = qrSrc;
+        });
 
-      ctx.strokeStyle = '#e2e8f0';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(qrX - 12, qrY - 12, qrSize + 24, qrSize + 24);
-      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+        const qrSize = 540;
+        const qrX = (canvas.width - qrSize) / 2;
+        const qrY = 290;
 
-      // Footer info
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 20px sans-serif';
-      const modeText = tierLabel
-        ? `Nominal Terkunci: Rp ${lockedDonationAmount.toLocaleString('id-ID')} (${tierLabel})`
-        : `Nominal Terkunci: Rp ${lockedDonationAmount.toLocaleString('id-ID')}`;
-      ctx.fillText(modeText, canvas.width / 2, 895);
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(qrX - 12, qrY - 12, qrSize + 24, qrSize + 24);
+        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
-      ctx.fillStyle = '#64748b';
-      ctx.font = '16px monospace';
-      ctx.fillText(
-        `CRC-16 Checksum: ${dynamicMerchantInfo.crc} (Terverifikasi EMVCo)`,
-        canvas.width / 2,
-        930
-      );
+        // Footer info
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 20px sans-serif';
+        const modeText = tierLabel
+          ? `Nominal Terkunci: Rp ${lockedDonationAmount.toLocaleString('id-ID')} (${tierLabel})`
+          : `Nominal Terkunci: Rp ${lockedDonationAmount.toLocaleString('id-ID')}`;
+        ctx.fillText(modeText, canvas.width / 2, 895);
 
-      ctx.fillStyle = '#047857';
-      ctx.font = 'bold 17px sans-serif';
-      ctx.fillText(
-        'Menerima: BCA • Mandiri • BRI • BNI • BSI • DANA • GoPay • OVO • ShopeePay',
-        canvas.width / 2,
-        980
-      );
+        ctx.fillStyle = '#64748b';
+        ctx.font = '16px monospace';
+        ctx.fillText(
+          `CRC-16 Checksum: ${dynamicMerchantInfo.crc} (Terverifikasi EMVCo)`,
+          canvas.width / 2,
+          930
+        );
+
+        ctx.fillStyle = '#047857';
+        ctx.font = 'bold 17px sans-serif';
+        ctx.fillText(
+          'Menerima: BCA • Mandiri • BRI • BNI • BSI • DANA • GoPay • OVO • ShopeePay',
+          canvas.width / 2,
+          980
+        );
+
+        return canvas.toDataURL('image/png');
+      };
+
+      let pngDataUrl: string;
+      const primarySrc = displayImageSrc || generatedQrDataUrl;
+      try {
+        pngDataUrl = await renderCardToDataUrl(primarySrc);
+      } catch {
+        // Fallback to local EMVCo generatedQrDataUrl if customTierQrisImageUrl fails or taints canvas (CORS SecurityError)
+        const fallbackLocalQr =
+          generatedQrDataUrl ||
+          (await QRCode.toDataURL(activePayload, {
+            width: 640,
+            margin: 2,
+            errorCorrectionLevel: 'M',
+            color: { dark: '#0f172a', light: '#ffffff' },
+          }));
+        pngDataUrl = await renderCardToDataUrl(fallbackLocalQr);
+      }
 
       const link = document.createElement('a');
       link.download = `QRIS-Ziarah-Nusantara-${dynamicMerchantInfo.nmid}-Rp${lockedDonationAmount}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = pngDataUrl;
       link.click();
     } catch (err) {
       console.error('Error downloading QRIS PNG:', err);

@@ -110,10 +110,13 @@
         "referenceCode": { "type": "string", "maxLength": 40 },
         "doaHajat": { "type": "string", "maxLength": 1000 },
         "authorUid": { "type": "string", "maxLength": 128 },
+        "consentAkad": { "type": "boolean" },
+        "consentVersion": { "type": "string", "maxLength": 40 },
+        "consentAt": { "type": "string", "maxLength": 64 },
         "status": { "type": "string", "enum": ["pending", "confirmed", "verified", "rejected"] },
         "createdAt": { "type": "string" }
       },
-      "required": ["programId", "amount", "donorName", "hasProof", "status"]
+      "required": ["programId", "amount", "donorName", "hasProof", "consentAkad", "status"]
     },
     "InfaqDonationProof": {
       "title": "Private Infaq Donation Proof",

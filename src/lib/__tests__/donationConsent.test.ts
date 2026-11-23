@@ -74,12 +74,14 @@ describe('Donation Consent, Bukan Wakaf Compliance & SaveData Guard Audit', () =
     expect(rulesSrc).toContain("'consentAkad'");
     expect(rulesSrc).toContain("'consentVersion'");
     expect(rulesSrc).toContain("'consentAt'");
-    expect(rulesSrc).toContain("(!('consentAkad' in data) || data.consentAkad == true)");
+    expect(rulesSrc).toContain("data.consentAkad == true &&");
+    expect(rulesSrc).not.toContain("!('consentAkad' in data)");
 
     const infaqSrc = fs.readFileSync(infaqDigitalPath, 'utf-8');
     expect(infaqSrc).toContain("consentAkad: true");
     expect(infaqSrc).toContain("consentVersion: '2026-11-23'");
     expect(infaqSrc).toContain("consentAt: new Date().toISOString()");
+    expect(infaqSrc).toContain("recordSubmissionCooldown('donation')");
   });
 
   it('verifies Bukan Wakaf (UU No. 41 Tahun 2004) & UU PDP clause in TransferProofUploadField and non-contradictory local Munajat description in InfaqDigital', () => {

@@ -41,7 +41,7 @@ import { useSites, CLOUD_SITES_CACHE_KEY } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, browserPopupRedirectResolver, User } from 'firebase/auth';
-import { OFFICIAL_QRIS_STATIC_PAYLOAD, resolveOfficialQrisPayload, parseQrisMerchantInfo, MIN_DONATION_AMOUNT } from '../lib/qris';
+import { OFFICIAL_QRIS_STATIC_PAYLOAD, resolveOfficialQrisPayload, parseQrisMerchantInfo, MIN_DONATION_AMOUNT, getCustomQrisPayloadTag54Mismatch } from '../lib/qris';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { sanitizePlainText, sanitizeMultilineText, sanitizeHttpUrl } from '../lib/sanitize';
 import {
@@ -2500,6 +2500,11 @@ export const AdminKurator: React.FC = () => {
                                 }
                                 className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono"
                               />
+                              {getCustomQrisPayloadTag54Mismatch(tier.customQrisPayload, tier.amount) !== null && (
+                                <p className="mt-1.5 text-[11px] font-semibold text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5">
+                                  Nominal di payload kustom berbeda dari nominal tier; sistem otomatis mengunci ke Rp {tier.amount.toLocaleString('id-ID')}
+                                </p>
+                              )}
                             </div>
                             <div>
                               <label className="block text-[11px] font-bold text-slate-600 mb-1">
@@ -2729,7 +2734,6 @@ export const AdminKurator: React.FC = () => {
                           <div className="md:col-span-6">
                             <QrisPaymentCard
                               qrisPayload={qrisPayload}
-                              qrisImageUrl={qrisImageUrl}
                               selectedAmount={activePreviewTier.amount}
                               tierLabel={activePreviewTier.label}
                               customTierQrisPayload={activePreviewTier.customQrisPayload}

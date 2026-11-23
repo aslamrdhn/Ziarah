@@ -17,6 +17,24 @@
       ]
     },
     {
+      "source": "/(index\\.html|sw\\.js|workbox-.*\\.js|registerSW\\.js)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(donasi|infaq|rubrik|doa|peta|panduan|artikel|kurasi|kebijakan-kurasi|direktori|admin|kurator|kurator-admin)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/assets/(.*)",
       "headers": [
         {
@@ -613,7 +631,51 @@
   ],
   "rewrites": [
     {
+      "source": "/donasi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/infaq",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/rubrik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/doa",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/peta",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/panduan",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/artikel",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kurasi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kebijakan-kurasi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/direktori",
+      "destination": "/index.html"
+    },
+    {
       "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kurator",
       "destination": "/index.html"
     },
     {

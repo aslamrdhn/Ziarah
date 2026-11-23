@@ -188,7 +188,7 @@ export function resolveLockedTierQrisPayload(
       if (computeQrisCrc16(payloadWithoutCrcValue) === providedCrc) {
         const tags = parseEmvTags(trimmedCustom);
         const tag54Amt = Number(tags.get('54'));
-        if (Number.isFinite(tag54Amt) && Math.round(tag54Amt) >= MIN_DONATION_AMOUNT) {
+        if (Number.isFinite(tag54Amt) && Math.round(tag54Amt) === lockedAmount) {
           return trimmedCustom;
         }
         return injectQrisAmountTag54(trimmedCustom, lockedAmount);
@@ -198,5 +198,27 @@ export function resolveLockedTierQrisPayload(
 
   return injectQrisAmountTag54(resolveOfficialQrisPayload(basePayload), lockedAmount);
 }
+
+/**
+ * Checks if a valid custom EMVCo QRIS payload carries a Tag 54 amount that differs from the tier's locked amount.
+ * Returns the mismatched Tag 54 amount if different, or null if matching / not present.
+ */
+export function getCustomQrisPayloadTag54Mismatch(
+  customTierPayload: string | undefined,
+  tierAmount: number
+): number | null {
+  const trimmedCustom = (customTierPayload || '').trim();
+  if (!trimmedCustom || !trimmedCustom.startsWith('000201')) return null;
+  const tags = parseEmvTags(trimmedCustom);
+  const rawTag54 = tags.get('54');
+  if (!rawTag54) return null;
+  const parsed54 = Math.round(Number(rawTag54));
+  const lockedAmount = Math.max(MIN_DONATION_AMOUNT, Math.round(Number(tierAmount) || MIN_DONATION_AMOUNT));
+  if (Number.isFinite(parsed54) && parsed54 !== lockedAmount) {
+    return parsed54;
+  }
+  return null;
+}
+
 
 

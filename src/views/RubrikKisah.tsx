@@ -24,7 +24,7 @@ import {
 import { useSites } from '../context/SiteContext';
 import { TOTAL_SITES_COUNT } from '../data/initialSites';
 import { Link } from 'react-router-dom';
-import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
+import { auth, db, handleFirestoreError, OperationType, isUserAdmin, getRemainingSubmissionCooldown, recordSubmissionCooldown } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc, limit } from 'firebase/firestore';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD } from '../lib/qris';
@@ -489,7 +489,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
       return;
     }
 
-    const cooldown = checkAndRecordSubmissionCooldown('donation', 15);
+    const cooldown = getRemainingSubmissionCooldown('donation', 15);
     if (!cooldown.allowed) {
       setSubmitError(`Mohon tunggu ${cooldown.remainingSeconds} detik sebelum mengirim konfirmasi berikutnya.`);
       return;
@@ -532,6 +532,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         consentAt: new Date().toISOString(),
       });
 
+      recordSubmissionCooldown('donation');
       saveVerifiedDonationRecord({
         donationId,
         siteId: unlockModalArticle?.siteId,
@@ -1077,7 +1078,6 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                     {/* Barcode QRIS Resmi Ziarah Nusantara (Dinamis mengikuti paket/nominal) */}
                     <QrisPaymentCard
                       qrisPayload={bankDetails.qrisPayload}
-                      qrisImageUrl={bankDetails.qrisImageUrl}
                       selectedAmount={activeEffectiveNominal}
                       compact
                     />

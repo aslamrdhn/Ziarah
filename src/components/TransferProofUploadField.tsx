@@ -110,8 +110,8 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
           maxLength={80}
           placeholder={
             isAnonymous
-              ? 'Otomatis tercatat sebagai Hamba Allah (boleh dikosongkan)'
-              : 'Contoh: Ahmad Fauzi (DANA / BCA / Mandiri) — atau kosongkan untuk Hamba Allah'
+              ? 'Otomatis tercatat sebagai Hamba Allah'
+              : 'Nama Anda (opsional)'
           }
           value={senderAccount}
           onChange={(e) => onSenderAccountChange(e.target.value)}

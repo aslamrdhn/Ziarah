@@ -20,7 +20,8 @@ import {
   db,
   handleFirestoreError,
   OperationType,
-  checkAndRecordSubmissionCooldown,
+  getRemainingSubmissionCooldown,
+  recordSubmissionCooldown,
 } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { QrisPaymentCard } from './QrisPaymentCard';
@@ -181,11 +182,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     ? sanitizeDonationAmount(customNominalText, minRequiredAmount, 1000000000)
     : null;
 
+  const hasCustomNominalText = isCustomBankMode && customNominalText.trim() !== '';
+  const isCustomNominalInvalid = hasCustomNominalText && parsedCustomBankAmount === null;
+
   const amount = isCustomBankMode
-    ? Math.max(
-        minRequiredAmount,
-        parsedCustomBankAmount || selectedTier?.amount || minRequiredAmount
-      )
+    ? hasCustomNominalText
+      ? parsedCustomBankAmount ?? Number(customNominalText.replace(/[^0-9]/g, '') || 0)
+      : Math.max(minRequiredAmount, selectedTier?.amount || minRequiredAmount)
     : Math.max(minRequiredAmount, selectedTier?.amount || minRequiredAmount);
 
   const cleanSender = sanitizePlainText(senderAccount, 80);
@@ -206,14 +209,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       return;
     }
     const parsed = parseInt(digitsOnly, 10);
-    if (parsed < minRequiredAmount) {
-      setMinAmountWarning(true);
-      setCustomNominalText(String(minRequiredAmount));
-    } else {
-      setMinAmountWarning(false);
-      const clamped = Math.min(parsed, 1000000000);
-      setCustomNominalText(String(clamped));
-    }
+    const clamped = Math.min(parsed, 1000000000);
+    setCustomNominalText(String(clamped));
+    setMinAmountWarning(clamped < minRequiredAmount);
   };
 
   const programId =
@@ -266,10 +264,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     if (isSaving) return;
     setSubmitError(null);
 
-    if (amount < MIN_DONATION_AMOUNT) {
+    if (isCustomNominalInvalid || amount < minRequiredAmount) {
       setMinAmountWarning(true);
       setSubmitError(
-        'Nominal infaq terkunci minimal Rp 2.000 untuk menghindari transaksi tidak valid (Rp 1).'
+        `Nominal infaq minimal Rp ${minRequiredAmount.toLocaleString('id-ID')}. Silakan periksa kembali nominal yang Anda ketik.`
       );
       return;
     }
@@ -285,7 +283,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       return;
     }
 
-    const cooldown = checkAndRecordSubmissionCooldown('donation', 15);
+    const cooldown = getRemainingSubmissionCooldown('donation', 15);
     if (!cooldown.allowed) {
       setSubmitError(
         `Mohon tunggu ${cooldown.remainingSeconds} detik sebelum mengirim konfirmasi berikutnya.`
@@ -321,6 +319,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         ),
       });
 
+      recordSubmissionCooldown('donation');
       saveVerifiedDonationRecord({
         donationId,
         siteId: site.id,
@@ -537,7 +536,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                           Rp {tier.amount.toLocaleString('id-ID')}
                         </div>
                         <div
-                          className={`text-[10px] mt-0.5 truncate ${
+                          className={`text-[10px] sm:text-[11px] mt-0.5 whitespace-normal leading-snug ${
                             isSelected ? 'text-emerald-100' : 'text-stone-500'
                           }`}
                         >
@@ -627,7 +626,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               {!isCustomBankMode ? (
                 <QrisPaymentCard
                   qrisPayload={bankSettings.qrisPayload}
-                  qrisImageUrl={bankSettings.qrisImageUrl}
                   selectedAmount={selectedTier.amount}
                   tierLabel={selectedTier.label}
                   customTierQrisPayload={selectedTier.customQrisPayload}

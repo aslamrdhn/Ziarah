@@ -23,11 +23,11 @@ describe('infaqConfig & Locked Tier QRIS Configuration', () => {
     ]);
     expect(DEFAULT_DONATION_TIERS.map((t) => t.label)).toEqual([
       'Infaq Harian',
-      'Dukungan Doa & Naskah',
-      'Pemeliharaan Arsip',
-      'Riset Sanad & Sejarah',
-      'Server & Peta Digital',
-      'Sahabat Ziarah Utama',
+      'Doa & Naskah',
+      'Rawat Arsip',
+      'Riset Sanad',
+      'Server & Peta',
+      'Sahabat Ziarah',
     ]);
     for (const tier of DEFAULT_DONATION_TIERS) {
       expect(tier.label.trim().length).toBeGreaterThan(0);
@@ -135,15 +135,25 @@ describe('infaqConfig & Locked Tier QRIS Configuration', () => {
     expect(lowTags.get('54')).toBe(String(MIN_DONATION_AMOUNT));
     expect(parseQrisMerchantInfo(clampedLow).isValidCrc).toBe(true);
 
-    // Valid custom tier payload with valid EMVCo & CRC-16 is honored
+    // Custom tier payload with matching Tag 54 is honored directly
+    const custom15kPayload = injectQrisAmountTag54(OFFICIAL_QRIS_STATIC_PAYLOAD, 15000);
+    const resolvedMatchingCustom = resolveLockedTierQrisPayload(
+      OFFICIAL_QRIS_STATIC_PAYLOAD,
+      15000,
+      custom15kPayload
+    );
+    expect(resolvedMatchingCustom).toBe(custom15kPayload);
+    expect(parseEmvTags(resolvedMatchingCustom).get('54')).toBe('15000');
+
+    // Custom tier payload whose Tag 54 (75000) differs from lockedAmount (15000) is forced to 15000
     const custom75kPayload = injectQrisAmountTag54(OFFICIAL_QRIS_STATIC_PAYLOAD, 75000);
-    const resolvedCustom = resolveLockedTierQrisPayload(
+    const resolvedMismatchedCustom = resolveLockedTierQrisPayload(
       OFFICIAL_QRIS_STATIC_PAYLOAD,
       15000,
       custom75kPayload
     );
-    expect(resolvedCustom).toBe(custom75kPayload);
-    expect(parseEmvTags(resolvedCustom).get('54')).toBe('75000');
+    expect(parseEmvTags(resolvedMismatchedCustom).get('54')).toBe('15000');
+    expect(parseQrisMerchantInfo(resolvedMismatchedCustom).isValidCrc).toBe(true);
 
     // Invalid custom tier payload falls back to injecting Tag 54 on basePayload
     const fallbackFromInvalidCustom = resolveLockedTierQrisPayload(

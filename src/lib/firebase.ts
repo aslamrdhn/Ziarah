@@ -141,7 +141,10 @@ export async function ensureAdminUidRegistered(user: User | null): Promise<boole
 /**
  * Client-side rate limiter to prevent rapid form spam on public collections (F-03).
  */
-export function checkAndRecordSubmissionCooldown(actionKey: string, cooldownSeconds = 20): { allowed: boolean; remainingSeconds: number } {
+export function getRemainingSubmissionCooldown(
+  actionKey: string,
+  cooldownSeconds = 20
+): { allowed: boolean; remainingSeconds: number } {
   if (typeof window === 'undefined') return { allowed: true, remainingSeconds: 0 };
   const storageKey = `zn_rate_limit_${actionKey}`;
   try {
@@ -151,10 +154,29 @@ export function checkAndRecordSubmissionCooldown(actionKey: string, cooldownSeco
     if (lastTs > 0 && elapsedSeconds < cooldownSeconds) {
       return { allowed: false, remainingSeconds: cooldownSeconds - elapsedSeconds };
     }
-    localStorage.setItem(storageKey, String(now));
   } catch {
     // Ignore storage quota errors
   }
+  return { allowed: true, remainingSeconds: 0 };
+}
+
+export function recordSubmissionCooldown(actionKey: string): void {
+  if (typeof window === 'undefined') return;
+  const storageKey = `zn_rate_limit_${actionKey}`;
+  try {
+    localStorage.setItem(storageKey, String(Date.now()));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+export function checkAndRecordSubmissionCooldown(
+  actionKey: string,
+  cooldownSeconds = 20
+): { allowed: boolean; remainingSeconds: number } {
+  const status = getRemainingSubmissionCooldown(actionKey, cooldownSeconds);
+  if (!status.allowed) return status;
+  recordSubmissionCooldown(actionKey);
   return { allowed: true, remainingSeconds: 0 };
 }
 

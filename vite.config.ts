@@ -141,7 +141,7 @@ export default defineConfig(({ command }) => {
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        globPatterns: ['**/*.{js,css,svg,png,ico,woff2}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globIgnores: [
           '**/assets/aistudio/**',
@@ -152,20 +152,23 @@ export default defineConfig(({ command }) => {
           '**/rss.xml',
           '**/data-sites-*.js',
         ],
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [
-          /^\/sitemap.*\.xml$/,
-          /^\/sitemap\.txt$/,
-          /^\/rss\.xml$/,
-          /^\/robots\.txt$/,
-          /^\/llms\.txt$/,
-          /^\/llms-full\.txt$/,
-          /^\/ard\.json$/,
-          /^\/ai-catalog\.json$/,
-          /^\/\.well-known\/.*/,
-          /^\/favicon\..*/,
-        ],
+        navigateFallback: null,
         runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'ziarah-html-nav-v2',
+              networkTimeoutSeconds: 4,
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 Days fallback if offline
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
           {
             urlPattern: /\/assets\/.*\.(?:js|css|woff2?)$/i,
             handler: 'CacheFirst',

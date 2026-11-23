@@ -2,15 +2,39 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { DaftarMakam } from './views/DaftarMakam';
 
-const BacaanZiarah = lazy(() => import('./views/BacaanZiarah').then((m) => ({ default: m.BacaanZiarah })));
-const KebijakanKurasi = lazy(() => import('./views/KebijakanKurasi').then((m) => ({ default: m.KebijakanKurasi })));
-const KumpulanDoa = lazy(() => import('./views/KumpulanDoa').then((m) => ({ default: m.KumpulanDoa })));
-const RubrikKisah = lazy(() => import('./views/RubrikKisah').then((m) => ({ default: m.RubrikKisah })));
-const KontribusiModal = lazy(() => import('./components/KontribusiModal').then((m) => ({ default: m.KontribusiModal })));
-const PetaLokasi = lazy(() => import('./views/PetaLokasi').then((m) => ({ default: m.PetaLokasi })));
-const AdminKurator = lazy(() => import('./views/AdminKurator').then((m) => ({ default: m.AdminKurator })));
-const InfaqDigital = lazy(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })));
-const ArtikelZiarah = lazy(() => import('./views/ArtikelZiarah').then((m) => ({ default: m.ArtikelZiarah })));
+function lazyWithRetry<T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>,
+  chunkKey: string
+) {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch (error) {
+      if (typeof window !== 'undefined') {
+        const storageKey = `zn_chunk_reload_${chunkKey}`;
+        try {
+          const lastReload = Number(sessionStorage.getItem(storageKey) || '0');
+          if (Date.now() - lastReload > 15000) {
+            sessionStorage.setItem(storageKey, String(Date.now()));
+            window.location.reload();
+            return new Promise<{ default: T }>(() => {});
+          }
+        } catch {}
+      }
+      throw error;
+    }
+  });
+}
+
+const BacaanZiarah = lazyWithRetry(() => import('./views/BacaanZiarah').then((m) => ({ default: m.BacaanZiarah })), 'BacaanZiarah');
+const KebijakanKurasi = lazyWithRetry(() => import('./views/KebijakanKurasi').then((m) => ({ default: m.KebijakanKurasi })), 'KebijakanKurasi');
+const KumpulanDoa = lazyWithRetry(() => import('./views/KumpulanDoa').then((m) => ({ default: m.KumpulanDoa })), 'KumpulanDoa');
+const RubrikKisah = lazyWithRetry(() => import('./views/RubrikKisah').then((m) => ({ default: m.RubrikKisah })), 'RubrikKisah');
+const KontribusiModal = lazyWithRetry(() => import('./components/KontribusiModal').then((m) => ({ default: m.KontribusiModal })), 'KontribusiModal');
+const PetaLokasi = lazyWithRetry(() => import('./views/PetaLokasi').then((m) => ({ default: m.PetaLokasi })), 'PetaLokasi');
+const AdminKurator = lazyWithRetry(() => import('./views/AdminKurator').then((m) => ({ default: m.AdminKurator })), 'AdminKurator');
+const InfaqDigital = lazyWithRetry(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })), 'InfaqDigital');
+const ArtikelZiarah = lazyWithRetry(() => import('./views/ArtikelZiarah').then((m) => ({ default: m.ArtikelZiarah })), 'ArtikelZiarah');
 
 import type { ZiarahSite } from './data/sites';
 import type { ZiarahArticle } from './data/articles';

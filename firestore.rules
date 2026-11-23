@@ -73,7 +73,7 @@ service cloud.firestore {
         data.donorName is string && data.donorName.size() >= 1 && data.donorName.size() <= 100 &&
         data.hasProof == true &&
         !('proofImageUrl' in data) &&
-        (!('consentAkad' in data) || data.consentAkad == true) &&
+        data.consentAkad == true &&
         (!('consentVersion' in data) || (data.consentVersion is string && data.consentVersion.size() <= 40)) &&
         (!('consentAt' in data) || (data.consentAt is string && data.consentAt.size() <= 64)) &&
         data.status in ['pending', 'confirmed', 'verified', 'rejected'];
