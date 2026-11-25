@@ -39,7 +39,7 @@ import { DEFAULT_RUBRIK_GATE_SETTINGS, RubrikGateSettings, RubrikItem } from './
 import { CuratedDoaItem } from './KumpulanDoa';
 import { useSites, CLOUD_SITES_CACHE_KEY } from '../context/SiteContext';
 import { auth, db, googleProvider, handleFirestoreError, OperationType, isUserAdmin, ensureAdminUidRegistered } from '../lib/firebase';
-import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, getDocs, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, browserPopupRedirectResolver, User } from 'firebase/auth';
 import { OFFICIAL_QRIS_STATIC_PAYLOAD, resolveOfficialQrisPayload, parseQrisMerchantInfo, MIN_DONATION_AMOUNT, getCustomQrisPayloadTag54Mismatch } from '../lib/qris';
 import { QrisPaymentCard } from '../components/QrisPaymentCard';
@@ -66,6 +66,28 @@ import {
   saveSiteCopyToCloud,
   getCachedSiteCopy,
 } from '../lib/siteCopy';
+
+export function filterSitesEligibleForSeed<T extends { id: string }>(
+  localCatalog: T[],
+  existingCloudDocs: Array<{ id: string; editedByCurator?: boolean; isDeleted?: boolean }>
+): {
+  sitesToSeed: T[];
+  skippedProtectedIds: Set<string>;
+} {
+  const skippedProtectedIds = new Set<string>();
+  for (const docItem of existingCloudDocs) {
+    if (
+      docItem &&
+      typeof docItem.id === 'string' &&
+      docItem.id.trim() &&
+      (docItem.editedByCurator === true || docItem.isDeleted === true)
+    ) {
+      skippedProtectedIds.add(docItem.id.trim());
+    }
+  }
+  const sitesToSeed = localCatalog.filter((site) => !skippedProtectedIds.has(site.id));
+  return { sitesToSeed, skippedProtectedIds };
+}
 
 export function extractCoordinatesFromMapsUrl(url?: string): { lat: number; lng: number } | null {
   if (!url) return null;
@@ -510,9 +532,24 @@ export const AdminKurator: React.FC = () => {
   const handleSeedDatabase = async () => {
     if (!isAdmin) return;
     setIsSeeding(true);
-    setSeedMessage('Memulai sinkronisasi 183 situs katalog ke Cloud Firestore...');
+    setSeedMessage('Memeriksa dokumen yang telah disunting Kurator sebelum memulai sinkronisasi katalog...');
     try {
-      for (const site of localSites) {
+      const existingSnap = await getDocs(collection(db, 'sites'));
+      const existingCloudDocs = existingSnap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          editedByCurator: data?.editedByCurator === true,
+          isDeleted: data?.isDeleted === true,
+        };
+      });
+
+      const { sitesToSeed, skippedProtectedIds } = filterSitesEligibleForSeed(
+        localSites,
+        existingCloudDocs
+      );
+
+      for (const site of sitesToSeed) {
         await setDoc(
           doc(db, 'sites', site.id),
           { ...site, isDeleted: false, editedByCurator: false },
@@ -524,7 +561,9 @@ export const AdminKurator: React.FC = () => {
         localStorage.setItem('zn_admin_dirty_ts', String(Date.now()));
       } catch {}
       await refreshCloudSites(true);
-      setSeedMessage('Berhasil mensinkronisasi seluruh ' + localSites.length + ' situs katalog ke Firestore.');
+      setSeedMessage(
+        `Seed selesai: ${sitesToSeed.length} situs baru ditambahkan, ${skippedProtectedIds.size} situs hasil suntingan Kurator dipertahankan tanpa diubah.`
+      );
     } catch (e: any) {
       setSeedMessage('Gagal: ' + e.message);
       try {

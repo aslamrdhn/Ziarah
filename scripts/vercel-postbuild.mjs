@@ -72,6 +72,14 @@ export function cleanSeoText(val) {
     .replace(/\\"/g, '"')
     .replace(/\\n/g, ' ')
     .replace(/<!--more-->/g, ' ')
+    .replace(
+      /(\[[^\]]+\]\([^)\s]+\)|\*\*\*(?:(?!\*\*\*)[^\n])+\*\*\*|\*\*(?:(?!\*\*)[^\n])+\*\*|\*(?!\s)[^*\n]+?(?<!\s)\*)(?=[A-Za-z0-9])/g,
+      '$1 '
+    )
+    .replace(/\[([^\]]+)\]\([^)\s]+\)/g, '$1')
+    .replace(/\*\*\*((?:(?!\*\*\*)[^\n])+)\*\*\*/g, '$1')
+    .replace(/\*\*((?:(?!\*\*)[^\n])+)\*\*/g, '$1')
+    .replace(/\*(?!\s)([^*\n]+?)(?<!\s)\*/g, '$1')
     .replace(/Raden Umar Said\s*\(\s*Raden Prawoto\s*\)/gi, 'Raden Umar Said (Sunan Muria)')
     .replace(/\bRaden Prawoto\b/gi, 'Raden Umar Said (Sunan Muria)')
     .replace(

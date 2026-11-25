@@ -782,28 +782,76 @@ export const InfaqDigital: React.FC = () => {
             </button>
 
             {isCustomBankMode && (
-              <div className="mt-3 pt-3 border-t border-stone-200/70 space-y-2">
-                <label className="block text-xs font-semibold text-stone-700">
-                  Nominal Rencana Transfer Bank (Opsional · Minimal Rp 2.000):
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-stone-400">Rp</span>
-                  <input
-                    type="number"
-                    min={2000}
-                    step={1000}
-                    inputMode="numeric"
-                    placeholder="Contoh: 50000 (untuk memudahkan ringkasan & isi pesan WA)"
-                    value={customNominal}
-                    onChange={(e) => handleCustomNominalChange(e.target.value)}
-                    className="w-full pl-11 pr-4 py-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl text-stone-900 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-700"
-                  />
+              <div className="mt-3 pt-3 border-t border-stone-200/70 space-y-3">
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-stone-700">
+                    Nominal Rencana Transfer Bank (Opsional · Minimal Rp 2.000):
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-stone-400">Rp</span>
+                    <input
+                      type="number"
+                      min={2000}
+                      step={1000}
+                      inputMode="numeric"
+                      placeholder="Contoh: 50000 (untuk memudahkan ringkasan & isi pesan WA)"
+                      value={customNominal}
+                      onChange={(e) => handleCustomNominalChange(e.target.value)}
+                      className="w-full pl-11 pr-4 py-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl text-stone-900 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-700"
+                    />
+                  </div>
+                  {minAmountWarning && (
+                    <p className="text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5">
+                      Nominal infaq terkunci minimal Rp 2.000 untuk menghindari transaksi tidak valid (Rp 1).
+                    </p>
+                  )}
                 </div>
-                {minAmountWarning && (
-                  <p className="text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5">
-                    Nominal infaq terkunci minimal Rp 2.000 untuk menghindari transaksi tidak valid (Rp 1).
-                  </p>
-                )}
+
+                <div className="p-3.5 rounded-2xl bg-emerald-50/75 border border-emerald-300 space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-900">
+                        Rekening Resmi Transfer Infaq
+                      </p>
+                      <p className="font-bold text-slate-900 text-xs sm:text-sm mt-0.5">
+                        {infaqSettings.bankName} · <span className="font-mono">{infaqSettings.accountNumber}</span>
+                      </p>
+                      <p className="text-[11px] text-slate-600">
+                        a.n. {infaqSettings.accountHolder}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(infaqSettings.accountNumber, 'bank')}
+                      className="px-3 py-2 bg-white hover:bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900 transition-colors cursor-pointer flex items-center gap-1.5 font-bold text-[11px] shrink-0"
+                    >
+                      {copiedAccount === 'bank' ? (
+                        <span className="text-emerald-700 font-bold">Tersalin!</span>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Salin</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {waConfirmUrl ? (
+                    <a
+                      href={waConfirmUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3 px-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-2xl text-xs sm:text-sm transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <MessageSquareHeart className="w-4 h-4" />
+                      <span>Konfirmasi Transfer via WhatsApp</span>
+                    </a>
+                  ) : (
+                    <div className="p-2.5 rounded-xl bg-white/90 border border-emerald-200 text-[11px] text-slate-700 leading-relaxed">
+                      Silakan transfer ke rekening resmi di atas, lalu unggah bukti transfer pada formulir di bawah agar tercatat oleh tim kurator.
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -953,7 +1001,10 @@ export const InfaqDigital: React.FC = () => {
               </div>
 
               {isCustomBankMode && (
-                <div className="mt-3">
+                <div className="mt-3 space-y-1.5">
+                  <p className="text-[11px] font-semibold text-slate-700">
+                    Konfirmasi via WhatsApp:
+                  </p>
                   {waConfirmUrl ? (
                     <a
                       href={waConfirmUrl}
@@ -965,8 +1016,8 @@ export const InfaqDigital: React.FC = () => {
                       <span>Konfirmasi Transfer via WhatsApp</span>
                     </a>
                   ) : (
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
-                      Silakan kirim transfer ke rekening resmi di atas, lalu unggah bukti transfer Anda pada formulir di bawah ini untuk verifikasi tim kurator.
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700 leading-relaxed">
+                      Silakan transfer ke rekening resmi di atas, lalu unggah bukti transfer pada formulir di bawah agar tercatat oleh tim kurator.
                     </div>
                   )}
                 </div>

@@ -22,15 +22,35 @@ describe('renderFormattedText & stripMarkdownAsterisks (Markdown Link, Bold, Ita
 
   it('preserves exact whitespace around *italic* and **bold** tokens (never eats spaces like Maha Gurupara)', () => {
     const node = renderFormattedText(
-      'Syaichona Kholil dikenal sebagai *Maha Guru* para ulama Nusantara dan **Pendiri** pesantren.'
+      'dikenal luas sebagai *Maha Guru* para ulama Nusantara.'
     );
     const html = renderToStaticMarkup(<>{node}</>);
+    const textContent = html.replace(/<[^>]+>/g, '');
 
-    expect(html).toContain('sebagai <em class="italic">Maha Guru</em> para ulama');
-    expect(html).toContain(
-      'dan <strong class="font-semibold text-slate-900">Pendiri</strong> pesantren.'
+    expect(html).toContain('sebagai <em class="italic">Maha Guru</em> para ulama Nusantara.');
+    expect(textContent).toContain('Maha Guru para');
+    expect(textContent).not.toContain('Maha Gurupara');
+
+    // Even if an input ever lacked a trailing space after closing *italic*, normalizeMarkdownSpacing inserts it
+    const normalizedNode = renderFormattedText(
+      'dikenal luas sebagai *Maha Guru*para ulama Nusantara dan **Pendiri**pesantren.'
     );
-    expect(html).not.toContain('Maha Guru</em>para');
+    const normalizedHtml = renderToStaticMarkup(<>{normalizedNode}</>);
+    const normalizedText = normalizedHtml.replace(/<[^>]+>/g, '');
+    expect(normalizedText).toContain('Maha Guru para');
+    expect(normalizedText).toContain('Pendiri pesantren');
+    expect(normalizedText).not.toContain('Maha Gurupara');
+  });
+
+  it('supports nested *italic* inside **bold** and ***bold-italic*** without breaking token boundaries or spaces', () => {
+    const node = renderFormattedText(
+      'Ajaran **kesederhanaan (*zuhud*) dan keberpihakan** serta ***Mahakarya*** ulama.'
+    );
+    const html = renderToStaticMarkup(<>{node}</>);
+    const textContent = html.replace(/<[^>]+>/g, '');
+
+    expect(textContent).toBe('Ajaran kesederhanaan (zuhud) dan keberpihakan serta Mahakarya ulama.');
+    expect(html).toContain('<strong class="font-semibold text-slate-900">kesederhanaan (<em class="italic">zuhud</em>) dan keberpihakan</strong>');
   });
 
   it('rejects unsafe protocols like javascript: or data: inside Markdown links', () => {

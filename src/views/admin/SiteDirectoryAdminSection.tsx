@@ -62,6 +62,7 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
   const [adminSearchQuery, setAdminSearchQuery] = useState('');
   const [adminCategoryFilter, setAdminCategoryFilter] = useState('Semua');
   const [adminProvinceFilter, setAdminProvinceFilter] = useState('Semua Provinsi');
+  const [isConfirmingSeed, setIsConfirmingSeed] = useState(false);
   const siteEditFormRef = useRef<HTMLDivElement | null>(null);
 
   const filteredAdminSites = sites.filter((site) => {
@@ -120,7 +121,7 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
           {onSeedDatabase && (
             <button
               type="button"
-              onClick={onSeedDatabase}
+              onClick={() => setIsConfirmingSeed(true)}
               disabled={isSeeding}
               className="px-3.5 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl font-bold text-xs transition-colors flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
             >
@@ -189,6 +190,37 @@ export const SiteDirectoryAdminSection: React.FC<SiteDirectoryAdminSectionProps>
           </button>
         </div>
       </div>
+
+      {isConfirmingSeed && onSeedDatabase && (
+        <div className="px-6 py-4 bg-stone-50 border-b border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="text-xs text-stone-700 leading-relaxed">
+            <strong className="font-bold text-stone-900 block mb-0.5">
+              Konfirmasi Sinkronisasi Katalog Statis (Proteksi Suntingan Kurator Aktif)
+            </strong>
+            Hanya situs baru yang belum pernah disunting Kurator yang akan ditambahkan ke Firestore. Seluruh situs yang telah disunting (<code>editedByCurator: true</code>) atau dihapus dijamin aman dan tidak akan tertimpa.
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setIsConfirmingSeed(false);
+                onSeedDatabase();
+              }}
+              disabled={isSeeding}
+              className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition-colors cursor-pointer"
+            >
+              Ya, Jalankan Seed Aman
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsConfirmingSeed(false)}
+              className="px-3 py-2 bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 rounded-xl font-semibold text-xs transition-colors cursor-pointer"
+            >
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
 
       {(siteStatusMsg || seedMessage) && (
         <div className="px-6 py-3 bg-emerald-50 border-b border-emerald-200 text-xs font-bold text-emerald-900 flex items-center justify-between">

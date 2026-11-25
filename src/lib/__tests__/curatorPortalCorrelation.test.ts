@@ -15,7 +15,10 @@ import {
   getSiteCompleteBarokahGuide,
 } from '../siteLogistics';
 import { mergeWithDefaultSiteCopy, DEFAULT_SITE_COPY } from '../siteCopy';
-import { extractCoordinatesFromMapsUrl } from '../../views/AdminKurator';
+import {
+  extractCoordinatesFromMapsUrl,
+  filterSitesEligibleForSeed,
+} from '../../views/AdminKurator';
 
 describe('Portal Kurator & Cross-Module Correlation Suite', () => {
   it('merges curator-edited site fields from Firestore over local static sites when editedByCurator === true', () => {
@@ -220,5 +223,31 @@ describe('Portal Kurator & Cross-Module Correlation Suite', () => {
     // Unedited fields remain equal to DEFAULT_SITE_COPY
     expect(merged.intentLabels.syifa).toBe(DEFAULT_SITE_COPY.intentLabels.syifa);
     expect(merged.storyReelSlides.length).toBe(DEFAULT_SITE_COPY.storyReelSlides.length);
+  });
+
+  it('protects sites with editedByCurator: true or isDeleted: true from being overwritten when handleSeedDatabase runs', () => {
+    const existingCloudDocs = [
+      { id: 'sunan-kalijaga', editedByCurator: true, isDeleted: false },
+      { id: 'syaichona-kholil-bangkalan', editedByCurator: true },
+      { id: 'sunan-bonang', editedByCurator: false, isDeleted: true },
+      { id: 'sunan-ampel', editedByCurator: false, isDeleted: false },
+    ];
+
+    const { sitesToSeed, skippedProtectedIds } = filterSitesEligibleForSeed(
+      ziarahSites,
+      existingCloudDocs
+    );
+
+    expect(skippedProtectedIds.has('sunan-kalijaga')).toBe(true);
+    expect(skippedProtectedIds.has('syaichona-kholil-bangkalan')).toBe(true);
+    expect(skippedProtectedIds.has('sunan-bonang')).toBe(true);
+    expect(skippedProtectedIds.has('sunan-ampel')).toBe(false);
+    expect(skippedProtectedIds.size).toBe(3);
+
+    expect(sitesToSeed.some((s) => s.id === 'sunan-kalijaga')).toBe(false);
+    expect(sitesToSeed.some((s) => s.id === 'syaichona-kholil-bangkalan')).toBe(false);
+    expect(sitesToSeed.some((s) => s.id === 'sunan-bonang')).toBe(false);
+    expect(sitesToSeed.some((s) => s.id === 'sunan-ampel')).toBe(true);
+    expect(sitesToSeed.length).toBe(ziarahSites.length - 3);
   });
 });

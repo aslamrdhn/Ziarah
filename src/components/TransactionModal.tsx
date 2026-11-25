@@ -682,7 +682,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 </div>
 
                 {isCustomBankMode && (
-                  <div className="mt-2.5">
+                  <div className="mt-3 space-y-1.5">
+                    <p className="text-[11px] font-semibold text-stone-700">
+                      Konfirmasi via WhatsApp:
+                    </p>
                     {waConfirmUrl ? (
                       <a
                         href={waConfirmUrl}
@@ -694,9 +697,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         <span>Konfirmasi Transfer via WhatsApp</span>
                       </a>
                     ) : (
-                      <p className="text-[11px] text-stone-600 leading-relaxed mt-1">
-                        Silakan transfer ke rekening resmi di atas, lalu unggah bukti transfer pada formulir di bawah ini.
-                      </p>
+                      <div className="p-2.5 rounded-xl bg-white border border-stone-200 text-[11px] text-stone-700 leading-relaxed">
+                        Silakan transfer ke rekening resmi di atas, lalu unggah bukti transfer pada formulir di bawah agar tercatat oleh tim kurator.
+                      </div>
                     )}
                   </div>
                 )}

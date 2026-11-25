@@ -892,7 +892,10 @@ export function useSiteCopy(): UseSiteCopyReturn {
     const scheduleIdleCopyFetch = (force = false, delayMs = 5000) => {
       if (typeof window === 'undefined') return;
       const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
-      if (conn?.saveData) return;
+      let effectiveDelayMs = delayMs;
+      if (conn?.saveData) {
+        effectiveDelayMs = delayMs >= 1000 ? Math.max(delayMs, 8000) : delayMs;
+      }
       if (cancelIdle) cancelIdle();
       const timer = window.setTimeout(() => {
         const w = window as Window & {
@@ -903,7 +906,7 @@ export function useSiteCopy(): UseSiteCopyReturn {
         } else {
           void fetchLatestSiteCopy(force);
         }
-      }, delayMs);
+      }, effectiveDelayMs);
       cancelIdle = () => window.clearTimeout(timer);
     };
 
