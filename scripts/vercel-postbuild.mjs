@@ -1719,6 +1719,36 @@ if (!process.env.VITEST) {
       }
     }
 
+    // 4b. Pre-generate internal Curator Portal static HTML shells (/admin, /kurator-admin, /kurator)
+    // so direct browser access on Vercel always returns 200 OK while strictly enforcing noindex, nofollow
+    const adminPortalTitle = 'Portal Internal Dewan Kurator — Ziarah Nusantara';
+    let adminHtml = baseHtml.replace(
+      /<title>[\s\S]*?<\/title>/i,
+      `<title>${adminPortalTitle}</title>`
+    );
+    if (/<meta\s+name="robots"[^>]*>/i.test(adminHtml)) {
+      adminHtml = adminHtml.replace(
+        /<meta\s+name="robots"[^>]*>/gi,
+        '<meta name="robots" content="noindex, nofollow" />'
+      );
+    } else {
+      adminHtml = adminHtml.replace(
+        '</title>',
+        '</title>\n    <meta name="robots" content="noindex, nofollow" />'
+      );
+    }
+    adminHtml = adminHtml.replace(
+      /<!--SEO_ROOT_START-->[\s\S]*?<!--SEO_ROOT_END-->/i,
+      '<!--SEO_ROOT_START--><!--SEO_ROOT_END-->'
+    );
+
+    for (const adminRoute of ['admin', 'kurator-admin', 'kurator']) {
+      const adminDir = path.join(rootDist, adminRoute);
+      fs.mkdirSync(adminDir, { recursive: true });
+      fs.writeFileSync(path.join(adminDir, 'index.html'), adminHtml, 'utf8');
+      fs.writeFileSync(path.join(rootDist, `${adminRoute}.html`), adminHtml, 'utf8');
+    }
+
     // Sync the updated dist/index.html MD5 revision hash inside dist/sw.js so Workbox precache stays 100% valid
     const swPath = path.join(rootDist, 'sw.js');
     if (fs.existsSync(swPath)) {

@@ -332,7 +332,7 @@ export const AdminKurator: React.FC = () => {
       }
     });
 
-    getRedirectResult(auth).catch((error) => {
+    getRedirectResult(auth, browserPopupRedirectResolver).catch((error) => {
       if (error) {
         const msg = formatLoginError(error);
         if (msg) setLoginError(msg);
