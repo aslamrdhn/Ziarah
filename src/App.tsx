@@ -35,6 +35,10 @@ const PetaLokasi = lazyWithRetry(() => import('./views/PetaLokasi').then((m) => 
 const AdminKurator = lazyWithRetry(() => import('./views/AdminKurator').then((m) => ({ default: m.AdminKurator })), 'AdminKurator');
 const InfaqDigital = lazyWithRetry(() => import('./views/InfaqDigital').then((m) => ({ default: m.InfaqDigital })), 'InfaqDigital');
 const ArtikelZiarah = lazyWithRetry(() => import('./views/ArtikelZiarah').then((m) => ({ default: m.ArtikelZiarah })), 'ArtikelZiarah');
+const MunajatTujuhMalam = lazyWithRetry(() => import('./views/MunajatTujuhMalam').then((m) => ({ default: m.MunajatTujuhMalam })), 'MunajatTujuhMalam');
+const BukuYasinKenangan = lazyWithRetry(() => import('./views/BukuYasinKenangan').then((m) => ({ default: m.BukuYasinKenangan })), 'BukuYasinKenangan');
+const PanduanRuteZiarah = lazyWithRetry(() => import('./views/PanduanRuteZiarah').then((m) => ({ default: m.PanduanRuteZiarah })), 'PanduanRuteZiarah');
+const LingkarDoaJumat = lazyWithRetry(() => import('./views/LingkarDoaJumat').then((m) => ({ default: m.LingkarDoaJumat })), 'LingkarDoaJumat');
 
 import type { ZiarahSite } from './data/sites';
 import type { ZiarahArticle } from './data/articles';
@@ -221,6 +225,22 @@ export default function App() {
       '/artikel': {
         title: 'Artikel Panduan, Fikih & Rute Ziarah Wali Nusantara — Ziarah Nusantara',
         desc: `Kumpulan artikel panduan rute ziarah Wali Songo dan ulama Nusantara, urutan doa ziarah kubur orang tua, kaidah tawassul, dan kalender haul di ${TOTAL_PROVINCES_COUNT} provinsi.`,
+      },
+      '/munajat-7-malam': {
+        title: 'Panduan Munajat & Muhasabah 7 Malam: Ayat Al-Qur’an, Doa Nabawi & Hikmah Ulama | Ziarah Nusantara',
+        desc: 'Panduan praktis munajat dan muhasabah 7 malam berbasis ayat Al-Qur’an, doa sahih Rasulullah SAW, serta keteladanan ulama Nusantara untuk ketenangan hati, ikhtiar rezeki halal, dan keteduhan keluarga.',
+      },
+      '/buku-yasin': {
+        title: 'Penyusun Buku Tahlil & Doa Arwah Kenangan Keluarga (Ukuran A5 Siap Cetak) | Ziarah Nusantara',
+        desc: 'Susun dan cetak Buku Tahlil, Tawassul Al-Fatihah, dan Doa Arwah Kenangan ukuran A5 untuk peringatan 7 hari, 40 hari, 100 hari, 1000 hari, atau Haul keluarga secara terhormat dan terjaga privasinya.',
+      },
+      '/panduan-rute': {
+        title: 'Buku Saku Rute Ziarah Keluarga & Rombongan: Wali Songo, Jakarta–Banten & Jatim–Madura | Ziarah Nusantara',
+        desc: 'Panduan koridor rute perjalanan ziarah rombongan dan keluarga lengkap dengan titik koordinat Google Maps, adab ziarah sunnah, sejarah terverifikasi, dan wirid khusus tiap maqbarah.',
+      },
+      '/lingkar-doa': {
+        title: 'Lingkar Doa Jumat Malam & Sahabat Ziarah: Tawassul, Tahlil & Doa Arwah Bersama | Ziarah Nusantara',
+        desc: 'Ruang bacaan Tawassul, Tahlil, dan Doa Arwah bersama setiap malam Jumat dari rumah masing-masing untuk mendoakan orang tua, guru, dan Auliya Nusantara.',
       },
     };
 
@@ -760,6 +780,10 @@ export default function App() {
               <Route path="/doa" element={<KumpulanDoa savedDoas={savedDoas} onToggleSaveDoa={handleToggleSaveDoa} />} />
               <Route path="/artikel" element={<ArtikelZiarah />} />
               <Route path="/artikel/:slug" element={<ArtikelZiarah />} />
+              <Route path="/munajat-7-malam" element={<MunajatTujuhMalam />} />
+              <Route path="/buku-yasin" element={<BukuYasinKenangan />} />
+              <Route path="/panduan-rute" element={<PanduanRuteZiarah />} />
+              <Route path="/lingkar-doa" element={<LingkarDoaJumat />} />
               <Route path="/infaq" element={<InfaqDigital />} />
               <Route path="/donasi" element={<InfaqDigital />} />
               <Route path="/kurasi" element={<KebijakanKurasi />} />
@@ -821,6 +845,18 @@ export default function App() {
               </Link>
               <Link to="/doa" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
                 Doa &amp; Tahlil
+              </Link>
+              <Link to="/munajat-7-malam" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
+                Munajat 7 Malam
+              </Link>
+              <Link to="/buku-yasin" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
+                Buku Tahlil A5
+              </Link>
+              <Link to="/panduan-rute" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
+                Buku Saku Rute
+              </Link>
+              <Link to="/lingkar-doa" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
+                Lingkar Doa Jumat
               </Link>
               <Link to="/kurasi" className="py-1.5 min-h-[32px] inline-flex items-center hover:text-emerald-950">
                 Standar Kurasi

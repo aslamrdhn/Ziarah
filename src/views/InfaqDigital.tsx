@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   HeartHandshake, 
@@ -350,6 +350,32 @@ export const InfaqDigital: React.FC = () => {
 
   // Load configurable Bank, QRIS & Programs settings from Firestore (/settings/infaq)
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem('ziarah_local_settings_cache');
+      if (cached) {
+        const d = JSON.parse(cached);
+        if (d && typeof d === 'object') {
+          const loadedPrograms = sanitizeInfaqPrograms(d.programs);
+          const loadedTiers = normalizeDonationTiers(d.donationTiers);
+          setInfaqSettings((prev) => ({
+            ...prev,
+            bankName: d.bankName || prev.bankName,
+            accountNumber: d.accountNumber || prev.accountNumber,
+            accountHolder: d.accountHolder || prev.accountHolder,
+            qrisImageUrl: d.qrisImageUrl || '',
+            qrisPayload: d.qrisPayload || OFFICIAL_QRIS_STATIC_PAYLOAD,
+            programs: loadedPrograms,
+            donationTiers: loadedTiers,
+            whatsappConfirmNumber: normalizeWhatsappNumber(d.whatsappConfirmNumber),
+            whatsappMessageTemplate:
+              typeof d.whatsappMessageTemplate === 'string' && d.whatsappMessageTemplate.trim()
+                ? d.whatsappMessageTemplate.trim()
+                : DEFAULT_WHATSAPP_TEMPLATE,
+          }));
+        }
+      }
+    } catch {}
+
     const unsubSettings = onSnapshot(
       doc(db, 'settings', 'infaq'),
       (snap) => {
@@ -1424,6 +1450,37 @@ export const InfaqDigital: React.FC = () => {
               </div>
             );
           })}
+        </div>
+
+        <div className="mt-8 rounded-2xl bg-white border border-stone-200/90 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="font-serif text-base sm:text-lg font-bold text-stone-900">
+              Khazanah Buku Saku &amp; Majelis Doa Keluarga
+            </h3>
+            <p className="text-xs text-stone-600">
+              Susun Buku Tahlil &amp; Doa Arwah Kenangan ukuran A5, ikuti Panduan Munajat 7 Malam, atau bergabung di Lingkar Doa Jumat Malam.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <Link
+              to="/buku-yasin"
+              className="px-3.5 py-2 rounded-xl bg-[#064E3B] hover:bg-emerald-950 text-white text-xs font-semibold transition-colors"
+            >
+              Buku Tahlil Kenangan (A5) →
+            </Link>
+            <Link
+              to="/munajat-7-malam"
+              className="px-3.5 py-2 rounded-xl border border-stone-300 bg-[#FAF8F5] hover:border-emerald-800 text-stone-800 text-xs font-semibold transition-colors"
+            >
+              Munajat 7 Malam
+            </Link>
+            <Link
+              to="/lingkar-doa"
+              className="px-3.5 py-2 rounded-xl border border-stone-300 bg-[#FAF8F5] hover:border-emerald-800 text-stone-800 text-xs font-semibold transition-colors"
+            >
+              Lingkar Doa Jumat
+            </Link>
+          </div>
         </div>
       </div>
 

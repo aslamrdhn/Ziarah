@@ -69,6 +69,18 @@ export const PetaLokasi: React.FC<PetaLokasiProps> = ({
 
   return (
     <div className="w-full max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 pt-2 pb-28 md:pb-12 flex-1 flex flex-col gap-4">
+      <div className="rounded-2xl bg-white border border-stone-200/90 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+        <p className="text-xs sm:text-sm text-stone-700">
+          <strong className="font-semibold text-stone-900">Berangkat bersama keluarga atau rombongan bus?</strong>{' '}
+          Unduh urutan maqbarah, titik Google Maps, dan Buku Saku Rute Ziarah terverifikasi.
+        </p>
+        <Link
+          to="/panduan-rute"
+          className="inline-flex items-center justify-center px-3.5 py-1.5 rounded-xl bg-[#064E3B] hover:bg-emerald-950 text-white text-xs font-semibold transition-colors shrink-0"
+        >
+          Buka Buku Saku Rute Rombongan →
+        </Link>
+      </div>
       <div className="relative w-full flex flex-col gap-6">
         <InteractiveMap
           sites={ziarahSites}

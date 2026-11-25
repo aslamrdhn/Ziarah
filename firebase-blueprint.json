@@ -173,6 +173,18 @@
         },
         "updatedAt": { "type": "string" }
       }
+    },
+    "LingkarDoaEntry": {
+      "title": "Lingkar Doa Jumat Malam Entry",
+      "description": "Real attendance and short prayer note for a weekly Friday night collective prayer session.",
+      "type": "object",
+      "properties": {
+        "weekKey": { "type": "string", "minLength": 6, "maxLength": 16 },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "note": { "type": "string", "maxLength": 160 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["weekKey", "displayName", "createdAt"]
     }
   },
   "firestore": {
@@ -207,6 +219,10 @@
     "settings/{settingId}": {
       "schema": { "$ref": "#/entities/AppSettings" },
       "description": "Global configuration settings managed by Admin."
+    },
+    "lingkar_doa_entries/{entryId}": {
+      "schema": { "$ref": "#/entities/LingkarDoaEntry" },
+      "description": "Weekly Friday night prayer circle attendance entries."
     }
   }
 }

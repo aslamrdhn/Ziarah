@@ -1063,6 +1063,9 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
                       <Link to="/panduan" className="hover:text-[#175639] underline underline-offset-4">
                         Baca Panduan Doa Gratis →
                       </Link>
+                      <Link to="/munajat-7-malam" className="hover:text-[#175639] underline underline-offset-4">
+                        Mulai Panduan Munajat 7 Malam (Malam ke-1 Gratis) →
+                      </Link>
                       <Link to="/donasi#lembar-munajat" className="hover:text-[#175639] underline underline-offset-4">
                         Susun Lembar Munajat Pribadi →
                       </Link>
@@ -1079,6 +1082,24 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               );
             })()}
           </AnimatePresence>
+
+          {/* Kartu Banner Teduh menuju Panduan Munajat 7 Malam */}
+          <div className="max-w-4xl mx-auto mt-6 rounded-2xl bg-white border border-black/[0.06] px-5 py-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <p className="text-xs sm:text-sm font-semibold text-[#1D1D1F]">
+                Butuh jeda yang terarah malam ini?
+              </p>
+              <p className="text-xs text-[#515154]">
+                Ikuti rangkaian ayat Al-Qur’an, doa Nabawi, dan refleksi hikmah 7 ulama Nusantara tanpa tergesa-gesa.
+              </p>
+            </div>
+            <Link
+              to="/munajat-7-malam"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#1E6B47] hover:bg-[#175639] text-white text-xs font-semibold transition-colors shrink-0"
+            >
+              Mulai Panduan Munajat 7 Malam — Malam ke-1 Gratis →
+            </Link>
+          </div>
 
           {/* Pita Tipis Minimalis Pengingat Jumat / Haul di Bawah Segmented Control */}
           {isJumatMomentum ? (

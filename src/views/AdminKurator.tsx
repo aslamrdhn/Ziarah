@@ -52,7 +52,12 @@ import {
   normalizeWhatsappNumber,
   buildWhatsappConfirmUrl,
 } from '../lib/infaqConfig';
-import { ContributionItem, DonationAdminItem, VisitorStoryAdminItem } from './admin/AdminTypes';
+import {
+  ContributionItem,
+  DonationAdminItem,
+  VisitorStoryAdminItem,
+  LingkarDoaAdminItem,
+} from './admin/AdminTypes';
 import { ContributionQueueSection } from './admin/ContributionQueueSection';
 import { SiteDirectoryAdminSection } from './admin/SiteDirectoryAdminSection';
 import { DonationVerificationModal } from './admin/DonationVerificationModal';
@@ -128,9 +133,10 @@ export const AdminKurator: React.FC = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  // Contributions & Visitor Stories state
+  // Contributions, Visitor Stories & Lingkar Doa Jumat Malam state
   const [contributions, setContributions] = useState<ContributionItem[]>([]);
   const [visitorStories, setVisitorStories] = useState<VisitorStoryAdminItem[]>([]);
+  const [lingkarDoaEntries, setLingkarDoaEntries] = useState<LingkarDoaAdminItem[]>([]);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   // Site CRUD state
@@ -444,6 +450,25 @@ export const AdminKurator: React.FC = () => {
       (err) => handleFirestoreError(err, OperationType.LIST, 'donations')
     );
 
+    const unsubLingkarDoa = onSnapshot(
+      collection(db, 'lingkar_doa_entries'),
+      (snap) => {
+        const list: LingkarDoaAdminItem[] = snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            weekKey: typeof data.weekKey === 'string' ? data.weekKey : '',
+            displayName: typeof data.displayName === 'string' ? data.displayName : 'Hamba Allah',
+            note: typeof data.note === 'string' ? data.note : undefined,
+            createdAtMs: data.createdAt?.toMillis ? data.createdAt.toMillis() : Date.now(),
+          };
+        });
+        list.sort((a, b) => b.createdAtMs - a.createdAtMs);
+        setLingkarDoaEntries(list);
+      },
+      (err) => handleFirestoreError(err, OperationType.LIST, 'lingkar_doa_entries')
+    );
+
     getDoc(doc(db, 'settings', 'infaq'))
       .then((snap) => {
         if (snap.exists()) {
@@ -489,6 +514,7 @@ export const AdminKurator: React.FC = () => {
       unsubContrib();
       unsubStories();
       unsubDonations();
+      unsubLingkarDoa();
     };
   }, [isAdmin]);
 
@@ -698,6 +724,18 @@ export const AdminKurator: React.FC = () => {
       await deleteDoc(doc(db, 'stories', id));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `stories/${id}`);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleDeleteLingkarDoaEntry = async (id: string) => {
+    if (!isAdmin || processingId) return;
+    setProcessingId(id);
+    try {
+      await deleteDoc(doc(db, 'lingkar_doa_entries', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `lingkar_doa_entries/${id}`);
     } finally {
       setProcessingId(null);
     }
@@ -1559,43 +1597,78 @@ export const AdminKurator: React.FC = () => {
         </div>
 
         {isAdmin && (
-          <div className="mb-6 pb-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">
-              Pusat Kendali Penuh (Full Headless CMS) — Seluruh perubahan langsung tersimpan di Cloud Firestore.
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={handleForceSyncAndClearCache}
-                disabled={isForceSyncing}
-                className="px-3.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isForceSyncing ? 'animate-spin' : ''}`} />
-                <span>
-                  {isForceSyncing
-                    ? 'Menyinkronkan...'
-                    : 'Bersihkan Cache & Sinkronkan Ulang Sekarang'}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={handleExportFullBackupJson}
-                className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5 text-emerald-800" />
-                <span>Unduh Backup Konfigurasi (.json)</span>
-              </button>
-              <label className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
-                <Upload className="w-3.5 h-3.5 text-emerald-800" />
-                <span>{isRestoringBackup ? 'Memulihkan...' : 'Impor / Restore Konfigurasi (.json)'}</span>
-                <input
-                  type="file"
-                  accept="application/json,.json"
-                  onChange={handleImportFullBackupJson}
-                  disabled={isRestoringBackup}
-                  className="hidden"
-                />
-              </label>
+          <div className="mb-6 pb-4 border-b border-slate-100 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-slate-500">
+                Pusat Kendali Penuh (Full Headless CMS) — Seluruh perubahan langsung tersimpan di Cloud Firestore.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleForceSyncAndClearCache}
+                  disabled={isForceSyncing}
+                  className="px-3.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isForceSyncing ? 'animate-spin' : ''}`} />
+                  <span>
+                    {isForceSyncing
+                      ? 'Menyinkronkan...'
+                      : 'Bersihkan Cache & Sinkronkan Ulang Sekarang'}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportFullBackupJson}
+                  className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-emerald-800" />
+                  <span>Unduh Backup Konfigurasi (.json)</span>
+                </button>
+                <label className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
+                  <Upload className="w-3.5 h-3.5 text-emerald-800" />
+                  <span>{isRestoringBackup ? 'Memulihkan...' : 'Impor / Restore Konfigurasi (.json)'}</span>
+                  <input
+                    type="file"
+                    accept="application/json,.json"
+                    onChange={handleImportFullBackupJson}
+                    disabled={isRestoringBackup}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Pintasan Cepat 4 Fitur Ekosistem Layanan Jamaah */}
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-slate-50 border border-slate-200/80 px-4 py-2.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-900">
+                Ekosistem Layanan Jamaah &amp; Buku Saku PDF:
+              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  to="/munajat-7-malam"
+                  className="px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-xs font-semibold text-slate-800 transition-colors"
+                >
+                  Munajat 7 Malam ↗
+                </Link>
+                <Link
+                  to="/buku-yasin"
+                  className="px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-xs font-semibold text-slate-800 transition-colors"
+                >
+                  Buku Tahlil &amp; Doa A5 ↗
+                </Link>
+                <Link
+                  to="/panduan-rute"
+                  className="px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-xs font-semibold text-slate-800 transition-colors"
+                >
+                  Buku Saku Rute Rombongan ↗
+                </Link>
+                <Link
+                  to="/lingkar-doa"
+                  className="px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-xs font-semibold text-slate-800 transition-colors"
+                >
+                  Lingkar Doa Jumat ({lingkarDoaEntries.length}) ↗
+                </Link>
+              </div>
             </div>
           </div>
         )}
@@ -1706,17 +1779,19 @@ export const AdminKurator: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* TAB 1: ANTREAN KONTRIBUSI KOMUNITAS & MODERASI CERITA */}
+            {/* TAB 1: ANTREAN KONTRIBUSI KOMUNITAS, MODERASI CERITA & LINGKAR DOA */}
             {activeTab === 'kontribusi' && (
               <ContributionQueueSection
                 contributions={contributions}
                 visitorStories={visitorStories}
+                lingkarDoaEntries={lingkarDoaEntries}
                 processingId={processingId}
                 onApprove={handleApproveContribution}
                 onReject={handleRejectContribution}
                 onDelete={handleDeleteContribution}
                 onApproveStory={handleApproveVisitorStory}
                 onDeleteStory={handleDeleteVisitorStory}
+                onDeleteLingkarDoaEntry={handleDeleteLingkarDoaEntry}
               />
             )}
 

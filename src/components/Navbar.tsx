@@ -297,6 +297,46 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenKontribusi }) =
                     </Link>
 
                     <Link
+                      to="/munajat-7-malam"
+                      role="menuitem"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900 rounded-xl flex items-center transition-colors"
+                    >
+                      <BookOpen className="w-4 h-4 mr-2.5 text-emerald-800" aria-hidden="true" />
+                      <span>Panduan Munajat 7 Malam</span>
+                    </Link>
+
+                    <Link
+                      to="/buku-yasin"
+                      role="menuitem"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900 rounded-xl flex items-center transition-colors"
+                    >
+                      <ScrollText className="w-4 h-4 mr-2.5 text-emerald-800" aria-hidden="true" />
+                      <span>Buku Tahlil &amp; Doa Arwah (A5)</span>
+                    </Link>
+
+                    <Link
+                      to="/panduan-rute"
+                      role="menuitem"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900 rounded-xl flex items-center transition-colors"
+                    >
+                      <MapIcon className="w-4 h-4 mr-2.5 text-emerald-800" aria-hidden="true" />
+                      <span>Buku Saku Rute Rombongan</span>
+                    </Link>
+
+                    <Link
+                      to="/lingkar-doa"
+                      role="menuitem"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900 rounded-xl flex items-center transition-colors"
+                    >
+                      <HeartHandshake className="w-4 h-4 mr-2.5 text-emerald-800" aria-hidden="true" />
+                      <span>Lingkar Doa Jumat Malam</span>
+                    </Link>
+
+                    <Link
                       to="/donasi"
                       role="menuitem"
                       onClick={() => setDropdownOpen(false)}

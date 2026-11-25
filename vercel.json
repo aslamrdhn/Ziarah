@@ -26,7 +26,7 @@
       ]
     },
     {
-      "source": "/(donasi|infaq|rubrik|doa|peta|panduan|artikel|kurasi|kebijakan-kurasi|direktori|admin|kurator|kurator-admin)",
+      "source": "/(donasi|infaq|rubrik|doa|peta|panduan|artikel|kurasi|kebijakan-kurasi|direktori|munajat-7-malam|buku-yasin|panduan-rute|lingkar-doa|admin|kurator|kurator-admin)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -668,6 +668,22 @@
     },
     {
       "source": "/direktori",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/munajat-7-malam",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/buku-yasin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/panduan-rute",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/lingkar-doa",
       "destination": "/index.html"
     },
     {

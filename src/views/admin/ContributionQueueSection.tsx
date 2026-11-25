@@ -1,28 +1,36 @@
 import React from 'react';
-import { Inbox, MapPin, CheckCircle2, XCircle, Trash2, MessageSquareHeart } from 'lucide-react';
+import { Inbox, MapPin, CheckCircle2, XCircle, Trash2, MessageSquareHeart, Users } from 'lucide-react';
 import { isSafeExternalUrl } from '../../lib/sanitize';
-import { ContributionItem, VisitorStoryAdminItem } from './AdminTypes';
+import {
+  ContributionItem,
+  VisitorStoryAdminItem,
+  LingkarDoaAdminItem,
+} from './AdminTypes';
 
 interface ContributionQueueSectionProps {
   contributions: ContributionItem[];
   visitorStories?: VisitorStoryAdminItem[];
+  lingkarDoaEntries?: LingkarDoaAdminItem[];
   processingId: string | null;
   onApprove: (item: ContributionItem) => void;
   onReject: (item: ContributionItem) => void;
   onDelete: (id: string) => void;
   onApproveStory?: (story: VisitorStoryAdminItem) => void;
   onDeleteStory?: (id: string) => void;
+  onDeleteLingkarDoaEntry?: (id: string) => void;
 }
 
 export const ContributionQueueSection: React.FC<ContributionQueueSectionProps> = ({
   contributions,
   visitorStories = [],
+  lingkarDoaEntries = [],
   processingId,
   onApprove,
   onReject,
   onDelete,
   onApproveStory,
   onDeleteStory,
+  onDeleteLingkarDoaEntry,
 }) => {
   return (
     <div className="space-y-8">
@@ -240,6 +248,70 @@ export const ContributionQueueSection: React.FC<ContributionQueueSectionProps> =
           </div>
         )}
       </div>
+
+      {/* Moderasi Presensi & Khushushan Lingkar Doa Jumat Malam (/lingkar_doa_entries) */}
+      <div className="space-y-4 pt-6 border-t border-slate-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Users className="w-4 h-4 text-emerald-700" />
+              <span>Moderasi Presensi &amp; Doa Singkat Lingkar Doa Jumat Malam</span>
+            </h2>
+            <p className="text-xs text-slate-500">
+              Daftar kehadiran nyata jamaah di halaman <code className="bg-slate-100 px-1 rounded">/lingkar-doa</code>. Kurator dapat menghapus kiriman apabila terdapat teks yang tidak sesuai adab.
+            </p>
+          </div>
+          <span className="text-xs font-bold font-mono tabular-nums text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            Total: {lingkarDoaEntries.length} Presensi
+          </span>
+        </div>
+
+        {lingkarDoaEntries.length === 0 ? (
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 text-center">
+            <p className="text-xs font-bold text-slate-600">
+              Belum ada presensi Lingkar Doa Jumat Malam yang tercatat di Cloud Firestore.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+            {lingkarDoaEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-slate-900">{entry.displayName}</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-900">
+                      Sesi: {entry.weekKey}
+                    </span>
+                  </div>
+                  {entry.note && (
+                    <p className="text-xs text-slate-700 italic leading-relaxed">
+                      &ldquo;{entry.note}&rdquo;
+                    </p>
+                  )}
+                </div>
+                {onDeleteLingkarDoaEntry && (
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                    <button
+                      type="button"
+                      onClick={() => onDeleteLingkarDoaEntry(entry.id)}
+                      disabled={processingId === entry.id}
+                      className="px-2.5 py-1.5 text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                      title="Hapus presensi Lingkar Doa"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
+

@@ -1,4 +1,8 @@
-import { MIN_DONATION_AMOUNT } from './qris';
+import {
+  MIN_DONATION_AMOUNT,
+  OFFICIAL_QRIS_STATIC_PAYLOAD,
+  resolveOfficialQrisPayload,
+} from './qris';
 
 export interface DonationTier {
   amount: number;
@@ -6,6 +10,14 @@ export interface DonationTier {
   customQrisPayload?: string;
   customQrisImageUrl?: string;
 }
+
+export const DEFAULT_BANK_ACCOUNT_INFO = {
+  bankName: 'Bank BCA',
+  accountNumber: '5470-0856-08',
+  accountHolder: 'ARIF NURACHMAN HAKIM',
+} as const;
+
+export const INFAQ_SETTINGS_CACHE_KEY = 'ziarah_local_settings_cache';
 
 export const DEFAULT_DONATION_TIERS: DonationTier[] = [
   { amount: 2000, label: 'Infaq Harian' },
@@ -18,6 +30,81 @@ export const DEFAULT_DONATION_TIERS: DonationTier[] = [
 
 export const DEFAULT_WHATSAPP_TEMPLATE =
   "Assalamu'alaikum Admin Ziarah Nusantara, saya {{nama}} ingin mengonfirmasi transfer infaq sebesar Rp {{nominal}} untuk program {{program}} ({{makam}}) ke rekening {{bank}} {{rekening}}. Berikut saya lampirkan bukti transfernya. Terima kasih.";
+
+export interface ParsedInfaqConfig {
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  qrisImageUrl: string;
+  qrisPayload: string;
+  donationTiers: DonationTier[];
+  whatsappConfirmNumber: string;
+  whatsappMessageTemplate: string;
+}
+
+export function parseFirestoreInfaqConfig(
+  raw?: Record<string, unknown> | null
+): ParsedInfaqConfig {
+  const data = raw && typeof raw === 'object' ? raw : {};
+  const bankName =
+    typeof data.bankName === 'string' && data.bankName.trim()
+      ? data.bankName.trim()
+      : DEFAULT_BANK_ACCOUNT_INFO.bankName;
+  const accountNumber =
+    typeof data.accountNumber === 'string' && data.accountNumber.trim()
+      ? data.accountNumber.trim()
+      : DEFAULT_BANK_ACCOUNT_INFO.accountNumber;
+  const accountHolder =
+    typeof data.accountHolder === 'string' && data.accountHolder.trim()
+      ? data.accountHolder.trim()
+      : DEFAULT_BANK_ACCOUNT_INFO.accountHolder;
+  const qrisImageUrl =
+    typeof data.qrisImageUrl === 'string' ? data.qrisImageUrl.trim() : '';
+  const qrisPayload = resolveOfficialQrisPayload(
+    typeof data.qrisPayload === 'string'
+      ? data.qrisPayload
+      : OFFICIAL_QRIS_STATIC_PAYLOAD
+  );
+  const donationTiers = normalizeDonationTiers(data.donationTiers);
+  const whatsappConfirmNumber = normalizeWhatsappNumber(
+    typeof data.whatsappConfirmNumber === 'string'
+      ? data.whatsappConfirmNumber
+      : ''
+  );
+  const whatsappMessageTemplate =
+    typeof data.whatsappMessageTemplate === 'string' &&
+    data.whatsappMessageTemplate.trim()
+      ? data.whatsappMessageTemplate.trim()
+      : DEFAULT_WHATSAPP_TEMPLATE;
+
+  return {
+    bankName,
+    accountNumber,
+    accountHolder,
+    qrisImageUrl,
+    qrisPayload,
+    donationTiers,
+    whatsappConfirmNumber,
+    whatsappMessageTemplate,
+  };
+}
+
+export function getCachedOrDefaultInfaqConfig(): ParsedInfaqConfig {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = window.localStorage.getItem(INFAQ_SETTINGS_CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          return parseFirestoreInfaqConfig(parsed as Record<string, unknown>);
+        }
+      }
+    }
+  } catch {
+    // Fallback to default config
+  }
+  return parseFirestoreInfaqConfig(null);
+}
 
 export function normalizeDonationTiers(raw?: unknown): DonationTier[] {
   if (!Array.isArray(raw) || raw.length === 0) {

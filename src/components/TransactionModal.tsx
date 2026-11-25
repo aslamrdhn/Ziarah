@@ -122,6 +122,28 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       if (auth.currentUser?.displayName && !senderAccount) {
         setSenderAccount(auth.currentUser.displayName);
       }
+      try {
+        const cached = localStorage.getItem('ziarah_local_settings_cache');
+        if (cached) {
+          const d = JSON.parse(cached);
+          if (d && typeof d === 'object') {
+            setBankSettings((prev) => ({
+              ...prev,
+              bankName: d.bankName || prev.bankName,
+              accountNumber: d.accountNumber || prev.accountNumber,
+              accountHolder: d.accountHolder || prev.accountHolder,
+              qrisImageUrl: d.qrisImageUrl || '',
+              qrisPayload: d.qrisPayload || OFFICIAL_QRIS_STATIC_PAYLOAD,
+              donationTiers: normalizeDonationTiers(d.donationTiers),
+              whatsappConfirmNumber: normalizeWhatsappNumber(d.whatsappConfirmNumber),
+              whatsappMessageTemplate:
+                typeof d.whatsappMessageTemplate === 'string' && d.whatsappMessageTemplate.trim()
+                  ? d.whatsappMessageTemplate.trim()
+                  : DEFAULT_WHATSAPP_TEMPLATE,
+            }));
+          }
+        }
+      } catch {}
       getDoc(doc(db, 'settings', 'infaq'))
         .then((snap) => {
           if (snap.exists()) {

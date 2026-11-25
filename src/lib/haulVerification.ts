@@ -1,7 +1,7 @@
 export {
-  type HaulVerification,
-  type HaulDisplayResult,
+  getHaulDisplay,
   HAUL_VERIFICATION,
   UNVERIFIED_HAUL_DISPLAY_TEXT,
-  getHaulDisplay,
+  type HaulVerification,
+  type HaulDisplayResult,
 } from '../data/haulVerification';

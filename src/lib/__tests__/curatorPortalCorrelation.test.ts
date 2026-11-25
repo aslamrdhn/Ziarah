@@ -250,4 +250,94 @@ describe('Portal Kurator & Cross-Module Correlation Suite', () => {
     expect(sitesToSeed.some((s) => s.id === 'sunan-ampel')).toBe(true);
     expect(sitesToSeed.length).toBe(ziarahSites.length - 3);
   });
+
+  it('normalizes and correlates Firestore settings/infaq across AdminKurator and all public views via parseFirestoreInfaqConfig', async () => {
+    const {
+      parseFirestoreInfaqConfig,
+      DEFAULT_BANK_ACCOUNT_INFO,
+      DEFAULT_DONATION_TIERS,
+    } = await import('../infaqConfig');
+    const { OFFICIAL_QRIS_STATIC_PAYLOAD } = await import('../qris');
+
+    // Default fallback when Firestore doc is empty
+    const emptyParsed = parseFirestoreInfaqConfig(null);
+    expect(emptyParsed.bankName).toBe(DEFAULT_BANK_ACCOUNT_INFO.bankName);
+    expect(emptyParsed.accountNumber).toBe(DEFAULT_BANK_ACCOUNT_INFO.accountNumber);
+    expect(emptyParsed.accountHolder).toBe(DEFAULT_BANK_ACCOUNT_INFO.accountHolder);
+    expect(emptyParsed.qrisPayload).toBe(OFFICIAL_QRIS_STATIC_PAYLOAD);
+    expect(emptyParsed.donationTiers).toEqual(DEFAULT_DONATION_TIERS);
+    expect(emptyParsed.whatsappConfirmNumber).toBe('');
+
+    // Curator-configured settings in AdminKurator
+    const curatorConfigured = parseFirestoreInfaqConfig({
+      bankName: 'Bank Syariah Indonesia (BSI)',
+      accountNumber: '7123-4567-89',
+      accountHolder: 'YAYASAN ARSIP ZIARAH NUSANTARA',
+      qrisPayload: OFFICIAL_QRIS_STATIC_PAYLOAD,
+      whatsappConfirmNumber: '0812-3456-7890',
+      whatsappMessageTemplate: 'Konfirmasi infaq {{nama}} Rp {{nominal}}',
+      donationTiers: [
+        { amount: 2000, label: 'Infaq Harian' },
+        { amount: 15000, label: 'Buku Saku 7 Malam' },
+        { amount: 20000, label: 'Rute Koridor Regional' },
+        { amount: 30000, label: 'Buku Yasin A5 & Rombongan' },
+      ],
+    });
+
+    expect(curatorConfigured.bankName).toBe('Bank Syariah Indonesia (BSI)');
+    expect(curatorConfigured.accountNumber).toBe('7123-4567-89');
+    expect(curatorConfigured.accountHolder).toBe('YAYASAN ARSIP ZIARAH NUSANTARA');
+    expect(curatorConfigured.whatsappConfirmNumber).toBe('6281234567890');
+    expect(curatorConfigured.donationTiers).toHaveLength(4);
+    expect(
+      curatorConfigured.donationTiers.find((t) => t.amount === 15000)?.label
+    ).toBe('Buku Saku 7 Malam');
+    expect(
+      curatorConfigured.donationTiers.find((t) => t.amount === 30000)?.label
+    ).toBe('Buku Yasin A5 & Rombongan');
+  });
+
+  it('wires transfer proof submission (submitDonationWithPrivateProof) and AdminKurator moderation across all 4 ecosystem views', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+
+    const munajatSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/views/MunajatTujuhMalam.tsx'),
+      'utf-8'
+    );
+    const yasinSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/views/BukuYasinKenangan.tsx'),
+      'utf-8'
+    );
+    const ruteSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/views/PanduanRuteZiarah.tsx'),
+      'utf-8'
+    );
+    const adminSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/views/AdminKurator.tsx'),
+      'utf-8'
+    );
+    const contribQueueSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/views/admin/ContributionQueueSection.tsx'),
+      'utf-8'
+    );
+
+    // All 3 paid ecosystem views use unified infaqConfig + submitDonationWithPrivateProof
+    for (const viewSrc of [munajatSrc, yasinSrc, ruteSrc]) {
+      expect(viewSrc).toContain('getCachedOrDefaultInfaqConfig');
+      expect(viewSrc).toContain('parseFirestoreInfaqConfig');
+      expect(viewSrc).toContain('submitDonationWithPrivateProof');
+      expect(viewSrc).toContain('saveVerifiedDonationRecord');
+    }
+
+    // AdminKurator subscribes to lingkar_doa_entries, allows deletion, and links to all 4 ecosystem views
+    expect(adminSrc).toContain('lingkar_doa_entries');
+    expect(adminSrc).toContain('handleDeleteLingkarDoaEntry');
+    expect(adminSrc).toContain('/munajat-7-malam');
+    expect(adminSrc).toContain('/buku-yasin');
+    expect(adminSrc).toContain('/panduan-rute');
+    expect(adminSrc).toContain('/lingkar-doa');
+    expect(contribQueueSrc).toContain('onDeleteLingkarDoaEntry');
+  });
 });
+

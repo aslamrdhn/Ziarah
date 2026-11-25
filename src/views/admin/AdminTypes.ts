@@ -42,3 +42,10 @@ export interface VisitorStoryAdminItem {
   createdAtMs: number;
 }
 
+export interface LingkarDoaAdminItem {
+  id: string;
+  weekKey: string;
+  displayName: string;
+  note?: string;
+  createdAtMs: number;
+}

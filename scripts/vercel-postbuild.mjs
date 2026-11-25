@@ -1757,6 +1757,56 @@ if (!process.env.VITEST) {
       fs.writeFileSync(path.join(rootDist, `${adminRoute}.html`), adminHtml, 'utf8');
     }
 
+    // 4c. Pre-generate indexable static HTML shells for the 4 Emotional Economy & Guide routes
+    const extraPublicRoutes = [
+      {
+        slug: 'munajat-7-malam',
+        path: '/munajat-7-malam',
+        title:
+          'Panduan Munajat & Muhasabah 7 Malam: Ayat Al-Qur’an, Doa Nabawi & Hikmah Ulama | Ziarah Nusantara',
+        description:
+          'Panduan praktis munajat dan muhasabah 7 malam berbasis ayat Al-Qur’an, doa sahih Rasulullah SAW, serta keteladanan ulama Nusantara untuk ketenangan hati, ikhtiar rezeki halal, dan keteduhan keluarga.',
+      },
+      {
+        slug: 'buku-yasin',
+        path: '/buku-yasin',
+        title:
+          'Penyusun Buku Tahlil & Doa Arwah Kenangan Keluarga (Ukuran A5 Siap Cetak) | Ziarah Nusantara',
+        description:
+          'Susun dan cetak Buku Tahlil, Tawassul Al-Fatihah, dan Doa Arwah Kenangan ukuran A5 untuk peringatan 7 hari, 40 hari, 100 hari, 1000 hari, atau Haul keluarga secara terhormat dan terjaga privasinya.',
+      },
+      {
+        slug: 'panduan-rute',
+        path: '/panduan-rute',
+        title:
+          'Buku Saku Rute Ziarah Keluarga & Rombongan: Wali Songo, Jakarta–Banten & Jatim–Madura | Ziarah Nusantara',
+        description:
+          'Panduan koridor rute perjalanan ziarah rombongan dan keluarga lengkap dengan titik koordinat Google Maps, adab ziarah sunnah, sejarah terverifikasi, dan wirid khusus tiap maqbarah.',
+      },
+      {
+        slug: 'lingkar-doa',
+        path: '/lingkar-doa',
+        title:
+          'Lingkar Doa Jumat Malam & Sahabat Ziarah: Tawassul, Tahlil & Doa Arwah Bersama | Ziarah Nusantara',
+        description:
+          'Ruang bacaan Tawassul, Tahlil, dan Doa Arwah bersama setiap malam Jumat dari rumah masing-masing untuk mendoakan orang tua, guru, dan Auliya Nusantara.',
+      },
+    ];
+
+    for (const extra of extraPublicRoutes) {
+      const extraHtml = renderCustomHtml(baseHtml, {
+        loc: `${SITE_ORIGIN}${extra.path}`,
+        canonicalLoc: `${SITE_ORIGIN}${extra.path}`,
+        path: extra.path,
+        title: extra.title,
+        description: extra.description,
+      });
+      const extraDir = path.join(rootDist, extra.slug);
+      fs.mkdirSync(extraDir, { recursive: true });
+      fs.writeFileSync(path.join(extraDir, 'index.html'), extraHtml, 'utf8');
+      fs.writeFileSync(path.join(rootDist, `${extra.slug}.html`), extraHtml, 'utf8');
+    }
+
     // Sync the updated dist/index.html MD5 revision hash inside dist/sw.js so Workbox precache stays 100% valid
     const swPath = path.join(rootDist, 'sw.js');
     if (fs.existsSync(swPath)) {
