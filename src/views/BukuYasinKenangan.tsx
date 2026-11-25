@@ -195,13 +195,16 @@ export const BukuYasinKenangan: React.FC = () => {
   ]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
+    const inputEl = e.currentTarget;
+    const file = inputEl.files?.[0];
     if (!file) return;
 
     const validation = validateLocalMemorialPhoto(file);
     if (!validation.valid) {
       setPhotoError(validation.error || 'Berkas foto tidak valid.');
+      if (inputEl) {
+        inputEl.value = '';
+      }
       return;
     }
 
@@ -217,6 +220,9 @@ export const BukuYasinKenangan: React.FC = () => {
       setPhotoError(err?.message || 'Gagal memproses berkas foto di peramban Anda.');
     } finally {
       setIsProcessingPhoto(false);
+      if (inputEl) {
+        inputEl.value = '';
+      }
     }
   };
 
@@ -586,7 +592,7 @@ export const BukuYasinKenangan: React.FC = () => {
                 )}
               </div>
               <label
-                className={`w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:border-emerald-800 text-xs font-semibold text-stone-800 transition-colors cursor-pointer ${
+                className={`relative overflow-hidden w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:border-emerald-800 text-xs font-semibold text-stone-800 transition-colors cursor-pointer ${
                   isProcessingPhoto ? 'opacity-50 pointer-events-none' : ''
                 }`}
               >
@@ -595,7 +601,8 @@ export const BukuYasinKenangan: React.FC = () => {
                   accept="image/*"
                   disabled={isProcessingPhoto}
                   onChange={handlePhotoUpload}
-                  className="sr-only"
+                  className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                  aria-label="Pilih foto kenangan"
                 />
                 {isProcessingPhoto ? (
                   <>

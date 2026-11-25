@@ -36,9 +36,8 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    // Reset input value immediately so selecting the same photo again triggers onChange
-    e.target.value = '';
+    const inputEl = e.currentTarget;
+    const file = inputEl.files?.[0];
     if (!file) return;
 
     setIsProcessing(true);
@@ -52,6 +51,9 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
     } finally {
       setIsProcessing(false);
       onProcessingChange?.(false);
+      if (inputEl) {
+        inputEl.value = '';
+      }
     }
   };
 
@@ -135,7 +137,7 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
 
         {!receipt ? (
           <label
-            className={`w-full min-h-[44px] py-4 px-4 bg-white hover:bg-stone-50 border border-dashed border-stone-300 hover:border-stone-500 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
+            className={`relative overflow-hidden w-full min-h-[44px] py-4 px-4 bg-white hover:bg-stone-50 border border-dashed border-stone-300 hover:border-stone-500 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
               isProcessing ? 'opacity-50 pointer-events-none' : ''
             }`}
           >
@@ -144,7 +146,8 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
               accept="image/*"
               disabled={isProcessing}
               onChange={handleFileSelect}
-              className="sr-only"
+              className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+              aria-label="Pilih foto bukti transfer"
             />
             {isProcessing ? (
               <>
@@ -186,7 +189,7 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
                   Ref: <strong className="font-mono text-slate-800">{receipt.referenceCode}</strong> • {receipt.width}x{receipt.height}px
                 </p>
                 <label
-                  className={`min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 mt-1.5 inline-flex items-center gap-1.5 cursor-pointer transition-colors ${
+                  className={`relative overflow-hidden min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 mt-1.5 inline-flex items-center gap-1.5 cursor-pointer transition-colors ${
                     isProcessing ? 'opacity-50 pointer-events-none' : ''
                   }`}
                 >
@@ -195,7 +198,8 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
                     accept="image/*"
                     disabled={isProcessing}
                     onChange={handleFileSelect}
-                    className="sr-only"
+                    className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                    aria-label="Ganti foto bukti transfer"
                   />
                   <ImageIcon className="w-3.5 h-3.5" />
                   <span>{isProcessing ? 'Memproses & mengompresi bukti transfer...' : 'Ganti Foto'}</span>

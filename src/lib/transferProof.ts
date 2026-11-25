@@ -80,12 +80,76 @@ export function generateReceiptReferenceCode(): string {
   return `ZN-${suffix}`;
 }
 
+/**
+ * Immediately copies all file bytes into an in-memory Blob in RAM so Android
+ * `content://` Photo Picker streams never disconnect mid-decode or if the file
+ * input element resets.
+ */
+export async function materializeFileBlob(file: File): Promise<Blob> {
+  if (typeof file.arrayBuffer === 'function') {
+    try {
+      const buffer = await file.arrayBuffer();
+      if (buffer && buffer.byteLength > 0) {
+        return new Blob([buffer], { type: file.type || 'image/jpeg' });
+      }
+    } catch {
+      // Fallback to original File/Blob reference if arrayBuffer fails
+    }
+  }
+  return file;
+}
+
 async function decodeImageForCompression(
   file: File
 ): Promise<{ source: CanvasImageSource; width: number; height: number; cleanup?: () => void }> {
+  const safeBlob = await materializeFileBlob(file);
+  const errors: string[] = [];
+
+  // Path 1: URL.createObjectURL(safeBlob) + HTMLImageElement (most reliable on Android Chrome & Samsung Internet)
+  if (
+    typeof URL !== 'undefined' &&
+    typeof URL.createObjectURL === 'function' &&
+    typeof Image !== 'undefined'
+  ) {
+    let objectUrl = '';
+    try {
+      objectUrl = URL.createObjectURL(safeBlob);
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('ObjectURL Image decode failed'));
+        image.src = objectUrl;
+      });
+      const width = img.naturalWidth || img.width || 600;
+      const height = img.naturalHeight || img.height || 800;
+      if (width > 0 && height > 0) {
+        return {
+          source: img,
+          width,
+          height,
+          cleanup: () => {
+            try {
+              if (objectUrl) URL.revokeObjectURL(objectUrl);
+            } catch {
+              // Ignore revoke errors
+            }
+          },
+        };
+      }
+    } catch (err: any) {
+      errors.push(`ObjectURL: ${err?.message || 'error'}`);
+      try {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+      } catch {
+        // Ignore revoke errors
+      }
+    }
+  }
+
+  // Path 2: createImageBitmap(safeBlob) fallback
   if (typeof window !== 'undefined' && typeof window.createImageBitmap === 'function') {
     try {
-      const bitmap = await window.createImageBitmap(file);
+      const bitmap = await window.createImageBitmap(safeBlob);
       if (bitmap && bitmap.width > 0 && bitmap.height > 0) {
         return {
           source: bitmap,
@@ -100,35 +164,51 @@ async function decodeImageForCompression(
           },
         };
       }
-    } catch {
-      // Fallback to FileReader + Image element
+    } catch (err: any) {
+      errors.push(`createImageBitmap: ${err?.message || 'error'}`);
     }
   }
 
-  const rawDataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('Gagal membaca berkas gambar dari perangkat Anda.'));
-    reader.readAsDataURL(file);
-  });
+  // Path 3: FileReader.readAsDataURL(safeBlob) + HTMLImageElement final fallback
+  try {
+    const rawDataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const res = String(reader.result || '');
+        if (res.startsWith('data:')) {
+          resolve(res);
+        } else {
+          reject(new Error('Empty DataURL from FileReader'));
+        }
+      };
+      reader.onerror = () => reject(new Error('FileReader readAsDataURL error'));
+      reader.readAsDataURL(safeBlob);
+    });
 
-  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () =>
-      reject(
-        new Error(
-          'Format berkas gambar tidak dapat diproses. Silakan unggah screenshot atau foto JPG, PNG, atau WEBP.'
-        )
-      );
-    image.src = rawDataUrl;
-  });
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('DataURL Image decode failed'));
+      image.src = rawDataUrl;
+    });
 
-  return {
-    source: img,
-    width: img.naturalWidth || img.width || 600,
-    height: img.naturalHeight || img.height || 800,
-  };
+    return {
+      source: img,
+      width: img.naturalWidth || img.width || 600,
+      height: img.naturalHeight || img.height || 800,
+    };
+  } catch (err: any) {
+    errors.push(`FileReader: ${err?.message || 'error'}`);
+    console.error('[transferProof] All 3 image decode paths failed:', {
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size,
+      errors,
+    });
+    throw new Error(
+      'Format berkas gambar tidak dapat diproses oleh browser. Silakan unggah screenshot atau foto berformat JPG, PNG, atau WEBP.'
+    );
+  }
 }
 
 /**

@@ -8,6 +8,8 @@ import {
   isRestrictedWebViewOrIframe,
   OBJECT_URL_REVOKE_DELAY_MS,
 } from '../directDownload';
+import { materializeFileBlob } from '../transferProof';
+import { materializeFileBlob as materializeCompressorBlob } from '../clientImageCompressor';
 
 const SAMPLE_PNG_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -56,6 +58,37 @@ describe('Universal Mobile-Safe File Download & Native Upload Mechanics', () => 
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toBe('image/png');
     expect(blob.size).toBeGreaterThan(0);
+  });
+
+  it('materializes an Android Photo Picker File into an independent RAM Blob via materializeFileBlob before input reset', async () => {
+    const rawBytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]);
+    let handleRevoked = false;
+
+    const simulatedAndroidPickerFile = {
+      name: 'bukti-transfer-bca.jpg',
+      type: 'image/jpeg',
+      size: rawBytes.byteLength,
+      arrayBuffer: async () => {
+        if (handleRevoked) {
+          throw new Error('DOMException: The requested file could not be read (content:// permission revoked)');
+        }
+        return rawBytes.buffer.slice(0);
+      },
+    } as unknown as File;
+
+    // Step 1: Materialize into RAM while content:// handle is still alive
+    const safeBlob = await materializeFileBlob(simulatedAndroidPickerFile);
+    expect(materializeCompressorBlob).toBe(materializeFileBlob);
+
+    // Step 2: Simulate inputEl.value = '' revoking the Android Photo Picker handle in finally
+    handleRevoked = true;
+
+    // Step 3: Verify the materialized RAM Blob remains 100% readable even after the original File handle is revoked
+    expect(safeBlob).toBeInstanceOf(Blob);
+    expect(safeBlob.type).toBe('image/jpeg');
+    expect(safeBlob.size).toBe(rawBytes.byteLength);
+    const readBack = new Uint8Array(await safeBlob.arrayBuffer());
+    expect(Array.from(readBack)).toEqual(Array.from(rawBytes));
   });
 
   it('delays URL.revokeObjectURL by 30,000ms in downloadBlobFile so mobile browsers never cancel the download', async () => {
@@ -120,7 +153,7 @@ describe('Universal Mobile-Safe File Download & Native Upload Mechanics', () => 
     expect(isRestrictedWebViewOrIframe()).toBe(false);
   });
 
-  it('enforces native <label> + className="sr-only" (never className="hidden") and min-h-[44px] on all file inputs', () => {
+  it('enforces full-bleed physical touch overlay inputs (absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0) and resets inputEl.value only in finally', () => {
     const rootDir = process.cwd();
     const filesToAudit = [
       'src/components/TransferProofUploadField.tsx',
@@ -131,10 +164,20 @@ describe('Universal Mobile-Safe File Download & Native Upload Mechanics', () => 
     for (const relPath of filesToAudit) {
       const content = fs.readFileSync(path.join(rootDir, relPath), 'utf8');
       expect(content).toContain('type="file"');
-      expect(content).toContain('className="sr-only"');
+      expect(content).toContain(
+        'className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"'
+      );
+      expect(content).toContain('relative overflow-hidden');
       expect(content).not.toMatch(/type="file"[\s\S]{0,160}className="hidden"/);
       expect(content).not.toContain('fileInputRef.current?.click()');
       expect(content).not.toContain('photoInputRef.current?.click()');
+
+      // CRITICAL Android fix: never reset e.target.value synchronously before awaiting file read
+      expect(content).not.toContain("e.target.value = ''");
+      expect(content).toContain('const inputEl = e.currentTarget;');
+      expect(content).toMatch(
+        /finally\s*\{[\s\S]{0,300}if\s*\(inputEl\)\s*\{?\s*inputEl\.value\s*=\s*'';/
+      );
     }
 
     const transferProofContent = fs.readFileSync(
@@ -143,6 +186,15 @@ describe('Universal Mobile-Safe File Download & Native Upload Mechanics', () => 
     );
     expect(transferProofContent).toContain('min-h-[44px]');
     expect(transferProofContent).toContain('Ganti Foto');
+
+    // Verify 3-stage resilient decode in both image compressors
+    for (const libPath of ['src/lib/transferProof.ts', 'src/lib/clientImageCompressor.ts']) {
+      const libContent = fs.readFileSync(path.join(rootDir, libPath), 'utf8');
+      expect(libContent).toContain('await materializeFileBlob(file)');
+      expect(libContent).toContain('URL.createObjectURL(safeBlob)');
+      expect(libContent).toContain('window.createImageBitmap(safeBlob)');
+      expect(libContent).toContain('reader.readAsDataURL(');
+    }
   });
 
   it('enforces direct .PDF download buttons and forbids wrapping window.print() in setTimeout across all print/PDF views', () => {

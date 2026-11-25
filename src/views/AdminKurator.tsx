@@ -1408,7 +1408,8 @@ export const AdminKurator: React.FC = () => {
   };
 
   const handleImportFullBackupJson = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const inputEl = e.currentTarget;
+    const file = inputEl.files?.[0];
     if (!file || !isAdmin) return;
     setIsRestoringBackup(true);
     setSettingsMsg('Memulihkan data konfigurasi dari file JSON...');
@@ -1475,7 +1476,9 @@ export const AdminKurator: React.FC = () => {
       setSettingsMsg('Gagal mengimpor file JSON: Pastikan format file backup valid (' + (err?.message || '') + ').');
     } finally {
       setIsRestoringBackup(false);
-      e.target.value = '';
+      if (inputEl) {
+        inputEl.value = '';
+      }
     }
   };
 
@@ -1624,7 +1627,7 @@ export const AdminKurator: React.FC = () => {
                   <Download className="w-3.5 h-3.5 text-emerald-800" />
                   <span>Unduh Backup Konfigurasi (.json)</span>
                 </button>
-                <label className="min-h-[44px] px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
+                <label className="relative overflow-hidden min-h-[44px] px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
                   <Upload className="w-3.5 h-3.5 text-emerald-800" />
                   <span>{isRestoringBackup ? 'Memulihkan...' : 'Impor / Restore Konfigurasi (.json)'}</span>
                   <input
@@ -1632,7 +1635,8 @@ export const AdminKurator: React.FC = () => {
                     accept="application/json,.json"
                     onChange={handleImportFullBackupJson}
                     disabled={isRestoringBackup}
-                    className="sr-only"
+                    className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                    aria-label="Impor atau restore konfigurasi JSON"
                   />
                 </label>
               </div>
