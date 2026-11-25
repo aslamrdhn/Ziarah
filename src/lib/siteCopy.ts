@@ -889,38 +889,49 @@ export function useSiteCopy(): UseSiteCopyReturn {
     const interactionEvents = ['pointerdown', 'scroll', 'keydown', 'touchstart'] as const;
     let cancelIdle: (() => void) | null = null;
 
-    const scheduleIdleCopyFetch = (force = false) => {
+    const scheduleIdleCopyFetch = (force = false, delayMs = 5000) => {
       if (typeof window === 'undefined') return;
+      const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+      if (conn?.saveData) return;
       if (cancelIdle) cancelIdle();
-      const w = window as Window & {
-        requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
-        cancelIdleCallback?: (id: number) => void;
-      };
-      if (typeof w.requestIdleCallback === 'function') {
-        const id = w.requestIdleCallback(() => void fetchLatestSiteCopy(force), { timeout: 2500 });
-        cancelIdle = () => w.cancelIdleCallback?.(id);
-      } else {
-        const timer = window.setTimeout(() => void fetchLatestSiteCopy(force), 1500);
-        cancelIdle = () => window.clearTimeout(timer);
-      }
+      const timer = window.setTimeout(() => {
+        const w = window as Window & {
+          requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
+        };
+        if (typeof w.requestIdleCallback === 'function') {
+          w.requestIdleCallback(() => void fetchLatestSiteCopy(force), { timeout: 2500 });
+        } else {
+          void fetchLatestSiteCopy(force);
+        }
+      }, delayMs);
+      cancelIdle = () => window.clearTimeout(timer);
     };
 
     const handleFirstInteraction = () => {
       interactionEvents.forEach((evt) =>
         window.removeEventListener(evt, handleFirstInteraction)
       );
-      scheduleIdleCopyFetch(false);
+      window.removeEventListener('load', handleWindowLoad);
+      scheduleIdleCopyFetch(false, 250);
+    };
+
+    const handleWindowLoad = () => {
+      if (!isSiteCopyCacheFresh()) {
+        scheduleIdleCopyFetch(true, 5200);
+      }
     };
 
     if (isAdminRoute || hasAdminDirtyFlag) {
       void fetchLatestSiteCopy(true);
     } else if (typeof window !== 'undefined') {
-      if (!isSiteCopyCacheFresh()) {
-        scheduleIdleCopyFetch(true);
-      }
       interactionEvents.forEach((evt) =>
         window.addEventListener(evt, handleFirstInteraction, { once: true, passive: true })
       );
+      if (typeof document !== 'undefined' && document.readyState === 'complete') {
+        handleWindowLoad();
+      } else {
+        window.addEventListener('load', handleWindowLoad, { once: true });
+      }
     }
 
     const handleCustomUpdate = (e: Event) => {
@@ -960,6 +971,7 @@ export function useSiteCopy(): UseSiteCopyReturn {
       interactionEvents.forEach((evt) =>
         window.removeEventListener(evt, handleFirstInteraction)
       );
+      window.removeEventListener('load', handleWindowLoad);
       window.removeEventListener(SITE_COPY_EVENT, handleCustomUpdate);
       window.removeEventListener(SITE_COPY_LEGACY_EVENT, handleCustomUpdate);
       window.removeEventListener('storage', handleStorage);

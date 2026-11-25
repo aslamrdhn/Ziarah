@@ -117,34 +117,45 @@ export default function App() {
     };
 
     let cancelIdle: (() => void) | null = null;
-    const scheduleIdleSettingsFetch = () => {
+    const scheduleIdleSettingsFetch = (delayMs = 5000) => {
       if (typeof window === 'undefined' || fetched) return;
+      const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+      if (conn?.saveData) return;
       if (cancelIdle) cancelIdle();
-      const w = window as Window & {
-        requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
-        cancelIdleCallback?: (id: number) => void;
-      };
-      if (typeof w.requestIdleCallback === 'function') {
-        const id = w.requestIdleCallback(() => void fetchSettings(), { timeout: 2800 });
-        cancelIdle = () => w.cancelIdleCallback?.(id);
-      } else {
-        const timer = window.setTimeout(() => void fetchSettings(), 1800);
-        cancelIdle = () => window.clearTimeout(timer);
-      }
+      const timer = window.setTimeout(() => {
+        const w = window as Window & {
+          requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
+        };
+        if (typeof w.requestIdleCallback === 'function') {
+          w.requestIdleCallback(() => void fetchSettings(), { timeout: 2500 });
+        } else {
+          void fetchSettings();
+        }
+      }, delayMs);
+      cancelIdle = () => window.clearTimeout(timer);
     };
 
     const handleInteraction = (e: Event) => {
       if (e.type === 'scroll' && window.scrollY < 48) return;
       cleanup();
-      scheduleIdleSettingsFetch();
+      scheduleIdleSettingsFetch(300);
     };
 
-    const events: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'scroll'];
+    const handleWindowLoad = () => {
+      scheduleIdleSettingsFetch(5500);
+    };
+
+    const events: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
     const cleanup = () => {
       events.forEach((evt) => window.removeEventListener(evt, handleInteraction));
+      window.removeEventListener('load', handleWindowLoad);
     };
     events.forEach((evt) => window.addEventListener(evt, handleInteraction, { passive: true }));
-    scheduleIdleSettingsFetch();
+    if (typeof document !== 'undefined' && document.readyState === 'complete') {
+      scheduleIdleSettingsFetch(5500);
+    } else if (typeof window !== 'undefined') {
+      window.addEventListener('load', handleWindowLoad, { once: true });
+    }
 
     return () => {
       cleanup();

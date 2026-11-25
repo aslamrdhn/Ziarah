@@ -402,22 +402,22 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let mounted = true;
     let cancelIdle: (() => void) | null = null;
 
-    const scheduleIdleSync = (cb: () => void) => {
+    const scheduleIdleSync = (cb: () => void, delayMs = 5500) => {
       if (typeof window === 'undefined') return;
       const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
       if (conn?.saveData) return;
       if (cancelIdle) cancelIdle();
-      const w = window as Window & {
-        requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
-        cancelIdleCallback?: (id: number) => void;
-      };
-      if (typeof w.requestIdleCallback === 'function') {
-        const id = w.requestIdleCallback(cb, { timeout: 2500 });
-        cancelIdle = () => w.cancelIdleCallback?.(id);
-      } else {
-        const timer = window.setTimeout(cb, 1800);
-        cancelIdle = () => window.clearTimeout(timer);
-      }
+      const timer = window.setTimeout(() => {
+        const w = window as Window & {
+          requestIdleCallback?: (fn: () => void, opts?: { timeout: number }) => number;
+        };
+        if (typeof w.requestIdleCallback === 'function') {
+          w.requestIdleCallback(cb, { timeout: 2500 });
+        } else {
+          cb();
+        }
+      }, delayMs);
+      cancelIdle = () => window.clearTimeout(timer);
     };
 
     const triggerFullAndCloudSync = (force = false) => {
@@ -431,29 +431,10 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isAdminRoute =
       pathname.startsWith('/admin') ||
       pathname.startsWith('/kurator');
-    const needsCatalogRoute =
-      pathname.startsWith('/peta') ||
-      pathname.startsWith('/situs') ||
-      pathname.startsWith('/makam') ||
-      pathname.startsWith('/rubrik') ||
-      pathname.startsWith('/doa');
 
     let hasAdminDirtyFlag = false;
-    let isCloudCacheStaleOrMissing = true;
     try {
       hasAdminDirtyFlag = Boolean(localStorage.getItem(ADMIN_DIRTY_TS_KEY));
-      const rawCached = localStorage.getItem(CLOUD_SITES_CACHE_KEY);
-      if (rawCached) {
-        const parsed = JSON.parse(rawCached) as CachedCloudSitesPayload;
-        if (
-          parsed &&
-          Array.isArray(parsed.sites) &&
-          typeof parsed.ts === 'number' &&
-          Date.now() - parsed.ts <= 5 * 60 * 1000
-        ) {
-          isCloudCacheStaleOrMissing = false;
-        }
-      }
     } catch {}
 
     const interactionEvents = ['pointerdown', 'keydown', 'scroll', 'touchstart'] as const;
@@ -462,17 +443,25 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       interactionEvents.forEach((evt) =>
         window.removeEventListener(evt, handleFirstInteraction)
       );
-      scheduleIdleSync(() => triggerFullAndCloudSync(false));
+      window.removeEventListener('load', handleWindowLoad);
+      scheduleIdleSync(() => triggerFullAndCloudSync(false), 250);
+    };
+
+    const handleWindowLoad = () => {
+      scheduleIdleSync(() => triggerFullAndCloudSync(false), 5500);
     };
 
     if (isAdminRoute || hasAdminDirtyFlag) {
       triggerFullAndCloudSync(hasAdminDirtyFlag);
-    } else if (needsCatalogRoute || isCloudCacheStaleOrMissing) {
-      scheduleIdleSync(() => triggerFullAndCloudSync(false));
     } else if (typeof window !== 'undefined') {
       interactionEvents.forEach((evt) =>
         window.addEventListener(evt, handleFirstInteraction, { once: true, passive: true })
       );
+      if (typeof document !== 'undefined' && document.readyState === 'complete') {
+        scheduleIdleSync(() => triggerFullAndCloudSync(false), 5500);
+      } else {
+        window.addEventListener('load', handleWindowLoad, { once: true });
+      }
     }
 
     const handleStorage = (e: StorageEvent) => {
@@ -502,6 +491,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       interactionEvents.forEach((evt) =>
         window.removeEventListener(evt, handleFirstInteraction)
       );
+      window.removeEventListener('load', handleWindowLoad);
       window.removeEventListener('storage', handleStorage);
       window.removeEventListener('focus', handleFocus);
     };

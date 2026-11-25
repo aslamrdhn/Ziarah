@@ -84,9 +84,8 @@ const SiteCardThumbnail: React.FC<{
         alt={altText}
         width={400}
         height={250}
-        loading={isLcpCandidate ? 'eager' : 'lazy'}
-        fetchPriority={isLcpCandidate ? 'high' : 'auto'}
-        decoding={isLcpCandidate ? 'sync' : 'async'}
+        loading="lazy"
+        decoding="async"
         referrerPolicy="no-referrer"
         className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035]"
       />
@@ -893,7 +892,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
             <img
               ref={heroImgRef}
               src="/hero-fajar.webp"
-              srcSet="/hero-fajar-mobile.webp 720w, /hero-fajar.webp 1200w"
+              srcSet="/hero-fajar-mobile.webp 800w, /hero-fajar.webp 1200w"
               sizes="(max-width: 768px) 100vw, 1160px"
               onError={(e) => {
                 const img = e.currentTarget;
@@ -915,7 +914,7 @@ export const DaftarMakam: React.FC<DaftarMakamProps> = React.memo(({
               height={675}
               fetchPriority="high"
               loading="eager"
-              decoding="sync"
+              decoding="async"
               className="w-full h-full object-cover object-center will-change-transform"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75 pointer-events-none" />

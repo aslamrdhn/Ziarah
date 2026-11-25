@@ -394,8 +394,8 @@ export const ZiarahStoryReel: React.FC = () => {
     >
       {/* Top Header Row */}
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-2 pb-6 sm:pb-8">
-        <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-800">
-          <BookOpen className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+        <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-900">
+          <BookOpen className="w-3.5 h-3.5 text-emerald-800" aria-hidden="true" />
           <span>{copy.storyReelSectionSubtitle || DEFAULT_SITE_COPY.storyReelSectionSubtitle}</span>
         </div>
 
@@ -403,7 +403,7 @@ export const ZiarahStoryReel: React.FC = () => {
           {copy.storyReelSectionTitle || DEFAULT_SITE_COPY.storyReelSectionTitle}
         </h2>
 
-        <div className="text-xs font-medium text-slate-600 tracking-tight">
+        <div className="text-xs font-medium text-slate-700 tracking-tight">
           Cerita Visual ({safeIndex + 1}–{totalSlides})
         </div>
       </div>
@@ -429,7 +429,7 @@ export const ZiarahStoryReel: React.FC = () => {
                 setActiveIndex(prevIndex);
               }
             }}
-            className="hidden md:flex w-[260px] aspect-[4/5] rounded-3xl bg-white p-6 opacity-75 scale-90 cursor-pointer hover:opacity-95 transition-all flex-col justify-between text-slate-700 border border-slate-200 shrink-0 -mr-6 lg:-mr-4"
+            className="hidden md:flex w-[260px] aspect-[4/5] rounded-3xl bg-white p-6 scale-90 cursor-pointer hover:border-slate-300 transition-all flex-col justify-between text-slate-800 border border-slate-200 shrink-0 -mr-6 lg:-mr-4"
           >
             {/* Dimmed Progress Bars */}
             <div className="space-y-2">
@@ -443,7 +443,7 @@ export const ZiarahStoryReel: React.FC = () => {
                   />
                 ))}
               </div>
-              <span className="block text-[10px] uppercase tracking-widest text-emerald-800 font-semibold">
+              <span className="block text-[10px] uppercase tracking-widest text-emerald-900 font-semibold">
                 {prevSlide.stepLabel}
               </span>
             </div>
@@ -466,7 +466,7 @@ export const ZiarahStoryReel: React.FC = () => {
               <p className="font-serif text-lg leading-snug text-slate-900 line-clamp-3">
                 {prevSlide.shortTabTitle}
               </p>
-              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-800 font-medium">
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-900 font-medium">
                 <ChevronLeft className="w-3.5 h-3.5" /> Ketuk untuk kembali
               </span>
             </div>
@@ -500,24 +500,24 @@ export const ZiarahStoryReel: React.FC = () => {
               })}
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-slate-600">
-              <span className="font-semibold tracking-wider uppercase text-emerald-800">
+            <div className="flex items-center justify-between text-[11px] text-slate-800">
+              <span className="font-semibold tracking-wider uppercase text-emerald-900">
                 {currentSlide.stepLabel}
               </span>
               <button
                 type="button"
                 onClick={() => setIsAutoPlay((prev) => !prev)}
                 aria-label={isAutoPlay ? 'Jeda putar otomatis' : 'Putar otomatis'}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 transition cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-800 transition cursor-pointer"
               >
                 {isAutoPlay ? (
                   <>
-                    <Pause className="w-2.5 h-2.5 text-emerald-700" />
+                    <Pause className="w-2.5 h-2.5 text-emerald-800" />
                     <span>Auto</span>
                   </>
                 ) : (
                   <>
-                    <Play className="w-2.5 h-2.5 text-emerald-700" />
+                    <Play className="w-2.5 h-2.5 text-emerald-800" />
                     <span>Jeda</span>
                   </>
                 )}
@@ -567,13 +567,13 @@ export const ZiarahStoryReel: React.FC = () => {
 
           {/* Main Content: Sub-label, Title, Narrative & Optional Arabic Hadith Box */}
           <div className="my-auto flex-1 flex flex-col justify-center">
-            <span className="text-[11px] font-semibold tracking-widest uppercase text-emerald-800">
+            <span className="text-[11px] font-semibold tracking-widest uppercase text-emerald-900">
               {currentSlide.stepLabel}
             </span>
             <h3 className="font-serif text-xl sm:text-2xl text-slate-900 leading-snug mt-1">
               {currentSlide.title}
             </h3>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2">
+            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed mt-2">
               {currentSlide.narrative}
             </p>
 
@@ -587,7 +587,7 @@ export const ZiarahStoryReel: React.FC = () => {
                   {currentSlide.arabicQuote}
                 </p>
                 {currentSlide.arabicSource && (
-                  <p className="text-[11px] text-slate-600 italic mt-1">
+                  <p className="text-[11px] text-slate-800 italic mt-1">
                     {currentSlide.arabicSource}
                   </p>
                 )}
@@ -597,17 +597,17 @@ export const ZiarahStoryReel: React.FC = () => {
             {/* Slide 4 & 5: Blurred Amalan & Doa Preview to guide visitors to full guide & infaq */}
             {isClosingSlides && (
               <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-emerald-800">
+                <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-emerald-900">
                   <span className="inline-flex items-center gap-1">
                     <Lock className="w-3 h-3" />
                     Rangkaian Tawassul &amp; Doa Munajat Lengkap
                   </span>
                 </div>
-                <div className="blur-[5px] select-none pointer-events-none opacity-55 space-y-1" aria-hidden="true">
+                <div className="blur-[4px] select-none pointer-events-none space-y-1" aria-hidden="true">
                   <p dir="rtl" className="font-arabic text-base text-slate-900 text-right">
                     اللَّهُمَّ اغْفِرْ لَهُمْ وَارْحَمْهُمْ وَعَافِهِمْ وَاعْفُ عَنْهُمْ وَانْفَعْنَا بِأَسْرَارِهِمْ
                   </p>
-                  <p className="text-[11px] text-slate-600 italic">
+                  <p className="text-[11px] text-slate-800 italic">
                     Ya Allah, limpahkanlah rahmat dan keberkahan ilmu para kekasih-Mu kepada keluarga kami...
                   </p>
                 </div>
@@ -657,8 +657,8 @@ export const ZiarahStoryReel: React.FC = () => {
                   disabled={safeIndex === 0}
                   className={`inline-flex items-center gap-1 text-xs font-medium transition cursor-pointer ${
                     safeIndex === 0
-                      ? 'text-slate-400 cursor-not-allowed'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'text-slate-600 cursor-not-allowed'
+                      : 'text-slate-700 hover:text-slate-900'
                   }`}
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
@@ -668,7 +668,7 @@ export const ZiarahStoryReel: React.FC = () => {
                 <button
                   type="button"
                   onClick={goToNext}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 hover:text-emerald-900 transition cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-900 hover:text-emerald-950 transition cursor-pointer"
                 >
                   <span>
                     Geser Kisah ({safeIndex + 1}/{totalSlides})
@@ -698,7 +698,7 @@ export const ZiarahStoryReel: React.FC = () => {
                   <button
                     type="button"
                     onClick={goToPrev}
-                    className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 transition cursor-pointer"
                   >
                     <ChevronLeft className="w-3 h-3" />
                     <span>Sebelumnya</span>
@@ -706,7 +706,7 @@ export const ZiarahStoryReel: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setActiveIndex(0)}
-                    className="text-[11px] font-semibold text-emerald-800 hover:text-emerald-900 transition cursor-pointer"
+                    className="text-[11px] font-semibold text-emerald-900 hover:text-emerald-950 transition cursor-pointer"
                   >
                     Ulangi dari Slide 1
                   </button>
@@ -729,7 +729,7 @@ export const ZiarahStoryReel: React.FC = () => {
                 setActiveIndex(nextIndex);
               }
             }}
-            className="hidden md:flex w-[260px] aspect-[4/5] rounded-3xl bg-white p-6 opacity-75 scale-90 cursor-pointer hover:opacity-95 transition-all flex-col justify-between text-slate-700 border border-slate-200 shrink-0 -ml-6 lg:-ml-4"
+            className="hidden md:flex w-[260px] aspect-[4/5] rounded-3xl bg-white p-6 scale-90 cursor-pointer hover:border-slate-300 transition-all flex-col justify-between text-slate-800 border border-slate-200 shrink-0 -ml-6 lg:-ml-4"
           >
             {/* Dimmed Progress Bars */}
             <div className="space-y-2">
@@ -743,7 +743,7 @@ export const ZiarahStoryReel: React.FC = () => {
                   />
                 ))}
               </div>
-              <span className="block text-[10px] uppercase tracking-widest text-emerald-800 font-semibold">
+              <span className="block text-[10px] uppercase tracking-widest text-emerald-900 font-semibold">
                 {nextSlide.stepLabel}
               </span>
             </div>
@@ -766,7 +766,7 @@ export const ZiarahStoryReel: React.FC = () => {
               <p className="font-serif text-lg leading-snug text-slate-900 line-clamp-3">
                 {nextSlide.shortTabTitle}
               </p>
-              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-800 font-medium">
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-900 font-medium">
                 Selanjutnya <ChevronRight className="w-3.5 h-3.5" />
               </span>
             </div>

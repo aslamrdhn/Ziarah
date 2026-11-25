@@ -21,6 +21,15 @@ export default defineConfig(({ command }) => {
       sourcemap: false,
       cssMinify: true,
       chunkSizeWarningLimit: 700,
+      modulePreload: {
+        resolveDependencies: (_filename, deps) =>
+          deps.filter(
+            (dep) =>
+              !dep.includes('firebase') &&
+              !dep.includes('leaflet') &&
+              !dep.includes('data-sites-')
+          ),
+      },
       rollupOptions: {
         output: {
           manualChunks(id) {

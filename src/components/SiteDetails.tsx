@@ -6,7 +6,7 @@ import { X, MapPin, Navigation, Clock, Heart, BookOpen, Bookmark, BookmarkCheck,
 import { motion, AnimatePresence } from 'motion/react';
 import { TransactionModal } from './TransactionModal';
 import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
-import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useVerifiedDonationUnlock, useVerifiedBarokahUnlock } from '../lib/transferProof';
 import { optimizeSiteImageUrl, handleOptimizedImageError } from '../lib/imageOptimizer';
 import { useAuthenticSiteImage, getRegionalArchitecturalPhoto, getSiteGoogleMapsPhotosUrl, getSitePhotoAttribution } from '../lib/authenticSiteImages';
@@ -266,7 +266,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
 
   const resolvedSiteImageUrl = useAuthenticSiteImage(site);
 
-  // Reset tab & subscribe to real-time stories from Firestore when site changes
+  // Reset tab & fetch stories once from Firestore when site changes (no persistent WebChannel Listen/channel)
   useEffect(() => {
     setActiveTab('kisah_utama');
     setNewStory('');
@@ -275,17 +275,21 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       return;
     }
 
-    const adminActive = isUserAdmin(auth.currentUser);
-    const q = adminActive
-      ? query(collection(db, 'stories'), where('siteId', '==', site.id))
-      : query(
-          collection(db, 'stories'),
-          where('siteId', '==', site.id),
-          where('status', 'in', ['approved', 'published'])
-        );
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
+    let cancelled = false;
+    const targetSiteId = site.id;
+
+    const loadStories = async () => {
+      try {
+        const adminActive = isUserAdmin(auth.currentUser);
+        const q = adminActive
+          ? query(collection(db, 'stories'), where('siteId', '==', targetSiteId))
+          : query(
+              collection(db, 'stories'),
+              where('siteId', '==', targetSiteId),
+              where('status', 'in', ['approved', 'published'])
+            );
+        const snapshot = await getDocs(q);
+        if (cancelled) return;
         const fetched: StoryItem[] = snapshot.docs
           .filter((docSnap) => {
             const d = docSnap.data();
@@ -309,13 +313,21 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
           });
         fetched.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
         setCloudStories(fetched);
-      },
-      (error) => {
-        handleFirestoreError(error, OperationType.GET, 'stories');
+      } catch (error) {
+        if (!cancelled) {
+          handleFirestoreError(error, OperationType.GET, 'stories');
+        }
       }
-    );
+    };
 
-    return () => unsubscribe();
+    const timer = window.setTimeout(() => {
+      void loadStories();
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [site?.id]);
 
   const allStories = cloudStories;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, doc, getDoc, onSnapshot, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { MIN_DONATION_AMOUNT } from './sanitize';
 
@@ -611,15 +611,18 @@ function useVerifiedScopedUnlock(
       return;
     }
 
+    let cancelled = false;
+
     setUnlockState((prev) => ({
       ...prev,
       isUnlocked: false,
       isVerifying: true,
     }));
 
-    const unsub = onSnapshot(
-      doc(db, 'donations', donationId),
-      (snap) => {
+    const checkDonationStatus = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'donations', donationId));
+        if (cancelled) return;
         if (!snap.exists()) {
           setUnlockState({
             isUnlocked: false,
@@ -679,20 +682,25 @@ function useVerifiedScopedUnlock(
             status: docStatus,
           });
         }
-      },
-      () => {
-        // Strictly lock on any Firestore permission or network error
-        setUnlockState({
-          isUnlocked: false,
-          isPendingAdmin: false,
-          isVerifying: false,
-          referenceCode: null,
-          status: null,
-        });
+      } catch {
+        if (!cancelled) {
+          // Strictly lock on any Firestore permission or network error
+          setUnlockState({
+            isUnlocked: false,
+            isPendingAdmin: false,
+            isVerifying: false,
+            referenceCode: null,
+            status: null,
+          });
+        }
       }
-    );
+    };
 
-    return () => unsub();
+    void checkDonationStatus();
+
+    return () => {
+      cancelled = true;
+    };
   }, [donationId, requireManualAdminVerification]);
 
   return {
