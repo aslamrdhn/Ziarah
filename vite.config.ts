@@ -27,7 +27,9 @@ export default defineConfig(({ command }) => {
             (dep) =>
               !dep.includes('firebase') &&
               !dep.includes('leaflet') &&
-              !dep.includes('data-sites-')
+              !dep.includes('data-sites-') &&
+              !dep.includes('vendor-pdf') &&
+              !dep.includes('jspdf')
           ),
       },
       rollupOptions: {
@@ -65,6 +67,9 @@ export default defineConfig(({ command }) => {
               return 'site-media-utils';
             }
             if (id.includes('node_modules')) {
+              if (id.includes('jspdf') || id.includes('html2canvas')) {
+                return 'vendor-pdf';
+              }
               if (id.includes('@firebase/auth') || id.includes('firebase/auth')) {
                 return 'vendor-firebase-auth';
               }

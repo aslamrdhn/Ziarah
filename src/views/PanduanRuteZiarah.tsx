@@ -9,6 +9,8 @@ import {
   MessageCircle,
   ShieldCheck,
   Navigation,
+  Download,
+  Loader2,
 } from 'lucide-react';
 import {
   ZIARAH_CORRIDORS,
@@ -33,6 +35,12 @@ import {
   parseFirestoreInfaqConfig,
 } from '../lib/infaqConfig';
 import { getSitePath } from '../lib/siteSlugs';
+import {
+  downloadBlobFile,
+  shareOrDownloadFile,
+  isRestrictedWebViewOrIframe,
+} from '../lib/directDownload';
+import { generatePanduanRutePdfBlob } from '../lib/pdfDocumentGenerator';
 
 const STORAGE_CORRIDOR_UNLOCK_KEY = 'zn_panduan_rute_unlocked_v1';
 
@@ -51,6 +59,9 @@ export const PanduanRuteZiarah: React.FC = () => {
       return false;
     }
   });
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfNotice, setPdfNotice] = useState<string | null>(null);
+  const isRestrictedEnv = useMemo(() => isRestrictedWebViewOrIframe(), []);
 
   const initialInfaqConfig = useMemo(() => getCachedOrDefaultInfaqConfig(), []);
   const [donationTiers, setDonationTiers] = useState<DonationTier[]>(
@@ -171,17 +182,7 @@ export const PanduanRuteZiarah: React.FC = () => {
     });
   }, [bankInfo, groupName, senderAccount, selectedDonationAmount, activeCorridor]);
 
-  const handleUnlockAndPrint = async () => {
-    setIsBookUnlocked(true);
-    try {
-      localStorage.setItem(STORAGE_CORRIDOR_UNLOCK_KEY, 'true');
-    } catch {}
-    setTimeout(() => {
-      if (typeof window !== 'undefined' && typeof window.print === 'function') {
-        window.print();
-      }
-    }, 80);
-
+  const recordRouteBookDonation = async () => {
     if (receipt && receipt.dataUrl) {
       try {
         const cleanDonor =
@@ -218,8 +219,108 @@ export const PanduanRuteZiarah: React.FC = () => {
     }
   };
 
+  const buildCurrentRoutePdfBlob = async (): Promise<{
+    blob: Blob;
+    filename: string;
+  }> => {
+    const stopsPayload = resolvedStops.map((item) => {
+      const doaList = getEffectiveSiteDoaKhusus(item.site);
+      return {
+        id: item.site.id,
+        name: item.site.name,
+        title: item.site.title,
+        city: item.site.location.city,
+        province: item.site.location.province,
+        description: stripMarkdownAsterisks(item.site.description),
+        historySummary: stripMarkdownAsterisks(item.site.history).slice(0, 750),
+        doaKhusus: doaList.map((d) => ({
+          title: d.title,
+          text: d.text || d.arab || '',
+          latin: d.latin,
+          translation: d.translation,
+        })),
+        references: Array.isArray(item.site.references)
+          ? item.site.references.filter(Boolean)
+          : [],
+      };
+    });
+
+    const blob = await generatePanduanRutePdfBlob({
+      groupName,
+      coordinatorName: senderAccount,
+      departureDate: departureDateLabel,
+      routeTitle: activeCorridor.title,
+      routeRegion: activeCorridor.regionSummary,
+      routeDurationLabel: activeCorridor.recommendedDaysLabel,
+      stops: stopsPayload,
+      adabChecklist: SUNNAH_ZIARAH_ADAB_STEPS.map((s) => ({
+        step: String(s.step),
+        title: s.title,
+        desc: s.description,
+      })),
+    });
+
+    return {
+      blob,
+      filename: `buku-saku-rute-${activeCorridor.slug}.pdf`,
+    };
+  };
+
+  const handleDownloadRoutePdf = async () => {
+    setIsBookUnlocked(true);
+    try {
+      localStorage.setItem(STORAGE_CORRIDOR_UNLOCK_KEY, 'true');
+    } catch {}
+    setIsGeneratingPdf(true);
+    setPdfNotice(null);
+    try {
+      const { blob, filename } = await buildCurrentRoutePdfBlob();
+      await downloadBlobFile(blob, filename);
+      setPdfNotice(`Berkas ${filename} berhasil diunduh ke perangkat Anda.`);
+      void recordRouteBookDonation();
+    } catch (err: any) {
+      setPdfNotice(err?.message || 'Gagal menyiapkan berkas PDF.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleShareRoutePdf = async () => {
+    setIsBookUnlocked(true);
+    try {
+      localStorage.setItem(STORAGE_CORRIDOR_UNLOCK_KEY, 'true');
+    } catch {}
+    setIsGeneratingPdf(true);
+    setPdfNotice(null);
+    try {
+      const { blob, filename } = await buildCurrentRoutePdfBlob();
+      await shareOrDownloadFile(
+        blob,
+        filename,
+        `Buku Saku Rute Ziarah — ${activeCorridor.title}`
+      );
+      setPdfNotice(`Berkas ${filename} siap disimpan atau dibagikan.`);
+      void recordRouteBookDonation();
+    } catch (err: any) {
+      setPdfNotice(err?.message || 'Gagal membagikan berkas PDF.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleDirectPrint = () => {
+    setIsBookUnlocked(true);
+    try {
+      localStorage.setItem(STORAGE_CORRIDOR_UNLOCK_KEY, 'true');
+    } catch {}
+    if (typeof window !== 'undefined' && typeof window.print === 'function') {
+      window.print();
+    }
+    void recordRouteBookDonation();
+  };
+
   return (
-    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 pb-20">
+    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 pb-32 sm:pb-16">
       <style>{`
         @media print {
           body {
@@ -530,35 +631,81 @@ export const PanduanRuteZiarah: React.FC = () => {
             requiredForUnlock={false}
           />
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={handleUnlockAndPrint}
-              disabled={!agreedToAkad && !receipt && !isBookUnlocked}
-              className={`flex-1 inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-sm font-bold transition-colors cursor-pointer ${
-                agreedToAkad || receipt || isBookUnlocked
-                  ? 'bg-[#064E3B] hover:bg-emerald-950 text-white'
-                  : 'bg-stone-200 text-stone-500 cursor-not-allowed'
-              }`}
-            >
-              <Printer className="w-4 h-4" />
-              <span>
-                {isBookUnlocked
-                  ? `Cetak Buku Saku ${activeCorridor.title} (PDF)`
-                  : `Buka & Cetak Buku Saku Rute PDF (Infaq Rp ${selectedDonationAmount.toLocaleString('id-ID')})`}
-              </span>
-            </button>
-
-            {confirmDonationWaUrl && (
-              <a
-                href={confirmDonationWaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-emerald-800 text-emerald-900 hover:bg-emerald-50 text-xs sm:text-sm font-semibold transition-colors"
+          <div className="space-y-2.5">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={handleDownloadRoutePdf}
+                disabled={isGeneratingPdf || (!agreedToAkad && !receipt && !isBookUnlocked)}
+                className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-sm font-bold transition-colors cursor-pointer ${
+                  agreedToAkad || receipt || isBookUnlocked
+                    ? 'bg-[#064E3B] hover:bg-emerald-950 text-white'
+                    : 'bg-stone-200 text-stone-500 cursor-not-allowed'
+                } disabled:opacity-60`}
               >
-                <MessageCircle className="w-4 h-4" />
-                <span>Konfirmasi via WhatsApp</span>
-              </a>
+                {isGeneratingPdf ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Menyiapkan PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    <span>
+                      {isBookUnlocked
+                        ? `Unduh File PDF (.PDF) — ${activeCorridor.title}`
+                        : `Unduh File PDF (.PDF) Rute (Infaq Rp ${selectedDonationAmount.toLocaleString('id-ID')})`}
+                    </span>
+                  </>
+                )}
+              </button>
+
+              {confirmDonationWaUrl && (
+                <a
+                  href={confirmDonationWaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-emerald-800 text-emerald-900 hover:bg-emerald-50 text-xs sm:text-sm font-semibold transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Konfirmasi via WhatsApp</span>
+                </a>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={handleShareRoutePdf}
+                disabled={isGeneratingPdf || (!agreedToAkad && !receipt && !isBookUnlocked)}
+                className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Bagikan / Simpan ke HP</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDirectPrint}
+                disabled={!agreedToAkad && !receipt && !isBookUnlocked}
+                className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:bg-stone-100 text-stone-800 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Cetak Langsung (Printer)</span>
+              </button>
+            </div>
+
+            {pdfNotice && (
+              <p className="text-xs font-medium text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl px-3.5 py-2">
+                {pdfNotice}
+              </p>
+            )}
+
+            {isRestrictedEnv && (
+              <p className="text-[11px] text-stone-600 leading-relaxed">
+                Jika unduhan tertahan oleh browser in-app, ketuk tombol{' '}
+                <strong>Bagikan / Simpan ke HP</strong> atau buka di Chrome/Safari.
+              </p>
             )}
           </div>
         </div>

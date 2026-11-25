@@ -15,7 +15,8 @@ import {
   Lock,
   AlertCircle,
   Heart,
-  Download
+  Download,
+  Share2
 } from 'lucide-react';
 import { auth, db, handleFirestoreError, OperationType, getRemainingSubmissionCooldown, recordSubmissionCooldown } from '../lib/firebase';
 import { collection, doc, onSnapshot, query, where, limit } from 'firebase/firestore';
@@ -33,7 +34,8 @@ import {
 } from '../lib/transferProof';
 import { sanitizePlainText, sanitizeDonationAmount } from '../lib/sanitize';
 import { useSiteCopy } from '../lib/siteCopy';
-import { renderPersonalMunajatCard, type MunajatCardPaletteId } from '../lib/munajatCardCanvas';
+import { renderPersonalMunajatCardBlob, type MunajatCardPaletteId } from '../lib/munajatCardCanvas';
+import { downloadBlobFile, shareOrDownloadFile } from '../lib/directDownload';
 import {
   DEFAULT_DONATION_TIERS,
   DEFAULT_WHATSAPP_TEMPLATE,
@@ -268,7 +270,7 @@ export const InfaqDigital: React.FC = () => {
     if (isGeneratingCard) return;
     setIsGeneratingCard(true);
     try {
-      const dataUrl = await renderPersonalMunajatCard({
+      const blob = await renderPersonalMunajatCardBlob({
         recipientName: personalRecipientName.trim() || 'Hamba Allah & Keluarga',
         prayerText:
           personalPrayerText.trim() ||
@@ -277,12 +279,34 @@ export const InfaqDigital: React.FC = () => {
         createdDateLabel: todayIndonesianLabel,
         cardPalette: personalCardPalette,
       });
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = 'lembar-munajat-ziarah-nusantara.png';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      await downloadBlobFile(blob, 'lembar-munajat-ziarah-nusantara.png');
+    } catch (err) {
+      console.error('Error downloading munajat card:', err);
+    } finally {
+      setIsGeneratingCard(false);
+    }
+  };
+
+  const handleShareMunajatCard = async () => {
+    if (isGeneratingCard) return;
+    setIsGeneratingCard(true);
+    try {
+      const blob = await renderPersonalMunajatCardBlob({
+        recipientName: personalRecipientName.trim() || 'Hamba Allah & Keluarga',
+        prayerText:
+          personalPrayerText.trim() ||
+          'Ya Allah, ampunilah khilaf orang tua dan keluarga kami, lapangkanlah hati kami dalam ketaatan, dan mudahkanlah setiap ikhtiar yang halal dan berkah.',
+        themeLabel: activeMunajatTheme.label,
+        createdDateLabel: todayIndonesianLabel,
+        cardPalette: personalCardPalette,
+      });
+      await shareOrDownloadFile(
+        blob,
+        'lembar-munajat-ziarah-nusantara.png',
+        'Lembar Munajat Pribadi — Ziarah Nusantara'
+      );
+    } catch (err) {
+      console.error('Error sharing munajat card:', err);
     } finally {
       setIsGeneratingCard(false);
     }
@@ -621,7 +645,7 @@ export const InfaqDigital: React.FC = () => {
     : null;
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-28">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-32 sm:pb-16">
       {/* Header Banner — Solid Dark Apple Contrast */}
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
@@ -1203,22 +1227,38 @@ export const InfaqDigital: React.FC = () => {
               />
             </div>
 
-            <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="pt-1 flex flex-wrap items-center gap-2.5">
               <button
                 type="button"
                 onClick={handleDownloadMunajatCard}
                 disabled={isGeneratingCard}
-                className="px-5 py-3 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
+                className="min-h-[44px] px-5 py-3 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
-                <Download className="w-4 h-4" strokeWidth={1.75} />
-                <span>
-                  {isGeneratingCard ? 'Menyiapkan Gambar...' : 'Unduh Lembar Munajat (.PNG)'}
-                </span>
+                {isGeneratingCard ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Menyiapkan Gambar...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" strokeWidth={1.75} />
+                    <span>Unduh Lembar Munajat (.PNG)</span>
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleShareMunajatCard}
+                disabled={isGeneratingCard}
+                className="min-h-[44px] px-4 py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+              >
+                <Share2 className="w-4 h-4" strokeWidth={1.75} />
+                <span>Simpan / Bagikan (.PNG)</span>
               </button>
               <button
                 type="button"
                 onClick={handleForwardToMunajatWallAndInfaq}
-                className="px-4 py-3 rounded-xl bg-[#FAF8F5] hover:bg-emerald-50 text-emerald-950 border border-stone-300 hover:border-emerald-300 text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
+                className="min-h-[44px] px-4 py-3 rounded-xl bg-[#FAF8F5] hover:bg-emerald-50 text-emerald-950 border border-stone-300 hover:border-emerald-300 text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
               >
                 <HeartHandshake className="w-4 h-4 text-emerald-800" strokeWidth={1.75} />
                 <span>Titipkan Doa Ini di Dinding Doa Bersama</span>

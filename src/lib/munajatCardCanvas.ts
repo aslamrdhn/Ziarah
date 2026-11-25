@@ -316,3 +316,15 @@ export async function renderPersonalMunajatCard(
     return FALLBACK_1X1_PNG;
   }
 }
+
+export async function renderPersonalMunajatCardBlob(
+  rawParams: PersonalMunajatCardParams
+): Promise<Blob> {
+  const dataUrl = await renderPersonalMunajatCard(rawParams);
+  if (!dataUrl || dataUrl === FALLBACK_1X1_PNG) {
+    throw new Error('Gagal merender Kartu Munajat pada perangkat ini.');
+  }
+  const { dataUrlToBlob } = await import('./directDownload');
+  return dataUrlToBlob(dataUrl);
+}
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   BookOpen,
   Printer,
@@ -9,6 +9,9 @@ import {
   Heart,
   FileText,
   AlertCircle,
+  Download,
+  Share2,
+  Loader2,
 } from 'lucide-react';
 import { PRAYER_SECTIONS } from '../data/bacaanZiarahData';
 import {
@@ -37,6 +40,13 @@ import {
   getCachedOrDefaultInfaqConfig,
   parseFirestoreInfaqConfig,
 } from '../lib/infaqConfig';
+import { compressLocalImageFile } from '../lib/clientImageCompressor';
+import {
+  downloadBlobFile,
+  shareOrDownloadFile,
+  isRestrictedWebViewOrIframe,
+} from '../lib/directDownload';
+import { generateBukuYasinPdfBlob } from '../lib/pdfDocumentGenerator';
 
 const EVENT_PRESETS: CommemorationEventPreset[] = [
   'Mengenang 7 Hari',
@@ -53,6 +63,7 @@ const THEME_OPTIONS: {
   previewBg: string;
   previewText: string;
   previewBorder: string;
+  accentHex: string;
 }[] = [
   {
     id: 'emerald-classic',
@@ -60,6 +71,7 @@ const THEME_OPTIONS: {
     previewBg: 'bg-[#064E3B]',
     previewText: 'text-white',
     previewBorder: 'border-emerald-950',
+    accentHex: '#064E3B',
   },
   {
     id: 'ivory-gold',
@@ -67,6 +79,7 @@ const THEME_OPTIONS: {
     previewBg: 'bg-[#FAF8F5]',
     previewText: 'text-stone-900',
     previewBorder: 'border-stone-400',
+    accentHex: '#78350F',
   },
   {
     id: 'midnight-calm',
@@ -74,6 +87,7 @@ const THEME_OPTIONS: {
     previewBg: 'bg-slate-900',
     previewText: 'text-stone-100',
     previewBorder: 'border-slate-700',
+    accentHex: '#0F172A',
   },
 ];
 
@@ -90,13 +104,15 @@ export const BukuYasinKenangan: React.FC = () => {
   const [familyNamesFooter, setFamilyNamesFooter] = useState('');
   const [theme, setTheme] = useState<YasinCoverTheme>('emerald-classic');
 
-  // Local-only memorial photo (100% browser memory, never uploaded to server)
+  // Local-only memorial photo (100% browser memory, compressed <250KB, never uploaded to server)
   const [localPhotoDataUrl, setLocalPhotoDataUrl] = useState<string | null>(null);
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   // Economic Path A (Self-Print A5 PDF after Rp 30.000 infaq)
   const [isPdfUnlocked, setIsPdfUnlocked] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfStatusNotice, setPdfStatusNotice] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>(
     'QRIS'
   );
@@ -107,6 +123,8 @@ export const BukuYasinKenangan: React.FC = () => {
   // Economic Path B (Physical Print Consultation via WhatsApp)
   const [copiesCount, setCopiesCount] = useState<number>(50);
   const [deliveryCity, setDeliveryCity] = useState<string>('');
+
+  const isRestrictedEnv = useMemo(() => isRestrictedWebViewOrIframe(), []);
 
   // Infaq settings synced with AdminKurator settings/infaq & local cache
   const initialInfaqConfig = useMemo(() => getCachedOrDefaultInfaqConfig(), []);
@@ -176,7 +194,7 @@ export const BukuYasinKenangan: React.FC = () => {
     theme,
   ]);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
@@ -188,16 +206,18 @@ export const BukuYasinKenangan: React.FC = () => {
     }
 
     setPhotoError(null);
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setLocalPhotoDataUrl(reader.result);
-      }
-    };
-    reader.onerror = () => {
-      setPhotoError('Gagal membaca berkas foto di peramban Anda.');
-    };
-    reader.readAsDataURL(file);
+    setIsProcessingPhoto(true);
+    try {
+      const compressed = await compressLocalImageFile(file, {
+        maxDimension: 900,
+        maxBytes: 250 * 1024,
+      });
+      setLocalPhotoDataUrl(compressed.dataUrl);
+    } catch (err: any) {
+      setPhotoError(err?.message || 'Gagal memproses berkas foto di peramban Anda.');
+    } finally {
+      setIsProcessingPhoto(false);
+    }
   };
 
   const tier30k = useMemo(() => {
@@ -244,14 +264,7 @@ export const BukuYasinKenangan: React.FC = () => {
   const activeThemeStyle =
     THEME_OPTIONS.find((t) => t.id === memorial.theme) || THEME_OPTIONS[0];
 
-  const handleUnlockAndPrint = async () => {
-    setIsPdfUnlocked(true);
-    setTimeout(() => {
-      if (typeof window !== 'undefined' && typeof window.print === 'function') {
-        window.print();
-      }
-    }, 80);
-
+  const recordBukuYasinDonation = async () => {
     if (receipt && receipt.dataUrl) {
       try {
         const cleanDonor =
@@ -290,8 +303,81 @@ export const BukuYasinKenangan: React.FC = () => {
     }
   };
 
+  const buildCurrentBukuYasinPdfBlob = async (): Promise<{
+    blob: Blob;
+    filename: string;
+  }> => {
+    const prefix = memorial.lineageRelation === 'binti' ? 'Almarhumah' : 'Almarhum';
+    const blob = await generateBukuYasinPdfBlob({
+      almarhumPrefix: prefix,
+      almarhumName: memorial.deceasedName,
+      nasabLabel: memorial.lineageRelation,
+      parentName: memorial.parentName,
+      birthYear: memorial.birthDateText,
+      passingDate: memorial.deathDateText,
+      eventLabel: memorial.eventLabel,
+      familyNames: memorial.familyNamesFooter,
+      customPrayerNote: memorial.familyGreeting,
+      localPhotoDataUrl,
+      includeFullYasin83: hasVerifiedYasin83,
+      themeAccentColor: activeThemeStyle.accentHex,
+    });
+    const slugName = (memorial.deceasedName || 'almarhum')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return {
+      blob,
+      filename: `buku-tahlil-doa-a5-${slugName || 'kenangan'}.pdf`,
+    };
+  };
+
+  const handleDownloadPdf = async () => {
+    setIsPdfUnlocked(true);
+    setIsGeneratingPdf(true);
+    setPdfStatusNotice(null);
+    try {
+      const { blob, filename } = await buildCurrentBukuYasinPdfBlob();
+      await downloadBlobFile(blob, filename);
+      setPdfStatusNotice(`Berkas ${filename} berhasil diunduh ke perangkat Anda.`);
+      void recordBukuYasinDonation();
+    } catch (err: any) {
+      setPdfStatusNotice(err?.message || 'Gagal menyiapkan berkas PDF.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleSharePdf = async () => {
+    setIsPdfUnlocked(true);
+    setIsGeneratingPdf(true);
+    setPdfStatusNotice(null);
+    try {
+      const { blob, filename } = await buildCurrentBukuYasinPdfBlob();
+      await shareOrDownloadFile(
+        blob,
+        filename,
+        `Buku Tahlil & Doa Arwah A5 — ${memorial.fullLineageLabel}`
+      );
+      setPdfStatusNotice(`Berkas ${filename} siap disimpan atau dibagikan.`);
+      void recordBukuYasinDonation();
+    } catch (err: any) {
+      setPdfStatusNotice(err?.message || 'Gagal membagikan berkas PDF.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleDirectPrint = () => {
+    setIsPdfUnlocked(true);
+    if (typeof window !== 'undefined' && typeof window.print === 'function') {
+      window.print();
+    }
+    void recordBukuYasinDonation();
+  };
+
   return (
-    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 pb-20">
+    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 pb-32 sm:pb-16">
       <style>{`
         @media print {
           @page {
@@ -371,8 +457,8 @@ export const BukuYasinKenangan: React.FC = () => {
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div className="sm:col-span-5">
                 <label
                   htmlFor="yasin-lineage-rel"
                   className="block text-xs font-semibold text-stone-700 mb-1"
@@ -393,7 +479,7 @@ export const BukuYasinKenangan: React.FC = () => {
                   <option value="binti">binti (Perempuan)</option>
                 </select>
               </div>
-              <div className="col-span-2">
+              <div className="sm:col-span-7">
                 <label
                   htmlFor="yasin-parent-name"
                   className="block text-xs font-semibold text-stone-700 mb-1"
@@ -486,40 +572,49 @@ export const BukuYasinKenangan: React.FC = () => {
             <div className="rounded-xl border border-stone-200 bg-[#FAF8F5] p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-stone-800">
-                  Foto Kenangan (Opsional • Maks 5 MB)
+                  Foto Kenangan (Opsional • Otomatis Dikompresi)
                 </span>
                 {localPhotoDataUrl && (
                   <button
                     type="button"
                     onClick={() => setLocalPhotoDataUrl(null)}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-rose-700 hover:text-rose-900 cursor-pointer"
+                    className="min-h-[36px] px-2 inline-flex items-center gap-1 text-xs font-medium text-rose-700 hover:text-rose-900 cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Hapus Foto</span>
                   </button>
                 )}
               </div>
-              <input
-                ref={photoInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handlePhotoUpload}
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => photoInputRef.current?.click()}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:border-emerald-800 text-xs font-semibold text-stone-800 transition-colors cursor-pointer"
+              <label
+                className={`w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:border-emerald-800 text-xs font-semibold text-stone-800 transition-colors cursor-pointer ${
+                  isProcessingPhoto ? 'opacity-50 pointer-events-none' : ''
+                }`}
               >
-                <Upload className="w-4 h-4 text-emerald-800" />
-                <span>
-                  {localPhotoDataUrl
-                    ? 'Ganti Foto Kenangan'
-                    : 'Pilih Foto dari Perangkat (JPG/PNG/WebP)'}
-                </span>
-              </button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={isProcessingPhoto}
+                  onChange={handlePhotoUpload}
+                  className="sr-only"
+                />
+                {isProcessingPhoto ? (
+                  <>
+                    <Loader2 className="w-4 h-4 text-emerald-800 animate-spin" />
+                    <span>Memproses &amp; mengompresi foto...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 text-emerald-800" />
+                    <span>
+                      {localPhotoDataUrl
+                        ? 'Ganti Foto Kenangan'
+                        : 'Pilih Foto dari Perangkat (JPG/PNG/WebP)'}
+                    </span>
+                  </>
+                )}
+              </label>
               <p className="text-[11px] text-stone-600 leading-relaxed">
-                Foto hanya dirender di memori peramban Anda untuk pratinjau &amp; cetak PDF, tidak
+                Foto hanya dirender di memori peramban Anda untuk pratinjau &amp; unduhan PDF, tidak
                 dikirim ke server mana pun.
               </p>
               {photoError && (
@@ -590,19 +685,20 @@ export const BukuYasinKenangan: React.FC = () => {
             </div>
           </div>
 
-          {/* JALUR EKONOMI A: CETAK PDF SIAP CETAK A5 MANDIRI (INFAQ RP 30.000) */}
+          {/* JALUR EKONOMI A: UNDUH PDF SIAP CETAK A5 MANDIRI (INFAQ RP 30.000) */}
           <div className="rounded-2xl bg-white border-2 border-emerald-900/30 p-6 space-y-5 shadow-xs">
             <div>
               <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-900">
                 <Heart className="w-3.5 h-3.5" />
-                <span>Jalur A — Simpan &amp; Cetak PDF A5 Mandiri</span>
+                <span>Jalur A — Unduh &amp; Cetak PDF A5 Mandiri</span>
               </span>
               <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-900 mt-1">
-                Buka &amp; Cetak PDF Siap Cetak A5 (Infaq Rp 30.000)
+                Buka &amp; Unduh File PDF A5 Asli (Infaq Rp 30.000)
               </h3>
               <p className="text-xs text-stone-600 mt-1 leading-relaxed">
-                Pratinjau di sebelah kanan dapat Anda periksa secara gratis. Untuk mengunduh/mencetak
-                dokumen PDF ukuran A5 siap gandakan, tunaikan infaq operasional sebesar Rp 30.000.
+                Pratinjau di sebelah kanan dapat Anda periksa secara gratis. Untuk mengunduh file
+                dokumen <strong>.PDF ukuran A5</strong> siap cetak maupun dibagikan ke WhatsApp
+                keluarga, tunaikan infaq operasional sebesar Rp 30.000.
               </p>
             </div>
 
@@ -642,28 +738,72 @@ export const BukuYasinKenangan: React.FC = () => {
             <div className="flex flex-col gap-2.5">
               <button
                 type="button"
-                onClick={handleUnlockAndPrint}
-                disabled={!agreedToAkad && !receipt && !isPdfUnlocked}
-                className={`w-full inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-sm font-bold transition-colors cursor-pointer ${
+                onClick={handleDownloadPdf}
+                disabled={isGeneratingPdf || (!agreedToAkad && !receipt && !isPdfUnlocked)}
+                className={`w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-sm font-bold transition-colors cursor-pointer ${
                   agreedToAkad || receipt || isPdfUnlocked
                     ? 'bg-[#064E3B] hover:bg-emerald-950 text-white'
                     : 'bg-stone-200 text-stone-500 cursor-not-allowed'
-                }`}
+                } disabled:opacity-60`}
               >
-                <Printer className="w-4 h-4" />
-                <span>
-                  {isPdfUnlocked
-                    ? 'Cetak / Simpan PDF Ukuran A5 Sekarang'
-                    : 'Buka & Cetak PDF Siap Cetak A5 (Infaq Rp 30.000)'}
-                </span>
+                {isGeneratingPdf ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Menyiapkan PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    <span>
+                      {isPdfUnlocked
+                        ? 'Unduh File PDF (.PDF) Ukuran A5'
+                        : 'Unduh File PDF (.PDF) A5 (Infaq Rp 30.000)'}
+                    </span>
+                  </>
+                )}
               </button>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleSharePdf}
+                  disabled={isGeneratingPdf || (!agreedToAkad && !receipt && !isPdfUnlocked)}
+                  className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Bagikan / Simpan ke HP</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDirectPrint}
+                  disabled={!agreedToAkad && !receipt && !isPdfUnlocked}
+                  className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:bg-stone-100 text-stone-800 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Cetak Langsung (Printer)</span>
+                </button>
+              </div>
+
+              {pdfStatusNotice && (
+                <p className="text-xs font-medium text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+                  {pdfStatusNotice}
+                </p>
+              )}
+
+              {isRestrictedEnv && (
+                <p className="text-[11px] text-stone-600 leading-relaxed">
+                  Jika unduhan tertahan oleh browser in-app, ketuk tombol{' '}
+                  <strong>Bagikan / Simpan ke HP</strong> atau buka di Chrome/Safari.
+                </p>
+              )}
 
               {pdfConfirmWaUrl && (
                 <a
                   href={pdfConfirmWaUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-emerald-800 text-emerald-900 hover:bg-emerald-50 text-xs font-semibold transition-colors"
+                  className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-emerald-800 text-emerald-900 hover:bg-emerald-50 text-xs font-semibold transition-colors"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Konfirmasi Infaq PDF via WhatsApp</span>

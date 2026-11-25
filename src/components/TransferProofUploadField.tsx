@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Upload, CheckCircle2, AlertCircle, Image as ImageIcon, Trash2, Loader2, ShieldCheck } from 'lucide-react';
 import { CompressedReceiptResult, validateAndCompressReceipt } from '../lib/transferProof';
 
@@ -32,7 +32,6 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
   onProcessingChange,
   requiredForUnlock = true,
 }) => {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -53,9 +52,6 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
     } finally {
       setIsProcessing(false);
       onProcessingChange?.(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -133,24 +129,23 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
       </div>
 
       <div>
-        <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+        <span className="block text-[11px] font-semibold text-stone-700 mb-1">
           3. Unggah Screenshot / Foto Bukti Transfer <span className="text-rose-600">*</span>
-        </label>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileSelect}
-          className="hidden"
-        />
+        </span>
 
         {!receipt ? (
-          <button
-            type="button"
-            disabled={isProcessing}
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full py-4 px-4 bg-white hover:bg-stone-50 border border-dashed border-stone-300 hover:border-stone-500 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+          <label
+            className={`w-full min-h-[44px] py-4 px-4 bg-white hover:bg-stone-50 border border-dashed border-stone-300 hover:border-stone-500 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
+              isProcessing ? 'opacity-50 pointer-events-none' : ''
+            }`}
           >
+            <input
+              type="file"
+              accept="image/*"
+              disabled={isProcessing}
+              onChange={handleFileSelect}
+              className="sr-only"
+            />
             {isProcessing ? (
               <>
                 <Loader2 className="w-6 h-6 text-emerald-800 animate-spin" />
@@ -171,7 +166,7 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
                 </span>
               </>
             )}
-          </button>
+          </label>
         ) : (
           <div className="bg-white p-3 rounded-2xl border border-emerald-300 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -190,22 +185,28 @@ export const TransferProofUploadField: React.FC<TransferProofUploadFieldProps> =
                 <p className="text-[10px] text-slate-500 truncate mt-0.5">
                   Ref: <strong className="font-mono text-slate-800">{receipt.referenceCode}</strong> • {receipt.width}x{receipt.height}px
                 </p>
-                <button
-                  type="button"
-                  disabled={isProcessing}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-[10px] font-bold text-emerald-700 hover:underline mt-0.5 inline-flex items-center gap-1 cursor-pointer"
+                <label
+                  className={`min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 mt-1.5 inline-flex items-center gap-1.5 cursor-pointer transition-colors ${
+                    isProcessing ? 'opacity-50 pointer-events-none' : ''
+                  }`}
                 >
-                  <ImageIcon className="w-3 h-3" />
-                  {isProcessing ? 'Memproses & mengompresi bukti transfer...' : 'Ganti Foto'}
-                </button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={isProcessing}
+                    onChange={handleFileSelect}
+                    className="sr-only"
+                  />
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  <span>{isProcessing ? 'Memproses & mengompresi bukti transfer...' : 'Ganti Foto'}</span>
+                </label>
               </div>
             </div>
             <button
               type="button"
               onClick={() => onReceiptChange(null)}
               title="Hapus bukti transfer"
-              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer shrink-0"
+              className="min-h-[44px] min-w-[44px] p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer shrink-0 flex items-center justify-center"
             >
               <Trash2 className="w-4 h-4" />
             </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
-import { QrCode, Download, Copy, Check, Maximize2, X } from 'lucide-react';
+import { QrCode, Download, Copy, Check, Maximize2, X, Share2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   MIN_DONATION_AMOUNT,
@@ -8,6 +8,11 @@ import {
   parseQrisMerchantInfo,
   resolveLockedTierQrisPayload,
 } from '../lib/qris';
+import {
+  dataUrlToBlob,
+  downloadBlobFile,
+  shareOrDownloadFile,
+} from '../lib/directDownload';
 
 interface QrisPaymentCardProps {
   qrisPayload?: string;
@@ -29,6 +34,7 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
   const [generatedQrDataUrl, setGeneratedQrDataUrl] = useState<string>('');
   const [copiedPayload, setCopiedPayload] = useState(false);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [isDownloadingQr, setIsDownloadingQr] = useState(false);
 
   const lockedDonationAmount = Math.max(
     MIN_DONATION_AMOUNT,
@@ -77,118 +83,149 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
       ? customTierQrisImageUrl.trim()
       : generatedQrDataUrl;
 
-  const handleDownloadQrCard = async () => {
-    try {
-      const dynamicMerchantInfo = parseQrisMerchantInfo(activePayload);
+  const buildQrCardBlob = async (): Promise<{ blob: Blob; filename: string }> => {
+    const dynamicMerchantInfo = parseQrisMerchantInfo(activePayload);
 
-      const renderCardToDataUrl = async (qrSrc: string): Promise<string> => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 800;
-        canvas.height = 1040;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) throw new Error('Canvas 2D context unavailable');
+    const renderCardToBlob = async (qrSrc: string): Promise<Blob> => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 1040;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas 2D context unavailable');
 
-        // White card background
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // White card background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Top emerald QRIS header accent
-        ctx.fillStyle = '#064e3b';
-        ctx.fillRect(0, 0, canvas.width, 130);
+      // Top emerald QRIS header accent
+      ctx.fillStyle = '#064e3b';
+      ctx.fillRect(0, 0, canvas.width, 130);
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 30px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('QRIS STANDAR PEMBAYARAN NASIONAL', canvas.width / 2, 62);
-        ctx.font = '18px sans-serif';
-        ctx.fillStyle = '#EAE4D7';
-        ctx.fillText('Satu QR Code untuk Semua Aplikasi Pembayaran', canvas.width / 2, 98);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 30px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('QRIS STANDAR PEMBAYARAN NASIONAL', canvas.width / 2, 62);
+      ctx.font = '18px sans-serif';
+      ctx.fillStyle = '#EAE4D7';
+      ctx.fillText('Satu QR Code untuk Semua Aplikasi Pembayaran', canvas.width / 2, 98);
 
-        // Merchant details
-        ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 32px serif';
-        ctx.fillText(dynamicMerchantInfo.merchantName.toUpperCase(), canvas.width / 2, 195);
+      // Merchant details
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 32px serif';
+      ctx.fillText(dynamicMerchantInfo.merchantName.toUpperCase(), canvas.width / 2, 195);
 
-        ctx.fillStyle = '#475569';
-        ctx.font = 'bold 20px monospace';
-        ctx.fillText(`NMID: ${dynamicMerchantInfo.nmid}`, canvas.width / 2, 232);
+      ctx.fillStyle = '#475569';
+      ctx.font = 'bold 20px monospace';
+      ctx.fillText(`NMID: ${dynamicMerchantInfo.nmid}`, canvas.width / 2, 232);
 
-        ctx.fillStyle = '#64748b';
-        ctx.font = '18px sans-serif';
-        ctx.fillText(
-          `${dynamicMerchantInfo.merchantCity} (${dynamicMerchantInfo.postalCode}) • Acquirer: ${dynamicMerchantInfo.acquirer}`,
-          canvas.width / 2,
-          262
+      ctx.fillStyle = '#64748b';
+      ctx.font = '18px sans-serif';
+      ctx.fillText(
+        `${dynamicMerchantInfo.merchantCity} (${dynamicMerchantInfo.postalCode}) • Acquirer: ${dynamicMerchantInfo.acquirer}`,
+        canvas.width / 2,
+        262
+      );
+
+      // Draw QR image
+      const qrImg = new Image();
+      qrImg.crossOrigin = 'anonymous';
+      await new Promise<void>((resolve, reject) => {
+        qrImg.onload = () => resolve();
+        qrImg.onerror = reject;
+        qrImg.src = qrSrc;
+      });
+
+      const qrSize = 540;
+      const qrX = (canvas.width - qrSize) / 2;
+      const qrY = 290;
+
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(qrX - 12, qrY - 12, qrSize + 24, qrSize + 24);
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+      // Footer info
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 20px sans-serif';
+      const modeText = tierLabel
+        ? `Nominal Terkunci: Rp ${lockedDonationAmount.toLocaleString('id-ID')} (${tierLabel})`
+        : `Nominal Terkunci: Rp ${lockedDonationAmount.toLocaleString('id-ID')}`;
+      ctx.fillText(modeText, canvas.width / 2, 895);
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '16px monospace';
+      ctx.fillText(
+        `CRC-16 Checksum: ${dynamicMerchantInfo.crc} (Terverifikasi EMVCo)`,
+        canvas.width / 2,
+        930
+      );
+
+      ctx.fillStyle = '#047857';
+      ctx.font = 'bold 17px sans-serif';
+      ctx.fillText(
+        'Menerima: BCA • Mandiri • BRI • BNI • BSI • DANA • GoPay • OVO • ShopeePay',
+        canvas.width / 2,
+        980
+      );
+
+      if (typeof canvas.toBlob === 'function') {
+        const maybeBlob = await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob((b) => resolve(b), 'image/png')
         );
-
-        // Draw QR image
-        const qrImg = new Image();
-        qrImg.crossOrigin = 'anonymous';
-        await new Promise<void>((resolve, reject) => {
-          qrImg.onload = () => resolve();
-          qrImg.onerror = reject;
-          qrImg.src = qrSrc;
-        });
-
-        const qrSize = 540;
-        const qrX = (canvas.width - qrSize) / 2;
-        const qrY = 290;
-
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(qrX - 12, qrY - 12, qrSize + 24, qrSize + 24);
-        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-
-        // Footer info
-        ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 20px sans-serif';
-        const modeText = tierLabel
-          ? `Nominal Terkunci: Rp ${lockedDonationAmount.toLocaleString('id-ID')} (${tierLabel})`
-          : `Nominal Terkunci: Rp ${lockedDonationAmount.toLocaleString('id-ID')}`;
-        ctx.fillText(modeText, canvas.width / 2, 895);
-
-        ctx.fillStyle = '#64748b';
-        ctx.font = '16px monospace';
-        ctx.fillText(
-          `CRC-16 Checksum: ${dynamicMerchantInfo.crc} (Terverifikasi EMVCo)`,
-          canvas.width / 2,
-          930
-        );
-
-        ctx.fillStyle = '#047857';
-        ctx.font = 'bold 17px sans-serif';
-        ctx.fillText(
-          'Menerima: BCA • Mandiri • BRI • BNI • BSI • DANA • GoPay • OVO • ShopeePay',
-          canvas.width / 2,
-          980
-        );
-
-        return canvas.toDataURL('image/png');
-      };
-
-      let pngDataUrl: string;
-      const primarySrc = displayImageSrc || generatedQrDataUrl;
-      try {
-        pngDataUrl = await renderCardToDataUrl(primarySrc);
-      } catch {
-        // Fallback to local EMVCo generatedQrDataUrl if customTierQrisImageUrl fails or taints canvas (CORS SecurityError)
-        const fallbackLocalQr =
-          generatedQrDataUrl ||
-          (await QRCode.toDataURL(activePayload, {
-            width: 640,
-            margin: 2,
-            errorCorrectionLevel: 'M',
-            color: { dark: '#0f172a', light: '#ffffff' },
-          }));
-        pngDataUrl = await renderCardToDataUrl(fallbackLocalQr);
+        if (maybeBlob) return maybeBlob;
       }
+      return dataUrlToBlob(canvas.toDataURL('image/png'));
+    };
 
-      const link = document.createElement('a');
-      link.download = `QRIS-Ziarah-Nusantara-${dynamicMerchantInfo.nmid}-Rp${lockedDonationAmount}.png`;
-      link.href = pngDataUrl;
-      link.click();
+    const primarySrc = displayImageSrc || generatedQrDataUrl;
+    let blob: Blob;
+    try {
+      blob = await renderCardToBlob(primarySrc);
+    } catch {
+      const fallbackLocalQr =
+        generatedQrDataUrl ||
+        (await QRCode.toDataURL(activePayload, {
+          width: 640,
+          margin: 2,
+          errorCorrectionLevel: 'M',
+          color: { dark: '#0f172a', light: '#ffffff' },
+        }));
+      blob = await renderCardToBlob(fallbackLocalQr);
+    }
+
+    return {
+      blob,
+      filename: `QRIS-Ziarah-Nusantara-${dynamicMerchantInfo.nmid}-Rp${lockedDonationAmount}.png`,
+    };
+  };
+
+  const handleDownloadQrCard = async () => {
+    if (isDownloadingQr) return;
+    setIsDownloadingQr(true);
+    try {
+      const { blob, filename } = await buildQrCardBlob();
+      await downloadBlobFile(blob, filename);
     } catch (err) {
       console.error('Error downloading QRIS PNG:', err);
+    } finally {
+      setIsDownloadingQr(false);
+    }
+  };
+
+  const handleShareQrCard = async () => {
+    if (isDownloadingQr) return;
+    setIsDownloadingQr(true);
+    try {
+      const { blob, filename } = await buildQrCardBlob();
+      await shareOrDownloadFile(
+        blob,
+        filename,
+        `QRIS Ziarah Nusantara — Rp ${lockedDonationAmount.toLocaleString('id-ID')}`
+      );
+    } catch (err) {
+      console.error('Error sharing QRIS PNG:', err);
+    } finally {
+      setIsDownloadingQr(false);
     }
   };
 
@@ -279,20 +316,39 @@ export const QrisPaymentCard: React.FC<QrisPaymentCardProps> = ({
           </p>
         </div>
 
-        {/* Action Buttons: Download QR Image & Copy Payload */}
+        {/* Action Buttons: Download QR Image, Share QR & Copy Payload */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-2.5">
           <button
             type="button"
+            disabled={isDownloadingQr}
             onClick={handleDownloadQrCard}
-            className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-[11px] font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            className="min-h-[40px] px-3.5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-[11px] font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-60"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Unduh QRIS (.PNG)</span>
+            {isDownloadingQr ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Menyiapkan QRIS...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5" />
+                <span>Unduh QRIS (.PNG)</span>
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            disabled={isDownloadingQr}
+            onClick={handleShareQrCard}
+            className="min-h-[40px] px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-200 rounded-xl text-[11px] font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>Simpan / Bagikan QR</span>
           </button>
           <button
             type="button"
             onClick={handleCopyPayload}
-            className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-[11px] font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="min-h-[40px] px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-[11px] font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
             title="Salin String Barcode EMVCo QRIS"
           >
             {copiedPayload ? (

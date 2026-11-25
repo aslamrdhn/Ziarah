@@ -160,7 +160,7 @@ export const LingkarDoaJumat: React.FC = () => {
   }, []);
 
   return (
-    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 pb-20">
+    <section className="min-h-screen bg-[#FAF8F5] text-stone-900 pb-32 sm:pb-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 space-y-8">
         {/* Header Lingkar Doa Jumat Malam */}
         <header className="rounded-3xl bg-[#064E3B] text-white p-6 sm:p-10 shadow-sm border border-emerald-950 space-y-4">

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { ZiarahSite, getSourceClassificationLabel } from '../data/sites';
-import { X, MapPin, Navigation, Clock, Heart, BookOpen, Bookmark, BookmarkCheck, QrCode, Send, ScrollText, Trash2, Loader2, Calendar, ShieldCheck, Type, Map as MapIcon, Lock, Printer, RotateCcw } from 'lucide-react';
+import { X, MapPin, Navigation, Clock, Heart, BookOpen, Bookmark, BookmarkCheck, QrCode, Send, ScrollText, Trash2, Loader2, Calendar, ShieldCheck, Type, Map as MapIcon, Lock, Printer, RotateCcw, Download, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransactionModal } from './TransactionModal';
 import { auth, db, handleFirestoreError, OperationType, isUserAdmin, checkAndRecordSubmissionCooldown } from '../lib/firebase';
@@ -17,6 +17,8 @@ import { getSiteSlug, formatMakamHeading, getSiteDisplayHeading } from '../lib/s
 import { useSiteCopy } from '../lib/siteCopy';
 import { renderFormattedText, stripMarkdownAsterisks } from '../lib/formatText';
 import { getHaulDisplay } from '../data/haulVerification';
+import { downloadBlobFile, shareOrDownloadFile, isRestrictedWebViewOrIframe } from '../lib/directDownload';
+import { generateSiteBarokahPdfBlob } from '../lib/pdfDocumentGenerator';
 
 function splitIntoReadableParagraphs(rawText: string): string[] {
   const cleaned = (rawText || '').replace(/<!--more-->/g, '\n\n').trim();
@@ -497,6 +499,64 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
     }
   };
 
+  const [isGeneratingPrayerPdf, setIsGeneratingPrayerPdf] = useState(false);
+  const [prayerPdfNotice, setPrayerPdfNotice] = useState<string | null>(null);
+  const isRestrictedEnv = useMemo(() => isRestrictedWebViewOrIframe(), []);
+
+  const buildCurrentSiteBarokahPdf = async (): Promise<{
+    blob: Blob;
+    filename: string;
+  }> => {
+    const slug = getSiteSlug(site);
+    const blob = await generateSiteBarokahPdfBlob({
+      siteName: safeSiteName,
+      siteTitle: formatMakamHeading(site.title),
+      city: site.location.city,
+      province: site.location.province,
+      personalHajat,
+      tawassulNodes: structuredTawassul,
+      doaKhususItems: effectiveDoaKhusus,
+      canonicalPrayers,
+      slug,
+    });
+    return {
+      blob,
+      filename: `lembar-amalan-${slug}.pdf`,
+    };
+  };
+
+  const handleDownloadPrayerPdf = async () => {
+    setIsGeneratingPrayerPdf(true);
+    setPrayerPdfNotice(null);
+    try {
+      const { blob, filename } = await buildCurrentSiteBarokahPdf();
+      await downloadBlobFile(blob, filename);
+      setPrayerPdfNotice(`Berkas ${filename} berhasil diunduh ke perangkat Anda.`);
+    } catch (err: any) {
+      setPrayerPdfNotice(err?.message || 'Gagal menyiapkan berkas PDF.');
+    } finally {
+      setIsGeneratingPrayerPdf(false);
+    }
+  };
+
+  const handleSharePrayerPdf = async () => {
+    setIsGeneratingPrayerPdf(true);
+    setPrayerPdfNotice(null);
+    try {
+      const { blob, filename } = await buildCurrentSiteBarokahPdf();
+      await shareOrDownloadFile(
+        blob,
+        filename,
+        `Lembar Amalan Maqbarah — ${safeSiteName}`
+      );
+      setPrayerPdfNotice(`Berkas ${filename} siap disimpan atau dibagikan.`);
+    } catch (err: any) {
+      setPrayerPdfNotice(err?.message || 'Gagal membagikan berkas PDF.');
+    } finally {
+      setIsGeneratingPrayerPdf(false);
+    }
+  };
+
   const handlePrintPrayerSheet = () => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     document.body.classList.add('zn-printing-sheet');
@@ -505,13 +565,11 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
       window.removeEventListener('afterprint', cleanup);
     };
     window.addEventListener('afterprint', cleanup);
-    window.setTimeout(() => {
-      try {
-        window.print();
-      } catch {
-        cleanup();
-      }
-    }, 60);
+    try {
+      window.print();
+    } catch {
+      cleanup();
+    }
     window.setTimeout(cleanup, 4000);
   };
 
@@ -1014,22 +1072,64 @@ export const SiteDetails: React.FC<SiteDetailsProps> = React.memo(({
                 </li>
               ))}
             </ul>
-            <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <button
-                type="button"
-                onClick={handlePrintPrayerSheet}
-                className="px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Printer className="w-4 h-4" strokeWidth={1.75} />
-                <span>Cetak / Simpan Lembar Amalan Maqbarah Ini (PDF)</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleCopyPrayerSheet}
-                className="px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
-              >
-                {copiedPrayerSheet ? 'Teks Amalan Tersalin' : 'Salin Seluruh Kitab Amalan'}
-              </button>
+            <div className="pt-3 border-t border-slate-100 space-y-2.5">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleDownloadPrayerPdf}
+                  disabled={isGeneratingPrayerPdf}
+                  className="min-h-[44px] px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                >
+                  {isGeneratingPrayerPdf ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Menyiapkan PDF...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" strokeWidth={1.75} />
+                      <span>Unduh File PDF (.PDF) Lembar Amalan</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSharePrayerPdf}
+                  disabled={isGeneratingPrayerPdf}
+                  className="min-h-[44px] px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <Share2 className="w-3.5 h-3.5" strokeWidth={1.75} />
+                  <span>Bagikan / Simpan ke HP</span>
+                </button>
+              </div>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handlePrintPrayerSheet}
+                  className="min-h-[44px] px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5" strokeWidth={1.75} />
+                  <span>Cetak Langsung (Printer)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyPrayerSheet}
+                  className="min-h-[44px] px-4 py-2.5 rounded-xl bg-emerald-50/70 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+                >
+                  {copiedPrayerSheet ? 'Teks Amalan Tersalin' : 'Salin Seluruh Kitab Amalan'}
+                </button>
+              </div>
+              {prayerPdfNotice && (
+                <p className="text-xs font-medium text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+                  {prayerPdfNotice}
+                </p>
+              )}
+              {isRestrictedEnv && (
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  Jika unduhan tertahan oleh browser in-app, ketuk tombol{' '}
+                  <strong>Bagikan / Simpan ke HP</strong> atau buka di Chrome/Safari.
+                </p>
+              )}
             </div>
           </div>
         </div>

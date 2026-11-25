@@ -1624,7 +1624,7 @@ export const AdminKurator: React.FC = () => {
                   <Download className="w-3.5 h-3.5 text-emerald-800" />
                   <span>Unduh Backup Konfigurasi (.json)</span>
                 </button>
-                <label className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
+                <label className="min-h-[44px] px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
                   <Upload className="w-3.5 h-3.5 text-emerald-800" />
                   <span>{isRestoringBackup ? 'Memulihkan...' : 'Impor / Restore Konfigurasi (.json)'}</span>
                   <input
@@ -1632,7 +1632,7 @@ export const AdminKurator: React.FC = () => {
                     accept="application/json,.json"
                     onChange={handleImportFullBackupJson}
                     disabled={isRestoringBackup}
-                    className="hidden"
+                    className="sr-only"
                   />
                 </label>
               </div>
