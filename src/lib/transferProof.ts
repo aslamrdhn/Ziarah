@@ -354,6 +354,10 @@ export const validateAndCompressReceipt = compressProofImage;
  * and isolates the real sender identity + compressed Base64 receipt in `/donations/{id}/private/proof` atomically via `writeBatch`.
  */
 export async function submitDonationWithPrivateProof(payload: SubmitDonationPayload): Promise<string> {
+  if (payload.consentAkad !== true || payload.agreedToAkad === false) {
+    throw new Error('Harap centang Persetujuan & Akad Infaq terlebih dahulu.');
+  }
+
   const numericAmount = Number(payload.amount);
   if (!Number.isFinite(numericAmount) || numericAmount < MIN_DONATION_AMOUNT) {
     throw new Error('Nominal minimum infaq adalah Rp 2.000');
@@ -363,14 +367,11 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
     throw new Error('Bukti transfer belum terlampir dengan lengkap. Silakan pilih foto struk transfer.');
   }
 
-  if (payload.agreedToAkad === false || payload.consentAkad === false) {
-    throw new Error('Mohon centang persetujuan akad Infaq Operasional & kebijakan privasi (UU PDP).');
-  }
-
   const donationRef = doc(collection(db, 'donations'));
   const donationId = donationRef.id;
   const authorUid = auth.currentUser?.uid || 'guest';
-  const hideIdentityPublicly = payload.isAnonymous === true || payload.showPublicly === false;
+  const isExplicitlyPublic = payload.showPublicly === true && payload.isAnonymous !== true;
+  const hideIdentityPublicly = !isExplicitlyPublic;
   const rawDonor = (payload.donorName || payload.senderAccount || 'Hamba Allah').trim();
   const publicDonorName = hideIdentityPublicly
     ? 'Hamba Allah'
@@ -393,6 +394,7 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
 
   const proofRef = doc(db, 'donations', donationId, 'private', 'proof');
   const batch = writeBatch(db);
+  const verifiedConsentAkad: boolean = payload.consentAkad;
 
   batch.set(donationRef, {
     id: donationId,
@@ -403,14 +405,15 @@ export async function submitDonationWithPrivateProof(payload: SubmitDonationPayl
     amount: Math.min(1000000000, Math.max(MIN_DONATION_AMOUNT, Math.round(numericAmount))),
     donorName: publicDonorName,
     isAnonymous: hideIdentityPublicly,
+    showPublicly: isExplicitlyPublic,
     paymentMethod: payload.paymentMethod || 'QRIS',
     hasProof: true,
     referenceCode: safeReferenceCode,
     doaHajat: String(payload.doaHajat || '').slice(0, 200),
     authorUid,
     status: 'pending',
-    consentAkad: true,
-    consentVersion: String(payload.consentVersion || '2026-11-23').slice(0, 40),
+    consentAkad: verifiedConsentAkad,
+    consentVersion: String(payload.consentVersion || '2026-11-26').slice(0, 40),
     consentAt: String(payload.consentAt || new Date().toISOString()).slice(0, 64),
     createdAt: serverTimestamp(),
   });

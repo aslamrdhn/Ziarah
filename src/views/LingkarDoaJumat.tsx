@@ -14,14 +14,16 @@ import { PRAYER_SECTIONS } from '../data/bacaanZiarahData';
 import {
   getFridayNightWindowInfo,
   formatHonestParticipantLabel,
+  maskParticipantInitials,
+  buildLingkarDoaPublicPayload,
 } from '../lib/lingkarDoa';
 
 const STORAGE_JOINED_WEEK_KEY = 'zn_lingkar_doa_joined_week_v1';
+const STORAGE_LOCAL_NOTE_KEY = 'zn_lingkar_doa_local_note_v1';
 
 interface LingkarDoaRecentEntry {
   id: string;
   displayName: string;
-  note?: string;
 }
 
 export const LingkarDoaJumat: React.FC = () => {
@@ -73,8 +75,7 @@ export const LingkarDoaJumat: React.FC = () => {
           if (typeof d.displayName === 'string') {
             items.push({
               id: docSnap.id,
-              displayName: d.displayName,
-              note: typeof d.note === 'string' ? d.note : undefined,
+              displayName: maskParticipantInitials(d.displayName),
             });
           }
         });
@@ -104,20 +105,23 @@ export const LingkarDoaJumat: React.FC = () => {
     setSubmitMessage(null);
 
     try {
+      if (cleanNote.length > 0) {
+        try {
+          localStorage.setItem(STORAGE_LOCAL_NOTE_KEY, cleanNote);
+        } catch {}
+      }
+
       const [{ db }, { collection, doc, setDoc, serverTimestamp }] =
         await Promise.all([
           import('../lib/firebase'),
           import('firebase/firestore'),
         ]);
       const newRef = doc(collection(db, 'lingkar_doa_entries'));
-      const payload: Record<string, unknown> = {
+      const payload = buildLingkarDoaPublicPayload({
         weekKey: windowInfo.weekKey,
         displayName: cleanName,
         createdAt: serverTimestamp(),
-      };
-      if (cleanNote.length > 0) {
-        payload.note = cleanNote;
-      }
+      });
 
       await setDoc(newRef, payload);
 
@@ -130,8 +134,7 @@ export const LingkarDoaJumat: React.FC = () => {
       setRecentEntries((prev) => [
         {
           id: newRef.id,
-          displayName: cleanName,
-          ...(cleanNote ? { note: cleanNote } : {}),
+          displayName: maskParticipantInitials(cleanName),
         },
         ...prev.slice(0, 11),
       ]);
@@ -322,7 +325,7 @@ export const LingkarDoaJumat: React.FC = () => {
                   htmlFor="lingkar-short-note"
                   className="block text-xs font-semibold text-stone-700 mb-1"
                 >
-                  Khushushan / Doa Singkat (Opsional • Maks 160 Karakter)
+                  Khushushan Pribadi (Opsional • Tersimpan Lokal di Perangkat)
                 </label>
                 <input
                   id="lingkar-short-note"
@@ -366,20 +369,20 @@ export const LingkarDoaJumat: React.FC = () => {
           {recentEntries.length > 0 && (
             <div className="pt-4 border-t border-stone-200 space-y-2.5">
               <p className="text-xs font-bold uppercase tracking-wider text-stone-600">
-                Jamaah yang Telah Bergabung Pekan Ini
+                Inisial Jamaah yang Telah Bergabung Pekan Ini
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {recentEntries.map((entry) => (
                   <div
                     key={entry.id}
-                    className="rounded-xl bg-[#FAF8F5] border border-stone-200/80 p-3 text-xs"
+                    className="rounded-xl bg-[#FAF8F5] border border-stone-200/80 p-3 text-xs flex items-center justify-between"
                   >
-                    <p className="font-bold text-stone-900">{entry.displayName}</p>
-                    {entry.note && (
-                      <p className="text-stone-600 mt-0.5 italic">
-                        &ldquo;{entry.note}&rdquo;
-                      </p>
-                    )}
+                    <p className="font-bold text-stone-900">
+                      {maskParticipantInitials(entry.displayName)}
+                    </p>
+                    <span className="text-[11px] text-emerald-800 font-medium">
+                      Hadir Membaca
+                    </span>
                   </div>
                 ))}
               </div>

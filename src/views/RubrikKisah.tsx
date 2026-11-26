@@ -255,7 +255,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         const fetched: CuratedMunajatItem[] = snapshot.docs
           .filter((docSnap) => {
             const d = docSnap.data();
-            return d.status === 'verified' || d.status === 'confirmed';
+            return (d.status === 'verified' || d.status === 'confirmed') && d.showPublicly !== false;
           })
           .map((docSnap, idx) => {
             const d = docSnap.data();
@@ -526,8 +526,8 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
         receipt,
         doaHajat: finalDoaHajat,
         isAnonymous,
-        showPublicly: !isAnonymous,
-        consentAkad: true,
+        showPublicly: false,
+        consentAkad: agreedToAkad,
         consentVersion: '2026-11-23',
         consentAt: new Date().toISOString(),
       });
@@ -1153,7 +1153,7 @@ export const RubrikKisah: React.FC<RubrikKisahProps> = ({
                       <button
                         type="button"
                         onClick={handleConfirmUnlockDonation}
-                        disabled={isSubmittingDonation || !isProofComplete}
+                        disabled={!agreedToAkad || !receipt || isSubmittingDonation}
                         className={`w-full py-3.5 font-medium rounded-2xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 ${
                           !isProofComplete
                             ? 'bg-stone-200 text-stone-500 cursor-not-allowed'

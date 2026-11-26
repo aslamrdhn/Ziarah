@@ -86,3 +86,58 @@ export function formatHonestParticipantLabel(realCount: number): string {
 
   return `${safeCount.toLocaleString('id-ID')} jamaah telah ikut melantunkan doa pada sesi pekan ini.`;
 }
+
+/**
+ * Menyamarkan nama partisipan publik pada Lingkar Doa Jumat Malam menjadi inisial santun
+ * atau "Hamba Allah" untuk mencegah injeksi teks bebas tanpa moderasi (F7).
+ */
+export function maskParticipantInitials(rawName: string): string {
+  const cleaned = String(rawName || '')
+    .replace(/[^a-zA-Z\s.]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!cleaned || /^hamba\s+allah$/i.test(cleaned)) {
+    return 'Hamba Allah';
+  }
+
+  const tokens = cleaned
+    .split(' ')
+    .map((t) => t.replace(/[^a-zA-Z]/g, ''))
+    .filter((t) => t.length > 0)
+    .slice(0, 3);
+
+  if (tokens.length === 0) {
+    return 'Hamba Allah';
+  }
+
+  const initials = tokens.map((t) => `${t[0].toUpperCase()}.`).join('');
+  return `Hamba Allah (${initials})`;
+}
+
+/**
+ * Membangun payload presensi Lingkar Doa yang hanya memuat 3 field aman
+ * (weekKey, displayName, createdAt) sesuai aturan Firestore F7.
+ */
+export function buildLingkarDoaPublicPayload<TCreatedAt>(params: {
+  weekKey: string;
+  displayName: string;
+  createdAt: TCreatedAt;
+}): {
+  weekKey: string;
+  displayName: string;
+  createdAt: TCreatedAt;
+} {
+  const cleanName =
+    String(params.displayName || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 60) || 'Hamba Allah';
+
+  return {
+    weekKey: String(params.weekKey || '').trim().slice(0, 16),
+    displayName: cleanName,
+    createdAt: params.createdAt,
+  };
+}
+

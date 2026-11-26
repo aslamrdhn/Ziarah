@@ -28,7 +28,7 @@ describe('Donation Consent, Bukan Wakaf Compliance & SaveData Guard Audit', () =
     expect(rubrikSrc).not.toContain('setAgreedToAkad(true)');
   });
 
-  it('blocks donation submission when agreedToAkad / consentAkad is false and requires consent proof fields in Firestore & rules', async () => {
+  it('blocks donation submission when agreedToAkad / consentAkad is false and requires real consentAkad across all views (F1 & F3)', async () => {
     const fakeReceipt = {
       dataUrl: 'data:image/jpeg;base64,' + 'A'.repeat(600),
       width: 400,
@@ -50,9 +50,9 @@ describe('Donation Consent, Bukan Wakaf Compliance & SaveData Guard Audit', () =
         senderAccount: 'Hamba Allah',
         receipt: fakeReceipt,
         doaHajat: 'Semoga berkah',
-        agreedToAkad: false,
+        consentAkad: false,
       })
-    ).rejects.toThrow(/Mohon centang persetujuan akad Infaq Operasional/i);
+    ).rejects.toThrow('Harap centang Persetujuan & Akad Infaq terlebih dahulu.');
 
     await expect(
       submitDonationWithPrivateProof({
@@ -66,9 +66,10 @@ describe('Donation Consent, Bukan Wakaf Compliance & SaveData Guard Audit', () =
         senderAccount: 'Hamba Allah',
         receipt: fakeReceipt,
         doaHajat: 'Semoga berkah',
-        consentAkad: false,
+        consentAkad: true,
+        agreedToAkad: false,
       })
-    ).rejects.toThrow(/Mohon centang persetujuan akad Infaq Operasional/i);
+    ).rejects.toThrow('Harap centang Persetujuan & Akad Infaq terlebih dahulu.');
 
     const rulesSrc = fs.readFileSync(firestoreRulesPath, 'utf-8');
     expect(rulesSrc).toContain("'consentAkad'");
@@ -77,11 +78,29 @@ describe('Donation Consent, Bukan Wakaf Compliance & SaveData Guard Audit', () =
     expect(rulesSrc).toContain("data.consentAkad == true &&");
     expect(rulesSrc).not.toContain("!('consentAkad' in data)");
 
+    const filesToCheckNoHardcodedConsent = [
+      'src/lib/transferProof.ts',
+      'src/views/InfaqDigital.tsx',
+      'src/components/TransactionModal.tsx',
+      'src/views/RubrikKisah.tsx',
+      'src/views/BukuYasinKenangan.tsx',
+      'src/views/MunajatTujuhMalam.tsx',
+      'src/views/PanduanRuteZiarah.tsx',
+    ];
+
+    for (const relPath of filesToCheckNoHardcodedConsent) {
+      const src = fs.readFileSync(path.resolve(process.cwd(), relPath), 'utf-8');
+      expect(src).not.toContain('consentAkad: true');
+      expect(src).not.toContain('!agreedToAkad && !receipt');
+    }
+
     const infaqSrc = fs.readFileSync(infaqDigitalPath, 'utf-8');
-    expect(infaqSrc).toContain("consentAkad: true");
+    expect(infaqSrc).toContain('consentAkad: agreedToAkad');
+    expect(infaqSrc).toContain('showPublicly: showOnPublicWall && !isAnonim');
     expect(infaqSrc).toContain("consentVersion: '2026-11-23'");
     expect(infaqSrc).toContain("consentAt: new Date().toISOString()");
     expect(infaqSrc).toContain("recordSubmissionCooldown('donation')");
+    expect(infaqSrc).toContain('disabled={!agreedToAkad || !receipt || isSubmitting');
   });
 
   it('verifies Bukan Wakaf (UU No. 41 Tahun 2004) & UU PDP clause in TransferProofUploadField and non-contradictory local Munajat description in InfaqDigital', () => {
@@ -115,3 +134,4 @@ describe('Donation Consent, Bukan Wakaf Compliance & SaveData Guard Audit', () =
     expect(articlesSrc).not.toContain('1–15 Muharram (Puncak 15 Muharram)');
   });
 });
+

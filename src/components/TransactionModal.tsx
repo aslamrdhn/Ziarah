@@ -327,8 +327,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         senderAccount: effectiveSender,
         receipt,
         isAnonymous,
-        showPublicly: !isAnonymous,
-        consentAkad: true,
+        showPublicly: false,
+        consentAkad: agreedToAkad,
         consentVersion: '2026-11-23',
         consentAt: new Date().toISOString(),
         doaHajat: sanitizePlainText(
@@ -753,7 +753,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <button
                 type="button"
                 onClick={handleConfirmPayment}
-                disabled={isSaving || !isProofComplete}
+                disabled={!agreedToAkad || !receipt || isSaving}
                 className={`w-full py-3.5 rounded-xl font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 ${
                   !isProofComplete
                     ? 'bg-stone-200 text-stone-500 cursor-not-allowed'

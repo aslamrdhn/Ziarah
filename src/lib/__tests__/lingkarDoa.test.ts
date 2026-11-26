@@ -4,9 +4,11 @@ import { resolve } from 'node:path';
 import {
   getCurrentFridayNightSessionKey,
   formatHonestParticipantLabel,
+  maskParticipantInitials,
+  buildLingkarDoaPublicPayload,
 } from '../lingkarDoa';
 
-describe('Lingkar Doa Jumat Malam helpers & firestore.rules validation', () => {
+describe('Lingkar Doa Jumat Malam helpers & firestore.rules validation (F7)', () => {
   it('generates consistent YYYY-Www session key in WIB timezone', () => {
     const sampleDate = new Date('2026-11-26T14:00:00.000Z'); // Kamis 21:00 WIB
     const key = getCurrentFridayNightSessionKey(sampleDate);
@@ -29,7 +31,23 @@ describe('Lingkar Doa Jumat Malam helpers & firestore.rules validation', () => {
     );
   });
 
-  it('declares strict lingkar_doa_entries rules in firestore.rules without modifying existing collections', () => {
+  it('masks public participant names into polite initials and strips free-text notes from public payload (F7)', () => {
+    expect(maskParticipantInitials('')).toBe('Hamba Allah');
+    expect(maskParticipantInitials('Hamba Allah')).toBe('Hamba Allah');
+    expect(maskParticipantInitials('Ahmad Saleh')).toBe('Hamba Allah (A.S.)');
+
+    const payload = buildLingkarDoaPublicPayload({
+      weekKey: '2026-W48',
+      displayName: 'Ahmad Saleh',
+      createdAt: 'NOW',
+    });
+    expect(Object.keys(payload).sort()).toEqual(
+      ['createdAt', 'displayName', 'weekKey'].sort()
+    );
+    expect('note' in payload).toBe(false);
+  });
+
+  it('declares strict lingkar_doa_entries rules in firestore.rules forbidding unmoderated free-text note writes (F7)', () => {
     const rulesPath = resolve(process.cwd(), 'firestore.rules');
     const rulesText = readFileSync(rulesPath, 'utf-8');
 
@@ -38,6 +56,9 @@ describe('Lingkar Doa Jumat Malam helpers & firestore.rules validation', () => {
       "incoming().keys().hasAll(['weekKey', 'displayName', 'createdAt'])"
     );
     expect(rulesText).toContain(
+      "incoming().keys().hasOnly(['weekKey', 'displayName', 'createdAt'])"
+    );
+    expect(rulesText).not.toContain(
       "incoming().keys().hasOnly(['weekKey', 'displayName', 'note', 'createdAt'])"
     );
     expect(rulesText).toContain('incoming().createdAt == request.time');
@@ -49,3 +70,4 @@ describe('Lingkar Doa Jumat Malam helpers & firestore.rules validation', () => {
     expect(rulesText).toContain('match /stories/{storyId}');
   });
 });
+

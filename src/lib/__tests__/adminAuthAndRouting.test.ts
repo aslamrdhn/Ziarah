@@ -73,4 +73,13 @@ describe('Portal Kurator Auth & Direct Route Access Regression Suite', () => {
       expect(sitemapXml).not.toContain('/kurator-admin</loc>');
     }
   });
+
+  it('includes explicit SPA route redirect from /kurator to /admin in src/App.tsx (F10)', () => {
+    const appPath = path.resolve(process.cwd(), 'src/App.tsx');
+    const appContent = fs.readFileSync(appPath, 'utf8');
+    expect(appContent).toContain(
+      '<Route path="/kurator" element={<Navigate to="/admin" replace />} />'
+    );
+  });
 });
+

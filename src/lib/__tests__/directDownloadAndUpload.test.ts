@@ -208,7 +208,7 @@ describe('Universal Mobile-Safe File Download & Native Upload Mechanics', () => 
 
     for (const relPath of pdfViews) {
       const content = fs.readFileSync(path.join(rootDir, relPath), 'utf8');
-      expect(content).toContain('Unduh File PDF (.PDF)');
+      expect(content).toMatch(/Unduh File PDF (?:Gratis )?\(\.PDF\)/);
       expect(content).toContain('Bagikan / Simpan ke HP');
       expect(content).toContain('Cetak Langsung (Printer)');
       expect(content).not.toMatch(/setTimeout\(\s*\(\)\s*=>\s*\{[\s\S]{0,120}window\.print\(\)/);

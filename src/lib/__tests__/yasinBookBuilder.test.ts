@@ -8,6 +8,9 @@ import {
   sanitizeYasinMemorialInput,
   validateLocalMemorialPhoto,
   buildYasinPhysicalPrintWaUrl,
+  buildBukuYasinVoluntaryInfaqPayload,
+  getHonestYasinSectionHeading,
+  HONEST_YASIN_EXCERPT_HEADING,
 } from '../yasinBookBuilder';
 import { PRAYER_SECTIONS } from '../../data/bacaanZiarahData';
 
@@ -35,6 +38,49 @@ describe('Buku Yasin & Tahlil Kenangan builder & verification guard', () => {
       translation: 'terjemahan',
     }));
     expect(isCompleteVerifiedYasin(fake83)).toBe(false);
+  });
+
+  it('returns honest excerpt section heading when 83 verses are not activated (F5)', () => {
+    const excerptHeading = getHonestYasinSectionHeading(false);
+    expect(excerptHeading.title).toBe(HONEST_YASIN_EXCERPT_HEADING);
+    expect(excerptHeading.title).toBe(
+      "3. KUTIPAN SURAH YASIN (AYAT 1–6, 58, 83), AL-IKHLAS, AL-MU'AWWIDZATAIN & AYAT KURSI"
+    );
+
+    const fullHeading = getHonestYasinSectionHeading(true);
+    expect(fullHeading.title).toBe('3. SURAH YASIN (83 AYAT LENGKAP)');
+  });
+
+  it('strips all deceased & family memorial PII from voluntary infaq payload and enforces showPublicly: false (F3 UU PDP)', () => {
+    const fakeReceipt = {
+      dataUrl: 'data:image/jpeg;base64,' + 'B'.repeat(600),
+      width: 400,
+      height: 600,
+      fileName: 'bukti.jpg',
+      sizeKb: 18,
+      referenceCode: 'ZN-YASIN01',
+    };
+
+    const payload = buildBukuYasinVoluntaryInfaqPayload({
+      amount: 30000,
+      senderAccount: 'Bapak Hasan',
+      paymentMethod: 'QRIS',
+      receipt: fakeReceipt,
+      consentAkad: true,
+    });
+
+    expect(payload.showPublicly).toBe(false);
+    expect(payload.isAnonymous).toBe(true);
+    expect(payload.consentAkad).toBe(true);
+    expect(payload.siteName).toBe('Layanan Penyusun Buku Yasin & Tahlil A5');
+    expect(payload.doaHajat).toBe(
+      'Infaq sukarela operasional & pemeliharaan digital arsip.'
+    );
+    const serialized = JSON.stringify(payload);
+    expect(serialized).not.toContain('deceasedName');
+    expect(serialized).not.toContain('fullLineageLabel');
+    expect(serialized).not.toContain('bin ');
+    expect(serialized).not.toContain('binti ');
   });
 
   it('exposes complete verified TAWASSUL, TAHLIL, and DOA sections from bacaanZiarahData', () => {
@@ -106,3 +152,4 @@ describe('Buku Yasin & Tahlil Kenangan builder & verification guard', () => {
     expect(decodeURIComponent(url!)).toContain('Surabaya');
   });
 });
+

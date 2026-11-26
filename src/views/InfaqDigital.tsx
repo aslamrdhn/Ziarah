@@ -190,6 +190,7 @@ export const InfaqDigital: React.FC = () => {
   const [donorName, setDonorName] = useState<string>('');
 
   const [isAnonim, setIsAnonim] = useState<boolean>(false);
+  const [showOnPublicWall, setShowOnPublicWall] = useState<boolean>(false);
   const [doaHajat, setDoaHajat] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>('QRIS');
   const [senderAccount, setSenderAccount] = useState<string>('');
@@ -444,7 +445,7 @@ export const InfaqDigital: React.FC = () => {
         const list: DonationRecord[] = snapshot.docs
           .filter((docSnap) => {
             const d = docSnap.data();
-            return d.status === 'verified' || d.status === 'confirmed';
+            return (d.status === 'verified' || d.status === 'confirmed') && d.showPublicly !== false;
           })
           .map((docSnap, idx) => {
             const d = docSnap.data();
@@ -581,8 +582,8 @@ export const InfaqDigital: React.FC = () => {
         receipt,
         doaHajat: cleanDoaHajat,
         isAnonymous: isAnonim,
-        showPublicly: !isAnonim,
-        consentAkad: true,
+        showPublicly: showOnPublicWall && !isAnonim,
+        consentAkad: agreedToAkad,
         consentVersion: '2026-11-23',
         consentAt: new Date().toISOString(),
       });
@@ -593,6 +594,7 @@ export const InfaqDigital: React.FC = () => {
       setDoaHajat('');
       setReceipt(null);
       setAgreedToAkad(false);
+      setShowOnPublicWall(false);
     } catch (error) {
       console.error('Error recording infaq in Firestore:', error);
       setSubmitError('Gagal mengunggah bukti transfer ke database. Periksa koneksi internet Anda dan coba kembali.');
@@ -938,7 +940,7 @@ export const InfaqDigital: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Titip Doa / Hajat Anda <span className="text-slate-400 font-normal">(Maks. 200 karakter — tampil di Dinding Munajat Peziarah)</span>
+                Titip Doa / Hajat Anda <span className="text-slate-400 font-normal">(Maks. 200 karakter — opsional)</span>
               </label>
               <textarea
                 rows={2}
@@ -948,6 +950,17 @@ export const InfaqDigital: React.FC = () => {
                 onChange={(e) => setDoaHajat(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 resize-none"
               />
+              <label className="inline-flex items-start mt-2 cursor-pointer text-xs text-slate-600 select-none">
+                <input
+                  type="checkbox"
+                  checked={showOnPublicWall}
+                  onChange={(e) => setShowOnPublicWall(e.target.checked)}
+                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 mr-2 mt-0.5"
+                />
+                <span>
+                  Tampilkan nama &amp; doa saya di Dinding Munajat publik setelah diverifikasi kurator
+                </span>
+              </label>
             </div>
           </div>
         </div>
@@ -1105,7 +1118,7 @@ export const InfaqDigital: React.FC = () => {
               whileTap={isProofComplete ? { scale: 0.97 } : {}}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
               onClick={handleBayar}
-              disabled={currentAmount < MIN_DONATION_AMOUNT || isSubmitting || !isProofComplete}
+              disabled={!agreedToAkad || !receipt || isSubmitting || currentAmount < MIN_DONATION_AMOUNT}
               className={`w-full py-3.5 font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 ${
                 currentAmount < MIN_DONATION_AMOUNT || !isProofComplete
                   ? 'bg-slate-200 text-slate-500 cursor-not-allowed'

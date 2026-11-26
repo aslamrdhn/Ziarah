@@ -14,26 +14,33 @@
 import { PRAYER_SECTIONS } from '../data/bacaanZiarahData';
 import { SURAH_YASIN_VERSES, isCompleteVerifiedYasin } from '../data/surahYasin';
 import { MUNAJAT_EMOTION_LABELS, type MunajatNightItem } from '../data/munajat7Malam';
+import { getHonestYasinSectionHeading } from './yasinBookBuilder';
 
-type PageFormat = 'a5' | 'a4';
+export type PageFormat = 'a5' | 'a4';
 
-interface PageGeometry {
+export interface PageGeometry {
   width: number;
   height: number;
   marginX: number;
   marginTop: number;
   marginBottom: number;
+  headerBottomY: number;
+  contentTopY: number;
+  contentBottomY: number;
   pdfWidthMm: number;
   pdfHeightMm: number;
 }
 
-const PAGE_GEOMETRIES: Record<PageFormat, PageGeometry> = {
+export const PAGE_GEOMETRIES: Record<PageFormat, PageGeometry> = {
   a5: {
     width: 1050,
     height: 1485,
     marginX: 82,
     marginTop: 90,
     marginBottom: 96,
+    headerBottomY: 78,
+    contentTopY: 118, // >= headerBottomY (78) + 36
+    contentBottomY: 1389, // height (1485) - marginBottom (96)
     pdfWidthMm: 148,
     pdfHeightMm: 210,
   },
@@ -43,6 +50,9 @@ const PAGE_GEOMETRIES: Record<PageFormat, PageGeometry> = {
     marginX: 96,
     marginTop: 100,
     marginBottom: 106,
+    headerBottomY: 78,
+    contentTopY: 126, // >= headerBottomY (78) + 36
+    contentBottomY: 1648, // height (1754) - marginBottom (106)
     pdfWidthMm: 210,
     pdfHeightMm: 297,
   },
@@ -52,7 +62,73 @@ const ARABIC_FONT_STACK = "'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', '
 const SERIF_FONT_STACK = "'Cormorant Garamond', 'Georgia', 'Times New Roman', serif";
 const SANS_FONT_STACK = "'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif";
 
-class MultiPageCanvasBook {
+export interface SectionHeaderPaginationInput {
+  cursorY: number;
+  contentTopY: number;
+  contentBottomY: number;
+  badgeLinesCount?: number;
+  badgeLineHeight?: number;
+  titleLinesCount: number;
+  titleLineHeight: number;
+  subtitleLinesCount?: number;
+  subtitleLineHeight?: number;
+  spacingAfterTitle?: number;
+  minFirstBlockHeight?: number;
+}
+
+export interface SectionHeaderPaginationResult {
+  shouldBreakBeforeHeader: boolean;
+  headerStartY: number;
+  actualTitleHeight: number;
+  requiredKeepWithNextHeight: number;
+  cursorYAfterHeader: number;
+}
+
+/**
+ * Pure layout & pagination calculator for section headings (F4):
+ * - Computes exact multi-line height of badge + wrapped title + wrapped subtitle.
+ * - Enforces Keep-With-Next (`actualTitleHeight + spacingAfterTitle + minFirstBlockHeight`)
+ *   so a section heading near `contentBottomY` breaks to a new page BEFORE drawing (0 orphan headings).
+ * - Advances `cursorY` by `actualTitleHeight + spacingAfterTitle` (never a fixed constant smaller than multi-line title height).
+ */
+export function computeSectionHeaderKeepWithNext(
+  input: SectionHeaderPaginationInput
+): SectionHeaderPaginationResult {
+  const badgeLines = Math.max(0, input.badgeLinesCount ?? 0);
+  const badgeLh = input.badgeLineHeight ?? 24;
+  const badgeHeight = badgeLines > 0 ? badgeLines * badgeLh + 8 : 0;
+
+  const titleLines = Math.max(1, input.titleLinesCount);
+  const titleLh = Math.max(20, input.titleLineHeight);
+  const titleHeight = titleLines * titleLh + 8;
+
+  const subtitleLines = Math.max(0, input.subtitleLinesCount ?? 0);
+  const subtitleLh = input.subtitleLineHeight ?? 26;
+  const subtitleHeight = subtitleLines > 0 ? subtitleLines * subtitleLh + 6 : 0;
+
+  const actualTitleHeight = badgeHeight + titleHeight + subtitleHeight;
+  const spacingAfterTitle = input.spacingAfterTitle ?? 16;
+  const minFirstBlockHeight = input.minFirstBlockHeight ?? 140;
+  const requiredKeepWithNextHeight =
+    actualTitleHeight + spacingAfterTitle + minFirstBlockHeight;
+
+  const shouldBreakBeforeHeader =
+    input.cursorY > input.contentTopY &&
+    input.cursorY + requiredKeepWithNextHeight > input.contentBottomY;
+
+  const headerStartY = shouldBreakBeforeHeader ? input.contentTopY : input.cursorY;
+  const cursorYAfterHeader = headerStartY + actualTitleHeight + spacingAfterTitle;
+
+  return {
+    shouldBreakBeforeHeader,
+    headerStartY,
+    actualTitleHeight,
+    requiredKeepWithNextHeight,
+    cursorYAfterHeader,
+  };
+}
+
+export class MultiPageCanvasBook {
   private readonly geom: PageGeometry;
   private readonly pages: HTMLCanvasElement[] = [];
   private ctx!: CanvasRenderingContext2D;
@@ -64,7 +140,7 @@ class MultiPageCanvasBook {
     this.geom = PAGE_GEOMETRIES[format];
     this.headerTitle = headerTitle;
     this.accentColor = accentColor;
-    this.addNewPage(true);
+    this.createNewPage(true);
   }
 
   public get geometry(): PageGeometry {
@@ -83,7 +159,11 @@ class MultiPageCanvasBook {
     return this.ctx;
   }
 
-  public addNewPage(isCover = false): void {
+  public get pageCount(): number {
+    return this.pages.length;
+  }
+
+  public createNewPage(isCover = false): void {
     const canvas = document.createElement('canvas');
     canvas.width = this.geom.width;
     canvas.height = this.geom.height;
@@ -116,71 +196,190 @@ class MultiPageCanvasBook {
       ctx.strokeStyle = '#E2E8F0';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(this.geom.marginX, 78);
-      ctx.lineTo(this.geom.width - this.geom.marginX, 78);
+      ctx.moveTo(this.geom.marginX, this.geom.headerBottomY);
+      ctx.lineTo(this.geom.width - this.geom.marginX, this.geom.headerBottomY);
       ctx.stroke();
       ctx.restore();
-      this.cursorY = this.geom.marginTop + 18;
+
+      // Strictly reset cursorY to CONTENT_TOP_Y (>= headerBottomY + 36)
+      this.cursorY = this.geom.contentTopY;
     } else {
       this.cursorY = this.geom.marginTop;
     }
   }
 
+  public addNewPage(isCover = false): void {
+    this.createNewPage(isCover);
+  }
+
   public ensureSpace(requiredHeight: number): void {
-    const maxContentY = this.geom.height - this.geom.marginBottom;
-    if (this.cursorY + requiredHeight > maxContentY) {
-      this.addNewPage(false);
+    if (
+      this.cursorY > this.geom.contentTopY &&
+      this.cursorY + requiredHeight > this.geom.contentBottomY
+    ) {
+      this.createNewPage(false);
     }
   }
 
   public addVerticalGap(px: number): void {
-    this.cursorY += px;
+    this.cursorY = Math.min(this.geom.contentBottomY, this.cursorY + px);
   }
 
   public drawDivider(): void {
-    this.ensureSpace(28);
+    // If already near the bottom of the page, let the next section trigger a clean page break
+    // rather than drawing a dangling divider or creating an empty trailing page.
+    if (this.cursorY + 36 > this.geom.contentBottomY) {
+      return;
+    }
     this.ctx.save();
     this.ctx.strokeStyle = '#CBD5E1';
     this.ctx.lineWidth = 1.5;
     this.ctx.beginPath();
-    this.ctx.moveTo(this.geom.marginX, this.cursorY + 10);
-    this.ctx.lineTo(this.geom.width - this.geom.marginX, this.cursorY + 10);
+    this.ctx.moveTo(this.geom.marginX, this.cursorY + 12);
+    this.ctx.lineTo(this.geom.width - this.geom.marginX, this.cursorY + 12);
     this.ctx.stroke();
     this.ctx.restore();
-    this.cursorY += 26;
+    this.cursorY += 28;
   }
 
-  public drawSectionBadge(label: string): void {
-    this.ensureSpace(50);
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.direction = 'ltr';
-    ctx.textAlign = 'left';
-    ctx.font = `700 18px ${SANS_FONT_STACK}`;
-    ctx.fillStyle = this.accentColor;
-    ctx.fillText(label.toUpperCase(), this.geom.marginX, this.cursorY + 20);
-    ctx.restore();
-    this.cursorY += 32;
+  /**
+   * Draws a complete section header (badge + multi-line title + optional subtitle)
+   * with strict Keep-With-Next pagination so headings are never orphaned at the bottom
+   * of a page and multi-line titles never collide with following text.
+   */
+  public drawSectionHeader(options: {
+    badge?: string;
+    title: string;
+    subtitle?: string;
+    titleFontSize?: number;
+    titleColor?: string;
+    minFirstBlockHeight?: number;
+  }): SectionHeaderPaginationResult {
+    const badgeFontSize = 17;
+    const badgeFontSpec = `700 ${badgeFontSize}px ${SANS_FONT_STACK}`;
+    const badgeLineHeight = Math.round(badgeFontSize * 1.4);
+    const badgeLines = options.badge
+      ? this.wrapText(options.badge.toUpperCase(), badgeFontSpec, this.contentWidth)
+      : [];
+
+    const titleFontSize = options.titleFontSize ?? 27;
+    const titleFontSpec = `700 ${titleFontSize}px ${SERIF_FONT_STACK}`;
+    const titleLineHeight = Math.round(titleFontSize * 1.35);
+    const titleLines = this.wrapText(options.title, titleFontSpec, this.contentWidth);
+
+    const subtitleFontSize = 18;
+    const subtitleFontSpec = `italic 400 ${subtitleFontSize}px ${SANS_FONT_STACK}`;
+    const subtitleLineHeight = Math.round(subtitleFontSize * 1.45);
+    const subtitleLines = options.subtitle
+      ? this.wrapText(options.subtitle, subtitleFontSpec, this.contentWidth)
+      : [];
+
+    const pagination = computeSectionHeaderKeepWithNext({
+      cursorY: this.cursorY,
+      contentTopY: this.geom.contentTopY,
+      contentBottomY: this.geom.contentBottomY,
+      badgeLinesCount: badgeLines.length,
+      badgeLineHeight,
+      titleLinesCount: titleLines.length,
+      titleLineHeight,
+      subtitleLinesCount: subtitleLines.length,
+      subtitleLineHeight,
+      spacingAfterTitle: 14,
+      minFirstBlockHeight: options.minFirstBlockHeight ?? 150,
+    });
+
+    if (pagination.shouldBreakBeforeHeader) {
+      this.createNewPage(false);
+    }
+
+    if (badgeLines.length > 0) {
+      for (const line of badgeLines) {
+        this.ctx.save();
+        this.ctx.direction = 'ltr';
+        this.ctx.textAlign = 'left';
+        this.ctx.font = badgeFontSpec;
+        this.ctx.fillStyle = this.accentColor;
+        this.ctx.fillText(line, this.geom.marginX, this.cursorY + badgeFontSize);
+        this.ctx.restore();
+        this.cursorY += badgeLineHeight;
+      }
+      this.cursorY += 8;
+    }
+
+    for (const line of titleLines) {
+      this.ctx.save();
+      this.ctx.direction = 'ltr';
+      this.ctx.textAlign = 'left';
+      this.ctx.font = titleFontSpec;
+      this.ctx.fillStyle = options.titleColor ?? '#0F172A';
+      this.ctx.fillText(line, this.geom.marginX, this.cursorY + titleFontSize);
+      this.ctx.restore();
+      this.cursorY += titleLineHeight;
+    }
+    this.cursorY += 8;
+
+    if (subtitleLines.length > 0) {
+      for (const line of subtitleLines) {
+        this.ctx.save();
+        this.ctx.direction = 'ltr';
+        this.ctx.textAlign = 'left';
+        this.ctx.font = subtitleFontSpec;
+        this.ctx.fillStyle = '#64748B';
+        this.ctx.fillText(line, this.geom.marginX, this.cursorY + subtitleFontSize);
+        this.ctx.restore();
+        this.cursorY += subtitleLineHeight;
+      }
+      this.cursorY += 6;
+    }
+
+    this.cursorY = pagination.cursorYAfterHeader;
+    return pagination;
   }
 
-  public drawHeading(text: string, fontSize = 30, color = '#0F172A'): void {
-    const lines = this.wrapText(text, `700 ${fontSize}px ${SERIF_FONT_STACK}`, this.contentWidth);
-    const lineHeight = Math.round(fontSize * 1.32);
-    this.ensureSpace(lines.length * lineHeight + 12);
+  public drawSectionBadge(label: string, keepWithNextPx = 190): void {
+    const fontSize = 17;
+    const fontSpec = `700 ${fontSize}px ${SANS_FONT_STACK}`;
+    const lineHeight = Math.round(fontSize * 1.4);
+    const lines = this.wrapText(label.toUpperCase(), fontSpec, this.contentWidth);
+    const badgeBlockHeight = lines.length * lineHeight + 10;
 
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.direction = 'ltr';
-    ctx.textAlign = 'left';
-    ctx.font = `700 ${fontSize}px ${SERIF_FONT_STACK}`;
-    ctx.fillStyle = color;
+    // Keep badge together with the upcoming heading + first content lines
+    this.ensureSpace(badgeBlockHeight + keepWithNextPx);
+
     for (const line of lines) {
-      this.ensureSpace(lineHeight);
-      ctx.fillText(line, this.geom.marginX, this.cursorY + fontSize);
+      this.ctx.save();
+      this.ctx.direction = 'ltr';
+      this.ctx.textAlign = 'left';
+      this.ctx.font = fontSpec;
+      this.ctx.fillStyle = this.accentColor;
+      this.ctx.fillText(line, this.geom.marginX, this.cursorY + fontSize);
+      this.ctx.restore();
       this.cursorY += lineHeight;
     }
-    ctx.restore();
-    this.cursorY += 8;
+    this.cursorY += 10;
+  }
+
+  public drawHeading(text: string, fontSize = 28, color = '#0F172A', keepWithNextPx = 130): void {
+    const fontSpec = `700 ${fontSize}px ${SERIF_FONT_STACK}`;
+    const lines = this.wrapText(text, fontSpec, this.contentWidth);
+    const lineHeight = Math.round(fontSize * 1.35);
+    const headingHeight = lines.length * lineHeight + 12;
+
+    // Keep heading together with at least 2 lines of the following block
+    this.ensureSpace(headingHeight + keepWithNextPx);
+
+    for (const line of lines) {
+      this.ensureSpace(lineHeight);
+      this.ctx.save();
+      this.ctx.direction = 'ltr';
+      this.ctx.textAlign = 'left';
+      this.ctx.font = fontSpec;
+      this.ctx.fillStyle = color;
+      this.ctx.fillText(line, this.geom.marginX, this.cursorY + fontSize);
+      this.ctx.restore();
+      this.cursorY += lineHeight;
+    }
+    this.cursorY += 12;
   }
 
   public drawParagraph(
@@ -191,6 +390,7 @@ class MultiPageCanvasBook {
       color?: string;
       align?: 'left' | 'center';
       indentPx?: number;
+      keepWithNextPx?: number;
     }
   ): void {
     if (!text || !text.trim()) return;
@@ -207,26 +407,31 @@ class MultiPageCanvasBook {
     const lineHeight = Math.round(fontSize * 1.48);
 
     const paragraphs = text.split(/\n+/);
-    const ctx = this.ctx;
 
     for (const para of paragraphs) {
       const trimmed = para.trim();
       if (!trimmed) continue;
       const lines = this.wrapText(trimmed, fontSpec, maxWidth);
+      if (options?.keepWithNextPx && lines.length > 0) {
+        this.ensureSpace(lines.length * lineHeight + options.keepWithNextPx);
+      }
       for (const line of lines) {
-        this.ensureSpace(lineHeight);
-        ctx.save();
-        ctx.direction = 'ltr';
-        ctx.font = fontSpec;
-        ctx.fillStyle = color;
+        this.ensureSpace(lineHeight + 4);
+        // CRITICAL: Always reference `this.ctx` AFTER `this.ensureSpace(...)` so a page break
+        // draws onto the newly created page canvas instead of the previous page canvas!
+        const activeCtx = this.ctx;
+        activeCtx.save();
+        activeCtx.direction = 'ltr';
+        activeCtx.font = fontSpec;
+        activeCtx.fillStyle = color;
         if (align === 'center') {
-          ctx.textAlign = 'center';
-          ctx.fillText(line, this.geom.width / 2, this.cursorY + fontSize);
+          activeCtx.textAlign = 'center';
+          activeCtx.fillText(line, this.geom.width / 2, this.cursorY + fontSize);
         } else {
-          ctx.textAlign = 'left';
-          ctx.fillText(line, this.geom.marginX + indentPx, this.cursorY + fontSize);
+          activeCtx.textAlign = 'left';
+          activeCtx.fillText(line, this.geom.marginX + indentPx, this.cursorY + fontSize);
         }
-        ctx.restore();
+        activeCtx.restore();
         this.cursorY += lineHeight;
       }
       this.cursorY += 8;
@@ -237,7 +442,7 @@ class MultiPageCanvasBook {
    * Renders RTL Arabic text using the browser's native shaping engine (`ctx.direction = 'rtl'`)
    * so all Arabic letters connect authentically and display diacritics clearly.
    */
-  public drawArabicBlock(arabicText: string, fontSize = 36): void {
+  public drawArabicBlock(arabicText: string, fontSize = 35): void {
     if (!arabicText || !arabicText.trim()) return;
     const fontSpec = `400 ${fontSize}px ${ARABIC_FONT_STACK}`;
     const lineHeight = Math.round(fontSize * 1.85);
@@ -255,17 +460,18 @@ class MultiPageCanvasBook {
       wrappedLines.push(...subLines);
     }
 
-    const ctx = this.ctx;
     const rightEdgeX = this.geom.width - this.geom.marginX - innerPadX;
 
     this.cursorY += 6;
     for (const line of wrappedLines) {
-      this.ensureSpace(lineHeight + 12);
+      this.ensureSpace(lineHeight + 10);
+      // CRITICAL: Always reference `this.ctx` AFTER `this.ensureSpace(...)`
+      const activeCtx = this.ctx;
 
       // Soft warm cream highlight behind each Arabic line
-      ctx.save();
-      ctx.fillStyle = '#F3EFE6';
-      ctx.fillRect(
+      activeCtx.save();
+      activeCtx.fillStyle = '#F3EFE6';
+      activeCtx.fillRect(
         this.geom.marginX,
         this.cursorY,
         this.contentWidth,
@@ -273,20 +479,20 @@ class MultiPageCanvasBook {
       );
 
       // Emerald right border bar for RTL block
-      ctx.fillStyle = this.accentColor;
-      ctx.fillRect(
+      activeCtx.fillStyle = this.accentColor;
+      activeCtx.fillRect(
         this.geom.width - this.geom.marginX - 5,
         this.cursorY,
         5,
         lineHeight + 4
       );
 
-      ctx.direction = 'rtl';
-      ctx.textAlign = 'right';
-      ctx.font = fontSpec;
-      ctx.fillStyle = '#0F172A';
-      ctx.fillText(line, rightEdgeX, this.cursorY + Math.round(fontSize * 1.18));
-      ctx.restore();
+      activeCtx.direction = 'rtl';
+      activeCtx.textAlign = 'right';
+      activeCtx.font = fontSpec;
+      activeCtx.fillStyle = '#0F172A';
+      activeCtx.fillText(line, rightEdgeX, this.cursorY + Math.round(fontSize * 1.18));
+      activeCtx.restore();
 
       this.cursorY += lineHeight + 4;
     }
@@ -564,9 +770,13 @@ export async function generateBukuYasinPdfBlob(
   }
 
   // --- PAGE 2: MUQADDIMAH & SAMBUTAN KELUARGA ---
-  book.addNewPage(false);
-  book.drawSectionBadge('Sambutan & Muqaddimah Keluarga');
-  book.drawHeading('Untaian Doa & Permohonan Maaf');
+  book.createNewPage(false);
+  book.drawSectionHeader({
+    badge: 'Sambutan & Muqaddimah Keluarga',
+    title: 'Untaian Doa & Permohonan Maaf',
+    titleFontSize: 28,
+    minFirstBlockHeight: 140,
+  });
   book.drawArabicBlock('بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيمِ', 38);
   book.drawParagraph(
     `Assalamu’alaikum Warahmatullahi Wabarakatuh.\n\nSegala puji bagi Allah SWT yang telah menghidupkan dan mematikan setiap makhluk-Nya. Shalawat serta salam semoga senantiasa tercurah kepada junjungan kita Nabi Muhammad SAW, beserta keluarga, sahabat, dan para pengikutnya hingga akhir zaman.\n\nDengan penuh kerendahan hati, kami memohon keikhlasan Bapak/Ibu/Saudara/i jamaah sekalian untuk bersama-sama menghadiahkan bacaan Surah Al-Fatihah, kalimat thayyibah Tahlil, Tasbih, Tahmid, serta Doa Arwah yang pahalanya kita hadiahkan khusus untuk ruh ${fullLineage}.`
@@ -596,11 +806,12 @@ export async function generateBukuYasinPdfBlob(
     });
   }
 
-  // --- PAGE 3+: TAWASSUL, YASIN (OR RINGKASAN), TAHLIL & DOA ARWAH ---
-  book.addNewPage(false);
+  // --- PAGE 3+: TAWASSUL, KUTIPAN YASIN (OR 83 AYAT), TAHLIL & DOA ARWAH ---
+  book.createNewPage(false);
 
   const includeFull83 =
     Boolean(options.includeFullYasin83) && isCompleteVerifiedYasin(SURAH_YASIN_VERSES);
+  const honestYasinHeading = getHonestYasinSectionHeading(includeFull83);
 
   const sectionsToRender = PRAYER_SECTIONS.filter((s) =>
     includeFull83
@@ -608,15 +819,22 @@ export async function generateBukuYasinPdfBlob(
       : s.id === 'TAWASSUL' || s.id === 'YASIN' || s.id === 'TAHLIL' || s.id === 'DOA'
   );
 
-  for (const section of sectionsToRender) {
-    book.drawSectionBadge(section.stepLabel);
-    book.drawHeading(section.title, 28);
-    book.drawParagraph(section.subtitle, {
-      fontSize: 18,
-      fontStyle: 'italic',
-      color: '#64748B',
+  sectionsToRender.forEach((section, secIdx) => {
+    const isYasinExcerptSection = section.id === 'YASIN' && !includeFull83;
+    const effectiveBadge = isYasinExcerptSection
+      ? honestYasinHeading.stepLabel
+      : section.stepLabel;
+    const effectiveTitle = isYasinExcerptSection
+      ? honestYasinHeading.title
+      : section.title;
+
+    book.drawSectionHeader({
+      badge: effectiveBadge,
+      title: effectiveTitle,
+      subtitle: section.subtitle,
+      titleFontSize: isYasinExcerptSection ? 25 : 28,
+      minFirstBlockHeight: 160,
     });
-    book.addVerticalGap(6);
 
     for (const arabicLine of section.arabicLines) {
       book.drawArabicBlock(arabicLine, 35);
@@ -642,12 +860,16 @@ export async function generateBukuYasinPdfBlob(
       fontSize: 19,
       color: '#475569',
     });
-    book.drawDivider();
 
     // Inject full 83-verse Surah Yasin right after Tawassul when complete & requested
     if (section.id === 'TAWASSUL' && includeFull83) {
-      book.drawSectionBadge('Surah Yasin Lengkap (83 Ayat)');
-      book.drawHeading('Surah Yasin — QS. Yasin: 1–83', 28);
+      book.drawDivider();
+      book.drawSectionHeader({
+        badge: honestYasinHeading.stepLabel,
+        title: honestYasinHeading.title,
+        titleFontSize: 28,
+        minFirstBlockHeight: 160,
+      });
       book.drawArabicBlock('بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيمِ', 36);
       for (const ayah of SURAH_YASIN_VERSES) {
         book.drawArabicBlock(`${ayah.arabic} ﴿${ayah.number}﴾`, 34);
@@ -661,9 +883,12 @@ export async function generateBukuYasinPdfBlob(
           color: '#475569',
         });
       }
+    }
+
+    if (secIdx < sectionsToRender.length - 1) {
       book.drawDivider();
     }
-  }
+  });
 
   return renderPagesToPdfBlob(book.finalizePagesWithFooters(), 'a5');
 }

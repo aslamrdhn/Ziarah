@@ -64,13 +64,14 @@ service cloud.firestore {
     function isValidDonation(data) {
       return data.keys().hasOnly([
           'id', 'programId', 'programTitle', 'siteId', 'siteName', 'amount',
-          'donorName', 'isAnonymous', 'paymentMethod', 'hasProof', 'referenceCode',
+          'donorName', 'isAnonymous', 'showPublicly', 'paymentMethod', 'hasProof', 'referenceCode',
           'doaHajat', 'authorUid', 'status', 'createdAt', 'aamiinCount', 'updatedAt',
           'consentAkad', 'consentVersion', 'consentAt'
         ]) &&
         data.programId is string && data.programId.size() >= 1 && data.programId.size() <= 100 &&
         data.amount is number && data.amount >= 2000 && data.amount <= 1000000000 &&
         data.donorName is string && data.donorName.size() >= 1 && data.donorName.size() <= 100 &&
+        (!('showPublicly' in data) || data.showPublicly is bool) &&
         data.hasProof == true &&
         !('proofImageUrl' in data) &&
         data.consentAkad == true &&
@@ -179,14 +180,13 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isValidId(entryId)
         && incoming().keys().hasAll(['weekKey', 'displayName', 'createdAt'])
-        && incoming().keys().hasOnly(['weekKey', 'displayName', 'note', 'createdAt'])
+        && incoming().keys().hasOnly(['weekKey', 'displayName', 'createdAt'])
         && incoming().weekKey is string
         && incoming().weekKey.size() >= 6
         && incoming().weekKey.size() <= 16
         && incoming().displayName is string
         && incoming().displayName.size() >= 1
         && incoming().displayName.size() <= 60
-        && (!('note' in incoming()) || (incoming().note is string && incoming().note.size() <= 160))
         && incoming().createdAt == request.time;
       allow update, delete: if isAdmin() && isValidId(entryId);
     }

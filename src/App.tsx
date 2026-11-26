@@ -43,7 +43,7 @@ const LingkarDoaJumat = lazyWithRetry(() => import('./views/LingkarDoaJumat').th
 import type { ZiarahSite } from './data/sites';
 import type { ZiarahArticle } from './data/articles';
 import { TOTAL_SITES_COUNT, TOTAL_PROVINCES_COUNT } from './lib/catalogMeta';
-import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate, Link } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { SiteProvider } from './context/SiteContext';
 import { findSiteByParam, getSitePath, formatMakamHeading } from './lib/siteSlugs';
@@ -790,6 +790,7 @@ export default function App() {
               <Route path="/kebijakan-kurasi" element={<KebijakanKurasi />} />
               <Route path="/admin" element={<AdminKurator />} />
               <Route path="/kurator-admin" element={<AdminKurator />} />
+              <Route path="/kurator" element={<Navigate to="/admin" replace />} />
               <Route
                 path="*"
                 element={

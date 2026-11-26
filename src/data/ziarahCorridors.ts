@@ -91,7 +91,7 @@ export const ZIARAH_CORRIDORS: readonly ZiarahCorridor[] = [
   {
     slug: 'jalur-ulama-habaib-jakarta-banten',
     title: 'Koridor 2: Jalur Ulama & Habaib Jakarta–Banten',
-    subtitle: '10 Maqbarah Terverifikasi Pesisir Batavia, Betawi & Kesultanan Banten',
+    subtitle: '10 Maqbarah Pilihan Kurator Pesisir Batavia, Betawi & Kesultanan Banten',
     regionSummary: 'Jakarta Utara • Jakarta Pusat • Jakarta Selatan • Jakarta Timur • Banten Lama • Pandeglang • Serang',
     recommendedDaysLabel: 'Rekomendasi 1–2 Hari Perjalanan Keluarga / Majelis',
     recommendedDonationAmount: 20000,

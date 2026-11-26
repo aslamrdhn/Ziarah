@@ -52,13 +52,6 @@ export const PanduanRuteZiarah: React.FC = () => {
   const [groupName, setGroupName] = useState<string>('');
   const [departureDateLabel, setDepartureDateLabel] = useState<string>('');
 
-  const [isBookUnlocked, setIsBookUnlocked] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(STORAGE_CORRIDOR_UNLOCK_KEY) === 'true';
-    } catch {
-      return false;
-    }
-  });
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfNotice, setPdfNotice] = useState<string | null>(null);
   const isRestrictedEnv = useMemo(() => isRestrictedWebViewOrIframe(), []);
@@ -67,9 +60,7 @@ export const PanduanRuteZiarah: React.FC = () => {
   const [donationTiers, setDonationTiers] = useState<DonationTier[]>(
     initialInfaqConfig.donationTiers
   );
-  const [selectedDonationAmount, setSelectedDonationAmount] = useState<
-    20000 | 30000
-  >(30000);
+  const [selectedDonationAmount, setSelectedDonationAmount] = useState<number>(30000);
   const [bankInfo, setBankInfo] = useState({
     bankName: initialInfaqConfig.bankName,
     accountNumber: initialInfaqConfig.accountNumber,
@@ -85,6 +76,9 @@ export const PanduanRuteZiarah: React.FC = () => {
   const [senderAccount, setSenderAccount] = useState('');
   const [receipt, setReceipt] = useState<CompressedReceiptResult | null>(null);
   const [agreedToAkad, setAgreedToAkad] = useState(false);
+  const [isSubmittingInfaq, setIsSubmittingInfaq] = useState(false);
+  const [infaqNotice, setInfaqNotice] = useState<string | null>(null);
+  const [infaqError, setInfaqError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -182,40 +176,53 @@ export const PanduanRuteZiarah: React.FC = () => {
     });
   }, [bankInfo, groupName, senderAccount, selectedDonationAmount, activeCorridor]);
 
-  const recordRouteBookDonation = async () => {
-    if (receipt && receipt.dataUrl) {
+  const handleVoluntaryInfaqSubmit = async () => {
+    if (!agreedToAkad || !receipt || isSubmittingInfaq) return;
+    setIsSubmittingInfaq(true);
+    setInfaqError(null);
+    setInfaqNotice(null);
+    try {
       try {
-        const cleanDonor =
-          groupName.trim() || senderAccount.trim() || 'Rombongan Peziarah';
-        const donationId = await submitDonationWithPrivateProof({
-          programId: 'panduan-rute-ziarah',
-          programTitle: `Buku Saku Rute Ziarah: ${activeCorridor.title}`.slice(
-            0,
-            150
-          ),
-          siteId: activeCorridor.slug,
-          siteName: activeCorridor.title,
-          amount: selectedDonationAmount,
-          donorName: cleanDonor,
-          paymentMethod,
-          senderAccount: senderAccount.trim() || cleanDonor,
-          receipt,
-          isAnonymous: !groupName.trim(),
-          showPublicly: Boolean(groupName.trim()),
-          consentAkad: true,
-          consentVersion: '2026-11-25',
-          consentAt: new Date().toISOString(),
-          doaHajat: `Ikhtiar perjalanan ziarah rombongan (${activeCorridor.title})`,
-        });
-        saveVerifiedDonationRecord({
-          donationId,
-          siteId: activeCorridor.slug,
-          programId: 'panduan-rute-ziarah',
-          amount: selectedDonationAmount,
-        });
-      } catch {
-        // Keep unlocked locally even if offline
-      }
+        localStorage.setItem(STORAGE_CORRIDOR_UNLOCK_KEY, 'true');
+      } catch {}
+      const cleanDonor = senderAccount.trim() || 'Rombongan Peziarah';
+      const donationId = await submitDonationWithPrivateProof({
+        programId: 'panduan-rute-ziarah',
+        programTitle: `Infaq Sukarela Buku Saku Rute: ${activeCorridor.title}`.slice(
+          0,
+          150
+        ),
+        siteId: activeCorridor.slug,
+        siteName: activeCorridor.title,
+        amount: activeTier.amount,
+        donorName: cleanDonor,
+        paymentMethod,
+        senderAccount: cleanDonor,
+        receipt,
+        isAnonymous: true,
+        showPublicly: false,
+        consentAkad: agreedToAkad,
+        consentVersion: '2026-11-26',
+        consentAt: new Date().toISOString(),
+        doaHajat: `Infaq sukarela pemeliharaan peta & buku saku rute (${activeCorridor.title})`,
+      });
+      saveVerifiedDonationRecord({
+        donationId,
+        siteId: activeCorridor.slug,
+        programId: 'panduan-rute-ziarah',
+        amount: activeTier.amount,
+      });
+      setInfaqNotice(
+        `Alhamdulillah, bukti infaq sukarela Anda (#${receipt.referenceCode}) telah tercatat di sistem verifikasi Dewan Kurator.`
+      );
+      setReceipt(null);
+      setAgreedToAkad(false);
+    } catch (err: any) {
+      setInfaqError(
+        err?.message || 'Gagal mengirim bukti infaq sukarela. Silakan coba lagi.'
+      );
+    } finally {
+      setIsSubmittingInfaq(false);
     }
   };
 
@@ -267,17 +274,12 @@ export const PanduanRuteZiarah: React.FC = () => {
   };
 
   const handleDownloadRoutePdf = async () => {
-    setIsBookUnlocked(true);
-    try {
-      localStorage.setItem(STORAGE_CORRIDOR_UNLOCK_KEY, 'true');
-    } catch {}
     setIsGeneratingPdf(true);
     setPdfNotice(null);
     try {
       const { blob, filename } = await buildCurrentRoutePdfBlob();
       await downloadBlobFile(blob, filename);
-      setPdfNotice(`Berkas ${filename} berhasil diunduh ke perangkat Anda.`);
-      void recordRouteBookDonation();
+      setPdfNotice(`Berkas ${filename} berhasil diunduh gratis ke perangkat Anda.`);
     } catch (err: any) {
       setPdfNotice(err?.message || 'Gagal menyiapkan berkas PDF.');
     } finally {
@@ -286,10 +288,6 @@ export const PanduanRuteZiarah: React.FC = () => {
   };
 
   const handleShareRoutePdf = async () => {
-    setIsBookUnlocked(true);
-    try {
-      localStorage.setItem(STORAGE_CORRIDOR_UNLOCK_KEY, 'true');
-    } catch {}
     setIsGeneratingPdf(true);
     setPdfNotice(null);
     try {
@@ -300,7 +298,6 @@ export const PanduanRuteZiarah: React.FC = () => {
         `Buku Saku Rute Ziarah — ${activeCorridor.title}`
       );
       setPdfNotice(`Berkas ${filename} siap disimpan atau dibagikan.`);
-      void recordRouteBookDonation();
     } catch (err: any) {
       setPdfNotice(err?.message || 'Gagal membagikan berkas PDF.');
     } finally {
@@ -309,14 +306,9 @@ export const PanduanRuteZiarah: React.FC = () => {
   };
 
   const handleDirectPrint = () => {
-    setIsBookUnlocked(true);
-    try {
-      localStorage.setItem(STORAGE_CORRIDOR_UNLOCK_KEY, 'true');
-    } catch {}
     if (typeof window !== 'undefined' && typeof window.print === 'function') {
       window.print();
     }
-    void recordRouteBookDonation();
   };
 
   return (
@@ -350,16 +342,17 @@ export const PanduanRuteZiarah: React.FC = () => {
             <span>BUKU SAKU RUTE ZIARAH KELUARGA &amp; ROMBONGAN</span>
           </div>
           <h1 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight">
-            3 Koridor Ziarah Terverifikasi untuk Pegangan di Perjalanan &amp; Bus Rombongan
+            3 Koridor Pilihan Kurator untuk Pegangan di Perjalanan &amp; Bus Rombongan
           </h1>
           <p className="mt-2.5 text-sm sm:text-base text-emerald-50/90 max-w-3xl leading-relaxed">
-            Pilih koridor perjalanan, bagikan urutan titik Google Maps secara gratis ke grup
-            WhatsApp jamaah, atau cetak Buku Saku PDF lengkap berisi sejarah sahih, wirid khusus
-            tiap maqbarah, dan referensi literatur resmi.
+            Pilih koridor perjalanan pilihan kurator, bagikan urutan titik Google Maps secara gratis
+            ke grup WhatsApp jamaah, atau unduh Buku Saku PDF gratis berisi sejarah, wirid khusus
+            tiap maqbarah, dan referensi literatur. Status verifikasi jadwal haul &amp; foto
+            mengikuti indikator masing-masing situs makam.
           </p>
         </header>
 
-        {/* Pilihan 3 Koridor Terverifikasi */}
+        {/* Pilihan 3 Koridor Pilihan Kurator */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {ZIARAH_CORRIDORS.map((corridor) => {
             const isSelected = corridor.slug === activeCorridor.slug;
@@ -473,7 +466,13 @@ export const PanduanRuteZiarah: React.FC = () => {
             </div>
           </div>
 
-          {/* Daftar Titik Maqbarah Terverifikasi */}
+          {/* Daftar Titik Maqbarah Koridor Pilihan Kurator */}
+          <div className="rounded-xl bg-[#FAF8F5] border border-stone-200 px-4 py-2.5 text-xs text-stone-600">
+            <strong>Keterangan Kurasi:</strong> Rute di bawah ini merupakan{' '}
+            <strong>Koridor Pilihan Kurator</strong>. Status verifikasi jadwal haul dan provenans
+            foto mengikuti indikator masing-masing situs makam.
+          </div>
+
           <div className="space-y-3">
             {resolvedStops.map((item) => {
               const doaList = getEffectiveSiteDoaKhusus(item.site);
@@ -506,7 +505,7 @@ export const PanduanRuteZiarah: React.FC = () => {
                         <span>•</span>
                         <span>{doaList.length} Bacaan Doa/Wirid Khusus</span>
                         <span>•</span>
-                        <span>{item.referencesCount} Referensi Terverifikasi</span>
+                        <span>{item.referencesCount} Referensi Literatur</span>
                       </div>
                     </div>
                   </div>
@@ -529,21 +528,21 @@ export const PanduanRuteZiarah: React.FC = () => {
           </div>
         </div>
 
-        {/* BUKU SAKU CETAK PDF UNTUK ROMBONGAN (INFAQ QRIS RP 20.000 / RP 30.000) */}
-        <div className="rounded-3xl bg-white border-2 border-emerald-900/30 p-6 sm:p-8 shadow-sm space-y-6">
+        {/* UNDUH GRATIS BUKU SAKU PDF UNTUK ROMBONGAN */}
+        <div className="rounded-3xl bg-white border-2 border-emerald-900/30 p-6 sm:p-8 shadow-sm space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-5">
             <div>
               <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-900">
-                <Heart className="w-3.5 h-3.5" />
-                <span>Pegangan Ketua Rombongan &amp; Jamaah Bus</span>
+                <Download className="w-3.5 h-3.5" />
+                <span>Pegangan Ketua Rombongan &amp; Jamaah Bus — 100% Gratis</span>
               </span>
               <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mt-1">
-                Cetak Buku Saku Rute Ziarah Lengkap (PDF)
+                Unduh Buku Saku Rute Ziarah Gratis (PDF)
               </h2>
               <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl leading-relaxed">
-                Mencetak dokumen Buku Saku lengkap berisi Sampul Rombongan, 6 Adab Ziarah Sunnah,
-                Sejarah &amp; Hikmah Keteladanan untuk dibacakan di dalam bus, Doa/Wirid Khusus
-                Arab–Latin tiap maqbarah, serta daftar pustaka terverifikasi.
+                Unduh gratis dokumen Buku Saku lengkap berisi Sampul Rombongan, 6 Adab Ziarah
+                Sunnah, Sejarah &amp; Hikmah Keteladanan untuk dibacakan di dalam bus, Doa/Wirid
+                Khusus Arab–Latin tiap maqbarah, serta daftar pustaka rujukan.
               </p>
             </div>
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-900 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl shrink-0">
@@ -552,48 +551,115 @@ export const PanduanRuteZiarah: React.FC = () => {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {([20000, 30000] as const).map((amt) => {
-              const tierObj = donationTiers.find((t) => t.amount === amt);
-              const isSelected = selectedDonationAmount === amt;
-              return (
-                <button
-                  key={amt}
-                  type="button"
-                  onClick={() => setSelectedDonationAmount(amt)}
-                  className={`p-4 rounded-2xl border text-left transition-colors cursor-pointer ${
-                    isSelected
-                      ? 'bg-emerald-950 text-white border-emerald-950'
-                      : 'bg-[#FAF8F5] text-stone-900 border-stone-300 hover:border-emerald-800'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold">
-                      Rp {amt.toLocaleString('id-ID')}
+          <div className="space-y-2.5">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={handleDownloadRoutePdf}
+                disabled={isGeneratingPdf}
+                className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-sm font-bold transition-colors cursor-pointer bg-[#064E3B] hover:bg-emerald-950 text-white disabled:opacity-60"
+              >
+                {isGeneratingPdf ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Menyiapkan PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    <span>
+                      Unduh File PDF Gratis (.PDF) — {activeCorridor.title}
                     </span>
-                    <span
-                      className={`text-xs font-semibold px-2.5 py-0.5 rounded-md ${
-                        isSelected
-                          ? 'bg-emerald-800 text-emerald-100'
-                          : 'bg-stone-200 text-stone-700'
-                      }`}
-                    >
-                      {tierObj?.label ||
-                        (amt === 30000 ? 'Sahabat Ziarah' : 'Server & Peta')}
-                    </span>
-                  </div>
-                  <p
-                    className={`text-xs mt-1 ${
-                      isSelected ? 'text-emerald-100' : 'text-stone-600'
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={handleShareRoutePdf}
+                disabled={isGeneratingPdf}
+                className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Bagikan / Simpan ke HP</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDirectPrint}
+                className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:bg-stone-100 text-stone-800 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Cetak Langsung (Printer)</span>
+              </button>
+            </div>
+
+            {pdfNotice && (
+              <p className="text-xs font-medium text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl px-3.5 py-2">
+                {pdfNotice}
+              </p>
+            )}
+
+            {isRestrictedEnv && (
+              <p className="text-[11px] text-stone-600 leading-relaxed">
+                Jika unduhan tertahan oleh browser in-app, ketuk tombol{' '}
+                <strong>Bagikan / Simpan ke HP</strong> atau buka di Chrome/Safari.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* KARTU INFAQ SUKARELA · OPSIONAL (TERPISAH DARI UNDUHAN PDF) */}
+        <div className="rounded-3xl bg-white border border-stone-200/90 p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="border-b border-stone-200 pb-5">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-900">
+              <Heart className="w-3.5 h-3.5" />
+              <span>Infaq Sukarela · Opsional</span>
+            </span>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mt-1">
+              Dukung Operasional Arsip (Infaq Sukarela · Opsional)
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-600 mt-2 leading-relaxed">
+              Unduhan PDF di atas 100% gratis. Jika merasa terbantu, Anda dapat menyalurkan infaq
+              sukarela untuk biaya server, pemeliharaan peta interaktif, dan riset arsip 183
+              maqbarah Nusantara.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-stone-700 mb-2">
+              Pilih Nominal Infaq Sukarela (QRIS Nominal Pasti):
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {donationTiers.map((tier) => {
+                const isSelected = activeTier.amount === tier.amount;
+                return (
+                  <button
+                    key={tier.amount}
+                    type="button"
+                    onClick={() => setSelectedDonationAmount(tier.amount)}
+                    className={`p-3.5 rounded-2xl border text-left transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-950 text-white border-emerald-950'
+                        : 'bg-[#FAF8F5] text-stone-900 border-stone-300 hover:border-emerald-800'
                     }`}
                   >
-                    {amt === 20000
-                      ? 'Infaq Buku Saku Rute Koridor Regional & Pemeliharaan Peta'
-                      : 'Infaq Buku Saku Rute + Dukungan Penuh Riset Sanad 183 Maqbarah'}
-                  </p>
-                </button>
-              );
-            })}
+                    <div className="text-sm font-bold tabular-nums">
+                      Rp {tier.amount.toLocaleString('id-ID')}
+                    </div>
+                    <div
+                      className={`text-xs mt-0.5 ${
+                        isSelected ? 'text-emerald-100' : 'text-stone-600'
+                      }`}
+                    >
+                      {tier.label}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {paymentMethod === 'QRIS' ? (
@@ -614,7 +680,7 @@ export const PanduanRuteZiarah: React.FC = () => {
               </p>
               <p className="text-xs text-stone-700">
                 a.n. {bankInfo.accountHolder} • Nominal: Rp{' '}
-                {selectedDonationAmount.toLocaleString('id-ID')}
+                {activeTier.amount.toLocaleString('id-ID')}
               </p>
             </div>
           )}
@@ -631,81 +697,55 @@ export const PanduanRuteZiarah: React.FC = () => {
             requiredForUnlock={false}
           />
 
-          <div className="space-y-2.5">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={handleDownloadRoutePdf}
-                disabled={isGeneratingPdf || (!agreedToAkad && !receipt && !isBookUnlocked)}
-                className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-sm font-bold transition-colors cursor-pointer ${
-                  agreedToAkad || receipt || isBookUnlocked
-                    ? 'bg-[#064E3B] hover:bg-emerald-950 text-white'
-                    : 'bg-stone-200 text-stone-500 cursor-not-allowed'
-                } disabled:opacity-60`}
-              >
-                {isGeneratingPdf ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Menyiapkan PDF...</span>
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    <span>
-                      {isBookUnlocked
-                        ? `Unduh File PDF (.PDF) — ${activeCorridor.title}`
-                        : `Unduh File PDF (.PDF) Rute (Infaq Rp ${selectedDonationAmount.toLocaleString('id-ID')})`}
-                    </span>
-                  </>
-                )}
-              </button>
+          {infaqError && (
+            <p className="text-xs font-medium text-rose-800 bg-rose-50 border border-rose-200 rounded-xl px-3.5 py-2.5">
+              {infaqError}
+            </p>
+          )}
 
-              {confirmDonationWaUrl && (
-                <a
-                  href={confirmDonationWaUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-emerald-800 text-emerald-900 hover:bg-emerald-50 text-xs sm:text-sm font-semibold transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Konfirmasi via WhatsApp</span>
-                </a>
+          {infaqNotice && (
+            <p className="text-xs font-medium text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl px-3.5 py-2.5">
+              {infaqNotice}
+            </p>
+          )}
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+            <button
+              type="button"
+              onClick={handleVoluntaryInfaqSubmit}
+              disabled={!agreedToAkad || !receipt || isSubmittingInfaq}
+              className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-sm font-bold transition-colors ${
+                !agreedToAkad || !receipt || isSubmittingInfaq
+                  ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
+                  : 'bg-[#064E3B] hover:bg-emerald-950 text-white cursor-pointer'
+              }`}
+            >
+              {isSubmittingInfaq ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Mengirim Bukti Infaq Sukarela...</span>
+                </>
+              ) : (
+                <>
+                  <Heart className="w-4 h-4" />
+                  <span>
+                    Kirim Bukti Infaq Sukarela (Rp{' '}
+                    {activeTier.amount.toLocaleString('id-ID')})
+                  </span>
+                </>
               )}
-            </div>
+            </button>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <button
-                type="button"
-                onClick={handleShareRoutePdf}
-                disabled={isGeneratingPdf || (!agreedToAkad && !receipt && !isBookUnlocked)}
-                className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            {confirmDonationWaUrl && (
+              <a
+                href={confirmDonationWaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-emerald-800 text-emerald-900 hover:bg-emerald-50 text-xs sm:text-sm font-semibold transition-colors"
               >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>Bagikan / Simpan ke HP</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDirectPrint}
-                disabled={!agreedToAkad && !receipt && !isBookUnlocked}
-                className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:bg-stone-100 text-stone-800 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Cetak Langsung (Printer)</span>
-              </button>
-            </div>
-
-            {pdfNotice && (
-              <p className="text-xs font-medium text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl px-3.5 py-2">
-                {pdfNotice}
-              </p>
-            )}
-
-            {isRestrictedEnv && (
-              <p className="text-[11px] text-stone-600 leading-relaxed">
-                Jika unduhan tertahan oleh browser in-app, ketuk tombol{' '}
-                <strong>Bagikan / Simpan ke HP</strong> atau buka di Chrome/Safari.
-              </p>
+                <MessageCircle className="w-4 h-4" />
+                <span>Konfirmasi via WhatsApp</span>
+              </a>
             )}
           </div>
         </div>

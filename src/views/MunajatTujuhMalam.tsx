@@ -5,11 +5,9 @@ import {
   Check,
   ShieldCheck,
   Printer,
-  Lock,
   ArrowRight,
   MessageCircle,
   Heart,
-  FileText,
   Download,
   Share2,
   Loader2,
@@ -96,14 +94,6 @@ export const MunajatTujuhMalam: React.FC = () => {
     return [];
   });
 
-  const [isFullUnlocked, setIsFullUnlocked] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(STORAGE_UNLOCK_KEY) === 'true';
-    } catch {
-      return false;
-    }
-  });
-
   const [printMode, setPrintMode] = useState<'day1' | 'all7'>('all7');
   const [isGeneratingPdfMode, setIsGeneratingPdfMode] = useState<'day1' | 'all7' | null>(
     null
@@ -111,14 +101,12 @@ export const MunajatTujuhMalam: React.FC = () => {
   const [pdfNotice, setPdfNotice] = useState<string | null>(null);
   const isRestrictedEnv = useMemo(() => isRestrictedWebViewOrIframe(), []);
 
-  // Infaq / Unlock configuration state synced with AdminKurator settings/infaq
+  // Optional Voluntary Infaq configuration state synced with AdminKurator settings/infaq
   const initialInfaqConfig = useMemo(() => getCachedOrDefaultInfaqConfig(), []);
   const [donationTiers, setDonationTiers] = useState<DonationTier[]>(
     initialInfaqConfig.donationTiers
   );
-  const [selectedUnlockAmount, setSelectedUnlockAmount] = useState<15000 | 30000>(
-    15000
-  );
+  const [selectedInfaqAmount, setSelectedInfaqAmount] = useState<number>(15000);
   const [bankInfo, setBankInfo] = useState({
     bankName: initialInfaqConfig.bankName,
     accountNumber: initialInfaqConfig.accountNumber,
@@ -134,7 +122,9 @@ export const MunajatTujuhMalam: React.FC = () => {
   const [senderAccount, setSenderAccount] = useState('');
   const [receipt, setReceipt] = useState<CompressedReceiptResult | null>(null);
   const [agreedToAkad, setAgreedToAkad] = useState(false);
-  const [unlockNotice, setUnlockNotice] = useState<string | null>(null);
+  const [isSubmittingInfaq, setIsSubmittingInfaq] = useState(false);
+  const [infaqNotice, setInfaqNotice] = useState<string | null>(null);
+  const [infaqError, setInfaqError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -189,15 +179,14 @@ export const MunajatTujuhMalam: React.FC = () => {
 
   const activeTier = useMemo(() => {
     return (
-      donationTiers.find((t) => t.amount === selectedUnlockAmount) || {
-        amount: selectedUnlockAmount,
-        label:
-          selectedUnlockAmount === 30000
-            ? 'Sahabat Ziarah'
-            : 'Riset Sanad',
+      donationTiers.find((t) => t.amount === selectedInfaqAmount) ||
+      donationTiers.find((t) => t.amount === 15000) ||
+      donationTiers[0] || {
+        amount: 15000,
+        label: 'Riset Sanad',
       }
     );
-  }, [donationTiers, selectedUnlockAmount]);
+  }, [donationTiers, selectedInfaqAmount]);
 
   const sitePathById = useMemo(() => {
     const map = new Map<string, string>();
@@ -209,51 +198,50 @@ export const MunajatTujuhMalam: React.FC = () => {
     return map;
   }, [ziarahSites]);
 
-  const handleUnlockComplete = async () => {
-    setIsFullUnlocked(true);
+  const handleVoluntaryInfaqSubmit = async () => {
+    if (!agreedToAkad || !receipt || isSubmittingInfaq) return;
+    setIsSubmittingInfaq(true);
+    setInfaqError(null);
+    setInfaqNotice(null);
     try {
-      localStorage.setItem(STORAGE_UNLOCK_KEY, 'true');
-    } catch {}
-    setUnlockNotice(
-      receipt
-        ? `Alhamdulillah, Buku Saku Panduan Munajat 7 Malam telah terbuka penuh dan bukti transfer Anda (#${receipt.referenceCode}) sedang dicatat ke sistem verifikasi Dewan Kurator.`
-        : 'Alhamdulillah, Buku Saku Panduan Munajat 7 Malam (Malam ke-1 s/d ke-7) telah terbuka sepenuhnya di perangkat Anda.'
-    );
-
-    if (receipt && receipt.dataUrl) {
       try {
-        const cleanDonor =
-          personalPrefs.personalName.trim() ||
-          senderAccount.trim() ||
-          'Hamba Allah';
-        const donationId = await submitDonationWithPrivateProof({
-          programId: 'buku-saku-munajat-7-malam',
-          programTitle: 'Buku Saku Panduan Munajat 7 Malam',
-          siteId: 'munajat-7-malam',
-          siteName: 'Panduan Munajat & Muhasabah 7 Malam',
-          amount: selectedUnlockAmount,
-          donorName: cleanDonor,
-          paymentMethod,
-          senderAccount: senderAccount.trim() || cleanDonor,
-          receipt,
-          isAnonymous: !personalPrefs.personalName.trim(),
-          showPublicly: Boolean(personalPrefs.personalName.trim()),
-          consentAkad: true,
-          consentVersion: '2026-11-25',
-          consentAt: new Date().toISOString(),
-          doaHajat:
-            personalPrefs.personalReflectionNote.trim() ||
-            'Ikhtiar batin & munajat 7 malam keluarga.',
-        });
-        saveVerifiedDonationRecord({
-          donationId,
-          siteId: 'munajat-7-malam',
-          programId: 'buku-saku-munajat-7-malam',
-          amount: selectedUnlockAmount,
-        });
-      } catch {
-        // Keep unlocked locally even if offline
-      }
+        localStorage.setItem(STORAGE_UNLOCK_KEY, 'true');
+      } catch {}
+      const cleanDonor = senderAccount.trim() || 'Hamba Allah';
+      const donationId = await submitDonationWithPrivateProof({
+        programId: 'buku-saku-munajat-7-malam',
+        programTitle: 'Infaq Sukarela Buku Saku Panduan Munajat 7 Malam',
+        siteId: 'munajat-7-malam',
+        siteName: 'Panduan Munajat & Muhasabah 7 Malam',
+        amount: activeTier.amount,
+        donorName: cleanDonor,
+        paymentMethod,
+        senderAccount: cleanDonor,
+        receipt,
+        isAnonymous: true,
+        showPublicly: false,
+        consentAkad: agreedToAkad,
+        consentVersion: '2026-11-26',
+        consentAt: new Date().toISOString(),
+        doaHajat: 'Infaq sukarela pemeliharaan digital & panduan Munajat 7 Malam.',
+      });
+      saveVerifiedDonationRecord({
+        donationId,
+        siteId: 'munajat-7-malam',
+        programId: 'buku-saku-munajat-7-malam',
+        amount: activeTier.amount,
+      });
+      setInfaqNotice(
+        `Alhamdulillah, bukti infaq sukarela Anda (#${receipt.referenceCode}) telah tercatat di sistem verifikasi Dewan Kurator.`
+      );
+      setReceipt(null);
+      setAgreedToAkad(false);
+    } catch (err: any) {
+      setInfaqError(
+        err?.message || 'Gagal mengirim bukti infaq sukarela. Silakan coba lagi.'
+      );
+    } finally {
+      setIsSubmittingInfaq(false);
     }
   };
 
@@ -319,20 +307,15 @@ export const MunajatTujuhMalam: React.FC = () => {
   const whatsappConfirmUrl = useMemo(() => {
     return buildWhatsappConfirmUrl({
       whatsappNumber: bankInfo.whatsappConfirmNumber,
-      donorName: personalPrefs.personalName || senderAccount || 'Hamba Allah',
-      amount: selectedUnlockAmount,
-      programTitle: 'Buku Saku Panduan Munajat 7 Malam',
+      donorName: senderAccount.trim() || 'Hamba Allah',
+      amount: activeTier.amount,
+      programTitle: 'Infaq Sukarela Buku Saku Panduan Munajat 7 Malam',
       siteName: 'Khazanah Wirid & Hikmah Ulama Nusantara',
       bankName: bankInfo.bankName,
       accountNumber: bankInfo.accountNumber,
       template: bankInfo.whatsappMessageTemplate,
     });
-  }, [
-    bankInfo,
-    personalPrefs.personalName,
-    senderAccount,
-    selectedUnlockAmount,
-  ]);
+  }, [bankInfo, senderAccount, activeTier.amount]);
 
   const night1 = MUNAJAT_7_MALAM[0];
   const nights2To7 = MUNAJAT_7_MALAM.slice(1);
@@ -596,334 +579,248 @@ export const MunajatTujuhMalam: React.FC = () => {
           </div>
         </div>
 
-        {/* MALAM KE-1: 100% TERBUKA & GRATIS */}
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-900">
-                Akses Terbuka Gratis • Malam Pertama
-              </span>
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
-                Mulai Amalan Malam ke-1 Sekarang
-              </h2>
-            </div>
+        {/* UNDUH GRATIS BUKU SAKU PDF 7 MALAM LENGKAP & MALAM KE-1 */}
+        <div className="rounded-2xl bg-emerald-900 text-white p-6 sm:p-8 space-y-4">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-200">
+              Akses Terbuka 100% Gratis • Malam ke-1 s/d Malam ke-7
+            </span>
+            <h2 className="font-serif text-xl sm:text-2xl font-bold mt-1">
+              Unduh Buku Saku PDF Munajat 7 Malam Secara Gratis
+            </h2>
+            <p className="text-xs sm:text-sm text-emerald-100 mt-1 leading-relaxed">
+              Seluruh kurikulum 7 malam beserta dokumen Buku Saku PDF ber-nama pribadi Anda dapat
+              dibaca dan diunduh 100% gratis tanpa syarat.
+            </p>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleDownloadMunajatPdf('day1')}
-                disabled={isGeneratingPdfMode !== null}
-                className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#064E3B] hover:bg-emerald-950 text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer disabled:opacity-60"
-              >
-                {isGeneratingPdfMode === 'day1' ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Menyiapkan PDF...</span>
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    <span>Unduh File PDF (.PDF) Malam ke-1</span>
-                  </>
-                )}
-              </button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => handleDownloadMunajatPdf('all7')}
+              disabled={isGeneratingPdfMode !== null}
+              className="min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-emerald-950 hover:bg-stone-100 text-xs sm:text-sm font-bold transition-colors cursor-pointer disabled:opacity-60"
+            >
+              {isGeneratingPdfMode === 'all7' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Menyiapkan PDF...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Unduh File PDF Gratis (.PDF) — 7 Malam Lengkap</span>
+                </>
+              )}
+            </button>
 
-              <button
-                type="button"
-                onClick={() => handleShareMunajatPdf('day1')}
-                disabled={isGeneratingPdfMode !== null}
-                className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-emerald-800 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>Bagikan / Simpan ke HP</span>
-              </button>
+            <button
+              type="button"
+              onClick={() => handleDownloadMunajatPdf('day1')}
+              disabled={isGeneratingPdfMode !== null}
+              className="min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-600 text-xs sm:text-sm font-semibold transition-colors cursor-pointer disabled:opacity-60"
+            >
+              {isGeneratingPdfMode === 'day1' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Menyiapkan PDF...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Unduh File PDF Gratis (.PDF) — Malam ke-1</span>
+                </>
+              )}
+            </button>
 
-              <button
-                type="button"
-                onClick={() => handleDirectPrint('day1')}
-                className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-stone-300 bg-white hover:border-emerald-800 text-xs font-semibold text-stone-800 transition-colors cursor-pointer"
-              >
-                <Printer className="w-3.5 h-3.5 text-emerald-800" />
-                <span>Cetak Langsung (Printer)</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => handleShareMunajatPdf('all7')}
+              disabled={isGeneratingPdfMode !== null}
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-600 text-xs sm:text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Bagikan / Simpan ke HP</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleDirectPrint('all7')}
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-emerald-950/60 hover:bg-emerald-950 text-emerald-100 border border-emerald-700 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Cetak Langsung (Printer)</span>
+            </button>
           </div>
 
           {pdfNotice && (
-            <p className="text-xs font-medium text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl px-3.5 py-2">
+            <p className="text-xs font-medium text-emerald-950 bg-emerald-50 border border-emerald-200 rounded-xl px-3.5 py-2">
               {pdfNotice}
             </p>
           )}
 
           {isRestrictedEnv && (
-            <p className="text-[11px] text-stone-600 leading-relaxed">
+            <p className="text-[11px] text-emerald-100 leading-relaxed">
               Jika unduhan tertahan oleh browser in-app, ketuk tombol{' '}
               <strong>Bagikan / Simpan ke HP</strong> atau buka di Chrome/Safari.
             </p>
           )}
-
-          {renderNightCard(night1, false)}
         </div>
 
-        {/* MALAM KE-2 S/D KE-7: TERKUNCI ATAU TERBUKA PENUH */}
-        {isFullUnlocked ? (
-          <div className="space-y-6 pt-4">
-            <div className="rounded-2xl bg-emerald-900 text-white p-5 sm:p-6 flex flex-col gap-4">
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-200">
-                  Buku Saku 7 Malam Aktif
-                </span>
-                <h2 className="font-serif text-xl sm:text-2xl font-bold mt-0.5">
-                  Seluruh Panduan Malam ke-1 hingga Malam ke-7 Telah Terbuka
-                </h2>
-                {unlockNotice && (
-                  <p className="text-xs sm:text-sm text-emerald-100 mt-1">
-                    {unlockNotice}
-                  </p>
-                )}
-              </div>
+        {/* RANGKAIAN LENGKAP MALAM KE-1 HINGGA MALAM KE-7 (100% TERBUKA GRATIS) */}
+        <div className="space-y-6">
+          {renderNightCard(night1, false)}
+          {nights2To7.map((item) => renderNightCard(item, false))}
+        </div>
 
-              <div className="flex flex-wrap items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => handleDownloadMunajatPdf('all7')}
-                  disabled={isGeneratingPdfMode !== null}
-                  className="min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-emerald-950 hover:bg-stone-100 text-xs sm:text-sm font-bold transition-colors cursor-pointer disabled:opacity-60"
-                >
-                  {isGeneratingPdfMode === 'all7' ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Menyiapkan PDF...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4" />
-                      <span>Unduh File PDF (.PDF) 7 Malam Lengkap</span>
-                    </>
-                  )}
-                </button>
+        {/* KARTU INFAQ SUKARELA · OPSIONAL (TERPISAH DARI UNDUHAN PDF) */}
+        <div className="rounded-3xl bg-white border border-stone-200/90 p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="border-b border-stone-200 pb-5">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-900">
+              <Heart className="w-3.5 h-3.5" />
+              <span>Infaq Sukarela · Opsional</span>
+            </span>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mt-1">
+              Dukung Operasional Arsip (Infaq Sukarela · Opsional)
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-600 mt-2 leading-relaxed">
+              Unduhan PDF di atas 100% gratis. Jika merasa terbantu, Anda dapat menyalurkan infaq
+              sukarela untuk biaya server, pemeliharaan direktori 183 maqbarah ulama Nusantara, dan
+              riset literatur sanad agar panduan doa tetap bebas iklan komersial.
+            </p>
+          </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleShareMunajatPdf('all7')}
-                  disabled={isGeneratingPdfMode !== null}
-                  className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-600 text-xs sm:text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                  <span>Bagikan / Simpan ke HP</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleDirectPrint('all7')}
-                  className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-emerald-950/60 hover:bg-emerald-950 text-emerald-100 border border-emerald-700 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>Cetak Langsung (Printer)</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {nights2To7.map((item) => renderNightCard(item, false))}
+          <div>
+            <label className="block text-xs font-semibold text-stone-700 mb-2">
+              Pilih Nominal Infaq Sukarela (QRIS Nominal Pasti):
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {donationTiers.map((tier) => {
+                const isSelected = activeTier.amount === tier.amount;
+                return (
+                  <button
+                    key={tier.amount}
+                    type="button"
+                    onClick={() => setSelectedInfaqAmount(tier.amount)}
+                    className={`p-3.5 rounded-2xl border text-left transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-950 text-white border-emerald-950'
+                        : 'bg-[#FAF8F5] text-stone-900 border-stone-300 hover:border-emerald-800'
+                    }`}
+                  >
+                    <div className="text-sm font-bold tabular-nums">
+                      Rp {tier.amount.toLocaleString('id-ID')}
+                    </div>
+                    <div
+                      className={`text-xs mt-0.5 ${
+                        isSelected ? 'text-emerald-100' : 'text-stone-600'
+                      }`}
+                    >
+                      {tier.label}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
-        ) : (
-          <div className="space-y-6 pt-4">
-            {/* Ringkasan Jujur Malam 2 s/d 7 */}
-            <div className="rounded-2xl bg-white border border-stone-200/90 p-6 sm:p-8 space-y-5">
-              <div className="flex items-start justify-between gap-4">
+
+          {paymentMethod === 'QRIS' ? (
+            <QrisPaymentCard
+              qrisPayload={bankInfo.qrisPayload}
+              selectedAmount={activeTier.amount}
+              tierLabel={activeTier.label}
+              customTierQrisPayload={activeTier.customQrisPayload}
+              customTierQrisImageUrl={activeTier.customQrisImageUrl}
+            />
+          ) : (
+            <div className="rounded-2xl border border-stone-200 bg-[#FAF8F5] p-5 space-y-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">
+                Transfer Rekening Resmi Pemeliharaan Digital
+              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-4 rounded-xl border border-stone-200">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                    Pratinjau Kurikulum 6 Malam Berikutnya
-                  </span>
-                  <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-900 mt-1">
-                    Rangkaian Malam ke-2 hingga Malam ke-7
-                  </h2>
-                  <p className="text-xs sm:text-sm text-stone-600 mt-1">
-                    Setiap malam dilengkapi teks Arab berharakat lengkap, transliterasi Latin,
-                    sumber ayat/hadits sahih, refleksi keteladanan ulama Nusantara, dan langkah
-                    ikhtiar nyata esok hari.
+                  <p className="text-xs text-stone-500">{bankInfo.bankName}</p>
+                  <p className="text-lg font-mono font-bold text-stone-900">
+                    {bankInfo.accountNumber}
+                  </p>
+                  <p className="text-xs text-stone-700">
+                    a.n. {bankInfo.accountHolder}
                   </p>
                 </div>
-                <Lock className="w-5 h-5 text-stone-400 shrink-0 mt-1" />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {nights2To7.map((item) => (
-                  <div
-                    key={item.day}
-                    className="rounded-xl border border-stone-200 bg-[#FAF8F5] p-4 flex flex-col justify-between gap-2"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-emerald-900">
-                          Malam ke-{item.day}
-                        </span>
-                        <span className="text-[11px] font-medium text-stone-600">
-                          {item.sourceRef}
-                        </span>
-                      </div>
-                      <h3 className="font-serif text-base font-bold text-stone-900 mt-1">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-stone-600 mt-1">
-                        Teladan: {item.relatedUlamaName} — {item.relatedWisdomTitle}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Kartu Buka Paket Utuh 7 Malam + Cetak Buku Saku PDF */}
-            <div className="rounded-3xl bg-white border-2 border-emerald-900/30 p-6 sm:p-8 shadow-sm space-y-6">
-              <div className="border-b border-stone-200 pb-5">
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-900">
-                  <Heart className="w-3.5 h-3.5" />
-                  <span>Infaq Perawatan Arsip &amp; Buku Saku PDF</span>
-                </span>
-                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mt-1">
-                  Buka Paket Utuh 7 Malam + Cetak Buku Saku PDF Ber-Nama Pribadi
-                </h2>
-                <p className="text-xs sm:text-sm text-stone-600 mt-2 leading-relaxed">
-                  Seluruh infaq Anda disalurkan untuk biaya server, pemeliharaan direktori 183
-                  maqbarah ulama Nusantara, dan riset literatur sanad agar panduan doa tetap bebas
-                  iklan komersial.
-                </p>
-              </div>
-
-              {/* Pilihan 2 Nominal Pasti Sesuai infaqConfig */}
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-2">
-                  Pilih Nominal Infaq Buku Saku 7 Malam (QRIS Nominal Pasti Terkunci)
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {([15000, 30000] as const).map((amt) => {
-                    const tierObj = donationTiers.find((t) => t.amount === amt);
-                    const isSelected = selectedUnlockAmount === amt;
-                    return (
-                      <button
-                        key={amt}
-                        type="button"
-                        onClick={() => setSelectedUnlockAmount(amt)}
-                        className={`p-4 rounded-2xl border text-left transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-emerald-950 text-white border-emerald-950'
-                            : 'bg-[#FAF8F5] text-stone-900 border-stone-300 hover:border-emerald-800'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-lg font-bold">
-                            Rp {amt.toLocaleString('id-ID')}
-                          </span>
-                          <span
-                            className={`text-xs font-semibold px-2.5 py-0.5 rounded-md ${
-                              isSelected
-                                ? 'bg-emerald-800 text-emerald-100'
-                                : 'bg-stone-200 text-stone-700'
-                            }`}
-                          >
-                            {tierObj?.label ||
-                              (amt === 30000 ? 'Sahabat Ziarah' : 'Riset Sanad')}
-                          </span>
-                        </div>
-                        <p
-                          className={`text-xs mt-1.5 ${
-                            isSelected ? 'text-emerald-100' : 'text-stone-600'
-                          }`}
-                        >
-                          {amt === 15000
-                            ? 'Membuka Malam ke-2 s/d ke-7 & fitur cetak Buku Saku PDF'
-                            : 'Membuka Buku Saku 7 Malam + dukungan penuh riset sanad & server'}
-                        </p>
-                      </button>
-                    );
-                  })}
+                <div className="text-left sm:text-right">
+                  <p className="text-xs text-stone-500">Nominal Infaq</p>
+                  <p className="text-base font-bold text-emerald-900">
+                    Rp {activeTier.amount.toLocaleString('id-ID')}
+                  </p>
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* QRIS Payment Card / Transfer Bank */}
-              {paymentMethod === 'QRIS' ? (
-                <QrisPaymentCard
-                  qrisPayload={bankInfo.qrisPayload}
-                  selectedAmount={activeTier.amount}
-                  tierLabel={activeTier.label}
-                  customTierQrisPayload={activeTier.customQrisPayload}
-                  customTierQrisImageUrl={activeTier.customQrisImageUrl}
-                />
+          <TransferProofUploadField
+            paymentMethod={paymentMethod}
+            onPaymentMethodChange={setPaymentMethod}
+            senderAccount={senderAccount}
+            onSenderAccountChange={setSenderAccount}
+            receipt={receipt}
+            onReceiptChange={setReceipt}
+            agreedToAkad={agreedToAkad}
+            onAgreedToAkadChange={setAgreedToAkad}
+            requiredForUnlock={false}
+          />
+
+          {infaqError && (
+            <p className="text-xs font-medium text-rose-800 bg-rose-50 border border-rose-200 rounded-xl px-3.5 py-2.5">
+              {infaqError}
+            </p>
+          )}
+
+          {infaqNotice && (
+            <p className="text-xs font-medium text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl px-3.5 py-2.5">
+              {infaqNotice}
+            </p>
+          )}
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+            <button
+              type="button"
+              onClick={handleVoluntaryInfaqSubmit}
+              disabled={!agreedToAkad || !receipt || isSubmittingInfaq}
+              className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold transition-colors ${
+                !agreedToAkad || !receipt || isSubmittingInfaq
+                  ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
+                  : 'bg-[#064E3B] hover:bg-emerald-950 text-white cursor-pointer'
+              }`}
+            >
+              {isSubmittingInfaq ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Mengirim Bukti Infaq Sukarela...</span>
+                </>
               ) : (
-                <div className="rounded-2xl border border-stone-200 bg-[#FAF8F5] p-5 space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">
-                    Transfer Rekening Resmi Pemeliharaan Digital
-                  </p>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-4 rounded-xl border border-stone-200">
-                    <div>
-                      <p className="text-xs text-stone-500">{bankInfo.bankName}</p>
-                      <p className="text-lg font-mono font-bold text-stone-900">
-                        {bankInfo.accountNumber}
-                      </p>
-                      <p className="text-xs text-stone-700">
-                        a.n. {bankInfo.accountHolder}
-                      </p>
-                    </div>
-                    <div className="text-left sm:text-right">
-                      <p className="text-xs text-stone-500">Nominal Infaq</p>
-                      <p className="text-base font-bold text-emerald-900">
-                        Rp {selectedUnlockAmount.toLocaleString('id-ID')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Upload Bukti / Honor System */}
-              <TransferProofUploadField
-                paymentMethod={paymentMethod}
-                onPaymentMethodChange={setPaymentMethod}
-                senderAccount={senderAccount}
-                onSenderAccountChange={setSenderAccount}
-                receipt={receipt}
-                onReceiptChange={setReceipt}
-                agreedToAkad={agreedToAkad}
-                onAgreedToAkadChange={setAgreedToAkad}
-                requiredForUnlock={false}
-              />
-
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={handleUnlockComplete}
-                  disabled={!agreedToAkad && !receipt}
-                  className={`flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold transition-colors cursor-pointer ${
-                    agreedToAkad || receipt
-                      ? 'bg-[#064E3B] hover:bg-emerald-950 text-white'
-                      : 'bg-stone-200 text-stone-500 cursor-not-allowed'
-                  }`}
-                >
-                  <FileText className="w-4 h-4" />
+                <>
+                  <Heart className="w-4 h-4" />
                   <span>
-                    {receipt
-                      ? 'Bukti Terlampir — Buka & Cetak Buku Saku 7 Malam'
-                      : 'Centang Akad Infaq di Atas untuk Membuka Buku Saku 7 Malam'}
+                    Kirim Bukti Infaq Sukarela (Rp{' '}
+                    {activeTier.amount.toLocaleString('id-ID')})
                   </span>
-                </button>
+                </>
+              )}
+            </button>
 
-                {whatsappConfirmUrl && (
-                  <a
-                    href={whatsappConfirmUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-emerald-800 text-emerald-900 hover:bg-emerald-50 text-xs sm:text-sm font-semibold transition-colors"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Konfirmasi via WhatsApp</span>
-                  </a>
-                )}
-              </div>
-            </div>
+            {whatsappConfirmUrl && (
+              <a
+                href={whatsappConfirmUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-emerald-800 text-emerald-900 hover:bg-emerald-50 text-xs sm:text-sm font-semibold transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Konfirmasi via WhatsApp</span>
+              </a>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* =====================================================================

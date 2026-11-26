@@ -22,6 +22,8 @@ import {
   sanitizeYasinMemorialInput,
   validateLocalMemorialPhoto,
   buildYasinPhysicalPrintWaUrl,
+  buildBukuYasinVoluntaryInfaqPayload,
+  getHonestYasinSectionHeading,
   DEFAULT_FAMILY_GREETING,
   type LineageRelation,
   type YasinCoverTheme,
@@ -109,20 +111,25 @@ export const BukuYasinKenangan: React.FC = () => {
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
 
-  // Economic Path A (Self-Print A5 PDF after Rp 30.000 infaq)
-  const [isPdfUnlocked, setIsPdfUnlocked] = useState(false);
+  // Free A5 PDF generation state (100% Free & Open)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfStatusNotice, setPdfStatusNotice] = useState<string | null>(null);
+
+  // Commercial Path: Physical Print Consultation via WhatsApp (30 / 50 / 100 copies)
+  const [copiesCount, setCopiesCount] = useState<number>(50);
+  const [deliveryCity, setDeliveryCity] = useState<string>('');
+
+  // Optional Voluntary Infaq State (100% Separated from PDF Download & Zero Memorial PII)
+  const [selectedInfaqAmount, setSelectedInfaqAmount] = useState<number>(30000);
   const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'Transfer Bank'>(
     'QRIS'
   );
   const [senderAccount, setSenderAccount] = useState('');
   const [receipt, setReceipt] = useState<CompressedReceiptResult | null>(null);
   const [agreedToAkad, setAgreedToAkad] = useState(false);
-
-  // Economic Path B (Physical Print Consultation via WhatsApp)
-  const [copiesCount, setCopiesCount] = useState<number>(50);
-  const [deliveryCity, setDeliveryCity] = useState<string>('');
+  const [isSubmittingInfaq, setIsSubmittingInfaq] = useState(false);
+  const [infaqNotice, setInfaqNotice] = useState<string | null>(null);
+  const [infaqError, setInfaqError] = useState<string | null>(null);
 
   const isRestrictedEnv = useMemo(() => isRestrictedWebViewOrIframe(), []);
 
@@ -226,24 +233,35 @@ export const BukuYasinKenangan: React.FC = () => {
     }
   };
 
-  const tier30k = useMemo(() => {
+  const selectedTier = useMemo(() => {
     return (
-      donationTiers.find((t) => t.amount === 30000) || {
+      donationTiers.find((t) => t.amount === selectedInfaqAmount) ||
+      donationTiers.find((t) => t.amount === 30000) ||
+      donationTiers[0] || {
         amount: 30000,
         label: 'Sahabat Ziarah',
       }
     );
-  }, [donationTiers]);
-
-  const memorialSections = useMemo(() => {
-    return PRAYER_SECTIONS.filter(
-      (s) => s.id === 'TAWASSUL' || s.id === 'TAHLIL' || s.id === 'DOA'
-    );
-  }, []);
+  }, [donationTiers, selectedInfaqAmount]);
 
   const hasVerifiedYasin83 = useMemo(() => {
     return isCompleteVerifiedYasin(SURAH_YASIN_VERSES);
   }, []);
+
+  const honestYasinHeading = useMemo(() => {
+    return getHonestYasinSectionHeading(hasVerifiedYasin83);
+  }, [hasVerifiedYasin83]);
+
+  const memorialSections = useMemo(() => {
+    return PRAYER_SECTIONS.filter((s) =>
+      hasVerifiedYasin83
+        ? s.id === 'TAWASSUL' || s.id === 'TAHLIL' || s.id === 'DOA'
+        : s.id === 'TAWASSUL' ||
+          s.id === 'YASIN' ||
+          s.id === 'TAHLIL' ||
+          s.id === 'DOA'
+    );
+  }, [hasVerifiedYasin83]);
 
   const physicalPrintWaUrl = useMemo(() => {
     return buildYasinPhysicalPrintWaUrl({
@@ -254,58 +272,53 @@ export const BukuYasinKenangan: React.FC = () => {
     });
   }, [bankInfo.whatsappConfirmNumber, memorial, copiesCount, deliveryCity]);
 
-  const pdfConfirmWaUrl = useMemo(() => {
+  const voluntaryInfaqWaUrl = useMemo(() => {
     return buildWhatsappConfirmUrl({
       whatsappNumber: bankInfo.whatsappConfirmNumber,
-      donorName: senderAccount || memorial.familyNamesFooter || 'Keluarga',
-      amount: 30000,
-      programTitle: `Buku Tahlil & Doa Arwah Kenangan A5 (${memorial.fullLineageLabel})`,
-      siteName: memorial.eventLabel,
+      donorName: senderAccount.trim() || 'Hamba Allah',
+      amount: selectedTier.amount,
+      programTitle: 'Infaq Sukarela Operasional & Pemeliharaan Digital Arsip',
+      siteName: 'Layanan Penyusun Buku Yasin & Tahlil A5',
       bankName: bankInfo.bankName,
       accountNumber: bankInfo.accountNumber,
       template: bankInfo.whatsappMessageTemplate,
     });
-  }, [bankInfo, senderAccount, memorial]);
+  }, [bankInfo, senderAccount, selectedTier.amount]);
 
   const activeThemeStyle =
     THEME_OPTIONS.find((t) => t.id === memorial.theme) || THEME_OPTIONS[0];
 
-  const recordBukuYasinDonation = async () => {
-    if (receipt && receipt.dataUrl) {
-      try {
-        const cleanDonor =
-          senderAccount.trim() ||
-          memorial.familyNamesFooter ||
-          'Keluarga Peziarah';
-        const donationId = await submitDonationWithPrivateProof({
-          programId: 'buku-yasin-a5',
-          programTitle: 'Buku Tahlil & Doa Arwah Kenangan A5',
-          siteId: 'buku-yasin',
-          siteName: `${memorial.eventLabel} — ${memorial.fullLineageLabel}`.slice(
-            0,
-            150
-          ),
-          amount: tier30k.amount,
-          donorName: cleanDonor,
-          paymentMethod,
-          senderAccount: senderAccount.trim() || cleanDonor,
-          receipt,
-          isAnonymous: false,
-          showPublicly: true,
-          consentAkad: true,
-          consentVersion: '2026-11-25',
-          consentAt: new Date().toISOString(),
-          doaHajat: `Al-Fatihah & Doa Arwah untuk ${memorial.fullLineageLabel}`,
-        });
-        saveVerifiedDonationRecord({
-          donationId,
-          siteId: 'buku-yasin',
-          programId: 'buku-yasin-a5',
-          amount: tier30k.amount,
-        });
-      } catch {
-        // Keep unlocked locally even if offline
-      }
+  const handleVoluntaryInfaqSubmit = async () => {
+    if (!agreedToAkad || !receipt || isSubmittingInfaq) return;
+    setIsSubmittingInfaq(true);
+    setInfaqError(null);
+    setInfaqNotice(null);
+    try {
+      const payload = buildBukuYasinVoluntaryInfaqPayload({
+        amount: selectedTier.amount,
+        senderAccount,
+        paymentMethod,
+        receipt,
+        consentAkad: agreedToAkad,
+      });
+      const donationId = await submitDonationWithPrivateProof(payload);
+      saveVerifiedDonationRecord({
+        donationId,
+        siteId: 'buku-yasin',
+        programId: 'buku-yasin-a5',
+        amount: selectedTier.amount,
+      });
+      setInfaqNotice(
+        `Alhamdulillah, bukti infaq sukarela Anda (#${receipt.referenceCode}) telah tercatat untuk verifikasi Dewan Kurator.`
+      );
+      setReceipt(null);
+      setAgreedToAkad(false);
+    } catch (err: any) {
+      setInfaqError(
+        err?.message || 'Gagal mengirim bukti infaq sukarela. Silakan coba lagi.'
+      );
+    } finally {
+      setIsSubmittingInfaq(false);
     }
   };
 
@@ -339,14 +352,12 @@ export const BukuYasinKenangan: React.FC = () => {
   };
 
   const handleDownloadPdf = async () => {
-    setIsPdfUnlocked(true);
     setIsGeneratingPdf(true);
     setPdfStatusNotice(null);
     try {
       const { blob, filename } = await buildCurrentBukuYasinPdfBlob();
       await downloadBlobFile(blob, filename);
-      setPdfStatusNotice(`Berkas ${filename} berhasil diunduh ke perangkat Anda.`);
-      void recordBukuYasinDonation();
+      setPdfStatusNotice(`Berkas ${filename} berhasil diunduh gratis ke perangkat Anda.`);
     } catch (err: any) {
       setPdfStatusNotice(err?.message || 'Gagal menyiapkan berkas PDF.');
     } finally {
@@ -355,7 +366,6 @@ export const BukuYasinKenangan: React.FC = () => {
   };
 
   const handleSharePdf = async () => {
-    setIsPdfUnlocked(true);
     setIsGeneratingPdf(true);
     setPdfStatusNotice(null);
     try {
@@ -366,7 +376,6 @@ export const BukuYasinKenangan: React.FC = () => {
         `Buku Tahlil & Doa Arwah A5 — ${memorial.fullLineageLabel}`
       );
       setPdfStatusNotice(`Berkas ${filename} siap disimpan atau dibagikan.`);
-      void recordBukuYasinDonation();
     } catch (err: any) {
       setPdfStatusNotice(err?.message || 'Gagal membagikan berkas PDF.');
     } finally {
@@ -375,11 +384,9 @@ export const BukuYasinKenangan: React.FC = () => {
   };
 
   const handleDirectPrint = () => {
-    setIsPdfUnlocked(true);
     if (typeof window !== 'undefined' && typeof window.print === 'function') {
       window.print();
     }
-    void recordBukuYasinDonation();
   };
 
   return (
@@ -692,66 +699,28 @@ export const BukuYasinKenangan: React.FC = () => {
             </div>
           </div>
 
-          {/* JALUR EKONOMI A: UNDUH PDF SIAP CETAK A5 MANDIRI (INFAQ RP 30.000) */}
-          <div className="rounded-2xl bg-white border-2 border-emerald-900/30 p-6 space-y-5 shadow-xs">
+          {/* 2. UNDUH FILE PDF A5 GRATIS (100% GRATIS & LANGSUNG AKTIF) */}
+          <div className="rounded-2xl bg-white border-2 border-emerald-900/30 p-6 space-y-4 shadow-xs">
             <div>
               <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-900">
-                <Heart className="w-3.5 h-3.5" />
-                <span>Jalur A — Unduh &amp; Cetak PDF A5 Mandiri</span>
+                <Download className="w-3.5 h-3.5" />
+                <span>Layanan Jamaah — 100% Gratis &amp; Tanpa Syarat</span>
               </span>
               <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-900 mt-1">
-                Buka &amp; Unduh File PDF A5 Asli (Infaq Rp 30.000)
+                Unduh File PDF Gratis (.PDF) Ukuran A5
               </h3>
               <p className="text-xs text-stone-600 mt-1 leading-relaxed">
-                Pratinjau di sebelah kanan dapat Anda periksa secara gratis. Untuk mengunduh file
-                dokumen <strong>.PDF ukuran A5</strong> siap cetak maupun dibagikan ke WhatsApp
-                keluarga, tunaikan infaq operasional sebesar Rp 30.000.
+                Seluruh fitur penyusunan dan pengunduhan dokumen <strong>.PDF ukuran A5</strong> siap
+                cetak maupun dibagikan ke grup WhatsApp keluarga tersedia <strong>100% gratis</strong>.
               </p>
             </div>
-
-            {paymentMethod === 'QRIS' ? (
-              <QrisPaymentCard
-                qrisPayload={bankInfo.qrisPayload}
-                selectedAmount={tier30k.amount}
-                tierLabel={tier30k.label}
-                customTierQrisPayload={tier30k.customQrisPayload}
-                customTierQrisImageUrl={tier30k.customQrisImageUrl}
-                compact
-              />
-            ) : (
-              <div className="rounded-xl border border-stone-200 bg-[#FAF8F5] p-4 space-y-1">
-                <p className="text-xs text-stone-500">{bankInfo.bankName}</p>
-                <p className="text-base font-mono font-bold text-stone-900">
-                  {bankInfo.accountNumber}
-                </p>
-                <p className="text-xs text-stone-700">
-                  a.n. {bankInfo.accountHolder} • Nominal: Rp 30.000
-                </p>
-              </div>
-            )}
-
-            <TransferProofUploadField
-              paymentMethod={paymentMethod}
-              onPaymentMethodChange={setPaymentMethod}
-              senderAccount={senderAccount}
-              onSenderAccountChange={setSenderAccount}
-              receipt={receipt}
-              onReceiptChange={setReceipt}
-              agreedToAkad={agreedToAkad}
-              onAgreedToAkadChange={setAgreedToAkad}
-              requiredForUnlock={false}
-            />
 
             <div className="flex flex-col gap-2.5">
               <button
                 type="button"
                 onClick={handleDownloadPdf}
-                disabled={isGeneratingPdf || (!agreedToAkad && !receipt && !isPdfUnlocked)}
-                className={`w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-sm font-bold transition-colors cursor-pointer ${
-                  agreedToAkad || receipt || isPdfUnlocked
-                    ? 'bg-[#064E3B] hover:bg-emerald-950 text-white'
-                    : 'bg-stone-200 text-stone-500 cursor-not-allowed'
-                } disabled:opacity-60`}
+                disabled={isGeneratingPdf}
+                className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-sm font-bold transition-colors cursor-pointer bg-[#064E3B] hover:bg-emerald-950 text-white disabled:opacity-60"
               >
                 {isGeneratingPdf ? (
                   <>
@@ -761,11 +730,7 @@ export const BukuYasinKenangan: React.FC = () => {
                 ) : (
                   <>
                     <Download className="w-4 h-4" />
-                    <span>
-                      {isPdfUnlocked
-                        ? 'Unduh File PDF (.PDF) Ukuran A5'
-                        : 'Unduh File PDF (.PDF) A5 (Infaq Rp 30.000)'}
-                    </span>
+                    <span>Unduh File PDF Gratis (.PDF) Ukuran A5</span>
                   </>
                 )}
               </button>
@@ -774,8 +739,8 @@ export const BukuYasinKenangan: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleSharePdf}
-                  disabled={isGeneratingPdf || (!agreedToAkad && !receipt && !isPdfUnlocked)}
-                  className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isGeneratingPdf}
+                  className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
                 >
                   <Share2 className="w-3.5 h-3.5" />
                   <span>Bagikan / Simpan ke HP</span>
@@ -784,8 +749,7 @@ export const BukuYasinKenangan: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleDirectPrint}
-                  disabled={!agreedToAkad && !receipt && !isPdfUnlocked}
-                  className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:bg-stone-100 text-stone-800 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-stone-300 bg-white hover:bg-stone-100 text-stone-800 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Cetak Langsung (Printer)</span>
@@ -804,34 +768,45 @@ export const BukuYasinKenangan: React.FC = () => {
                   <strong>Bagikan / Simpan ke HP</strong> atau buka di Chrome/Safari.
                 </p>
               )}
-
-              {pdfConfirmWaUrl && (
-                <a
-                  href={pdfConfirmWaUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-emerald-800 text-emerald-900 hover:bg-emerald-50 text-xs font-semibold transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Konfirmasi Infaq PDF via WhatsApp</span>
-                </a>
-              )}
             </div>
           </div>
 
-          {/* JALUR EKONOMI B: PESAN CETAK FISIK VIA MITRA PERCETAKAN (WHATSAPP) */}
-          <div className="rounded-2xl bg-white border border-stone-200/90 p-6 space-y-4 shadow-xs">
+          {/* 3. LAYANAN CETAK FISIK BUKU YASIN–TAHLIL VIA WHATSAPP */}
+          <div className="rounded-2xl bg-white border-2 border-stone-900/20 p-6 space-y-4 shadow-xs">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-stone-600">
-                Jalur B — Cetak Buku Fisik Siap Bagi
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-900">
+                Layanan Percetakan Fisik — Terima Jadi &amp; Siap Bagi
               </span>
-              <h3 className="font-serif text-lg font-bold text-stone-900 mt-1">
-                Pesan Cetak Fisik via Mitra Percetakan (WhatsApp)
+              <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-900 mt-1">
+                Pesan Cetak Fisik Buku Yasin–Tahlil via WhatsApp
               </h3>
               <p className="text-xs text-stone-600 mt-1 leading-relaxed">
-                Ingin terima jadi dalam bentuk buku cetak rapi? Masukkan jumlah eksemplar dan kota
-                tujuan pengiriman untuk berkonsultasi langsung.
+                Ingin terima jadi dalam bentuk buku cetak fisik ukuran A5 yang dijilid rapi untuk
+                jamaah tahlilan 7 hari, 40 hari, 100 hari, atau Haul? Pilih paket jumlah eksemplar
+                dan kota pengiriman untuk konsultasi harga cetak langsung via WhatsApp.
               </p>
+            </div>
+
+            <div>
+              <span className="block text-xs font-semibold text-stone-700 mb-1.5">
+                Paket Cepat Jumlah Eksemplar
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                {([30, 50, 100] as const).map((presetCount) => (
+                  <button
+                    key={presetCount}
+                    type="button"
+                    onClick={() => setCopiesCount(presetCount)}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
+                      copiesCount === presetCount
+                        ? 'bg-stone-900 text-white border-stone-900'
+                        : 'bg-[#FAF8F5] text-stone-800 border-stone-300 hover:border-stone-500'
+                    }`}
+                  >
+                    {presetCount} Buku
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -878,18 +853,158 @@ export const BukuYasinKenangan: React.FC = () => {
                 href={physicalPrintWaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs sm:text-sm font-semibold transition-colors"
+                className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs sm:text-sm font-semibold transition-colors"
               >
                 <MessageCircle className="w-4 h-4" />
-                <span>Konsultasi &amp; Pesan Cetak Fisik via WhatsApp</span>
+                <span>Pesan Cetak Fisik Buku Yasin–Tahlil via WhatsApp</span>
               </a>
             ) : (
               <div className="rounded-xl bg-[#FAF8F5] border border-stone-200 p-3.5 text-xs text-stone-600 leading-relaxed">
                 Nomor WhatsApp Mitra Percetakan / Kurator belum diaktifkan pada pengaturan portal.
-                Anda tetap dapat menggunakan <strong>Jalur A (Simpan PDF A5 Mandiri)</strong> di
-                atas untuk mencetak langsung di percetakan terdekat.
+                Anda tetap dapat mengunduh <strong>File PDF Gratis Ukuran A5</strong> di atas untuk
+                dicetak langsung di percetakan terdekat.
               </div>
             )}
+          </div>
+
+          {/* 4. DUKUNG OPERASIONAL ARSIP (INFAQ SUKARELA · OPSIONAL & TANPA DATA ALMARHUM) */}
+          <div className="rounded-2xl bg-white border border-stone-200/90 p-6 space-y-4 shadow-xs">
+            <div>
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-900">
+                <Heart className="w-3.5 h-3.5" />
+                <span>Infaq Sukarela · Opsional</span>
+              </span>
+              <h3 className="font-serif text-lg font-bold text-stone-900 mt-1">
+                Dukung Operasional Arsip (Infaq Sukarela · Opsional)
+              </h3>
+              <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                Unduhan PDF di atas 100% gratis. Jika merasa terbantu, Anda dapat menyalurkan infaq
+                sukarela untuk biaya server &amp; riset arsip. Demi kepatuhan penuh{' '}
+                <strong>UU PDP</strong>, konfirmasi infaq sukarela ini{' '}
+                <strong>sama sekali tidak mengirimkan nama maupun data almarhum/almarhumah</strong>{' '}
+                ke server.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-2">
+                Pilih Nominal Infaq Sukarela (QRIS Nominal Pasti):
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {donationTiers.map((tier) => {
+                  const isSelected = selectedTier.amount === tier.amount;
+                  return (
+                    <button
+                      key={tier.amount}
+                      type="button"
+                      onClick={() => setSelectedInfaqAmount(tier.amount)}
+                      className={`py-2 px-2.5 rounded-xl text-left border transition-colors cursor-pointer ${
+                        isSelected
+                          ? 'bg-emerald-950 text-white border-emerald-950'
+                          : 'bg-[#FAF8F5] text-stone-800 border-stone-200 hover:border-stone-400'
+                      }`}
+                    >
+                      <div className="text-xs font-bold tabular-nums">
+                        Rp {tier.amount.toLocaleString('id-ID')}
+                      </div>
+                      <div
+                        className={`text-[10px] mt-0.5 truncate ${
+                          isSelected ? 'text-emerald-100' : 'text-stone-500'
+                        }`}
+                      >
+                        {tier.label}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {paymentMethod === 'QRIS' ? (
+              <QrisPaymentCard
+                qrisPayload={bankInfo.qrisPayload}
+                selectedAmount={selectedTier.amount}
+                tierLabel={selectedTier.label}
+                customTierQrisPayload={selectedTier.customQrisPayload}
+                customTierQrisImageUrl={selectedTier.customQrisImageUrl}
+                compact
+              />
+            ) : (
+              <div className="rounded-xl border border-stone-200 bg-[#FAF8F5] p-4 space-y-1">
+                <p className="text-xs text-stone-500">{bankInfo.bankName}</p>
+                <p className="text-base font-mono font-bold text-stone-900">
+                  {bankInfo.accountNumber}
+                </p>
+                <p className="text-xs text-stone-700">
+                  a.n. {bankInfo.accountHolder} • Nominal: Rp{' '}
+                  {selectedTier.amount.toLocaleString('id-ID')}
+                </p>
+              </div>
+            )}
+
+            <TransferProofUploadField
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={setPaymentMethod}
+              senderAccount={senderAccount}
+              onSenderAccountChange={setSenderAccount}
+              receipt={receipt}
+              onReceiptChange={setReceipt}
+              agreedToAkad={agreedToAkad}
+              onAgreedToAkadChange={setAgreedToAkad}
+              requiredForUnlock={false}
+            />
+
+            {infaqError && (
+              <p className="text-xs font-medium text-rose-800 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
+                {infaqError}
+              </p>
+            )}
+
+            {infaqNotice && (
+              <p className="text-xs font-medium text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+                {infaqNotice}
+              </p>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleVoluntaryInfaqSubmit}
+                disabled={!agreedToAkad || !receipt || isSubmittingInfaq}
+                className={`w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition-colors ${
+                  !agreedToAkad || !receipt || isSubmittingInfaq
+                    ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
+                    : 'bg-[#064E3B] hover:bg-emerald-950 text-white cursor-pointer'
+                }`}
+              >
+                {isSubmittingInfaq ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Mengirim Bukti Infaq Sukarela...</span>
+                  </>
+                ) : (
+                  <>
+                    <Heart className="w-4 h-4" />
+                    <span>
+                      Kirim Bukti Infaq Sukarela (Rp{' '}
+                      {selectedTier.amount.toLocaleString('id-ID')})
+                    </span>
+                  </>
+                )}
+              </button>
+
+              {voluntaryInfaqWaUrl && (
+                <a
+                  href={voluntaryInfaqWaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-emerald-800 text-emerald-900 hover:bg-emerald-50 text-xs font-semibold transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Konfirmasi Infaq Sukarela via WhatsApp</span>
+                </a>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1008,9 +1123,17 @@ export const BukuYasinKenangan: React.FC = () => {
               </div>
             )}
 
-            {/* HALAMAN 3+: TAWASSUL, TAHLIL LENGKAP & DOA ARWAH */}
+            {/* HALAMAN 3+: TAWASSUL, KUTIPAN YASIN & MU'AWWIDZATAIN, TAHLIL LENGKAP & DOA ARWAH */}
             <div className="space-y-8">
-              {memorialSections.map((sec) => (
+              {memorialSections.map((sec) => {
+                const isYasinExcerptSection = sec.id === 'YASIN' && !hasVerifiedYasin83;
+                const displayTitle = isYasinExcerptSection
+                  ? honestYasinHeading.title
+                  : sec.title;
+                const displaySubtitle = isYasinExcerptSection
+                  ? honestYasinHeading.subtitle
+                  : sec.subtitle;
+                return (
                 <article
                   key={sec.id}
                   className="rounded-2xl border border-stone-200 p-6 sm:p-8 space-y-5 break-inside-avoid"
@@ -1020,9 +1143,9 @@ export const BukuYasinKenangan: React.FC = () => {
                       {sec.stepLabel}
                     </span>
                     <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-900 mt-0.5">
-                      {sec.title}
+                      {displayTitle}
                     </h3>
-                    <p className="text-xs text-stone-600 mt-0.5">{sec.subtitle}</p>
+                    <p className="text-xs text-stone-600 mt-0.5">{displaySubtitle}</p>
                     {sec.id === 'TAWASSUL' && (
                       <p className="mt-2 text-xs font-semibold text-emerald-950 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">
                         Khushushan ilaa ruuhi:{' '}
@@ -1051,7 +1174,8 @@ export const BukuYasinKenangan: React.FC = () => {
                     </p>
                   </div>
                 </article>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

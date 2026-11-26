@@ -105,6 +105,8 @@
         "siteName": { "type": "string", "maxLength": 150 },
         "amount": { "type": "number" },
         "donorName": { "type": "string", "maxLength": 100 },
+        "isAnonymous": { "type": "boolean" },
+        "showPublicly": { "type": "boolean" },
         "paymentMethod": { "type": "string", "maxLength": 40 },
         "hasProof": { "type": "boolean" },
         "referenceCode": { "type": "string", "maxLength": 40 },
@@ -176,12 +178,11 @@
     },
     "LingkarDoaEntry": {
       "title": "Lingkar Doa Jumat Malam Entry",
-      "description": "Real attendance and short prayer note for a weekly Friday night collective prayer session.",
+      "description": "Real attendance record for a weekly Friday night collective prayer session (free-text notes are kept local to prevent unmoderated spam).",
       "type": "object",
       "properties": {
         "weekKey": { "type": "string", "minLength": 6, "maxLength": 16 },
         "displayName": { "type": "string", "minLength": 1, "maxLength": 60 },
-        "note": { "type": "string", "maxLength": 160 },
         "createdAt": { "type": "string" }
       },
       "required": ["weekKey", "displayName", "createdAt"]

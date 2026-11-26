@@ -202,3 +202,64 @@ export function buildYasinPhysicalPrintWaUrl(
     messageLines.join('\n')
   )}`;
 }
+
+export const HONEST_YASIN_EXCERPT_HEADING =
+  "3. KUTIPAN SURAH YASIN (AYAT 1–6, 58, 83), AL-IKHLAS, AL-MU'AWWIDZATAIN & AYAT KURSI";
+
+export function getHonestYasinSectionHeading(isFull83Verified: boolean): {
+  stepLabel: string;
+  title: string;
+  subtitle: string;
+} {
+  if (isFull83Verified) {
+    return {
+      stepLabel: '3. SURAH YASIN (83 AYAT LENGKAP)',
+      title: '3. SURAH YASIN (83 AYAT LENGKAP)',
+      subtitle: 'Bacaan lengkap Surah Yasin 83 ayat terverifikasi beserta terjemahan.',
+    };
+  }
+  return {
+    stepLabel: HONEST_YASIN_EXCERPT_HEADING,
+    title: HONEST_YASIN_EXCERPT_HEADING,
+    subtitle: 'Kutipan ayat pilihan Surah Yasin, Surah Al-Ikhlas, Al-Falaq, An-Nas, dan Ayat Kursi.',
+  };
+}
+
+export interface BukuYasinVoluntaryInfaqParams<TReceipt = unknown> {
+  amount: number;
+  senderAccount: string;
+  paymentMethod: 'QRIS' | 'Transfer Bank' | string;
+  receipt: TReceipt;
+  consentAkad: boolean;
+  consentAt?: string;
+}
+
+/**
+ * Builds the Firestore payload for voluntary infaq submitted on `/buku-yasin`.
+ * UU PDP GUARANTEE (F3): Never includes `deceasedName`, `parentName`, lineage,
+ * birth/death dates, or family greeting in the database payload, and always
+ * defaults `showPublicly: false` and `isAnonymous: true`.
+ */
+export function buildBukuYasinVoluntaryInfaqPayload<TReceipt>(
+  params: BukuYasinVoluntaryInfaqParams<TReceipt>
+) {
+  const cleanSender = cleanLine(params.senderAccount, 80) || 'Hamba Allah';
+  return {
+    programId: 'buku-yasin-a5',
+    programTitle: 'Infaq Sukarela Buku Tahlil & Doa Arwah A5',
+    siteId: 'buku-yasin',
+    siteName: 'Layanan Penyusun Buku Yasin & Tahlil A5',
+    amount: params.amount,
+    donorName: 'Hamba Allah',
+    paymentMethod: params.paymentMethod,
+    senderAccount: cleanSender,
+    receipt: params.receipt,
+    isAnonymous: true,
+    showPublicly: false,
+    consentAkad: params.consentAkad,
+    consentVersion: '2026-11-26',
+    consentAt: params.consentAt || new Date().toISOString(),
+    doaHajat: 'Infaq sukarela operasional & pemeliharaan digital arsip.',
+  };
+}
+
